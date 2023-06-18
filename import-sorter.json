@@ -1,0 +1,50 @@
+{
+  "importSorter.sortConfiguration.joinImportPaths": true,
+  "importSorter.sortConfiguration.removeUnusedImports": true,
+  "importSorter.sortConfiguration.removeUnusedDefaultImports": false,
+  "importSorter.sortConfiguration.customOrderingRules.defaultOrderLevel": 100,
+  "importSorter.sortConfiguration.customOrderingRules.rules": [
+    {
+      "type": "importMember",
+      "regex": "^$",
+      "orderLevel": 1,
+      "disableSort": true
+    },
+    {
+      "regex": "react",
+      "orderLevel": 5
+    },
+    {
+      "regex": "yup$",
+      "orderLevel": 10
+    },
+    {
+      "regex": "pages.*",
+      "orderLevel": 15
+    },
+    {
+      "regex": "layouts.*",
+      "orderLevel": 20
+    },
+    {
+      "regex": "controls.*",
+      "orderLevel": 25
+    },
+    {
+      "regex": "apis.*",
+      "orderLevel": 30
+    },
+    {
+      "regex": "hooks.*",
+      "orderLevel": 35
+    },
+    {
+      "regex": "providers.*",
+      "orderLevel": 40
+    },
+    {
+      "regex": "utils.*",
+      "orderLevel": 45
+    }
+  ]
+}
