@@ -542,6 +542,23 @@ const ScrCom0024Page = () => {
             </Section>
             {/* 書類発送支持セクション */}
             <Section name='書類発送指示'>;
+              <Radio
+                label='書類発送指示'
+                name='instructionsForSendingDocuments'
+                required
+                radioOptions={[
+                  {
+                    value: 'sendingDocumentsTarget',
+                    valueLabel: '対象',
+                    disabled: false,
+                  },
+                  {
+                    value: 'sendingDocumentsUnTarget',
+                    valueLabel: '対象外',
+                    disabled: false,
+                  },
+                ]}
+              />
             </Section>
 
             {/* 出金設定セクション */}
