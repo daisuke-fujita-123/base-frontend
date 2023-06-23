@@ -65,8 +65,6 @@ export interface SearchGetBankMasterListbox {
 }
 
 
-
-
 /** SCR-COM-9999-0018: 支店名リストボックス情報取得API リクエスト */
 export interface ScrCom9999GetBranchMasterRequest {
     /** 銀行コード */

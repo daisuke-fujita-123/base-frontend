@@ -92,10 +92,10 @@ const initialValues: PlaceBasicModel = {
 /**
  * 会場基本情報スキーマ
  */
-const placeBasicSchama = {
-  corporationName: yup.string().label('法人名').max(10).required(),
-  corporationNameKana: yup.string().label('法人名カナ').max(10).required(),
-};
+// const placeBasicSchama = {
+//   corporationName: yup.string().label('法人名').max(10).required(),
+//   corporationNameKana: yup.string().label('法人名カナ').max(10).required(),
+// };
 
 
 /**
@@ -112,6 +112,14 @@ interface SelectValuesModel {
   posPutTogetherPlaceCodeSelectValues: SelectValue[];
   //ライブ会場グループコード
   livePlaceGroupCodeSelectValues: SelectValue[];
+  // バーチャル口座付与ルール
+  virtualAccountGrantRuleSelectValues: SelectValue[];
+  // 銀行名
+  bankNameSelectValues: SelectValue[];
+  // 支店名
+  branchNameSelectValues: SelectValue[];
+  // おまとめ会場連絡不可対象
+  omatomePlaceContactImpossibleTargetedKindSelectValues: SelectValue[];
 }
 
 /**
@@ -128,6 +136,14 @@ const selectValuesInitialValues: SelectValuesModel = {
   posPutTogetherPlaceCodeSelectValues: [],
   // ライブ会場グループコード
   livePlaceGroupCodeSelectValues: [],
+  // バーチャル口座付与ルール
+  virtualAccountGrantRuleSelectValues: [],
+  // 銀行名
+  bankNameSelectValues: [],
+  // 支店名
+  branchNameSelectValues: [],
+  // おまとめ会場連絡不可対象
+  omatomePlaceContactImpossibleTargetedKindSelectValues: [],
 };
 
 
@@ -151,7 +167,7 @@ const ScrCom0024Page = () => {
   // form
   const methods = useForm<PlaceBasicModel>({
     defaultValues: initialValues,
-    resolver: yupResolver(yup.object(placeBasicSchama)),
+    // resolver: yupResolver(yup.object(placeBasicSchama)),
     context: isReadOnly,
   });
   const {
@@ -228,7 +244,6 @@ const ScrCom0024Page = () => {
         // バーチャル口座付与ルール
         codeId: 'CDE-COM-0139',
       };
-      // TODO:SELECT変数用意してそこに同様に代入
       const virtualAccountGrantRuleResponse = await ScrCom9999GetCodeManagementMasterListbox(virtualAccountGrantRuleRequest);
 
 
@@ -237,7 +252,6 @@ const ScrCom0024Page = () => {
         // TODO: 業務日付取得方法実装後に変更
         businessDate: '',
       };
-      // TODO:SELECT変数用意してそこに同様に代入
       const bankNameResponse = await ScrCom9999GetBankMasterListbox(scrCom9999GetBankMasterListboxRequest);
 
 
@@ -248,7 +262,6 @@ const ScrCom0024Page = () => {
         // TODO: 取得方法不明
         bankCode: '',
       };
-      // TODO:SELECT変数用意してそこに同様に代入
       const branchNameResponse = await ScrCom9999GetBranchMaster(scrCom9999GetBranchMasterRequest);
 
 
@@ -259,7 +272,6 @@ const ScrCom0024Page = () => {
         // おまとめ会場連絡不可対象
         codeId: 'CDE-COM-0140',
       };
-      // TODO:SELECT変数用意してそこに同様に代入
       const omatomePlaceContactImpossibleTargetedKindResponse = await ScrCom9999GetCodeManagementMasterListbox(omatomePlaceContactImpossibleTargetedKindRequest);
 
 
@@ -276,11 +288,13 @@ const ScrCom0024Page = () => {
         // ライブ会場グループコード
         livePlaceGroupCodeSelectValues: livePlaceGroupCodeResponse.searchGetCodeManagementMasterListbox,
         // バーチャル口座付与ルール
-
+        virtualAccountGrantRuleSelectValues: virtualAccountGrantRuleResponse.searchGetCodeManagementMasterListbox,
         // 銀行名
-
+        bankNameSelectValues: bankNameResponse.searchGetBankMasterListbox,
         // 支店名
-
+        branchNameSelectValues: branchNameResponse.searchGetBranchMaster,
+        // おまとめ会場連絡不可対象
+        omatomePlaceContactImpossibleTargetedKindSelectValues: omatomePlaceContactImpossibleTargetedKindResponse.searchGetCodeManagementMasterListbox,
       });
 
       if (placeCd === undefined || placeCd === 'new') {
@@ -321,11 +335,9 @@ const ScrCom0024Page = () => {
   };
 
 
-
-
   /**
- * 変更した項目から登録・変更内容データへの変換
- */
+   * 変更した項目から登録・変更内容データへの変換
+   */
   const convertToChngedSections = (dirtyFields: object): TableRowModel[] => {
     const fields = Object.keys(dirtyFields);
     const changedSections: TableRowModel[] = [];
@@ -370,7 +382,7 @@ const ScrCom0024Page = () => {
   /**
    * ポップアップのキャンセルボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const handlePopupConfirm = () => {
     setIsOpenPopup(false);
   };
 
@@ -404,27 +416,55 @@ const ScrCom0024Page = () => {
     },
     {
       section: '書類発送指示',
-      fields: ['guarantorName1', 'guarantorNameKana1'],
+      fields: [
+        'instructionsForSendingDocuments',
+        'referent',
+        'managerForDocument',
+        'mailAddressForDocument',
+        'faxForDocument',
+      ],
     },
     {
       section: '出金設定',
-      fields: ['guarantorName2', 'guarantorNameKana2'],
+      fields: [
+        'withdrawalDate',
+        'withdrawalConfig'
+      ],
     },
     {
       section: '振込口座情報',
-      fields: ['guarantorName2', 'guarantorNameKana2'],
+      fields: [
+        'bankAccountInfo',
+        'branchName',
+        'kinds',
+        'accountNumber',
+        'accountName',
+        'virtualAccountGrantRule',
+      ],
     },
     {
       section: '支払通知送付先指定',
-      fields: ['guarantorName2', 'guarantorNameKana2'],
+      fields: [
+        'paymentNotice',
+        'managerForPayment',
+        'mailAddressForPayment',
+        'faxForPayment',
+      ],
     },
     {
       section: '入金元口座情報',
-      fields: ['guarantorName2', 'guarantorNameKana2'],
+      fields: [
+        'bankName',
+        'branchName',
+        'accountName',
+      ],
     },
     {
-      section: '会員管理',
-      fields: ['guarantorName2', 'guarantorNameKana2'],
+      section: '会場連絡(会員管理)',
+      fields: [
+        'emailAddressForVenueMemberManagement',
+        'omatomePlaceContactImpossibleTargetedKind',
+      ],
     },
   ];
 
@@ -436,153 +476,354 @@ const ScrCom0024Page = () => {
         <MainLayout main>
           <FormProvider {...methods}>
             {/* 会場基本情報セクション */}
-            <Section name='会場基本情報'>;
+            <Section name='会場基本情報'>
               <Grid container width={1590}>
-                <Grid item xs={4}>
-                  <TextField label='会場コード' name='placeCd' required />
-                  <TextField label='会場名' name='placeName' required />
-                  <Radio
-                    label='おまとめ会場'
-                    name='omatomePlaceFlag'
-                    required
-                    radioOptions={[
-                      {
-                        value: 'target',
-                        valueLabel: '対象',
-                        disabled: false,
-                      },
-                      {
-                        value: 'unTarget',
-                        valueLabel: '対象外',
-                        disabled: false,
-                      },
-                    ]}
-                  />
-                  <TextField label='計算書表示会場名' name='statementDisplayPlaceName' required />
-                  <Radio
-                    label='利用フラグ'
-                    name='useFlag'
-                    required
-                    radioOptions={[
-                      {
-                        value: 'yes',
-                        valueLabel: '可',
-                        disabled: false,
-                      },
-                      {
-                        value: 'no',
-                        valueLabel: '不可',
-                        disabled: false,
-                      },
-                    ]}
-                  />
-                  <DatePicker
-                    label='提供開始日'
-                    name='partnerStartDate'
-                    wareki
-                    required
-                  />
-                  <Select
-                    label='開催曜日'
-                    name='sessionWeekKind'
-                    selectValues={selectValues.sessionWeekKindSelectValues}
-                    blankOption
-                    required
-                  />
-                  <TextField label='契約ID' name='contractId' required />
-                  <TextField label='法人ID' name='corporationId' />
-                  <TextField label='法人名' name='corporationName' />
-                  <TextField label='請求先ID' name='billingId' />
-                  <TextField label='TEL' name='telephoneNumber' />
-                  <Select
-                    label='会場グループ'
-                    name='placeGroupCode'
-                    selectValues={selectValues.placeGroupCodeSelectValues}
-                    blankOption
-                  />
-                  <Select
-                    label='支払先会場名'
-                    name='paymentDestinationPlaceName'
-                    selectValues={selectValues.paymentDestinationPlaceNameSelectValues}
-                    blankOption
-                    required
-                  />
-                  <Select
-                    label='POSまとめ会場'
-                    name='posPutTogetherPlaceCode'
-                    selectValues={selectValues.posPutTogetherPlaceCodeSelectValues}
-                    blankOption
-                  />
-                  <Radio
-                    label='ホンダグループ'
-                    name='hondaGroup'
-                    required
-                    radioOptions={[
-                      {
-                        value: 'hondaTarget',
-                        valueLabel: '対象',
-                        disabled: false,
-                      },
-                      {
-                        value: 'hondaUnTarget',
-                        valueLabel: '対象外',
-                        disabled: false,
-                      },
-                    ]}
-                  />
-                  <TextField label='保証金' name='guaranteeDeposit' />
-                  <Select
-                    label='ライブ会場グループコード'
-                    name='livePlaceGroupCode'
-                    selectValues={selectValues.livePlaceGroupCodeSelectValues}
-                    blankOption
-                  />
+                <Grid item xs={12}>
+                  <Grid container>
+                    <Grid item xs={2}>
+                      <TextField label='会場コード' name='placeCd' required />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='会場名' name='placeName' required />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Radio
+                        label='おまとめ会場'
+                        name='omatomePlaceFlag'
+                        required
+                        radioOptions={[
+                          {
+                            value: 'target',
+                            valueLabel: '対象',
+                            disabled: false,
+                          },
+                          {
+                            value: 'unTarget',
+                            valueLabel: '対象外',
+                            disabled: false,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='計算書表示会場名' name='statementDisplayPlaceName' required />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Radio
+                        label='利用フラグ'
+                        name='useFlag'
+                        required
+                        radioOptions={[
+                          {
+                            value: 'yes',
+                            valueLabel: '可',
+                            disabled: false,
+                          },
+                          {
+                            value: 'no',
+                            valueLabel: '不可',
+                            disabled: false,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <DatePicker
+                        label='提供開始日'
+                        name='partnerStartDate'
+                        wareki
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='開催曜日'
+                        name='sessionWeekKind'
+                        selectValues={selectValues.sessionWeekKindSelectValues}
+                        blankOption
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='契約ID' name='contractId' required />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='法人ID' name='corporationId' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='法人名' name='corporationName' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='請求先ID' name='billingId' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='TEL' name='telephoneNumber' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='会場グループ'
+                        name='placeGroupCode'
+                        selectValues={selectValues.placeGroupCodeSelectValues}
+                        blankOption
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='支払先会場名'
+                        name='paymentDestinationPlaceName'
+                        selectValues={selectValues.paymentDestinationPlaceNameSelectValues}
+                        blankOption
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='POSまとめ会場'
+                        name='posPutTogetherPlaceCode'
+                        selectValues={selectValues.posPutTogetherPlaceCodeSelectValues}
+                        blankOption
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Radio
+                        label='ホンダグループ'
+                        name='hondaGroup'
+                        required
+                        radioOptions={[
+                          {
+                            value: 'hondaTarget',
+                            valueLabel: '対象',
+                            disabled: false,
+                          },
+                          {
+                            value: 'hondaUnTarget',
+                            valueLabel: '対象外',
+                            disabled: false,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='保証金' name='guaranteeDeposit' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='ライブ会場グループコード'
+                        name='livePlaceGroupCode'
+                        selectValues={selectValues.livePlaceGroupCodeSelectValues}
+                        blankOption
+                      />
+                    </Grid>
+                  </Grid>
                 </Grid>
               </Grid>
             </Section>
             {/* 書類発送支持セクション */}
-            <Section name='書類発送指示'>;
-              <Radio
-                label='書類発送指示'
-                name='instructionsForSendingDocuments'
-                required
-                radioOptions={[
-                  {
-                    value: 'sendingDocumentsTarget',
-                    valueLabel: '対象',
-                    disabled: false,
-                  },
-                  {
-                    value: 'sendingDocumentsUnTarget',
-                    valueLabel: '対象外',
-                    disabled: false,
-                  },
-                ]}
-              />
+            <Section name='書類発送指示'>
+              <Grid container width={1590}>
+                <Grid item xs={12}>
+                  <Grid container>
+                    <Grid item xs={2}>
+                      <Radio
+                        label='書類発送指示'
+                        name='instructionsForSendingDocuments'
+                        required
+                        radioOptions={[
+                          {
+                            value: 'sendingDocumentsTarget',
+                            valueLabel: '対象',
+                            disabled: false,
+                          },
+                          {
+                            value: 'sendingDocumentsUnTarget',
+                            valueLabel: '対象外',
+                            disabled: false,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Radio
+                        label='指示対象'
+                        name='referent'
+                        required
+                        radioOptions={[
+                          {
+                            value: 'meberDirectDelivery',
+                            valueLabel: '会員直送&AUC宛',
+                            disabled: false,
+                          },
+                          {
+                            value: 'onlyAuc',
+                            valueLabel: 'AUC宛のみ',
+                            disabled: false,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='担当者' name='managerForDocument' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='メールアドレス' name='mailAddressForDocument' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='FAX' name='faxForDocument' />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Section>
-
             {/* 出金設定セクション */}
-            <Section name='出金設定'>;
+            <Section name='出金設定'>
+              <Grid container width={1590}>
+                <Grid item xs={12}>
+                  <Grid container>
+                    <Grid item xs={2}>
+                      <TextField label='出金期日' name='withdrawalDate' />日
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Radio
+                        label='出金設定'
+                        name='withdrawalConfig'
+                        required
+                        radioOptions={[
+                          {
+                            value: 'bulk',
+                            valueLabel: '一括',
+                            disabled: false,
+                          },
+                          {
+                            value: 'eachTime',
+                            valueLabel: '都度',
+                            disabled: false,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Section>
-
             {/* 振込口座情報セクション */}
-            <Section name='振込口座情報'>;
+            <Section name='振込口座情報'>
+              <Grid container width={1590}>
+                <Grid item xs={12}>
+                  <Grid container>
+                    <Grid item xs={2}>
+                      <TextField label='銀行名' name='bankAccountInfo' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='支店名' name='branchName' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='種別' name='kinds' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='口座番号' name='accountNumber' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='口座名義' name='accountName' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='バーチャル口座付与ルール'
+                        name='virtualAccountGrantRule'
+                        selectValues={selectValues.livePlaceGroupCodeSelectValues}
+                        blankOption
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Section>
-
             {/* 支払通知送付先指定セクション */}
-            <Section name='支払通知送付先指定'>;
+            <Section name='支払通知送付先指定'>
+              <Grid container width={1590}>
+                <Grid item xs={12}>
+                  <Grid container>
+                    <Grid item xs={2}>
+                      <Radio
+                        label='支払通知'
+                        name='paymentNotice'
+                        required
+                        radioOptions={[
+                          {
+                            value: 'paymentNoticeTarget',
+                            valueLabel: '対象',
+                            disabled: false,
+                          },
+                          {
+                            value: 'paymentNoticeUnTarget',
+                            valueLabel: '対象外',
+                            disabled: false,
+                          },
+                        ]}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='担当者' name='managerForPayment' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='メールアドレス' name='mailAddressForPayment' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='FAX' name='faxForPayment' />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Section>
-
             {/* 入金元口座情報セクション */}
-            <Section name='入金元口座情報'>;
+            <Section name='入金元口座情報'>
+              <Grid container width={1590}>
+                <Grid item xs={12}>
+                  <Grid container>
+                    <Grid item xs={2}>
+                      <Select
+                        label='銀行名'
+                        name='bankName'
+                        selectValues={selectValues.bankNameSelectValues}
+                        blankOption
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='支店名'
+                        name='branchName'
+                        selectValues={selectValues.branchNameSelectValues}
+                        blankOption
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <TextField label='口座名義' name='accountName' />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Section>
-
             {/* 会場連絡(会員管理)セクション */}
-            <Section name='会場連絡(会員管理)'>;
+            <Section name='会場連絡(会員管理)'>
+              <Grid container width={1590}>
+                <Grid item xs={12}>
+                  <Grid container>
+                    <Grid item xs={2}>
+                      <TextField label='会場会員管理担当メールアドレス' name='emailAddressForVenueMemberManagement' />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Select
+                        label='おまとめ会場連絡不可対象'
+                        name='omatomePlaceContactImpossibleTargetedKind'
+                        selectValues={selectValues.omatomePlaceContactImpossibleTargetedKindSelectValues}
+                        blankOption
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Section>
           </FormProvider>
         </MainLayout>
-
         {/* bottom */}
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>

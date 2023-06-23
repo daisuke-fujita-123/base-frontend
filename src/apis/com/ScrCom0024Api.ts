@@ -1,6 +1,6 @@
 import { comApiClient } from 'providers/ApiClient';
 
-/** SCR-COM-0024-0001: ライブ会場データ取得APIリクエスト */
+/** SCR-COM-0024-0001: ライブ会場データ取得API リクエスト */
 export interface ScrCom0024GetPlaceDataRequest {
     /** 業務日付 */
     businessDate: string;
@@ -8,19 +8,19 @@ export interface ScrCom0024GetPlaceDataRequest {
     placeCd: string;
 }
 
-/** SCR-COM-0024-0001: ライブ会場データ取得APIレスポンス */
+/** SCR-COM-0024-0001: ライブ会場データ取得API レスポンス */
 export interface ScrCom0024GetPlaceDataResponse {
-    /** 会場コード　*/
+    /** 会場コード */
     placeCd: string;
-    /** 会場名　*/
+    /** 会場名 */
     placeName: string;
-    /** おまとめ会場フラグ　*/
+    /** おまとめ会場フラグ */
     omatomePlaceFlag: boolean;
-    /** 計算表示会場名　*/
+    /** 計算表示会場名 */
     statementDisplayPlaceName: string;
-    /** 利用フラグ　*/
+    /** 利用フラグ */
     useFlag: boolean;
-    /** 提携開始日　*/
+    /** 提携開始日 */
     partnerStartDate: string;
     /** 開催曜日 */
     sessionWeekKind: string;
@@ -98,6 +98,62 @@ export interface ScrCom0024GetPlaceDataResponse {
     omatomePlaceContactImpossibleTargetedKind: string;
 }
 
+
+/** SCR-COM-0024-0002: 契約情報リスト取得API リクエスト */
+export interface ScrCom0024GetContractDataRequest {
+    /** 業務日付 */
+    businessDate: string;
+    /** 契約ID */
+    contractId: string;
+}
+
+/** SCR-COM-0024-0002: 契約情報リスト取得API レスポンス */
+export interface ScrCom0024GetContractDataResponse {
+    /** 法人ID */
+    corporationId: string;
+    /** 法人名 */
+    corporationName: string;
+    /** 請求先ID */
+    billingId: string;
+    /** 事業拠点電話番号 */
+    businessBasePhoneNumber: string
+    /** 振込銀行名 */
+    bankName: string;
+    /** 振込支店名 */
+    branchName: string;
+    /** 種別 */
+    accountKind: string;
+    /** 口座番号 */
+    accountNumber: string;
+    /** 口座名義 */
+    accountNameKana: string;
+}
+
+
+/** SCR-COM-0024-0003: 会場詳細入力チェックAPI リクエスト */
+export interface ScrCom0024GetContractDataRequest {
+    /** 会場コード */
+    placeCd: string;
+    /** 会場名 */
+    placeName: string;
+}
+
+
+/** SCR-COM-0024-0003: 会場詳細入力チェックAPI レスポンス */
+export interface ScrCom0024GetContractDataResponse {
+    // リスト
+    errorList: ErrorList[];
+}
+
+// SCR-COM-0024-0003: 会場詳細入力チェックAPI レスポンス（リスト行）
+export interface ErrorList {
+    // エラーコード
+    errorCode: string;
+    // エラーメッセージ
+    errorMessage: string;
+}
+
+
 /** SCR-COM-0024-0001: ライブ会場データ取得API */
 export const ScrCom0024GetPlaceData = async (
     request: ScrCom0024GetPlaceDataRequest
@@ -108,3 +164,28 @@ export const ScrCom0024GetPlaceData = async (
     );
     return response.data;
 };
+
+
+/** SCR-COM-0024-0002: 契約情報リスト取得API */
+export const ScrCom0024GetContractData = async (
+    request: ScrCom0024GetContractDataRequest
+): Promise<ScrCom0024GetContractDataResponse> => {
+    const response = await comApiClient.post(
+        '/scr-com-0024/get-contract-data',
+        request
+    );
+    return response.data;
+};
+
+
+/** SCR-COM-0024-0003: 会場詳細入力チェックAPI */
+export const ScrCom0024PlaceDetailCheck = async (
+    request: ScrCom0024GetContractDataRequest
+): Promise<ScrCom0024GetContractDataResponse> => {
+    const response = await comApiClient.post(
+        '/scr-com-0024/place-detail-check',
+        request
+    );
+    return response.data;
+};
+
