@@ -19,6 +19,7 @@ interface TypographyProps {
   textDecoration?: string;
   fontSize?: number;
   textDecorationThickness?: number;
+  bold?: boolean;
 }
 export const Typography = (props: TypographyProps) => {
   const {
@@ -30,6 +31,7 @@ export const Typography = (props: TypographyProps) => {
     textDecoration,
     fontSize,
     textDecorationThickness,
+    bold,
   } = props;
   let pricedTypography = children;
   if (price && typeof children === 'string') {
@@ -41,6 +43,7 @@ export const Typography = (props: TypographyProps) => {
       onClick={onClick}
       color={color}
       fontSize={fontSize}
+      fontWeight={bold ? 'bold' : 'normal'}
       sx={{
         textDecoration: textDecoration,
         textDecorationThickness: textDecorationThickness,
@@ -66,10 +69,10 @@ const StyledDivider = styled(DividerMui)({
 });
 
 export const SubTitle = (props: TypographyProps) => {
-  const { children } = props;
+  const { children, onClick } = props;
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <StyledSubTitle>{children}</StyledSubTitle>
+      <StyledSubTitle onClick={onClick}>{children}</StyledSubTitle>
       <StyledDivider />
     </div>
   );

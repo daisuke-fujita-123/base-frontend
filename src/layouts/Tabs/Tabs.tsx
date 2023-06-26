@@ -68,6 +68,7 @@ const StyledTab = styled(Tab)({
 const StyledBox = styled(Box)({
   borderBottom: `1px solid  ${theme.palette.tab.tabSelected?.color}`,
   marginLeft: theme.spacing(3),
+  marginBottom: theme.spacing(-10),
 });
 
 /**

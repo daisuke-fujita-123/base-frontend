@@ -23,7 +23,7 @@ export const InputLayout = (props: InputLayoutProps) => {
       ) : labelPosition === 'above' ? (
         <InputStack>
           <LabelStack>
-            <Typography>{label}</Typography>
+            <Typography bold>{label}</Typography>
             {required && <RequiredLabel />}
           </LabelStack>
           {children}
@@ -33,7 +33,7 @@ export const InputLayout = (props: InputLayoutProps) => {
           <InputStack>
             <Grid container justifyContent='space-between'>
               <Grid item xs={2} container flexDirection='row'>
-                <Typography>{label}</Typography>
+                <Typography bold>{label}</Typography>
                 {required && <RequiredLabel />}
               </Grid>
               <Grid item xs={10}>

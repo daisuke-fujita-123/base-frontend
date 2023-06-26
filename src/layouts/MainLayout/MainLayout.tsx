@@ -52,7 +52,7 @@ export const MainLayout = (props: MainLayoutProps) => {
   const flexRowSx = { display: 'flex', flexDirection: 'row' };
 
   return (
-    <Box sx={{ ...flexColSx, flexGrow: 1, overflow: 'auto' }}>
+    <Box sx={{ ...flexColSx, flexGrow: 1, overflow: 'auto', marginTop: 10 }}>
       <Box sx={{ ...flexRowSx, flexGrow: 1, overflow: 'auto' }}>
         {/* main */}
         <Box
@@ -65,10 +65,10 @@ export const MainLayout = (props: MainLayoutProps) => {
           <Box
             sx={{
               ...flexColSx,
-              width: '1640px',
-              minWidth: '1640px',
+              width: rightElement ? '1355px' : '1620px',
+              minWidth: rightElement ? '1355px' : '1620px',
               flexGrow: 1,
-              p: 5,
+              p: 3,
             }}
           >
             {mainElement}
@@ -76,7 +76,9 @@ export const MainLayout = (props: MainLayoutProps) => {
         </Box>
         {/* right */}
         {rightElement && (
-          <Box sx={{ ...flexColSx, width: '128px' }}>{rightElement}</Box>
+          <Box sx={{ ...flexColSx, width: '265px', marginTop: 5 }}>
+            {rightElement}
+          </Box>
         )}
       </Box>
       {/* bottom */}

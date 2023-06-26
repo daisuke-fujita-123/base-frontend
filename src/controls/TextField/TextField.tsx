@@ -28,6 +28,7 @@ export interface TextFieldProps<T extends FieldValues> {
   variant?: 'standard' | 'filled' | 'outlined';
   disabled?: boolean;
   fullWidth?: boolean;
+  readonly?: boolean;
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -41,8 +42,10 @@ export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
       borderColor: '#f37246',
     },
   },
-  '& .Mui-disabled': {
-    backgroundColor: theme.palette.background.disabled,
+  '& .MuiInput-root': {
+    '&.Mui-focused fieldset': {
+      borderColor: '#f37246',
+    },
   },
 }));
 
@@ -56,6 +59,7 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     variant = 'outlined',
     disabled = false,
     fullWidth = true,
+    readonly = false,
   } = props;
 
   const { register, formState, setValue, watch, control } = useFormContext();
@@ -78,7 +82,7 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
         id={name}
         disabled={disabled}
         fullWidth={fullWidth}
-        variant={isReadOnly || disabled ? 'standard' : variant}
+        variant={isReadOnly || readonly ? 'standard' : variant}
         error={!!formState.errors[name]}
         helperText={
           formState.errors[name]?.message
@@ -89,7 +93,7 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && (
+              {watch(name) && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
@@ -115,6 +119,7 @@ export const PriceTextField = <T extends FieldValues>(
     value = '',
     disabled = false,
     fullWidth = true,
+    readonly = false,
   } = props;
   const { register, formState, setValue, watch, trigger, control } =
     useFormContext();
@@ -173,7 +178,7 @@ export const PriceTextField = <T extends FieldValues>(
         id={name}
         disabled={disabled}
         fullWidth={fullWidth}
-        variant={variant}
+        variant={isReadOnly || readonly ? 'standard' : variant}
         error={!!formState.errors[name]}
         helperText={
           formState.errors[name]?.message
@@ -184,7 +189,7 @@ export const PriceTextField = <T extends FieldValues>(
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && (
+              {watch(name) && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
@@ -197,39 +202,6 @@ export const PriceTextField = <T extends FieldValues>(
         onFocus={onFocusHandle}
       />
     </InputLayout>
-  );
-};
-
-export const DataGridTextField = <T extends FieldValues>(
-  props: TextFieldProps<T>
-) => {
-  const {
-    name,
-    variant = 'outlined',
-    disabled = false,
-    fullWidth = true,
-    value,
-  } = props;
-  const { register, formState, control } = useFormContext();
-  const isReadOnly = control?._options?.context[0];
-  return (
-    <StyledTextFiled
-      id={name}
-      defaultValue={value}
-      disabled={disabled}
-      fullWidth={fullWidth}
-      variant={variant}
-      error={!!formState.errors[name]}
-      helperText={
-        formState.errors[name]?.message
-          ? String(formState.errors[name]?.message)
-          : null
-      }
-      {...register(name)}
-      InputProps={{
-        readOnly: isReadOnly,
-      }}
-    />
   );
 };
 
@@ -247,6 +219,7 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
     variant = 'outlined',
     disabled = false,
     fullWidth = true,
+    readonly = false,
     onBlur,
   } = props;
 
@@ -289,7 +262,7 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
         id={name}
         disabled={disabled}
         fullWidth={fullWidth}
-        variant={variant}
+        variant={isReadOnly || readonly ? 'standard' : variant}
         error={!!formState.errors[name]}
         helperText={
           formState.errors[name]?.message
@@ -300,7 +273,7 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && (
+              {watch(name) && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>

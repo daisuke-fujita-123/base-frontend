@@ -7,7 +7,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import { styled } from '@mui/material';
+import { IconButton, styled } from '@mui/material';
 import { default as ButtonMui } from '@mui/material/Button';
 
 interface ButtonProps {
@@ -25,6 +25,7 @@ interface ButtonProps {
     | 'warning';
   bgColor?: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  size?: 'small' | 'medium' | 'large';
 }
 export const Button = (props: ButtonProps) => {
   const {
@@ -64,6 +65,15 @@ const StyledAddButton = styled(ButtonMui)({
   },
 });
 
+export const PrimaryButton = (props: ButtonProps) => {
+  const { children, disable = false, onClick, size } = props;
+  return (
+    <StyledAddButton disabled={disable} onClick={onClick} size={size}>
+      {children}
+    </StyledAddButton>
+  );
+};
+
 export const AddButton = (props: ButtonProps) => {
   const { children, disable = false, onClick } = props;
   return (
@@ -75,6 +85,25 @@ export const AddButton = (props: ButtonProps) => {
     >
       {children}
     </StyledAddButton>
+  );
+};
+
+const StyledAddIconButton = styled(IconButton)({
+  color: theme.palette.primaryButton.color,
+  width: theme.spacing(7),
+  height: theme.spacing(7),
+  '& .MuiSvgIcon-root': {
+    width: theme.spacing(7),
+    height: theme.spacing(7),
+  },
+});
+
+export const AddIconButton = (props: ButtonProps) => {
+  const { children, onClick } = props;
+  return (
+    <StyledAddIconButton onClick={onClick}>
+      <AddCircleOutlineIcon>{children}</AddCircleOutlineIcon>
+    </StyledAddIconButton>
   );
 };
 
