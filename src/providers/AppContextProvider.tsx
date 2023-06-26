@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Dialog } from 'controls/Dialog';
 
-import { comApiClient } from './ApiClient';
+import { _expApiClient } from './ApiClient';
 import { MessageContext } from './MessageProvider';
 
 const dialogInfos = [
@@ -87,12 +87,13 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const initialize = async () => {
-      const response = await comApiClient.get('/com/user');
-      setAppContext((prev) => ({ ...prev, user: response.data }));
-    };
     initialize();
   }, []);
+
+  const initialize = async () => {
+    const response = await _expApiClient.get('/_exp/user');
+    setAppContext((prev) => ({ ...prev, user: response.data }));
+  };
 
   const navigateTo = (to: string) => {
     if (appContext.needsConfitmTransition) {

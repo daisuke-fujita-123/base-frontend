@@ -27,7 +27,7 @@ const GlobalLayout = () => {
       }}
     >
       {/* Top */}
-      <Box sx={{ ...flexRowSx, height: 58 }}>
+      <Box sx={{ ...flexRowSx, minHeight: 58, height: 58 }}>
         {/* Logo */}
         <Box sx={{ ...flexColSx, width: 236, mr: 10, ml: 3 }}>Logo</Box>
         <Box

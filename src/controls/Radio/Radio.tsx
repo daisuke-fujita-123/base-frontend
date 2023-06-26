@@ -3,18 +3,22 @@ import { FieldValues, Path, useFormContext } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
 
-import { FormHelperText, Stack, Typography } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import RadioGroup from '@mui/material/RadioGroup';
+import {
+  FormControl,
+  FormHelperText,
+  RadioGroup,
+  Stack,
+  Typography,
+} from '@mui/material';
 
-interface RadioOptions {
-  value: string;
-  valueLabel: string;
-  disabled: boolean;
+interface RadioValue {
+  value: string | number;
+  displayValue: string;
+  disabled?: boolean;
 }
 export interface RadioProps<T extends FieldValues> {
   name: Path<T>;
-  radioOptions: RadioOptions[];
+  radioValues: RadioValue[];
   label?: string;
   labelPosition?: 'above' | 'side';
   required?: boolean;
@@ -27,7 +31,7 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
     labelPosition,
     required = false,
     name,
-    radioOptions,
+    radioValues,
     row = true,
   } = props;
 
@@ -42,7 +46,7 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
     >
       <FormControl error={!!formState.errors[name]}>
         <RadioGroup row={row} {...register(name)}>
-          {radioOptions.map((value, index) => {
+          {radioValues.map((value, index) => {
             return (
               <Stack
                 key={index}
@@ -60,7 +64,7 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
                   {...register(name)}
                 />
                 <Typography variant='h6' fontSize={'1rem'}>
-                  {value.valueLabel}
+                  {value.displayValue}
                 </Typography>
               </Stack>
             );

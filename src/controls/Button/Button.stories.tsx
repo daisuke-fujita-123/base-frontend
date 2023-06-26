@@ -7,10 +7,12 @@ import { ThemeProvider } from '@mui/material/styles';
 import { action } from '@storybook/addon-actions';
 import {
   AddButton,
+  AddIconButton,
   Button,
   CancelButton,
   DeleteButton,
   LogoutButton,
+  PrimaryButton,
   SearchButton,
 } from './Button';
 
@@ -89,6 +91,10 @@ export const Example = () => {
       <LogoutButton disable={false} onClick={onClickFunction}>
         ログアウト
       </LogoutButton>
+      <AddIconButton></AddIconButton>
+      <PrimaryButton onClick={onClickFunction} size='small'>
+        small
+      </PrimaryButton>
     </ThemeProvider>
   );
 };

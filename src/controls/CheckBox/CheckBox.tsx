@@ -1,16 +1,18 @@
 import React from 'react';
 import { FieldValues, Path, useFormContext } from 'react-hook-form';
 
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
+import {
+  Checkbox as MuiCheckbox,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+} from '@mui/material';
 
 interface CheckBoxOptions {
-  value: string;
-  valueLabel: string;
+  value?: string;
+  displayValue: string;
   defaultChecked?: boolean;
-  disabled: boolean;
+  disabled?: boolean;
 }
 export interface CheckBoxProps<T extends FieldValues> {
   name: Path<T>;
@@ -18,7 +20,7 @@ export interface CheckBoxProps<T extends FieldValues> {
   checkOptions: CheckBoxOptions[];
 }
 
-export const CheckBox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
+export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
   const { name, required, checkOptions } = props;
 
   const { register, formState, control } = useFormContext();
@@ -34,8 +36,8 @@ export const CheckBox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
               id={name}
               value={value.value}
               required={required}
-              control={<Checkbox defaultChecked={value.defaultChecked} />}
-              label={value.valueLabel}
+              control={<MuiCheckbox defaultChecked={value.defaultChecked} />}
+              label={value.displayValue}
               disabled={isReadOnly}
               {...register(name)}
             />

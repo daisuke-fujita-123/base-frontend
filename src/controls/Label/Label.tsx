@@ -26,8 +26,8 @@ export const RequiredLabel = () => {
 
 const StyledWarningLabel = styled('div')({
   background: theme.palette.warning.light,
-  width: theme.spacing(30),
-  height: theme.spacing(8),
+  width: theme.spacing(18),
+  height: theme.spacing(6),
   border: `2px solid  ${theme.palette.warning.main}`,
   alignItems: 'center',
   display: 'flex',

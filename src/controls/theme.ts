@@ -113,7 +113,6 @@ export const theme = createTheme({
       lineHeight: 1.5,
     },
   },
-
   spacing: 5,
   components: {
     // ボタンの共通レイアウト
@@ -123,7 +122,7 @@ export const theme = createTheme({
           borderRadius: 10,
         },
         sizeLarge: {
-          width: 150,
+          minWidth: 150,
           height: 40,
           fontSize: 18,
           startIcon: {
@@ -131,7 +130,7 @@ export const theme = createTheme({
           },
         },
         sizeMedium: {
-          width: 120,
+          minWidth: 120,
           height: 30,
           fontSize: 13,
           startIcon: {
@@ -139,7 +138,7 @@ export const theme = createTheme({
           },
         },
         sizeSmall: {
-          width: 95,
+          minWidth: 95,
           height: 40,
           fontSize: 13,
         },
@@ -155,6 +154,7 @@ export const theme = createTheme({
           borderColor: '#bbbbbbb',
           minWidth: 225,
           maxWidth: 1550,
+          background: '#ffffff',
         },
       },
     },

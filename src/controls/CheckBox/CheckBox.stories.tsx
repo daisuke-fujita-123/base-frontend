@@ -2,19 +2,19 @@ import { ComponentMeta } from '@storybook/react';
 import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
+import { Button } from 'controls/Button';
+import { Checkbox } from 'controls/CheckBox';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { CheckBox } from './CheckBox';
 
 export default {
-  component: CheckBox,
+  component: Checkbox,
   parameters: { controls: { expanded: true } },
   argTypes: {
     label: {
       description: 'ラベルの表示名。ラベルが不要な場合は空文字。',
     },
-
     required: {
       description: '必須かどうか',
       defaultValue: { summary: 'true' },
@@ -31,15 +31,11 @@ export default {
       defaultValue: { summary: 'row' },
     },
   },
-} as ComponentMeta<typeof CheckBox>;
+} as ComponentMeta<typeof Checkbox>;
 
-const CheckBoxSample = [
-  { value: 'available', valueLabel: '可', disabled: false },
-  { value: 'notAvailable', valueLabel: '不可', disabled: false },
-];
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface SampleInput {
-  sampleName: string;
+  cancelFlag: boolean;
 }
 
 export const Example = () => {
@@ -48,22 +44,24 @@ export const Example = () => {
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: {
-      sampleName: 'available',
+      cancelFlag: false,
     },
     context: isReadOnly,
   });
+
   const CheckBoxSample = [
-    { value: 'available', valueLabel: '可', disabled: false },
-    { value: 'notAvailable', valueLabel: '不可', disabled: false },
+    { value: 'cancelFlag', displayValue: 'キャンセルフラグ' },
   ];
+
+  const handleClick = () => {
+    console.log(methods.getValues('cancelFlag'));
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <FormProvider {...methods}>
-        <CheckBox
-          required={false}
-          name='sampleName'
-          checkOptions={CheckBoxSample}
-        />
+        <Checkbox name='cancelFlag' checkOptions={CheckBoxSample} />
+        <Button onClick={handleClick}>click</Button>
       </FormProvider>
     </ThemeProvider>
   );

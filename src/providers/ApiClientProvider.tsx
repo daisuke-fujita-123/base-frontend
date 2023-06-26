@@ -8,7 +8,13 @@ import React, {
 
 import { Dialog } from 'controls/Dialog';
 
-import { comApiClient, memApiClient } from 'providers/ApiClient';
+import {
+  _expApiClient,
+  comApiClient,
+  docApiClient,
+  memApiClient,
+  traApiClient,
+} from 'providers/ApiClient';
 
 import { AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { AppContext } from './AppContextProvider';
@@ -96,29 +102,52 @@ const ApiClientProvider = (props: ApiClientProviderProps) => {
   };
 
   useEffect(() => {
-    const requestInterceptor = memApiClient.interceptors.request.use(
+    const memRequestInterceptor = memApiClient.interceptors.request.use(
       requestInterceptorHandler
     );
-
-    const responseInterceptor = memApiClient.interceptors.response.use(
+    const memResponseInterceptor = memApiClient.interceptors.response.use(
       responseInterceptorHandler,
       errorInterceptorHandler
     );
-
+    const traRequestInterceptor = comApiClient.interceptors.request.use(
+      requestInterceptorHandler
+    );
+    const traResponseInterceptor = comApiClient.interceptors.response.use(
+      responseInterceptorHandler,
+      errorInterceptorHandler
+    );
+    const docRequestInterceptor = comApiClient.interceptors.request.use(
+      requestInterceptorHandler
+    );
+    const docResponseInterceptor = comApiClient.interceptors.response.use(
+      responseInterceptorHandler,
+      errorInterceptorHandler
+    );
     const comRequestInterceptor = comApiClient.interceptors.request.use(
       requestInterceptorHandler
     );
-
     const comResponseInterceptor = comApiClient.interceptors.response.use(
       responseInterceptorHandler,
       errorInterceptorHandler
     );
-
+    const _expRequestInterceptor = comApiClient.interceptors.request.use(
+      requestInterceptorHandler
+    );
+    const _expResponseInterceptor = comApiClient.interceptors.response.use(
+      responseInterceptorHandler,
+      errorInterceptorHandler
+    );
     return () => {
-      memApiClient.interceptors.request.eject(requestInterceptor);
-      memApiClient.interceptors.response.eject(responseInterceptor);
+      memApiClient.interceptors.request.eject(memRequestInterceptor);
+      memApiClient.interceptors.response.eject(memResponseInterceptor);
+      traApiClient.interceptors.request.eject(traRequestInterceptor);
+      traApiClient.interceptors.response.eject(traResponseInterceptor);
+      docApiClient.interceptors.request.eject(docRequestInterceptor);
+      docApiClient.interceptors.response.eject(docResponseInterceptor);
       comApiClient.interceptors.request.eject(comRequestInterceptor);
       comApiClient.interceptors.response.eject(comResponseInterceptor);
+      _expApiClient.interceptors.request.eject(_expRequestInterceptor);
+      _expApiClient.interceptors.response.eject(_expResponseInterceptor);
     };
   });
 

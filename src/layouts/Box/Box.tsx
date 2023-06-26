@@ -13,6 +13,7 @@ interface BoxProps {
   onSubmit?: FormEventHandler;
   height?: string | number;
   width?: string | number;
+  display?: string;
 }
 
 export const Box = (props: BoxProps) => {
@@ -41,6 +42,7 @@ const StyledDefaultBox = styled(BoxMui)({
   border: `1px solid  transparent`,
   background: 'transparent',
   marginBottom: theme.spacing(4),
+  padding: theme.spacing(4),
 });
 
 const StyledWhiteBox = styled(BoxMui)({
@@ -48,6 +50,7 @@ const StyledWhiteBox = styled(BoxMui)({
   background: theme.palette.background.paper,
   boxShadow: '0px 3px 3px rgba(0,0,0,0.3)',
   marginBottom: theme.spacing(4),
+  padding: theme.spacing(4),
 });
 
 const StyledDisableBox = styled(BoxMui)({
@@ -55,6 +58,7 @@ const StyledDisableBox = styled(BoxMui)({
   background: theme.palette.background.disabled,
   boxShadow: '0px 3px 3px rgba(0,0,0,0.3)',
   marginBottom: theme.spacing(4),
+  padding: theme.spacing(4),
 });
 
 interface StyledBoxProps {
@@ -158,6 +162,29 @@ export const LeftBox = (props: BoxProps) => {
   );
 };
 
+export const TopBox = (props: BoxProps) => {
+  const { children, height, width } = props;
+  return (
+    <BoxMui
+      display='flex'
+      alignItems='flex-start'
+      height={height}
+      width={width}
+    >
+      {children}
+    </BoxMui>
+  );
+};
+
+export const BottomBox = (props: BoxProps) => {
+  const { children, height, width } = props;
+  return (
+    <BoxMui display='flex' alignItems='flex-end' height={height} width={width}>
+      {children}
+    </BoxMui>
+  );
+};
+
 interface MarginBoxProps extends BoxProps {
   mt?: number;
   mb?: number;
@@ -167,7 +194,7 @@ interface MarginBoxProps extends BoxProps {
 }
 
 export const MarginBox = (props: MarginBoxProps) => {
-  const { children, mt, mb, ml, mr, gap } = props;
+  const { children, mt = 0, mb = 0, ml = 0, mr = 0, gap = 0 } = props;
   return (
     <BoxMui
       display='flex'

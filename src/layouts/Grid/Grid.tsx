@@ -17,6 +17,8 @@ interface GridProps {
   spacing?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
   columns?: ResponsiveStyleValue<number>;
   width?: number;
+  height?: string | number;
+  size?: 's' | 'm' | 'l' | 'el';
 }
 
 // 型のみエクスポート
@@ -37,8 +39,18 @@ export const Grid = (props: GridProps) => {
     flexDirection = 'row',
     columns,
     width,
+    height,
+    size,
     ...other
   } = props;
+
+  const areaWidth = () => {
+    if (size === 's') return 225 + 40;
+    else if (size === 'm') return 490 + 40;
+    else if (size === 'l') return 755 + 40;
+    else if (size === 'el') return 1550 + 40;
+    else return 0;
+  };
 
   return (
     <GridMui
@@ -52,7 +64,8 @@ export const Grid = (props: GridProps) => {
       spacing={spacing}
       flexDirection={flexDirection}
       columns={columns}
-      width={width}
+      width={item ? areaWidth() : width}
+      height={height}
       {...other}
     >
       {children}

@@ -17,7 +17,7 @@ export const FromTo = (props: FromToProps) => {
     return (
       <InputStack>
         <LabelStack>
-          <Typography>{label}</Typography>
+          <Typography bold>{label}</Typography>
         </LabelStack>
         <InputRowStack>
           {children[0]}
@@ -30,7 +30,7 @@ export const FromTo = (props: FromToProps) => {
   return (
     <InputStack>
       <LabelStack>
-        <Typography>{label}</Typography>
+        <Typography bold>{label}</Typography>
         <InputRowStack>
           {children[0]}
           <Typography>~</Typography>
