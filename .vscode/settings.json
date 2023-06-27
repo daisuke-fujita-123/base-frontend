@@ -5,15 +5,5 @@
   "html.format.enable": false,
   "javascript.format.enable": false,
   "importSorter.generalConfiguration.configurationFilePath": "./import-sorter.json",
-  "importSorter.generalConfiguration.sortOnBeforeSave": true,
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
-  "editor.minimap.enabled": false,
-  "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  "importSorter.generalConfiguration.sortOnBeforeSave": true
 }
