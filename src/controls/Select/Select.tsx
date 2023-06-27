@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FieldValues, Path, useFormContext } from 'react-hook-form';
 
+import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
 
+import { AddIconButton } from 'controls/Button';
 import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
@@ -32,6 +34,7 @@ export interface SelectProps<T extends FieldValues> {
   blankOption?: boolean;
   required?: boolean;
   minWidth?: number;
+  isAddble?: boolean;
 }
 
 export const StyledFormControl = styled(FormControl)(({ error }) => ({
@@ -84,6 +87,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
         {selectValues.length < 10 ? (
           <StyledFormControl fullWidth error={!!formState.errors[name]}>
             <SelectMui
+              disabled={disabled}
               value={multiple ? omitBlankValue(crrentValue) : crrentValue}
               {...register(name)}
               multiple={multiple}
@@ -140,6 +144,79 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
           />
         )}
       </Box>
+    </InputLayout>
+  );
+};
+
+export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
+  const {
+    label,
+    labelPosition = 'above',
+    name,
+    selectValues,
+    disabled = false,
+    blankOption = false,
+    required = false,
+    minWidth = 100,
+  } = props;
+
+  const { register, formState, watch, control } = useFormContext();
+
+  const crrentValue = watch(name);
+
+  const [selectRows, SetSelectRows] = useState<string[]>(['']);
+
+  const handleClick = () => {
+    SetSelectRows((prev) => [...prev, '']);
+  };
+  const isReadOnly = control?._options?.context[0];
+
+  return (
+    <InputLayout
+      label={label}
+      labelPosition={labelPosition}
+      required={required}
+    >
+      <Grid container width={490}>
+        <Grid item xs={11}>
+          {selectRows.map((val: string, index: number) => {
+            return (
+              <Box key={index} mb={2}>
+                <Box sx={{ minWidth: minWidth, height: 30 }}>
+                  <StyledFormControl fullWidth error={!!formState.errors[name]}>
+                    <SelectMui
+                      disabled={disabled}
+                      value={crrentValue}
+                      {...register(name)}
+                      sx={{ textAlign: 'left' }}
+                      inputProps={{
+                        readOnly: isReadOnly,
+                      }}
+                    >
+                      {blankOption && <MenuItem value=''>{'　'}</MenuItem>}
+                      {selectValues.map((option, index) => (
+                        <MenuItem key={index} value={option.value}>
+                          {option.displayValue}
+                        </MenuItem>
+                      ))}
+                    </SelectMui>
+                    <FormHelperText>
+                      {formState.errors[name]?.message
+                        ? String(formState.errors[name]?.message)
+                        : null}
+                    </FormHelperText>
+                  </StyledFormControl>
+                </Box>
+              </Box>
+            );
+          })}
+        </Grid>
+        <Grid item xs={1}>
+          <Box mb={2}>
+            <AddIconButton onClick={handleClick} />
+          </Box>
+        </Grid>
+      </Grid>
     </InputLayout>
   );
 };

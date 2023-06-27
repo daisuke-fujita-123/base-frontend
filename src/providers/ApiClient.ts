@@ -13,10 +13,46 @@ export const memApiClient = axios.create({
 });
 
 /**
+ * traApiClient
+ */
+export const traApiClient = axios.create({
+  baseURL: 'http://localhost:8081',
+  // withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 60000,
+});
+
+/**
+ * docApiClient
+ */
+export const docApiClient = axios.create({
+  baseURL: 'http://localhost:8082',
+  // withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 60000,
+});
+
+/**
  * comApiClient
  */
 export const comApiClient = axios.create({
-  baseURL: 'http://localhost:8081',
+  baseURL: 'http://localhost:8083',
+  // withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 60000,
+});
+
+/**
+ * _expApiClient
+ */
+export const _expApiClient = axios.create({
+  baseURL: 'http://localhost:8084',
   // withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

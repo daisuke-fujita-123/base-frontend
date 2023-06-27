@@ -24,7 +24,8 @@ export const Link = (props: LinkProps) => {
   ) => {
     event.preventDefault();
     if (onClick === undefined) return;
-    onClick(event.currentTarget.href);
+    // TODO hrefにしないとクエリパラメータ・ハッシュが含まれないので要変更
+    onClick(event.currentTarget.pathname);
   };
 
   return (

@@ -6,7 +6,7 @@ import { Button } from 'controls/Button';
 import { theme } from 'controls/theme';
 import { SubTitle } from 'controls/Typography';
 
-import { Box, styled } from '@mui/material';
+import { Stack, styled } from '@mui/material';
 import { default as AccordionMui } from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
@@ -59,7 +59,7 @@ export const Section = (props: SectionProps) => {
   const flexColSx = { display: 'flex', flexDirection: 'column' };
   return (
     <>
-      {!expanded && (
+      {!expanded && isSearch && (
         <RightBox>
           <Button
             onClick={() => {
@@ -70,7 +70,7 @@ export const Section = (props: SectionProps) => {
           </Button>
         </RightBox>
       )}
-      <SubTitle>{name}</SubTitle>
+      <SubTitle onClick={onClick}>{name}</SubTitle>
       <ContentsBox transparent={isTransparent} disable={isSearch}>
         <StyledAccordion expanded={expanded}>
           {!expanded && (
@@ -80,19 +80,23 @@ export const Section = (props: SectionProps) => {
           )}
           {expanded && <RightBox>{decoration}</RightBox>}
           <AccordionDetails>
-            <Box sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Box>
+            <Stack sx={{ ...flexColSx, flexGrow: 1 }} spacing={4}>
+              {children}
+            </Stack>
           </AccordionDetails>
-          <RightBox>
-            <MarginBox mt={2} mb={2} ml={2} mr={2}>
-              <Button
-                onClick={() => {
-                  onClick();
-                }}
-              >
-                ^
-              </Button>
-            </MarginBox>
-          </RightBox>
+          {isSearch && (
+            <RightBox>
+              <MarginBox mt={2} mb={2} ml={2} mr={2}>
+                <Button
+                  onClick={() => {
+                    onClick();
+                  }}
+                >
+                  ^
+                </Button>
+              </MarginBox>
+            </RightBox>
+          )}
         </StyledAccordion>
       </ContentsBox>
     </>

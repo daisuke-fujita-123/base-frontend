@@ -219,6 +219,10 @@ const Pagination = (props: PaginationProps) => {
  */
 export interface GridColDef extends MuiGridColDef {
   /**
+   * size
+   */
+  size?: 'ss' | 's' | 'm' | 'l';
+  /**
    * cellType
    */
   cellType?: 'default' | 'input' | 'select' | 'link';
@@ -273,6 +277,7 @@ export interface DataGridProps extends MuiDataGridProProps {
 export const DataGrid = (props: DataGridProps) => {
   const {
     columns,
+    columnGroupingModel = undefined,
     rows,
     tooltips,
     hrefs,
@@ -280,13 +285,12 @@ export const DataGrid = (props: DataGridProps) => {
     /** sorting */
     /** filtering */
     /** pagination */
-    pageSize,
+    pageSize = undefined,
     /** selection */
     checkboxSelection = false,
     /** misc */
     onRowChange,
     onLinkClick, // cellType = 'link'
-    components,
   } = props;
 
   // ref
@@ -352,6 +356,20 @@ export const DataGrid = (props: DataGridProps) => {
 
   // 独自のカラム定義からMUI DataGridのカラム定義へ変換
   const muiColumns: MuiGridColDef[] = columns.map((value) => {
+    let width = 80;
+    if (value.size === 'ss') {
+      width = 80;
+    }
+    if (value.size === 's') {
+      width = 100;
+    }
+    if (value.size === 'm') {
+      width = 150;
+    }
+    if (value.size === 'l') {
+      width = 300;
+    }
+
     let renderCell = undefined;
     if (value.cellType === 'input') {
       renderCell = generateInputCell;
@@ -368,14 +386,23 @@ export const DataGrid = (props: DataGridProps) => {
 
     return {
       ...value,
+      width: width,
       renderCell: renderCell,
     };
   });
+
+  const components =
+    pageSize !== undefined
+      ? {
+          Pagination: () => <Pagination total={rows.length} />,
+        }
+      : undefined;
 
   return (
     <Box height={492}>
       <StyledDataGrid
         columns={muiColumns}
+        columnGroupingModel={columnGroupingModel}
         rows={rows}
         initialState={initialState}
         /** size */
@@ -389,12 +416,13 @@ export const DataGrid = (props: DataGridProps) => {
         checkboxSelection={checkboxSelection}
         /** misc */
         showCellRightBorder
-        // components={components}
-        components={{
-          Pagination: () => <Pagination total={rows.length} />,
-        }}
+        hideFooter={pageSize === undefined}
+        components={components}
         processRowUpdate={handleProcessRowUpdate}
-        experimentalFeatures={{ newEditingApi: true }}
+        experimentalFeatures={{
+          columnGrouping: true,
+          newEditingApi: true,
+        }}
       />
     </Box>
   );
