@@ -714,16 +714,14 @@ const ScrCom0024Page = () => {
                         label='ホンダグループ'
                         name='hondaGroupFlag'
                         required
-                        radioOptions={[
+                        radioValues={[
                           {
                             value: 'hondaTarget',
-                            valueLabel: '対象',
-                            disabled: false,
+                            displayValue: '対象',
                           },
                           {
                             value: 'hondaUnTarget',
-                            valueLabel: '対象外',
-                            disabled: false,
+                            displayValue: '対象外',
                           },
                         ]}
                       />
@@ -752,15 +750,15 @@ const ScrCom0024Page = () => {
                         label='おまとめ会場'
                         name='omatomePlaceFlag'
                         required
-                        radioOptions={[
+                        radioValues={[
                           {
                             value: 'target',
-                            valueLabel: '対象',
+                            displayValue: '対象',
                             disabled: false,
                           },
                           {
                             value: 'unTarget',
-                            valueLabel: '対象外',
+                            displayValue: '対象外',
                             disabled: false,
                           },
                         ]}
@@ -794,15 +792,15 @@ const ScrCom0024Page = () => {
                         label='利用フラグ'
                         name='useFlag'
                         required
-                        radioOptions={[
+                        radioValues={[
                           {
                             value: 'yes',
-                            valueLabel: '可',
+                            displayValue: '可',
                             disabled: false,
                           },
                           {
                             value: 'no',
-                            valueLabel: '不可',
+                            displayValue: '不可',
                             disabled: false,
                           },
                         ]}
@@ -898,15 +896,15 @@ const ScrCom0024Page = () => {
                       <Radio
                         label='書類発送指示'
                         name='instructionsForSendingDocuments'
-                        radioOptions={[
+                        radioValues={[
                           {
                             value: 'sendingDocumentsTarget',
-                            valueLabel: '対象',
+                            displayValue: '対象',
                             disabled: false,
                           },
                           {
                             value: 'sendingDocumentsUnTarget',
-                            valueLabel: '対象外',
+                            displayValue: '対象外',
                             disabled: false,
                           },
                         ]}
@@ -921,15 +919,15 @@ const ScrCom0024Page = () => {
                       <Radio
                         label='指示対象'
                         name='referent'
-                        radioOptions={[
+                        radioValues={[
                           {
                             value: 'meberDirectDelivery',
-                            valueLabel: '会員直送&AUC宛',
+                            displayValue: '会員直送&AUC宛',
                             disabled: false,
                           },
                           {
                             value: 'onlyAuc',
-                            valueLabel: 'AUC宛のみ',
+                            displayValue: 'AUC宛のみ',
                             disabled: false,
                           },
                         ]}
@@ -986,15 +984,15 @@ const ScrCom0024Page = () => {
                       <Radio
                         label='出金設定'
                         name='paymentConfig'
-                        radioOptions={[
+                        radioValues={[
                           {
                             value: 'bulk',
-                            valueLabel: '一括',
+                            displayValue: '一括',
                             disabled: false,
                           },
                           {
                             value: 'eachTime',
-                            valueLabel: '都度',
+                            displayValue: '都度',
                             disabled: false,
                           },
                         ]}
@@ -1059,15 +1057,15 @@ const ScrCom0024Page = () => {
                       <Radio
                         label='支払通知'
                         name='paymentNotice'
-                        radioOptions={[
+                        radioValues={[
                           {
                             value: 'paymentNoticeTarget',
-                            valueLabel: '対象',
+                            displayValue: '対象',
                             disabled: false,
                           },
                           {
                             value: 'paymentNoticeUnTarget',
-                            valueLabel: '対象外',
+                            displayValue: '対象外',
                             disabled: false,
                           },
                         ]}
