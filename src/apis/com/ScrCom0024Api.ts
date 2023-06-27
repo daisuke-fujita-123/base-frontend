@@ -1,3 +1,4 @@
+import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032';
 import { comApiClient } from 'providers/ApiClient';
 
 /** SCR-COM-0024-0001: ライブ会場データ取得API リクエスト */
@@ -22,9 +23,9 @@ export interface ScrCom0024GetPlaceDataResponse {
     useFlag: boolean;
     /** 提携開始日 */
     partnerStartDate: string;
-    /** 開催曜日 */
+    /** 開催曜日区分 */
     sessionWeekKind: string;
-    /** 契約ID */
+    /** 会場契約ID */
     contractId: string;
     /** 法人ID */
     corporationId: string;
@@ -46,17 +47,17 @@ export interface ScrCom0024GetPlaceDataResponse {
     posPutTogetherPlaceCode: string;
     /** POSまとめ会場名 */
     posPutTogetherPlaceName: string;
-    /** ホンダグループ */
-    hondaGroup: string;
+    /** ホンダグループフラグ */
+    hondaGroupFlag: boolean;
     /** 保証金 */
-    guaranteeDeposit: string;
+    guaranteeDeposit: number;
     /** ライブ会場グループコード */
     livePlaceGroupCode: string;
     /** 書類発送指示フラグ */
     documentShippingInstructionFlag: boolean;
-    /** 指示対象フラグ */
+    /** 書類発送会場直送フラグ */
     documentShippingPlaceDirectDeliveryFlag: boolean;
-    /** 担当者 */
+    /** 書類発送担当者 */
     documentShippingStaff: string;
     /** 書類発送メールアドレス */
     documentShippingMailAddress: string;
@@ -64,7 +65,7 @@ export interface ScrCom0024GetPlaceDataResponse {
     documentShippingFaxNumber: string;
     /** 出金期日 */
     paymentDueDate: string;
-    /** 出金設定 */
+    /** 出金一括フラグ */
     paymentAllFlag: boolean;
     /** 振込銀行名 */
     bankName: string;
@@ -76,7 +77,7 @@ export interface ScrCom0024GetPlaceDataResponse {
     accountNumber: string;
     /** 口座名義 */
     accountNameKana: string;
-    /** バーチャル口座付与ルール */
+    /** バーチャル口座付与ルールコード */
     virtualAccountGiveRuleCode: string;
     /** 支払通知フラグ */
     paymentNoticeFlag: boolean;
@@ -86,15 +87,15 @@ export interface ScrCom0024GetPlaceDataResponse {
     paymentNoticeMailAddress: string;
     /** 支払通知FAX番号 */
     paymentNoticeFaxNumber: string;
-    /** 入金元銀行名 */
+    /** 入金元銀行コード */
     receiptSourceBankCode: string;
-    /** 入金元支店名 */
+    /** 入金元支店コード */
     receiptSourceBranchCode: string;
-    /** 入金元口座名義 */
+    /** 入金元口座名義カナ */
     receiptSourceAccountNameKana: string;
     /** 会場会員管理担当メールアドレス */
     placeMemberManagementStaffMailAddress: string;
-    /** おまとめ会場連絡不可対象 */
+    /** おまとめ会場連絡不可対象区分 */
     omatomePlaceContactImpossibleTargetedKind: string;
 }
 
@@ -131,7 +132,7 @@ export interface ScrCom0024GetContractDataResponse {
 
 
 /** SCR-COM-0024-0003: 会場詳細入力チェックAPI リクエスト */
-export interface ScrCom0024GetContractDataRequest {
+export interface ScrCom0024PlaceDetailCheckRequest {
     /** 会場コード */
     placeCd: string;
     /** 会場名 */
@@ -140,17 +141,85 @@ export interface ScrCom0024GetContractDataRequest {
 
 
 /** SCR-COM-0024-0003: 会場詳細入力チェックAPI レスポンス */
-export interface ScrCom0024GetContractDataResponse {
+export interface ScrCom0024PlaceDetailCheckResponse {
     // リスト
     errorList: ErrorList[];
 }
 
-// SCR-COM-0024-0003: 会場詳細入力チェックAPI レスポンス（リスト行）
+/** SCR-COM-0024-0003: 会場詳細入力チェックAPI レスポンス（リスト行） */
 export interface ErrorList {
     // エラーコード
     errorCode: string;
     // エラーメッセージ
     errorMessage: string;
+}
+
+/** SCR-COM-0024-0004: 会場詳細登録更新API リクエスト */
+export interface ScrCom0024RegistUpdatePlaceDetailRequest {
+    /** 会場コード */
+    placeCode: string;
+    /** 会場名 */
+    placeName: string;
+    /** おまとめ会場フラグ */
+    omatomePlaceFlag: boolean;
+    /** 計算表示会場名 */
+    statementDisplayPlaceName: string;
+    /** 利用フラグ */
+    useFlag: boolean;
+    /** 提携開始日 */
+    partnerStartDate: string;
+    /** 開催曜日区分 */
+    sessionWeekKind: string;
+    /** 会場契約ID */
+    contractId: string;
+    /** 会場グループコード */
+    placeGroupCode: string;
+    /** 支払先会場コード */
+    paymentDestinationPlaceCode: string;
+    /** POSまとめ会場コード */
+    posPutTogetherPlaceCode: string;
+    /** ホンダグループフラグ */
+    hondaGroupFlag: boolean;
+    /** 保証金 */
+    guaranteeDeposit: number;
+    /** ライブ会場グループコード */
+    livePlaceGroupCode: string;
+    /** 書類発送指示フラグ */
+    documentShippingInstructionFlag: boolean;
+    /** 書類発送会場直送フラグ */
+    documentShippingPlaceDirectDeliveryFlag: boolean;
+    /** 書類発送担当者 */
+    documentShippingStaff: string;
+    /** 書類発送メールアドレス */
+    documentShippingMailAddress: string;
+    /** 書類発送FAX番号 */
+    documentShippingFaxNumber: string;
+    /** 出金期日 */
+    paymentDueDate: string;
+    /** 出金一括フラグ */
+    paymentAllFlag: boolean;
+    /** バーチャル口座付与ルールコード */
+    virtualAccountGiveRuleCode: string;
+    /** 支払通知フラグ */
+    paymentNoticeFlag: boolean;
+    /** 支払通知担当者 */
+    paymentNoticeStaff: string;
+    /** 支払通知メールアドレス */
+    paymentNoticeMailAddress: string;
+    /** 支払通知FAX番号 */
+    paymentNoticeFaxNumber: string;
+    /** 入金元銀行コード */
+    receiptSourceBankCode: string;
+    /** 入金元支店コード */
+    receiptSourceBranchCode: string;
+    /** 入金元口座名義カナ */
+    receiptSourceAccountNameKana: string;
+    /** 会場会員管理担当メールアドレス */
+    placeMemberManagementStaffMailAddress: string;
+    /** おまとめ会場連絡不可対象区分 */
+    omatomePlaceContactImpossibleTargetedKind: string;
+    /** 申請従業員ID */
+    applicationEmployeeId: string;
 }
 
 
@@ -180,8 +249,8 @@ export const ScrCom0024GetContractData = async (
 
 /** SCR-COM-0024-0003: 会場詳細入力チェックAPI */
 export const ScrCom0024PlaceDetailCheck = async (
-    request: ScrCom0024GetContractDataRequest
-): Promise<ScrCom0024GetContractDataResponse> => {
+    request: ScrCom0024PlaceDetailCheckRequest
+): Promise<ScrCom0024PlaceDetailCheckResponse> => {
     const response = await comApiClient.post(
         '/scr-com-0024/place-detail-check',
         request
@@ -189,3 +258,14 @@ export const ScrCom0024PlaceDetailCheck = async (
     return response.data;
 };
 
+
+/** SCR-COM-0024-0004: 会場詳細登録更新API */
+export const ScrCom0024RegistUpdatePlaceDetail = async (
+    request: ScrCom0024RegistUpdatePlaceDetailRequest
+): Promise<ScrCom0032PopupModel> => {
+    const response = await comApiClient.post(
+        '/scr-com-0024/regist-update-place-detail',
+        request
+    );
+    return response.data;
+};
