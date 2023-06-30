@@ -52,7 +52,7 @@ export const MainLayout = (props: MainLayoutProps) => {
   const flexRowSx = { display: 'flex', flexDirection: 'row' };
 
   return (
-    <Box sx={{ ...flexColSx, flexGrow: 1, overflow: 'auto', marginTop: 10 }}>
+    <Box sx={{ ...flexColSx, flexGrow: 1, overflow: 'auto', marginTop: 8 }}>
       <Box sx={{ ...flexRowSx, flexGrow: 1, overflow: 'auto' }}>
         {/* main */}
         <Box

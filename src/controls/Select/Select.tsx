@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FieldValues, Path, useFormContext } from 'react-hook-form';
+import { FieldValues, Path, useFormContext, useWatch } from 'react-hook-form';
 
 import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
@@ -35,6 +35,7 @@ export interface SelectProps<T extends FieldValues> {
   required?: boolean;
   minWidth?: number;
   isAddble?: boolean;
+  size?: 's' | 'm' | 'l' | 'xl';
 }
 
 export const StyledFormControl = styled(FormControl)(({ error }) => ({
@@ -53,6 +54,16 @@ export const StyledFormControl = styled(FormControl)(({ error }) => ({
   },
 }));
 
+export const StyledMenuItem = styled(MenuItem)({
+  '&.Mui-selected': {
+    backgroundColor: '#0075ff',
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: '#0075ff',
+    },
+  },
+});
+
 export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
   const {
     label,
@@ -64,23 +75,23 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
     blankOption = false,
     required = false,
     minWidth = 100,
+    size = 's',
   } = props;
 
-  const { register, formState, watch, control } = useFormContext();
-
-  const crrentValue = watch(name);
+  const { register, formState, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
 
   // 複数選択された場合、先頭行の空白は削除する
   const omitBlankValue = (val: string[]) => {
     return val.length > 1 ? val.filter((e) => e) : val;
   };
   const isReadOnly = control?._options?.context[0];
-
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <Box sx={{ minWidth: minWidth, height: 30 }}>
         {/* 選択肢が10個未満の場合が上段、選択肢が10個以上の場合が下段。10個以上の場合は、選択肢を検索することができる。 */}
@@ -88,7 +99,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
           <StyledFormControl fullWidth error={!!formState.errors[name]}>
             <SelectMui
               disabled={disabled}
-              value={multiple ? omitBlankValue(crrentValue) : crrentValue}
+              value={multiple ? omitBlankValue(watchValue) : watchValue}
               {...register(name)}
               multiple={multiple}
               sx={{ textAlign: 'left' }}
@@ -96,18 +107,18 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
                 readOnly: isReadOnly,
               }}
             >
-              {blankOption && <MenuItem value=''>{'　'}</MenuItem>}
+              {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
               {selectValues.map((option, index) => (
-                <MenuItem key={index} value={option.value}>
+                <StyledMenuItem key={index} value={option.value}>
                   {option.displayValue}
-                </MenuItem>
+                </StyledMenuItem>
               ))}
             </SelectMui>
-            <FormHelperText>
-              {formState.errors[name]?.message
-                ? String(formState.errors[name]?.message)
-                : null}
-            </FormHelperText>
+            {formState.errors[name]?.message && (
+              <FormHelperText>
+                {String(formState.errors[name]?.message)}
+              </FormHelperText>
+            )}
           </StyledFormControl>
         ) : (
           // TODO 挙動を要確認（SelectではなくTextFieldになっている）
@@ -140,7 +151,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
               ))
             }
             {...register(name)}
-            value={multiple ? omitBlankValue(crrentValue) : crrentValue}
+            value={multiple ? omitBlankValue(watchValue) : watchValue}
           />
         )}
       </Box>
@@ -158,11 +169,11 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
     blankOption = false,
     required = false,
     minWidth = 100,
+    size = 's',
   } = props;
 
-  const { register, formState, watch, control } = useFormContext();
-
-  const crrentValue = watch(name);
+  const { register, formState, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
 
   const [selectRows, SetSelectRows] = useState<string[]>(['']);
 
@@ -176,6 +187,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <Grid container width={490}>
         <Grid item xs={11}>
@@ -186,7 +198,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
                   <StyledFormControl fullWidth error={!!formState.errors[name]}>
                     <SelectMui
                       disabled={disabled}
-                      value={crrentValue}
+                      value={watchValue}
                       {...register(name)}
                       sx={{ textAlign: 'left' }}
                       inputProps={{
@@ -200,11 +212,11 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
                         </MenuItem>
                       ))}
                     </SelectMui>
-                    <FormHelperText>
-                      {formState.errors[name]?.message
-                        ? String(formState.errors[name]?.message)
-                        : null}
-                    </FormHelperText>
+                    {formState.errors[name]?.message && (
+                      <FormHelperText>
+                        {String(formState.errors[name]?.message)}
+                      </FormHelperText>
+                    )}
                   </StyledFormControl>
                 </Box>
               </Box>

@@ -22,20 +22,17 @@ export default {
     name: {
       description: 'reacthookformで管理する名前',
     },
-    CheckBoxOptions: {
-      description:
-        'チェックボックスの中身。valueがCheckBoxの値、valueLableが表示名、disabledがCheckBoxボタンを選択可能かどうか判定',
-    },
-    row: {
-      description: 'CheckBoxボタンの配置を横並びにするか、縦並びにするか',
-      defaultValue: { summary: 'row' },
+    blank: {
+      description: 'コンポーネント上部にラベル分のブランクを追加したい場合。',
+      defaultValue: { summary: 'false' },
     },
   },
 } as ComponentMeta<typeof Checkbox>;
 
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface SampleInput {
-  cancelFlag: boolean;
+  cancelFlag1: boolean;
+  cancelFlag2: boolean;
 }
 
 export const Example = () => {
@@ -44,23 +41,23 @@ export const Example = () => {
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: {
-      cancelFlag: false,
+      cancelFlag1: false,
+      cancelFlag2: true,
     },
     context: isReadOnly,
   });
 
-  const CheckBoxSample = [
-    { value: 'cancelFlag', displayValue: 'キャンセルフラグ' },
-  ];
-
   const handleClick = () => {
-    console.log(methods.getValues('cancelFlag'));
+    console.log(methods.getValues());
   };
 
   return (
     <ThemeProvider theme={theme}>
       <FormProvider {...methods}>
-        <Checkbox name='cancelFlag' checkOptions={CheckBoxSample} />
+        <Checkbox name='cancelFlag1' label='キャンセルフラグ1'>
+          キャンセル日:YYYY/MM/DD
+        </Checkbox>
+        <Checkbox name='cancelFlag2' label='キャンセルフラグ2' />
         <Button onClick={handleClick}>click</Button>
       </FormProvider>
     </ThemeProvider>

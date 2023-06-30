@@ -27,21 +27,9 @@ export default {
       description: 'ボタンの使用可否',
       defaultValue: { summary: 'false' },
     },
-    type: {
-      description: 'ボタンの種類',
-      defaultValue: { summary: 'button' },
-    },
     variant: {
       description: 'ボタンのCSSの種類',
       defaultValue: { summary: 'outlined' },
-    },
-    color: {
-      description: 'ボタンの表示名と境界線の色',
-      defaultValue: { summary: 'inherit' },
-    },
-    bgColor: {
-      description: 'ボタンの背景の色',
-      defaultValue: { summary: '' },
     },
     onClick: {
       description: 'ボタン押下時のイベント',

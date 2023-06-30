@@ -23,6 +23,7 @@ export interface RadioProps<T extends FieldValues> {
   labelPosition?: 'above' | 'side';
   required?: boolean;
   row?: boolean;
+  size?: 's' | 'm' | 'l' | 'xl';
 }
 
 export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
@@ -33,6 +34,7 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
     name,
     radioValues,
     row = true,
+    size = 's',
   } = props;
 
   const { register, formState, control } = useFormContext();
@@ -43,6 +45,7 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <FormControl error={!!formState.errors[name]}>
         <RadioGroup row={row} {...register(name)}>
@@ -70,11 +73,11 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
             );
           })}
         </RadioGroup>
-        <FormHelperText>
-          {formState.errors[name]?.message
-            ? String(formState.errors[name]?.message)
-            : null}
-        </FormHelperText>
+        {formState.errors[name]?.message && (
+          <FormHelperText>
+            {String(formState.errors[name]?.message)}
+          </FormHelperText>
+        )}
       </FormControl>
     </InputLayout>
   );
