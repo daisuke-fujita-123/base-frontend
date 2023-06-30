@@ -6,6 +6,7 @@ import {
   Path,
   PathValue,
   useFormContext,
+  useWatch,
 } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
@@ -19,6 +20,7 @@ import { PickersDay } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker as DatePickerMui } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { ja } from 'date-fns/locale';
 
 export interface DatePickerProps<T extends FieldValues> {
   name: Path<T>;
@@ -27,15 +29,16 @@ export interface DatePickerProps<T extends FieldValues> {
   required?: boolean;
   disabled?: boolean;
   wareki?: boolean;
+  size?: 's' | 'm' | 'l' | 'xl';
 }
 
 const TextField = styled(StyledTextFiled)({
   '& .MuiIconButton-root': {
     ...theme.palette.calender,
     borderRadius: 0,
-    padding: theme.spacing(1.2),
-    marginLeft: theme.spacing(1),
-    marginRight: theme.spacing(-2.8),
+    width: 28,
+    height: 28,
+    marginRight: theme.spacing(-2.6),
   },
 });
 
@@ -49,10 +52,11 @@ export const DatePicker = <T extends FieldValues>(
     name,
     disabled,
     wareki,
+    size = 's',
   } = props;
 
-  const { register, formState, setValue, watch, control } = useFormContext();
-  const crrentValue = watch(name);
+  const { register, formState, setValue, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
 
   // 和暦表示用の文字列を作成
   const [warekiDisplay, setWarekiDisplay] = useState<string>('');
@@ -87,10 +91,15 @@ export const DatePicker = <T extends FieldValues>(
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <Stack spacing={0}>
         <Typography>{warekiDisplay}</Typography>
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='fr'>
+        <LocalizationProvider
+          dateAdapter={AdapterDayjs}
+          adapterLocale={ja}
+          dateFormats={{ monthAndYear: 'YYYY年MM月' }}
+        >
           <DatePickerMui
             {...register(name)}
             disabled={disabled}
@@ -132,7 +141,7 @@ export const DatePicker = <T extends FieldValues>(
                 />
               );
             }}
-            value={crrentValue}
+            value={watchValue}
             readOnly={isReadOnly}
           />
         </LocalizationProvider>

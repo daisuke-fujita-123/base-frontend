@@ -124,7 +124,7 @@ export const SearchButton = (props: ButtonProps) => {
       startIcon={<SearchIcon />}
       disabled={disable}
       onClick={onClick}
-      size='medium'
+      size='large'
     >
       {children}
     </StyledSearchButton>

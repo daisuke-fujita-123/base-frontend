@@ -123,7 +123,6 @@ const StyledAccordion = styled(Accordion)({
 
 const StyledAccordionSummary = styled(AccordionSummary)({
   margin: 0,
-
   '& .MuiAccordionSummary-content': {
     margin: theme.spacing(3),
   },
@@ -134,6 +133,20 @@ const StyledAccordionSummary = styled(AccordionSummary)({
   '& .Mui-expanded': {
     margin: 0,
   },
+});
+
+const StyledCloseAccordion = styled(StyledAccordion)({
+  padding: 1,
+  width: 40,
+  height: 45,
+});
+
+const StyledCloseAccordionSummary = styled(AccordionSummary)({
+  margin: theme.spacing(3),
+  marginRight: 0,
+  width: 15,
+  height: 15,
+  minHeight: 15,
 });
 
 const StyledAccordionDetails = styled(AccordionDetails)({
@@ -154,6 +167,19 @@ const StyledIconButton = styled(IconButton)({
   marginLeft: theme.spacing(2),
   padding: 0,
   color: theme.palette.accordion.color,
+});
+
+const StyledIcon = styled(Icon)({
+  marginRight: theme.spacing(1),
+  marginTop: theme.spacing(0.4),
+  width: 15,
+  height: 15,
+  fontSize: 15,
+  '& .MuiSvgIcon-root': {
+    width: 'inherit',
+    height: 'inherit',
+    fontSize: 'inherit',
+  },
 });
 
 /**
@@ -253,7 +279,11 @@ const TreeView = (props: TreeViewProps) => {
         {menuItems.map((item, index: number) => (
           <StyledAccordion disableGutters defaultExpanded={open} key={index}>
             <StyledAccordionSummary expandIcon={<StyledExpandMoreIcon />}>
-              <Icon sx={{ mr: 1 }}>{item.icon}</Icon>
+              {index === 0 || index === 1 || index === 4 ? (
+                <StyledIcon>{item.icon}</StyledIcon>
+              ) : (
+                <StyledIcon sx={{ width: 13 }}>{item.icon}</StyledIcon>
+              )}
               <AccordionSubTitle>{item.title}</AccordionSubTitle>
               {index === 0 && (
                 <StyledIconButton onClick={handleAddIconClick}>
@@ -280,15 +310,15 @@ const TreeView = (props: TreeViewProps) => {
     return (
       <>
         {menuItems.map((item, index: number) => (
-          <StyledAccordion
+          <StyledCloseAccordion
             sx={{ borderBottom: 'transparent' }}
             defaultExpanded={open}
             key={index}
           >
-            <StyledAccordionSummary>
-              <Icon>{item.icon}</Icon>
-            </StyledAccordionSummary>
-          </StyledAccordion>
+            <StyledCloseAccordionSummary>
+              <StyledIcon>{item.icon}</StyledIcon>
+            </StyledCloseAccordionSummary>
+          </StyledCloseAccordion>
         ))}
       </>
     );

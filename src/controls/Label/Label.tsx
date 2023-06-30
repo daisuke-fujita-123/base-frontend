@@ -53,3 +53,24 @@ export const WarningLabel = (props: LabelProps) => {
   );
 };
 
+const StyledCaptionLabel = styled('div')({
+  alignItems: 'center',
+  display: 'flex',
+  justifyContent: 'flex-start',
+});
+
+const CaptionLabelText = styled(TypographyMui)({
+  textAlign: 'center',
+  fontWeight: 'bold',
+  fontSize: '16px',
+});
+
+export const CaptionLabel = (props: LabelProps) => {
+  const { text } = props;
+  return (
+    <StyledCaptionLabel>
+      <CaptionLabelText>{text}</CaptionLabelText>
+    </StyledCaptionLabel>
+  );
+};
+

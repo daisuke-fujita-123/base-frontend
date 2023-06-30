@@ -5,6 +5,7 @@ import { ErrorSubTitle, WarningSubTitle } from 'controls/Typography';
 
 import { styled } from '@mui/material';
 import { default as BoxMui } from '@mui/material/Box';
+import { ResponsiveStyleValue } from '@mui/system';
 
 interface BoxProps {
   children: ReactNode;
@@ -42,7 +43,6 @@ const StyledDefaultBox = styled(BoxMui)({
   border: `1px solid  transparent`,
   background: 'transparent',
   marginBottom: theme.spacing(4),
-  padding: theme.spacing(4),
 });
 
 const StyledWhiteBox = styled(BoxMui)({
@@ -50,7 +50,6 @@ const StyledWhiteBox = styled(BoxMui)({
   background: theme.palette.background.paper,
   boxShadow: '0px 3px 3px rgba(0,0,0,0.3)',
   marginBottom: theme.spacing(4),
-  padding: theme.spacing(4),
 });
 
 const StyledDisableBox = styled(BoxMui)({
@@ -58,7 +57,6 @@ const StyledDisableBox = styled(BoxMui)({
   background: theme.palette.background.disabled,
   boxShadow: '0px 3px 3px rgba(0,0,0,0.3)',
   marginBottom: theme.spacing(4),
-  padding: theme.spacing(4),
 });
 
 interface StyledBoxProps {
@@ -191,15 +189,28 @@ interface MarginBoxProps extends BoxProps {
   ml?: number;
   mr?: number;
   gap?: number;
+  justifyContent?: string;
+  textAlign?: ResponsiveStyleValue<
+    'center' | 'end' | 'left' | 'right' | 'start'
+  >;
 }
 
 export const MarginBox = (props: MarginBoxProps) => {
-  const { children, mt = 0, mb = 0, ml = 0, mr = 0, gap = 0 } = props;
+  const {
+    children,
+    mt = 0,
+    mb = 0,
+    ml = 0,
+    mr = 0,
+    gap = 0,
+    justifyContent = 'center',
+    textAlign = 'center',
+  } = props;
   return (
     <BoxMui
       display='flex'
-      justifyContent='center'
-      textAlign='center'
+      justifyContent={justifyContent}
+      textAlign={textAlign}
       sx={{ mt: mt, mb: mb, ml: ml, mr: mr, gap: gap }}
     >
       {children}

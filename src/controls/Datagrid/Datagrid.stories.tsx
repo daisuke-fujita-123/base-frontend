@@ -80,23 +80,20 @@ export const Example = () => {
     {
       field: 'corporationId',
       headerName: '法人ID',
-      width: 96,
-      cellType: 'link',
     },
     {
       field: 'corporationName',
       headerName: '法人名',
-      width: 384,
     },
     {
       field: 'corporationGroupName',
       headerName: '法人グループ名',
-      width: 384,
+      size: 'm',
     },
     {
       field: 'representativeName',
       headerName: '代表者名',
-      width: 128,
+      size: 'm',
     },
   ];
 

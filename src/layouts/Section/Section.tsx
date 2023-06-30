@@ -79,10 +79,8 @@ export const Section = (props: SectionProps) => {
             </AccordionSummary>
           )}
           {expanded && <RightBox>{decoration}</RightBox>}
-          <AccordionDetails>
-            <Stack sx={{ ...flexColSx, flexGrow: 1 }} spacing={4}>
-              {children}
-            </Stack>
+          <AccordionDetails sx={{ m: theme.spacing(4) }}>
+            <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
           </AccordionDetails>
           {isSearch && (
             <RightBox>

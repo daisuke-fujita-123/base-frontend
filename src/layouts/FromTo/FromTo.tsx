@@ -9,13 +9,14 @@ interface FromToProps {
   labelPosition?: string;
   variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   children: ReactNode[];
+  size?: 's' | 'm' | 'l' | 'xl';
 }
 
 export const FromTo = (props: FromToProps) => {
-  const { label, labelPosition = 'column', children } = props;
+  const { label, labelPosition = 'column', children, size = 's' } = props;
   if (labelPosition === 'column') {
     return (
-      <InputStack>
+      <InputStack size={size}>
         <LabelStack>
           <Typography bold>{label}</Typography>
         </LabelStack>
@@ -28,7 +29,7 @@ export const FromTo = (props: FromToProps) => {
     );
   }
   return (
-    <InputStack>
+    <InputStack size={size}>
       <LabelStack>
         <Typography bold>{label}</Typography>
         <InputRowStack>
