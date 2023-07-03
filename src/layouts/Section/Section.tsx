@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ContentsBox, MarginBox, RightBox, SearchTextBox } from 'layouts/Box';
 
@@ -48,9 +48,14 @@ export const Section = (props: SectionProps) => {
   } = props;
 
   const [expanded, setExpanded] = useState<boolean>(open);
+
   const onClick = () => {
     setExpanded(!expanded);
   };
+
+  useEffect(() => {
+    if (!open) setExpanded(false);
+  }, [open]);
 
   if (!name) {
     return <ContentsBox>{children}</ContentsBox>;

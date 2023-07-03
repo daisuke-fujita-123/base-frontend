@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { FieldValues, Path, useFormContext, useWatch } from 'react-hook-form';
+import React from 'react';
+import {
+  FieldPath,
+  FieldPathValue,
+  FieldValues,
+  Path,
+  useFormContext,
+  useWatch,
+} from 'react-hook-form';
 
 import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
@@ -172,16 +179,16 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
     size = 's',
   } = props;
 
-  const { register, formState, control } = useFormContext();
-  const watchValue = useWatch({ name, control });
-
-  const [selectRows, SetSelectRows] = useState<string[]>(['']);
-
-  const handleClick = () => {
-    SetSelectRows((prev) => [...prev, '']);
-  };
+  const { register, formState, control, setValue } = useFormContext();
   const isReadOnly = control?._options?.context[0];
-
+  const watchValue = useWatch({ name, control });
+  const selectList = [...watchValue];
+  const handleClick = () => {
+    setValue(name, [...selectList, ''] as FieldPathValue<
+      FieldValues,
+      FieldPath<FieldValues>
+    >);
+  };
   return (
     <InputLayout
       label={label}
@@ -191,15 +198,26 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
     >
       <Grid container width={490}>
         <Grid item xs={11}>
-          {selectRows.map((val: string, index: number) => {
+          {watchValue?.map((val: string, index: number) => {
             return (
               <Box key={index} mb={2}>
                 <Box sx={{ minWidth: minWidth, height: 30 }}>
                   <StyledFormControl fullWidth error={!!formState.errors[name]}>
                     <SelectMui
                       disabled={disabled}
-                      value={watchValue}
-                      {...register(name)}
+                      defaultValue={val}
+                      {...register(name, {
+                        onChange: (e) =>
+                          setValue(
+                            name,
+                            selectList.map((value: string, rowIndex: number) =>
+                              rowIndex === index ? e.target.value : value
+                            ) as FieldPathValue<
+                              FieldValues,
+                              FieldPath<FieldValues>
+                            >
+                          ),
+                      })}
                       sx={{ textAlign: 'left' }}
                       inputProps={{
                         readOnly: isReadOnly,
