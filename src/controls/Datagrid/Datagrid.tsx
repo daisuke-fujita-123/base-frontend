@@ -1,4 +1,4 @@
-import React, { forwardRef, memo, useCallback } from 'react';
+import React from 'react';
 
 import { Box } from 'layouts/Box';
 
@@ -12,7 +12,6 @@ import {
   PaginationItem as MuiPaginationItem,
   Stack,
   styled,
-  TextField,
   Typography,
 } from '@mui/material';
 import Tooltip from '@mui/material/Tooltip';
@@ -30,251 +29,14 @@ import {
   GridColDef as MuiGridColDef,
   GridRenderCellParams,
 } from '@mui/x-data-grid-pro';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { ja } from 'date-fns/locale';
-import dayjs from 'dayjs';
-
-/**
- * GridInputCellコンポーネントのProps
- */
-interface GridInputCellProps {
-  id: string | number;
-  value: string;
-  field: string;
-  readOnly?: boolean;
-}
-
-/**
- * GridInputCellコンポーネント
- * 入力用のセル
- */
-// eslint-disable-next-line react/display-name
-const GridInputCell = memo((props: GridInputCellProps) => {
-  const { id, value, field, readOnly = false } = props;
-
-  const apiRef = useGridApiContext();
-
-  const handleValueChange = useCallback(
-    (event: any) => {
-      const newValue = event.target.value;
-      const row = apiRef.current.getRow(id);
-      row[field] = newValue;
-    },
-    [apiRef, field, id]
-  );
-
-  return (
-    <input
-      style={{ width: '60px' }}
-      defaultValue={value}
-      type='text'
-      readOnly={readOnly}
-      onChange={handleValueChange}
-    />
-  );
-});
-
-/**
- * GridSelectCellPropsコンポーネントのProps
- */
-interface GridSelectCellProps {
-  id: string | number;
-  value: string;
-  field: string;
-  selectValues: any[];
-  readOnly?: boolean;
-}
-
-/**
- * GridSelectCellPropsコンポーネント
- * プルダウン用のセル
- */
-// eslint-disable-next-line react/display-name
-const GridSelectCell = memo((props: GridSelectCellProps) => {
-  const { id, value, field, selectValues, readOnly = false } = props;
-
-  const apiRef = useGridApiContext();
-
-  const handleValueChange = useCallback(
-    (event: any) => {
-      const newValue = event.target.value;
-      const row = apiRef.current.getRow(id);
-      row[field] = newValue;
-    },
-    [apiRef, field, id]
-  );
-
-  return (
-    <select
-      style={{ width: '60px' }}
-      defaultValue={value}
-      // value={value}
-      onChange={handleValueChange}
-    >
-      {selectValues.map((x, i) => (
-        <option key={i} value={x.value}>
-          {x.displayValue}
-        </option>
-      ))}
-    </select>
-  );
-});
-
-/**
- * GridRadioCellPropsコンポーネントのProps
- */
-interface GridRadioCellProps {
-  id: string | number;
-  value: boolean | undefined;
-  field: string;
-  readOnly?: boolean;
-}
-
-/**
- * GridRadioCellPropsコンポーネント
- * プルダウン用のセル
- */
-// eslint-disable-next-line react/display-name
-const GridRadioCell = memo((props: GridRadioCellProps) => {
-  const { id, value, field, readOnly = false } = props;
-
-  const apiRef = useGridApiContext();
-
-  const handleValueChange = useCallback(
-    (event: any) => {
-      const newValue = event.target.value;
-      const row = apiRef.current.getRow(id);
-      row[field] = newValue;
-    },
-    [apiRef, field, id]
-  );
-
-  return (
-    <input
-      type='radio'
-      style={{ width: '60px' }}
-      defaultChecked={value}
-      // checked={value}
-      onChange={handleValueChange}
-    />
-  );
-});
-
-/**
- * GridRadioCellPropsコンポーネントのProps
- */
-interface GridCheckboxCellProps {
-  id: string | number;
-  value: boolean | undefined;
-  field: string;
-  readOnly?: boolean;
-}
-
-/**
- * GridCheckboxCellコンポーネント
- * プルダウン用のセル
- */
-// eslint-disable-next-line react/display-name
-const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
-  const { id, value, field, readOnly = false } = props;
-
-  const apiRef = useGridApiContext();
-
-  const handleValueChange = useCallback(
-    (event: any) => {
-      const newValue = event.target.value;
-      const row = apiRef.current.getRow(id);
-      row[field] = newValue;
-    },
-    [apiRef, field, id]
-  );
-
-  return (
-    <input
-      type='checkbox'
-      style={{ width: '60px' }}
-      defaultChecked={value}
-      // checked={value}
-      onChange={handleValueChange}
-    />
-  );
-});
-
-/**
- * GridDatepickerCellPropsコンポーネントのProps
- */
-interface GridDatepickerCellProps {
-  id: string | number;
-  value: string;
-  field: string;
-  readOnly?: boolean;
-}
-
-/**
- * GridCheckboxCellコンポーネント
- * プルダウン用のセル
- */
-// eslint-disable-next-line react/display-name
-const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
-  const { id, value, field, readOnly = false } = props;
-
-  const apiRef = useGridApiContext();
-
-  const handleValueChange = useCallback(
-    (value: any) => {
-      const date = new Date(String(value));
-      const formattedDate = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-      // const newValue = event.target.value;
-      // const row = apiRef.current.getRow(id);
-      // row[field] = newValue;
-    },
-    [apiRef, field, id]
-  );
-
-  return (
-    <LocalizationProvider
-      dateAdapter={AdapterDayjs}
-      adapterLocale={ja}
-      dateFormats={{ monthAndYear: 'YYYY年MM月' }}
-    >
-      <DatePicker
-        value={value}
-        inputFormat='YYYY/MM/DD'
-        renderInput={(params) => <TextField {...params} />}
-        onChange={handleValueChange}
-      />
-    </LocalizationProvider>
-  );
-});
-
-/**
- * GridCellForTooltipコンポーネントのProps
- */
-interface GridInputCellProps {
-  id: string | number;
-  value: string;
-  field: string;
-  readOnly?: boolean;
-  onRowChange?: (row: any) => void;
-}
-
-/**
- * GridCellForTooltipコンポーネント
- * ツールチップ用ののセル
- */
-// eslint-disable-next-line react/display-name
-const GridCellForTooltip = forwardRef((props: any, ref: any) => {
-  return (
-    <div {...props} ref={ref}>
-      {props.children}
-      {/* <GridCell {...props}>{props.children}</GridCell> */}
-    </div>
-  );
-});
+import {
+  GridCellForTooltip,
+  GridCheckboxCell,
+  GridDatepickerCell,
+  GridInputCell,
+  GridRadioCell,
+  GridSelectCell,
+} from './DataGridCell';
 
 const StyledDataGrid = styled(MuiDataGridPro)({
   fontSize: 13,
@@ -306,6 +68,12 @@ const StyledDataGrid = styled(MuiDataGridPro)({
       justifyContent: 'center',
       display: 'flex',
     },
+    // フィルターアイコンの色変更
+    // '& .MuiDataGrid-iconButtonContainer': {
+    //   '& .MuiIconButton-root': {
+    //     color: '',
+    //   },
+    // },
   },
   '& .MuiDataGrid-columnSeparator': {
     display: 'none',
@@ -500,6 +268,7 @@ export const DataGrid = (props: DataGridProps) => {
       id={params.id}
       value={params.value}
       field={params.field}
+      radioValues={params.colDef.radioValues}
       // onRowChange={handleRowChange}
     />
   );
@@ -595,6 +364,7 @@ export const DataGrid = (props: DataGridProps) => {
     pageSize !== undefined
       ? {
           Pagination: () => <Pagination total={rows.length} />,
+          // ColumnHeaderFilterIconButton: () => <任意のアイコン />,ケバブアイコン（Menu）を変更
         }
       : undefined;
 

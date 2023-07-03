@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { Button } from 'controls/Button';
-import { Checkbox } from 'controls/CheckBox';
+import { Checkbox } from 'controls/Checkbox';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
