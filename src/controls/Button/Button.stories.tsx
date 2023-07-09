@@ -11,6 +11,7 @@ import {
   Button,
   CancelButton,
   DeleteButton,
+  InfoButton,
   LogoutButton,
   PrimaryButton,
   SearchButton,
@@ -83,6 +84,7 @@ export const Example = () => {
       <PrimaryButton onClick={onClickFunction} size='small'>
         small
       </PrimaryButton>
+      <InfoButton></InfoButton>
     </ThemeProvider>
   );
 };
