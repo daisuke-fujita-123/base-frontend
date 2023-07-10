@@ -1,58 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { MainLayout } from 'layouts/MainLayout';
-import { Section } from 'layouts/Section';
-import { FormProvider } from 'react-hook-form';
-import { useForm } from 'hooks/useForm';
-import { TextField } from 'controls/TextField';
-import { Grid } from 'layouts/Grid';
-import { Radio } from 'controls/Radio';
-import { DatePicker } from 'controls/DatePicker/DatePicker';
-import { Select, SelectValue } from 'controls/Select/Select';
 import { useNavigate } from 'hooks/useNavigate';
-import { yupResolver } from '@hookform/resolvers/yup';
 import { Stack } from 'layouts/Stack';
 import { CancelButton, ConfirmButton } from 'controls/Button';
-import { TableRowModel } from 'controls/Table';
 import ScrCom0032Popup, {
   ScrCom0032PopupModel,
 } from 'pages/com/popups/ScrCom0032';
-
-
-/**
- * 登録内容確認ポップアップ初期データ
- */
-const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  // エラー内容リスト
-  errorList: [{
-    errorCode: '',
-    errorMessages: [],
-  }],
-  // ワーニング内容リスト
-  warningList: [{
-    warningCode: '',
-    warningMessages: [],
-  }],
-  // 登録・変更内容リスト
-  registrationChangeList: [{
-    // 画面ID
-    screenId: '',
-    // 画面名
-    screenName: '',
-    // タブID
-    tabId: '',
-    // タブ名
-    tabName: '',
-    // セクションリスト
-    sectionList: [{
-      sectionName: '',
-      columnList: [{
-        columnName: '',
-      }]
-    }],
-  }],
-  // 変更予定日
-  changeExpectDate: '',
-};
 
 
 /**
@@ -60,13 +13,27 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
  */
 const ScrCom0023Page = () => {
 
+  /**
+   * 登録内容確認ポップアップ 初期データ
+   */
+  const initialValues: ScrCom0032PopupModel = {
+    // エラー内容リスト
+    errorList: [],
+    // ワーニング内容リスト
+    warningList: [],
+    // 登録・変更内容リスト
+    registrationChangeList: [],
+    // 変更予定日
+    changeExpectDate: '',
+  }
+
   // router
   const navigate = useNavigate();
 
   // popup
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
-    useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
+    useState<ScrCom0032PopupModel>(initialValues);
 
 
   /**
@@ -140,7 +107,13 @@ const ScrCom0023Page = () => {
             sectionName: '価格設定セクション',
             columnList: [
               {
-                columnName: '手数料金額',
+                columnName: '手数料金額1',
+              },
+              {
+                columnName: '手数料金額2',
+              },
+              {
+                columnName: '手数料金額3',
               },
             ]
           },
