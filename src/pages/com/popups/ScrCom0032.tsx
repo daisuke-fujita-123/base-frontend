@@ -141,6 +141,7 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
     { headerName: '項目名', width: 50 },
   ];
 
+
   // state
   // 承認要否フラグ(確定ボタンの活性・非活性を判定)
   const [approvalFlag, setApprovalFlag] = useState(false);
@@ -190,6 +191,7 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
     const rowSectionNameList: string[] = [];
     const rowColumnNameList: string[] = [];
 
+    // セクション名と項目名のみ取得する階層が違うので、一時リスト変数に設定する
     for (let i = 0; i < data.registrationChangeList.length; i++) {
       for (let j = 0; j < data.registrationChangeList[i].sectionList.length; j++) {
         for (let k = 0; k < data.registrationChangeList[i].sectionList[j].columnList.length; k++) {
@@ -199,6 +201,7 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
       }
     }
 
+    // テーブルに表示するRowモデルに変換する
     const tempList: TableRowModel[] = [];
     for (let i = 0; i < rowColumnNameList.length; i++) {
       tempList.push({
@@ -209,7 +212,15 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
       })
     }
     console.log(tempList);
-    setRowValuesList(tempList);
+    // TODO:
+    // setRowValuesList(tempList);
+    setRowValuesList([{
+      aa: "11",
+      ab: "11",
+      ac: "11",
+      ad: "11",
+      a3: "11",
+    }]);
   };
 
 
@@ -302,7 +313,7 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
                     </Section>
                     :
                     <Section name='エラー'>
-                      <Typography key={'index1'} variant='h6'>
+                      <Typography key={'index'} variant='h6'>
                         エラーメッセージ{1}：{'項目がありません。'}
                       </Typography>
                     </Section>
@@ -333,9 +344,8 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
               <Section name='登録・変更内容'>
                 {rowValuesList !== undefined ?
                   <>
-                    <Box>
-                      <Table columns={columns} rows={rowValuesList} />
-                    </Box><br />
+                    <Table columns={columns} rows={rowValuesList} />
+                    <br />
                   </>
                   : ""}
                 {/* 変更予約有の場合は表示・無の場合は非表示 */}
