@@ -27,7 +27,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import MenuItem from '@mui/material/MenuItem';
 
 export interface SelectValue {
-  value: string;
+  value: string | number;
   displayValue: string;
 }
 

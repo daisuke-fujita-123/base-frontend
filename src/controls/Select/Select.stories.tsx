@@ -52,7 +52,7 @@ export default {
 
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface SampleInput {
-  sampleName: string;
+  sampleName: string | number;
 }
 // TDOO クラッシュ原因の特定
 // const Template: Story<SelectProps<SampleInput>> = (args) => {
@@ -87,15 +87,15 @@ export const Example = () => {
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: {
-      sampleName: '二輪',
+      sampleName: 0,
     },
     context: isReadOnly,
   });
 
   const sampleSelect: SelectValue[] = [
-    { displayValue: '二輪', value: '二輪' },
-    { displayValue: '三輪', value: '三輪' },
-    { displayValue: '四輪', value: '四輪' },
+    { displayValue: '二輪', value: 0 },
+    { displayValue: '三輪', value: 1 },
+    { displayValue: '四輪', value: 2 },
   ];
 
   return (
