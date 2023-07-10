@@ -16,6 +16,7 @@ import { Checkbox } from 'controls/Checkbox';
 
 import { ScrCom0032GetApproval, ScrCom0032GetApprovalRequest } from 'apis/com/SrcCom0032Api';
 import { generate } from 'utils/BaseYup';
+import { DataGrid, GridColDef } from 'controls/Datagrid';
 
 
 /**
@@ -134,13 +135,28 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
   ];
 
   // column
-  const columns: TableColDef[] = [
-    { headerName: '画面名', width: 50 },
-    { headerName: 'タブ名', width: 50 },
-    { headerName: 'セクション名', width: 50 },
-    { headerName: '項目名', width: 50 },
-  ];
-
+  const columns: GridColDef[] = [
+    {
+      field: 'screenName',
+      headerName: '画面名',
+      size: 'm',
+    },
+    {
+      field: 'tabName',
+      headerName: 'タブ名',
+      size: 'm',
+    },
+    {
+      field: 'sectionName',
+      headerName: 'セクション名',
+      size: 'm',
+    },
+    {
+      field: 'columnName',
+      headerName: '項目名',
+      size: 'm',
+    },
+  ]
 
   // state
   // 承認要否フラグ(確定ボタンの活性・非活性を判定)
@@ -160,6 +176,9 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
   });
 
   const { setValue, watch } = methods;
+
+  // 変換後のRowを格納する一時リスト
+  const tempList: TableRowModel[] = [];
 
   // 呼び出し元画面遷移時か登録確認ポップアップ起動時か判定するフラグ
   const isFirstRender = useRef(false)
@@ -181,7 +200,7 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
 
 
   /**
-  * TODO: ポップアップモデルをテーブル表示用データに変換
+  * ポップアップモデルをテーブル表示用データに変換
   */
   const convertToSearchResultRowModel = (
     initialValues: ScrCom0032PopupModel
@@ -202,25 +221,16 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
     }
 
     // テーブルに表示するRowモデルに変換する
-    const tempList: TableRowModel[] = [];
     for (let i = 0; i < rowColumnNameList.length; i++) {
       tempList.push({
+        id: i,
         screenName: initialValues.registrationChangeList[0].screenName,
         tabName: initialValues.registrationChangeList[0].tabName,
         sectionName: rowSectionNameList[i],
         columnName: rowColumnNameList[i],
       })
     }
-    console.log(tempList);
-    // TODO:
-    // setRowValuesList(tempList);
-    setRowValuesList([{
-      aa: "11",
-      ab: "11",
-      ac: "11",
-      ad: "11",
-      a3: "11",
-    }]);
+    setRowValuesList(tempList);
   };
 
 
@@ -254,21 +264,24 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
       // 登録・変更内容テーブル表示用のモデルに変換する
       convertToSearchResultRowModel(initialValues);
 
-      // 項目名が呼び出し画面から一つもない場合エラーメッセージを出力するフラグを設定
-      for (let i = 0; i < data.registrationChangeList.length; i++) {
-        for (let j = 0; j < data.registrationChangeList[i].sectionList.length; j++) {
-          for (let k = 0; k < data.registrationChangeList[i].sectionList[j].columnList.length; k++) {
-            if (data.registrationChangeList[i].sectionList[j].columnList.length === 0) {
-              setHasColumnNameParamFlag(false);
-              break;
-            }
-          }
+      // テーブルに設定した一時配列の内、該当する条件の項目名をカウント
+      let blankCount = 0;
+      tempList.forEach(e => {
+        if (e.columnName === '' || e.columnName === null) {
+          blankCount++;
         }
-      }
+
+        // 項目名が呼び出し画面から一つもない場合エラーメッセージを出力するフラグを設定
+        if (blankCount === tempList.length) {
+          setHasColumnNameParamFlag(false);
+        } else {
+          setHasColumnNameParamFlag(true);
+        }
+      });
     }
   }, [isOpen])
 
-  // チェックボックス処理
+  // TODO: チェックボックス処理
   useEffect(() => {
     // ポップアップ起動時にのみ処理を実行する
     if (isFirstRender.current) {
@@ -292,7 +305,7 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
       <MainLayout>
         <MainLayout main>
           <FormProvider {...methods}>
-            {/* 確定ボタンはエラー・ワーニング発生有の場合は非活性・エラー・ワーニング発生無の場合は活性 */}
+            {/* TODO: 確定ボタンはエラー・ワーニング発生有の場合は非活性・エラー・ワーニング発生無の場合は活性 */}
             <Popup
               open={isOpen}
               titles={[]}
@@ -344,7 +357,11 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
               <Section name='登録・変更内容'>
                 {rowValuesList !== undefined ?
                   <>
-                    <Table columns={columns} rows={rowValuesList} />
+                    {/* <Table columns={columns} rows={rowValuesList} /> */}
+                    <DataGrid
+                      columns={columns}
+                      rows={rowValuesList}
+                    />
                     <br />
                   </>
                   : ""}
