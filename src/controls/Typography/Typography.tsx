@@ -94,10 +94,10 @@ const StyledWarningDivider = styled(DividerMui)({
 });
 
 export const WarningSubTitle = (props: TypographyProps) => {
-  const { children } = props;
+  const { children, onClick } = props;
   return (
     <>
-      <StyledWarningSubTitle>
+      <StyledWarningSubTitle onClick={onClick}>
         <WarningIcon />
         {children}
       </StyledWarningSubTitle>
@@ -122,10 +122,10 @@ const StyledErrorDivider = styled(DividerMui)({
 });
 
 export const ErrorSubTitle = (props: TypographyProps) => {
-  const { children } = props;
+  const { children, onClick } = props;
   return (
     <>
-      <StyledErrorSubTitle>
+      <StyledErrorSubTitle onClick={onClick}>
         <WarningIcon />
         {children}
       </StyledErrorSubTitle>

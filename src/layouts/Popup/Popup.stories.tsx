@@ -1,9 +1,11 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
+import { Box } from 'layouts/Box';
 import { Popup } from 'layouts/Popup';
+import { StackSection } from 'layouts/StackSection';
 
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 
 export default {
   component: Popup,
@@ -37,7 +39,6 @@ const modalButtons = [
 export const Index: ComponentStoryObj<typeof Popup> = {
   args: {
     open: true,
-    titles: ['タイトル1', 'タイトル2'],
     children: ['タイトル1中身', 'タイトル2中身'],
     buttons: modalButtons,
   },
@@ -46,7 +47,7 @@ export const Index: ComponentStoryObj<typeof Popup> = {
 export const Example = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const titles = ['タイトル1', 'タイトル2'];
+  const titles = [{ name: '基本情報' }, { name: 'サービス一覧' }];
 
   const handleOpenPopupClick = () => {
     setIsOpen(true);
@@ -56,7 +57,7 @@ export const Example = () => {
     setIsOpen(false);
   };
 
-  const Buttons = [
+  const buttons = [
     { name: '同意します。', onClick: handleClosePopupClick },
     { name: '同意しません。', onClick: handleClosePopupClick },
   ];
@@ -64,9 +65,20 @@ export const Example = () => {
   return (
     <>
       <Button onClick={handleOpenPopupClick}>ポップアップを開く</Button>
-      <Popup open={isOpen} titles={titles} buttons={Buttons}>
-        <div>タイトル1中身</div>
-        <div>タイトル2中身</div>
+      <Popup open={isOpen} buttons={buttons}>
+        <StackSection titles={titles} isError>
+          <Stack>
+            <div>・会計処理日はオープン期間内を設定してください</div>
+            <div>・会計処理日はオープン期間内を設定してください</div>
+          </Stack>
+        </StackSection>
+        <StackSection titles={titles} isWarning>
+          <Box>Stack1</Box>
+        </StackSection>
+        <StackSection titles={titles}>
+          <Box>Stack1</Box>
+          <Box>Stack2</Box>
+        </StackSection>
       </Popup>
     </>
   );

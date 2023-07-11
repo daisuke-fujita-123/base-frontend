@@ -26,6 +26,10 @@ export default {
       description: 'コンポーネント上部にラベル分のブランクを追加したい場合。',
       defaultValue: { summary: 'false' },
     },
+    disable: {
+      description: 'チェックボックスの使用可否',
+      defaultValue: { summary: 'false' },
+    },
   },
 } as ComponentMeta<typeof Checkbox>;
 
@@ -54,7 +58,7 @@ export const Example = () => {
   return (
     <ThemeProvider theme={theme}>
       <FormProvider {...methods}>
-        <Checkbox name='cancelFlag1' label='キャンセルフラグ1'>
+        <Checkbox disable name='cancelFlag1' label='キャンセルフラグ1'>
           キャンセル日:YYYY/MM/DD
         </Checkbox>
         <Checkbox name='cancelFlag2' label='キャンセルフラグ2' />
