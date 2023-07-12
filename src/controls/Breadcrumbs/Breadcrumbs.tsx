@@ -1,30 +1,32 @@
-import React, { useContext } from 'react';
+import React from 'react';
 
-import { default as BreadcrumbsMui } from '@mui/material/Breadcrumbs';
-import { Link, Typography } from '@mui/material';
+import { useNavigate } from 'hooks/useNavigate';
+
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-
-import { AppContext } from 'providers/AppContextProvider';
+import { Link, Typography } from '@mui/material';
+import { default as BreadcrumbsMui } from '@mui/material/Breadcrumbs';
 
 interface breadCrumbsType {
   name: string;
   href: string;
   movable: boolean;
-};
+}
 
 interface BreadcrumbsProps {
   breadCrumbs: breadCrumbsType[];
-};
+}
 
 export const Breadcrumbs = (props: BreadcrumbsProps) => {
   const { breadCrumbs } = props;
 
-  // context
-  const { navigateTo } = useContext(AppContext);
+  // router
+  const navigate = useNavigate();
 
-  const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  const handleClick = (
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) => {
     event.preventDefault();
-    navigateTo(event.currentTarget.pathname);
+    navigate(event.currentTarget.pathname);
   };
 
   return (
@@ -37,13 +39,11 @@ export const Breadcrumbs = (props: BreadcrumbsProps) => {
             </Link>
           );
         } else {
-          return (
-            <Typography key={index}>
-              {value.name}
-            </Typography>
-          );
+          return <Typography key={index}>{value.name}</Typography>;
         }
-      })};
+      })}
+      ;
     </BreadcrumbsMui>
   );
 };
+

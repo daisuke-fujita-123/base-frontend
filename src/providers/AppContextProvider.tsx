@@ -29,7 +29,7 @@ const dialogInfos = [
  */
 type AppType = {
   user: any;
-  transitionDestination: string;
+  transitionDestination: string | number;
   needsConfitmTransition: boolean;
   // isLoading: boolean;
   // isError: boolean;
@@ -40,7 +40,7 @@ type AppType = {
  */
 type AppContextType = {
   appContext: AppType;
-  navigateTo: (to: string) => void;
+  navigate: (to: string | number) => void;
   setNeedsConfitmTransition: (value: boolean) => void;
   showDialog: (
     messageId: string,
@@ -84,7 +84,7 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
   const [dialogInfo, setDialogInfo] = useState<any>({});
 
   // router
-  const navigate = useNavigate();
+  const navigateReact = useNavigate();
 
   useEffect(() => {
     initialize();
@@ -95,7 +95,7 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
     setAppContext((prev) => ({ ...prev, user: response.data }));
   };
 
-  const navigateTo = (to: string) => {
+  const navigate = (to: string | number) => {
     if (appContext.needsConfitmTransition) {
       setAppContext((prev) => ({ ...prev, transitionDestination: to }));
       showDialog('TRANSITION_CONFIRM', (buttonName: string) => {
@@ -105,12 +105,22 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
             needsConfitmTransition: false,
             transitionDestination: '',
           }));
-          navigate(appContext.transitionDestination);
+          if (typeof appContext.transitionDestination === 'string') {
+            navigateReact(appContext.transitionDestination);
+          }
+          if (typeof appContext.transitionDestination === 'number') {
+            navigateReact(appContext.transitionDestination);
+          }
         }
       });
       return;
     }
-    navigate(to);
+    if (typeof to === 'string') {
+      navigateReact(to);
+    }
+    if (typeof to === 'number') {
+      navigateReact(to);
+    }
   };
 
   const setNeedsConfitmTransition = (value: boolean) => {
@@ -148,7 +158,7 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
       <AppContext.Provider
         value={{
           appContext,
-          navigateTo,
+          navigate,
           setNeedsConfitmTransition,
           showDialog,
         }}
