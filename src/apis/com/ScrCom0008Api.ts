@@ -1,3 +1,5 @@
+import { ScrCom0032PopupModel } from 'pages/com/popups/SrcCom0032';
+
 import { comApiClient } from 'providers/ApiClient';
 
 /** SCR-COM-0008-0001: 帳票コメント情報取得API リクエスト */
@@ -26,12 +28,37 @@ export interface ScrCom0008GetReportCommentCurrentResponse {
   changeTimestamp: string;
 }
 
+/** SCR-COM-0008-0007: 帳票コメント情報登録更新API リクエスト */
+export interface ScrCom0008RegistUpdateReportCommentRequest {
+  /** 帳票ID */
+  reportId: string;
+  /** 帳票コメント */
+  reportComment: string;
+  /** 申請従業員ID */
+  applicationEmployeeId: string;
+  /** 登録変更メモ */
+  registrationChangeMemo: string;
+  /** 変更予定日 */
+  changeExpectDate: string;
+}
+
 /** SCR-COM-0008-0001: 帳票コメント情報取得API */
 export const ScrCom0008GetReportCommentCurrent = async (
   request: ScrCom0008GetReportCommentCurrentRequest
 ): Promise<ScrCom0008GetReportCommentCurrentResponse> => {
   const response = await comApiClient.post(
     '/scr-com-0008/get-reportcomment-current',
+    request
+  );
+  return response.data;
+};
+
+/** SCR-COM-0008-0007: 帳票コメント情報登録更新API */
+export const ScrCom0008RegistUpdateReportComment = async (
+  request: ScrCom0008RegistUpdateReportCommentRequest
+): Promise<ScrCom0032PopupModel> => {
+  const response = await comApiClient.post(
+    '/scr-com-0008/regist-update-reportcomment',
     request
   );
   return response.data;
