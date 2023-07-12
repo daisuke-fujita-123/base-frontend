@@ -85,11 +85,17 @@ export const Example = () => {
     <FormProvider {...methods}>
       <ThemeProvider theme={theme}>
         <DatePicker
-          label='サンプル日程'
+          label='サンプル日程（和暦あり）'
           required={true}
           name='name'
           disabled={false}
           wareki={true}
+        />
+        <DatePicker
+          label='サンプル日程（和暦なし）'
+          required={true}
+          name='name'
+          disabled={false}
         />
       </ThemeProvider>
     </FormProvider>
