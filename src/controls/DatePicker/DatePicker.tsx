@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   FieldPath,
   FieldPathValue,
@@ -60,18 +60,29 @@ export const DatePicker = <T extends FieldValues>(
 
   // 和暦表示用の文字列を作成
   const [warekiDisplay, setWarekiDisplay] = useState<string>('');
-  const warekiExcahnger = (data: PathValue<T, Path<T>> | null) => {
-    if (!wareki && data !== null) {
-      return;
-    } else if (data !== null) {
-      const warekiString = new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
-        era: 'long',
-      }).format(data);
-      const warekiSplitted = warekiString.split('/');
-      const formattedWareki = `${warekiSplitted[0]}年${warekiSplitted[1]}月${warekiSplitted[2]}日`;
-      setWarekiDisplay(formattedWareki);
-    }
-  };
+  const warekiExcahnger = useCallback(
+    (data: PathValue<T, Path<T>> | null) => {
+      if (!wareki && data !== null) {
+        return;
+      } else if (data !== null) {
+        const warekiString = new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
+          era: 'long',
+        }).format(data);
+        const warekiSplitted = warekiString.split('/');
+        const formattedWareki = `${warekiSplitted[0]}年${warekiSplitted[1]}月${warekiSplitted[2]}日`;
+        setWarekiDisplay(formattedWareki);
+      }
+    },
+    [wareki]
+  );
+
+  // 和暦の初期表示
+  useEffect(() => {
+    const initialize = () => {
+      warekiExcahnger(watchValue);
+    };
+    initialize();
+  }, [warekiExcahnger, watchValue]);
 
   // 日付を文字列に変換
   const transformFromDateToString = (
@@ -124,6 +135,7 @@ export const DatePicker = <T extends FieldValues>(
                     ? String(formState.errors[name]?.message)
                     : null
                 }
+                defaultValue={null}
               />
             )}
             renderDay={(day, selectedDays, pickersDayProps) => {
