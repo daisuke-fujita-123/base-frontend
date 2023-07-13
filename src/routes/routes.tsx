@@ -1,5 +1,12 @@
 import React from 'react';
 
+import ScrCom0011PopupTester from 'pages/_dev/ScrCom0011PopupTester';
+import ScrCom0018PopupTester from 'pages/_dev/ScrCom0018PopupTester';
+import ScrCom0032PopupTester from 'pages/_dev/ScrCom0032PopupTester';
+import ScrCom0033PopupTester from 'pages/_dev/ScrCom0033PopupTester';
+import ScrCom0035PopupTester from 'pages/_dev/ScrCom0035PopupTester';
+import ScrCom0036PopupTester from 'pages/_dev/ScrCom0036PopupTester';
+import ScrCom0038PopupTester from 'pages/_dev/ScrCom0038PopupTester';
 import ScrCom0001Page from 'pages/com/ScrCom0001Page';
 import ScrCom0002Page from 'pages/com/ScrCom0002Page';
 import ScrCom0003Page from 'pages/com/ScrCom0003Page';
@@ -426,6 +433,55 @@ const _routes = [
     name: '残高確認',
     path: '-',
     element: <ScrCom0002Page />,
+  },
+  {
+    // SCR-COM-0011 帳票選択（ポップアップ）テスター
+    id: 'SCR-COM-0011',
+    name: '帳票選択（ポップアップ）テスター',
+    path: '/_dev/tester/scr-com-0011',
+    element: <ScrCom0011PopupTester />,
+  },
+  {
+    // SCR-COM-0018 サービス一覧（ポップアップ）テスター
+    id: 'SCR-COM-0018',
+    name: 'サービス一覧（ポップアップ）テスター',
+    path: '/_dev/tester/scr-com-0018',
+    element: <ScrCom0018PopupTester />,
+  },
+  {
+    // SCR-COM-0032 登録内容確認（ポップアップ）テスター
+    id: 'SCR-COM-0032',
+    name: '登録内容確認（ポップアップ）テスター',
+    path: '/_dev/tester/scr-com-0032',
+    element: <ScrCom0032PopupTester />,
+  },
+  {
+    // SCR-COM-0033 登録内容申請（ポップアップ）テスター
+    id: 'SCR-COM-0033',
+    name: '登録内容申請（ポップアップ）テスター',
+    path: '/_dev/tester/scr-com-0033',
+    element: <ScrCom0033PopupTester />,
+  },
+  {
+    // SCR-COM-0035 CSV読込（ポップアップ）テスター
+    id: 'SCR-COM-0035',
+    name: 'CSV読込（ポップアップ）テスター',
+    path: '/_dev/tester/scr-com-0035',
+    element: <ScrCom0035PopupTester />,
+  },
+  {
+    // SCR-COM-0036 一括登録エラー確認（ポップアップ）テスター
+    id: 'SCR-COM-0036',
+    name: '一括登録エラー確認（ポップアップ）テスター',
+    path: '/_dev/tester/scr-com-0036',
+    element: <ScrCom0036PopupTester />,
+  },
+  {
+    // SCR-COM-0038 エラー確認（ポップアップ）テスター
+    id: 'SCR-COM-0038',
+    name: 'エラー確認（ポップアップ）テスター',
+    path: '/_dev/tester/scr-com-0038',
+    element: <ScrCom0038PopupTester />,
   },
 ];
 
