@@ -1,12 +1,10 @@
 import React from 'react';
 
-import ScrCom0033Popup from 'pages/com/popups/ScrCom0033Popup';
-
 /**
  * SCR-COM-0033 登録内容申請（ポップアップ）
  */
-const ScrCom0033PopupTester = () => {
-  return <ScrCom0033Popup />;
+const ScrCom0033Popup = () => {
+  return <h1>SCR-COM-0033 登録内容申請（ポップアップ）</h1>;
 };
 
-export default ScrCom0033PopupTester;
+export default ScrCom0033Popup;
