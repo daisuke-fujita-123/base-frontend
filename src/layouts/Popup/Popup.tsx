@@ -3,10 +3,9 @@ import React, { ReactNode } from 'react';
 import { Modal } from 'layouts/Modal';
 import { StackModalSection } from 'layouts/StackModalSection';
 
-import { CancelButton, ConfirmButton } from 'controls/Button';
 import { theme } from 'controls/theme';
 
-import { Box, DialogContent } from '@mui/material';
+import { Box, DialogContent, Stack } from '@mui/material';
 
 const style = {
   position: 'absolute',
@@ -21,23 +20,32 @@ const style = {
   flexDirection: 'column',
 };
 
-interface Buttons {
-  name: string;
-  onClick: () => void;
-}
-
 interface PopupProps {
   titles?: string[];
-  open: boolean;
+  open?: boolean;
   children: ReactNode | ReactNode[];
-  buttons: Buttons[];
   isWarning?: boolean;
   isError?: boolean;
+  bottom?: boolean;
+  main?: boolean;
 }
 
 export const Popup = (props: PopupProps) => {
-  const { open, buttons, children, titles } = props;
+  const { open = false, children, titles } = props;
+  let mainElement = undefined;
+  let bottomElement = undefined;
 
+  if (Array.isArray(children)) {
+    children.map((value) => {
+      if (React.isValidElement(value)) {
+        if (value.props.main) {
+          mainElement = value.props.children;
+        } else if (value.props.bottom) {
+          bottomElement = value.props.children;
+        }
+      }
+    });
+  }
   return (
     <>
       <Modal open={open}>
@@ -49,37 +57,35 @@ export const Popup = (props: PopupProps) => {
           <DialogContent
             sx={{
               p: theme.spacing(4),
-              overflow: 'auto',
+              overflowY: 'auto',
             }}
           >
             {titles ? (
-              <StackModalSection titles={titles}>{children}</StackModalSection>
+              <StackModalSection titles={titles}>
+                {mainElement}
+              </StackModalSection>
             ) : (
-              children
+              mainElement
             )}
           </DialogContent>
-          <Box
-            padding={theme.spacing(4)}
-            display='flex'
-            gap={theme.spacing(4)}
-            justifyContent='flex-end'
-            sx={{ background: theme.palette.background.default }}
-          >
-            {buttons.map((value, index) => (
-              <>
-                {index === 0 && (
-                  <CancelButton onClick={value.onClick} variant='outlined'>
-                    {value.name}
-                  </CancelButton>
-                )}
-                {index !== 0 && (
-                  <ConfirmButton onClick={value.onClick} variant='outlined'>
-                    {value.name}
-                  </ConfirmButton>
-                )}
-              </>
-            ))}
-          </Box>
+          {bottomElement && (
+            <Box
+              padding={theme.spacing(2)}
+              display='flex'
+              justifyContent='flex-end'
+              height='40px'
+              sx={{ background: theme.palette.background.default }}
+            >
+              <Stack
+                direction='row'
+                alignItems='center'
+                marginRight={1}
+                gap={3}
+              >
+                {bottomElement}
+              </Stack>
+            </Box>
+          )}
         </Box>
       </Modal>
     </>

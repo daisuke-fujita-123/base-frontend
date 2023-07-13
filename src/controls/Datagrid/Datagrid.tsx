@@ -458,7 +458,7 @@ export const DataGrid = (props: DataGridProps) => {
     pageSize !== undefined
       ? {
           Pagination: () => <Pagination total={rows.length} />,
-          // BasePopper: () => <InfoButton />,
+          // ColumnHeaderFilterIconButton: () => <任意のアイコン />,ケバブアイコン（Menu）を変更
         }
       : undefined;
 
