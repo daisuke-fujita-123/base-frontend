@@ -1,11 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 
+import { MainLayout } from 'layouts/MainLayout';
 import { Popup } from 'layouts/Popup';
 import { PopSection } from 'layouts/Section';
 import { ControlsStackItem } from 'layouts/Stack';
 
+import { Dialog } from 'controls/Dialog';
 import { Select, SelectValue } from 'controls/Select';
 import { Textarea } from 'controls/Textarea';
 import { Typography } from 'controls/Typography';
@@ -52,8 +55,11 @@ interface ScrCom0033PopupProps {
   data: ScrCom0033PopupModel;
   // TODO: キャンセルが登録内容ポップアップからか一括登録確認画面からかで処理変更する
   handleCancel: () => void;
-  // TODO: メッセージポップアップを表示してOKかキャンセルかで処理変更する
-  handleConfirm: () => void;
+  // 確定ボタン押下時に渡すパラメータ
+  handlePopupConfirm: (
+    selectValues: SelectValuesModel,
+    applicationComment: string,
+  ) => void;
 }
 
 
@@ -100,12 +106,72 @@ const validationSchama = generate([
  */
 const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   // props
-  const { isOpen, handleCancel, handleConfirm, data } = props;
+  const { isOpen, data } = props;
 
-  const buttons = [
+  // form
+  const methods = useForm({
+    defaultValues: {
+      applicationComment: '',
+    }, resolver: yupResolver(validationSchama),
+  });
+  const {
+    getValues,
+  } = methods;
+
+
+  // ポップアップ確定ボタン押下時の処理(ダイアログを呼び出す)
+  const handlePopupConfirm = () => {
+    // ダイアログを表示
+    setTitle('申請内容を確定してよろしいでしょうか');
+    setHandleDialog(true);
+  }
+
+
+  // ポップアップキャンセルボタン押下時の処理
+  const handleCancel = () => {
+    // 画面ID => 登録内容確認ポップアップ空の遷移
+    if (data.screenId === 'SCR-COM-0032') {
+      // TODO: 取引会計管理かそれ以外かで判定する 判定方法不明
+      if (isTra) {
+        setTitle('申請データ(未提出)を登録しますがよろしいでしょうか');
+      } else {
+        setTitle('登録データが破棄されますがよろしいでしょうか');
+      }
+      // 画面ID => 一括登録確認画面からの遷移
+    } else if (data.screenId === '') {
+      setTitle('登録データが破棄されますがよろしいでしょうか。');
+    }
+    // ダイアログを表示
+    setHandleDialog(true);
+  }
+
+
+  // ダイアログのOKボタン押下時の処理(呼び出し元画面で登録を行う)
+  const handleDialogConfirm = () => {
+    // 取引会計管理の処理の場合登録を行う
+    if (isTra) {
+      props.handlePopupConfirm(
+        // 第１～第４承認者
+        selectValues,
+        // 申請コメント
+        getValues('applicationComment'),
+      );
+    }
+    setHandleDialog(false);
+  }
+
+
+  // button
+  const popupButtons = [
     { name: 'キャンセル', onClick: handleCancel, },
-    { name: '確定', onClick: handleConfirm },
+    { name: '確定', onClick: handlePopupConfirm },
   ];
+
+  const dialogButtons = [
+    { name: 'キャンセル', onClick: () => setHandleDialog(false) },
+    { name: 'OK', onClick: handleDialogConfirm },
+  ]
+
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -113,15 +179,12 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   );
   // 判定に使用する必要承認ステップ数
   const [needApprovalStep, setNeedApprovalStep] = useState<number>()
+  // 判定に使用する取引会計管理かどうかのフラグ
+  const [isTra, setIsTra] = useState<boolean>(true);
 
-  // form
-  const methods = useForm({
-    defaultValues: {
-      // TODO: 動的にバリデーションを変更する（文字数）
-      applicationComment: '',
-    }, resolver: yupResolver(validationSchama),
-  });
-
+  // メッセージポップアップ(ダイアログ)
+  const [handleDialog, setHandleDialog] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>('');
 
   // 呼び出し元画面遷移時か登録内容申請ポップアップ起動時か判定するフラグ
   const isFirstRender = useRef(false)
@@ -136,6 +199,11 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   // 登録内容申請ポップアップ表示時の処理
   useEffect(() => {
     const initialize = async () => {
+
+      // TODO:ダイアログキャンセル処理用にTRAかどうかを判断して設定する
+      //  ⇒ 登録内容確認ポップアップのキャンセル時に取引会計かそれ以外かを判定
+      setIsTra(false);
+
       // API-COM-0033-0001：承認者情報取得API（登録内容申請ポップアップ）
       const request: ScrCom0033GetApproverRequest = {
         /** 画面ID */
@@ -245,71 +313,83 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
 
   return (
     <>
-      <Popup open={isOpen} buttons={buttons}>
-        <PopSection name='承認申請'>
-          <Select
-            label='第１承認者'
-            labelPosition='above'
-            name='needApprovalStep1'
-            selectValues={selectValues.approvalUser_1}
-            blankOption
-            required
-          />
-          <br />
-          {/* APIから取得した承認ステップ数が２以上の場合のみ表示 */}
-          {needApprovalStep && needApprovalStep >= 2 ?
-            <>
-              <Select
-                label='第２承認者'
-                labelPosition='above'
-                name='needApprovalStep2'
-                selectValues={selectValues.approvalUser_2}
-                blankOption
-                required
-              />
-              <br />
-            </>
-            : ''}
-          {/* APIから取得した承認ステップ数が３以上の場合のみ表示 */}
-          {needApprovalStep && needApprovalStep >= 3 ?
-            <>
-              <Select
-                label='第３承認者'
-                labelPosition='above'
-                name='needApprovalStep3'
-                selectValues={selectValues.approvalUser_3}
-                blankOption
-                required
-              />
-              <br />
-            </>
-            : ''}
-          {/* APIから取得した承認ステップ数が４以上の場合のみ表示 */}
-          {needApprovalStep && needApprovalStep >= 4 ?
-            <>
-              <Select
-                label='第４承認者'
-                labelPosition='above'
-                name='needApprovalStep4'
-                selectValues={selectValues.approvalUser_4}
-                blankOption
-                required
-              />
-              <br />
-            </>
-            : ''}
-          <Typography variant='h6'>申請コメント</Typography>
-          <ControlsStackItem size='m'>
-            {/* TODO: テキストエリア内に縦スクロールバー表示する必要あり */}
-            <Textarea
-              name='applicationComment'
-              minRows={10}
-              maxRows={30}
-              size='l'
-            ></Textarea>
-          </ControlsStackItem>
-        </PopSection>
-      </Popup>
+      <MainLayout>
+        <MainLayout main>
+          <FormProvider {...methods}>
+            <Popup open={isOpen} buttons={popupButtons}>
+              <PopSection name='承認申請'>
+                <Select
+                  label='第１承認者'
+                  labelPosition='above'
+                  name='needApprovalStep1'
+                  selectValues={selectValues.approvalUser_1}
+                  blankOption
+                  required
+                />
+                <br />
+                {/* APIから取得した承認ステップ数が２以上の場合のみ表示 */}
+                {needApprovalStep && needApprovalStep >= 2 ?
+                  <>
+                    <Select
+                      label='第２承認者'
+                      labelPosition='above'
+                      name='needApprovalStep2'
+                      selectValues={selectValues.approvalUser_2}
+                      blankOption
+                      required
+                    />
+                    <br />
+                  </>
+                  : ''}
+                {/* APIから取得した承認ステップ数が３以上の場合のみ表示 */}
+                {needApprovalStep && needApprovalStep >= 3 ?
+                  <>
+                    <Select
+                      label='第３承認者'
+                      labelPosition='above'
+                      name='needApprovalStep3'
+                      selectValues={selectValues.approvalUser_3}
+                      blankOption
+                      required
+                    />
+                    <br />
+                  </>
+                  : ''}
+                {/* APIから取得した承認ステップ数が４以上の場合のみ表示 */}
+                {needApprovalStep && needApprovalStep >= 4 ?
+                  <>
+                    <Select
+                      label='第４承認者'
+                      labelPosition='above'
+                      name='needApprovalStep4'
+                      selectValues={selectValues.approvalUser_4}
+                      blankOption
+                      required
+                    />
+                    <br />
+                  </>
+                  : ''}
+                <Typography variant='h6'>申請コメント</Typography>
+                <ControlsStackItem size='m'>
+                  {/* TODO: テキストエリア内に縦スクロールバー表示する必要あり */}
+                  <Textarea
+                    name='applicationComment'
+                    minRows={10}
+                    maxRows={30}
+                    size='l'
+                  ></Textarea>
+                </ControlsStackItem>
+              </PopSection>
+            </Popup>
+          </FormProvider>
+        </MainLayout >
+      </MainLayout >
+      {/* ダイアログ */}
+      <Dialog
+        open={handleDialog}
+        title={title}
+        buttons={dialogButtons}
+      />
     </>
   );
 }
