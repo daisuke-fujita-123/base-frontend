@@ -1,15 +1,27 @@
-import { yupResolver } from '@hookform/resolvers/yup';
-import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
-import { ScrMem0003AddCheckContractInfo, ScrMem0003AddCheckContractInfoRequest, ScrMem0003GetContractCourseService, ScrMem0003GetContractCourseServiceRequest, ScrMem0003GetContractCourseServiceResponse } from 'apis/mem/ScrMem0003Api';
-import { AddButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
-import { useForm } from 'hooks/useForm';
-import { useNavigate } from 'hooks/useNavigate';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+
 import { MarginBox, RightBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import React, { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+
+import { AddButton } from 'controls/Button';
+import { DataGrid, GridColDef } from 'controls/Datagrid';
+
+import {
+  ScrMem0003AddCheckContractInfo,
+  ScrMem0003AddCheckContractInfoRequest,
+  ScrMem0003GetContractCourseService,
+  ScrMem0003GetContractCourseServiceRequest,
+  ScrMem0003GetContractCourseServiceResponse,
+  ScrMem0003RegistrationCorporationInfoRequest,
+} from 'apis/mem/ScrMem0003Api';
+
+import { useNavigate } from 'hooks/useNavigate';
+
+import { memApiClient } from 'providers/ApiClient';
+
+import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
 
 /**
  * 契約情報列定義
@@ -70,7 +82,7 @@ const contractInfoColumns: GridColDef[] = [
     field: 'priceTotal',
     headerName: '会費合計',
     size: 'm',
-    tooltip: true
+    tooltip: true,
   },
 ];
 
@@ -206,17 +218,11 @@ const contractInfoColumnGroups: GridColumnGroupingModel = [
   },
   {
     groupId: '事業拠点情報',
-    children: [
-      { field: 'businessBaseId' }, 
-      { field: 'businessBaseName' }
-    ],
+    children: [{ field: 'businessBaseId' }, { field: 'businessBaseName' }],
   },
   {
     groupId: '請求先情報',
-    children: [
-      { field: 'billingId' },
-      { field: 'claimMethodKind' },
-    ],
+    children: [{ field: 'billingId' }, { field: 'claimMethodKind' }],
   },
   {
     groupId: 'コース・オプション契約情報',
@@ -232,9 +238,9 @@ const contractInfoColumnGroups: GridColumnGroupingModel = [
 /**
  * 列モデル
  */
-interface ContractCourseServiceModel{
+interface ContractCourseServiceModel {
   tvaaContractInfo: ContractInfoModel[];
-  bikeCountInfo: ContractInfoModel[];
+  bikeContractInfo: ContractInfoModel[];
   billingInfo: BillingInfoModel[];
   assignmentDocumentDestination: AssignmentDocumentDestinationModel[];
 }
@@ -296,19 +302,23 @@ interface AssignmentDocumentDestinationModel {
  */
 interface ScrCom0038PopupDataModel {
   // エラー内容リスト
-  errorList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  errorList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
   // ワーニング内容リスト
-  warnList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  warnList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
 }
 
 const tooltips = [
@@ -316,7 +326,7 @@ const tooltips = [
     field: 'priceTotal',
     id: 0,
     value: '',
-    text: 'サテロク 6,000円'
+    text: 'サテロク 6,000円',
   },
 ];
 
@@ -326,41 +336,46 @@ const tooltips = [
 const convertToContractCourseServiceModel = (
   response: ScrMem0003GetContractCourseServiceResponse
 ): ContractCourseServiceModel => {
-  return{
+  return {
     tvaaContractInfo: response.tvaaContractInfo.map((x) => {
-      return{
+      return {
         id: x.contractId,
         contractId: x.contractId,
-        contractChangeReservationfFlag: x.contractChangeReservationfFlag? 'あり' : '',
+        contractChangeReservationfFlag: x.contractChangeReservationfFlag
+          ? 'あり'
+          : '',
         businessBaseId: x.businessBaseId,
         businessBaseName: x.businessBaseName,
         billingId: x.billingId,
         claimMethodKind: x.claimMethodKind,
         courseName: x.courseName,
         optionEntryKind: x.optionEntryKind,
-        optionContractFlag: x.optionContractFlag? 'あり' : '',
-        // 会費合計を計算し表示
-        priceTotal: ''
+        optionContractFlag: x.optionContractFlag ? 'あり' : '',
+
+        // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
+        priceTotal: (100000).toLocaleString(),
       };
     }),
-    bikeCountInfo: response.bikeContractInfo.map((x) => {
-      return{
+    bikeContractInfo: response.bikeContractInfo.map((x) => {
+      return {
         id: x.contractId,
         contractId: x.contractId,
-        contractChangeReservationfFlag: x.contractChangeReservationfFlag? 'あり' : '',
+        contractChangeReservationfFlag: x.contractChangeReservationfFlag
+          ? 'あり'
+          : '',
         businessBaseId: x.businessBaseId,
         businessBaseName: x.businessBaseName,
         billingId: x.billingId,
         claimMethodKind: x.claimMethodKind,
         courseName: x.courseName,
         optionEntryKind: x.optionEntryKind,
-        optionContractFlag: x.optionContractFlag? 'あり' : '',
-        // 会費合計を計算し表示
-        priceTotal: ''
+        optionContractFlag: x.optionContractFlag ? 'あり' : '',
+        // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
+        priceTotal: (100000).toLocaleString(),
       };
     }),
     billingInfo: response.billingInfo.map((x) => {
-      return{
+      return {
         id: x.billingId,
         billingId: x.billingId,
         contractId: x.contractId,
@@ -372,153 +387,338 @@ const convertToContractCourseServiceModel = (
         payingBankName: x.payingBankName,
         payingBranchName: x.payingBranchName,
         payingAccountNumber: x.payingAccountNumber,
-        changeReservationfFlag: x.changeReservationfFlag? 'あり' : '',
+        changeReservationfFlag: x.changeReservationfFlag ? 'あり' : '',
       };
     }),
-    assignmentDocumentDestination: response.assignmentDocumentDestinationInfo.map((x) => {
-      return{
-        id: x.contractId,
-        contractId: x.contractId,
-        assignmentDocumentDestinationZipCode: x.assignmentDocumentDestinationZipCode,
-        assignmentDocumentDestinationPrefectureName: x.assignmentDocumentDestinationPrefectureName,
-        assignmentDocumentDestinationMunicipalities: x.assignmentDocumentDestinationMunicipalities,
-        assignmentDocumentDestinationAddressBuildingName: x.assignmentDocumentDestinationAddressBuildingName,
-        assignmentDocumentDestinationPhoneNumber: x.assignmentDocumentDestinationPhoneNumber,
-        assignmentDocumentDestinationFaxNumber: x.assignmentDocumentDestinationFaxNumber,
-        assignmentDocumentDestinationMailAddress: x.assignmentDocumentDestinationMailAddress,
-        assignmentDocumentDestinationShippingMethodSlipKind: x.assignmentDocumentDestinationShippingMethodSlipKind,
-        changeReservationfFlag: x.changeReservationfFlag? 'あり' : '',
-      };
-    })
-  }
-}
+    assignmentDocumentDestination:
+      response.assignmentDocumentDestinationInfo.map((x) => {
+        return {
+          id: x.contractId,
+          contractId: x.contractId,
+          assignmentDocumentDestinationZipCode:
+            x.assignmentDocumentDestinationZipCode,
+          assignmentDocumentDestinationPrefectureName:
+            x.assignmentDocumentDestinationPrefectureName,
+          assignmentDocumentDestinationMunicipalities:
+            x.assignmentDocumentDestinationMunicipalities,
+          assignmentDocumentDestinationAddressBuildingName:
+            x.assignmentDocumentDestinationAddressBuildingName,
+          assignmentDocumentDestinationPhoneNumber:
+            x.assignmentDocumentDestinationPhoneNumber,
+          assignmentDocumentDestinationFaxNumber:
+            x.assignmentDocumentDestinationFaxNumber,
+          assignmentDocumentDestinationMailAddress:
+            x.assignmentDocumentDestinationMailAddress,
+          assignmentDocumentDestinationShippingMethodSlipKind:
+            x.assignmentDocumentDestinationShippingMethodSlipKind,
+          changeReservationfFlag: x.changeReservationfFlag ? 'あり' : '',
+        };
+      }),
+  };
+};
 
-const ScrMem0003ContractTab = () => {
+/**
+ * 法人契約コース・サービス一覧取得APIリクエストから法人情報詳細モデルへの変換
+ */
+const convertToScrMem0003DataModel = (
+  scrMem0003Data: ScrMem0003RegistrationCorporationInfoRequest,
+  response: ScrMem0003GetContractCourseServiceResponse
+): ScrMem0003RegistrationCorporationInfoRequest => {
+  const newScrMem0003Data: ScrMem0003RegistrationCorporationInfoRequest =
+    Object.assign(scrMem0003Data);
+  newScrMem0003Data.tvaaLimitCount = response.tvaaLimitCount;
+  newScrMem0003Data.tvaaResponseCount = response.tvaaResponseCount;
+  newScrMem0003Data.tvaaAcquisitionCount = response.tvaaAcquisitionCount;
+  newScrMem0003Data.tvaaContractInfo = response.tvaaContractInfo;
+
+  newScrMem0003Data.bikeLimitCount = response.bikeLimitCount;
+  newScrMem0003Data.bikeResponseCount = response.bikeResponseCount;
+  newScrMem0003Data.bikeAcquisitionCount = response.bikeAcquisitionCount;
+  newScrMem0003Data.bikeContractInfo = response.bikeContractInfo;
+
+  newScrMem0003Data.billingLimitCount = response.billingLimitCount;
+  newScrMem0003Data.billingResponseCount = response.billingResponseCount;
+  newScrMem0003Data.billingAcquisitionCount = response.billingAcquisitionCount;
+  newScrMem0003Data.billingInfo = response.billingInfo;
+
+  newScrMem0003Data.assignmentLimitCount = response.assignmentLimitCount;
+  newScrMem0003Data.assignmentResponseCount = response.assignmentResponseCount;
+  newScrMem0003Data.assignmentAcquisitionCount =
+    response.assignmentAcquisitionCount;
+  newScrMem0003Data.assignmentDocumentDestinationInfo =
+    response.assignmentDocumentDestinationInfo;
+
+  return newScrMem0003Data;
+};
+
+const ScrMem0003ContractTab = (props: {
+  chengeScrMem0003Data: (
+    scrMem0003Data: ScrMem0003RegistrationCorporationInfoRequest
+  ) => void;
+  scrMem0003Data: ScrMem0003RegistrationCorporationInfoRequest;
+}) => {
   // router
   const { corporationId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const applicationId = searchParams.get('applicationId');
 
   // state
-  const [tvaaContractInfoRows, setTvaaContractInfoRows] = useState<ContractInfoModel[]>([]);
-  const [bikeCountInfoRows, setBikeCountInfoRows] = useState<ContractInfoModel[]>([]);
-  const [billingInfoRows, setBillingInfoRows] = useState<BillingInfoModel[]>([]);
-  const [assignmentDocumentDestinationRows, setAssignmentDocumentDestinationRows] = useState<AssignmentDocumentDestinationModel[]>([]);
-  const [tvaaContractInfoTooltips, setTvaaContractInfoTooltips] = useState<any[]>([]);
-  const [bikeContractInfoTooltips, setBikeContractInfoTooltips] = useState<any[]>([]);
+  const [tvaaContractInfoRows, setTvaaContractInfoRows] = useState<
+    ContractInfoModel[]
+  >([]);
+  const [bikeCountInfoRows, setBikeCountInfoRows] = useState<
+    ContractInfoModel[]
+  >([]);
+  const [billingInfoRows, setBillingInfoRows] = useState<BillingInfoModel[]>(
+    []
+  );
+  const [
+    assignmentDocumentDestinationRows,
+    setAssignmentDocumentDestinationRows,
+  ] = useState<AssignmentDocumentDestinationModel[]>([]);
+  const [tvaaContractInfoTooltips, setTvaaContractInfoTooltips] = useState<
+    any[]
+  >([]);
+  const [bikeContractInfoTooltips, setBikeContractInfoTooltips] = useState<
+    any[]
+  >([]);
   const [tvaaContractInfoHrefs, setTvaaContractInfoHrefs] = useState<any[]>([]);
   const [bikeCountInfoHrefs, setBikeCountInfoHrefs] = useState<any[]>([]);
   const [billingInfoHrefs, setBillingInfoHrefs] = useState<any[]>([]);
-  const [assignmentDocumentDestinationHrefs, setAssignmentDocumentDestinationHrefs] = useState<any[]>([]);
+  const [
+    assignmentDocumentDestinationHrefs,
+    setAssignmentDocumentDestinationHrefs,
+  ] = useState<any[]>([]);
   const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] = useState(false);
-  const [scrCom0038PopupData, setScrCom0038PopupData] = useState<ScrCom0038PopupDataModel>();
+  const [scrCom0038PopupData, setScrCom0038PopupData] =
+    useState<ScrCom0038PopupDataModel>();
 
   useEffect(() => {
-    const initialize = async (corporationId:string) => {
+    const initialize = async (corporationId: string) => {
       // 与信情報取得API
       const request: ScrMem0003GetContractCourseServiceRequest = {
         corporationId: corporationId,
-        limit: 0
+        limit: 0,
       };
       const response = await ScrMem0003GetContractCourseService(request);
-      const contractCourseService = convertToContractCourseServiceModel(response);
-      setTvaaContractInfoRows(contractCourseService.tvaaContractInfo)
-      setBikeCountInfoRows(contractCourseService.bikeCountInfo)
-      setBillingInfoRows(contractCourseService.billingInfo)
-      setAssignmentDocumentDestinationRows(contractCourseService.assignmentDocumentDestination)
+      const contractCourseService =
+        convertToContractCourseServiceModel(response);
+      setTvaaContractInfoRows(contractCourseService.tvaaContractInfo);
+      setBikeCountInfoRows(contractCourseService.bikeContractInfo);
+      setBillingInfoRows(contractCourseService.billingInfo);
+      setAssignmentDocumentDestinationRows(
+        contractCourseService.assignmentDocumentDestination
+      );
+
+      // 取得データ保持
+      const scrMem0003Data = convertToScrMem0003DataModel(
+        props.scrMem0003Data,
+        response
+      );
+      props.chengeScrMem0003Data(scrMem0003Data);
 
       // ツールチップ設定
-      // TODO:詳細設計シート「イベント詳細定義（画面共通）」に構造変更内容記載、確定するまでサンプル実装
-      setTvaaContractInfoTooltips(contractCourseService.tvaaContractInfo.map((x) => {
-        return {
-          field: 'priceTotal',
-          id: x.contractId,
-          value: '',
-          text: 'サテロク 6,000円'
-        }
-      }));
+      // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
+      setTvaaContractInfoTooltips(
+        contractCourseService.tvaaContractInfo.map((x) => {
+          return {
+            field: 'priceTotal',
+            id: x.contractId,
+            value: '',
+            text: 'サテロク 6,000円',
+          };
+        })
+      );
 
-      setBikeContractInfoTooltips(contractCourseService.bikeCountInfo.map((x) => {
-        return {
-          field: 'priceTotal',
-          id: x.contractId,
-          value: '',
-          text: 'サテロク 6,000円'
-        }
-      }));
+      setBikeContractInfoTooltips(
+        contractCourseService.bikeContractInfo.map((x) => {
+          return {
+            field: 'priceTotal',
+            id: x.contractId,
+            value: '',
+            text: 'サテロク 6,000円',
+          };
+        })
+      );
 
       // refs設定
-      const tvaaContractInfoHrefs:any[] = [];
+      const tvaaContractInfoHrefs: any[] = [];
       contractCourseService.tvaaContractInfo.map((x) => {
         tvaaContractInfoHrefs.push({
           field: 'contractId',
           id: x.contractId,
-          href: '-?contractId='+ x.contractId,
+          href: '-?contractId=' + x.contractId,
         });
         tvaaContractInfoHrefs.push({
           field: 'billingId',
           id: x.contractId,
-          href: '-?billingId='+ x.billingId,
+          href: '-?billingId=' + x.billingId,
         });
       });
-      setTvaaContractInfoHrefs(tvaaContractInfoHrefs)
-      
-      const bikeCountInfoHrefs:any[] = [];
-      contractCourseService.bikeCountInfo.map((x) => {
+      setTvaaContractInfoHrefs(tvaaContractInfoHrefs);
+
+      const bikeCountInfoHrefs: any[] = [];
+      contractCourseService.bikeContractInfo.map((x) => {
         bikeCountInfoHrefs.push({
           field: 'contractId',
           id: x.contractId,
-          href: '-?contractId='+ x.contractId,
+          href: '-?contractId=' + x.contractId,
         });
         bikeCountInfoHrefs.push({
           field: 'billingId',
           id: x.contractId,
-          href: '-?billingId='+ x.billingId,
+          href: '-?billingId=' + x.billingId,
         });
       });
-      setBikeCountInfoHrefs(bikeCountInfoHrefs)
+      setBikeCountInfoHrefs(bikeCountInfoHrefs);
 
       setBillingInfoHrefs(
         contractCourseService.billingInfo.map((x) => {
           return {
             field: 'billingId',
             id: x.billingId,
-            href: '/mem/corporations/'+x.billingId +'/billings/'
-          }
+            href: '/mem/corporations/' + x.billingId + '/billings/',
+          };
         })
-      )
+      );
 
       setAssignmentDocumentDestinationHrefs(
         contractCourseService.assignmentDocumentDestination.map((x) => {
           return {
             field: 'contractId',
             id: x.contractId,
-            href: '-?contractId='+ x.contractId 
-          }
+            href: '-?contractId=' + x.contractId,
+          };
         })
-      )
-      
+      );
+    };
+
+    const historyInitialize = async (
+      corporationId: string,
+      applicationId: string
+    ) => {
+      // 変更履歴情報取得API
+      const request = {
+        changeHistoryNumber: applicationId,
+      };
+      const response = (await memApiClient.post('/get-history-info', request))
+        .data;
+      const contractCourseService =
+        convertToContractCourseServiceModel(response);
+      setTvaaContractInfoRows(contractCourseService.tvaaContractInfo);
+      setBikeCountInfoRows(contractCourseService.bikeContractInfo);
+      setBillingInfoRows(contractCourseService.billingInfo);
+      setAssignmentDocumentDestinationRows(
+        contractCourseService.assignmentDocumentDestination
+      );
+
+      // 取得データ保持
+      const scrMem0003Data = convertToScrMem0003DataModel(
+        props.scrMem0003Data,
+        response
+      );
+      props.chengeScrMem0003Data(scrMem0003Data);
+
+      // ツールチップ設定
+      // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
+      setTvaaContractInfoTooltips(
+        contractCourseService.tvaaContractInfo.map((x) => {
+          return {
+            field: 'priceTotal',
+            id: x.contractId,
+            value: '',
+            text: 'サテロク 6,000円',
+          };
+        })
+      );
+
+      setBikeContractInfoTooltips(
+        contractCourseService.bikeContractInfo.map((x) => {
+          return {
+            field: 'priceTotal',
+            id: x.contractId,
+            value: '',
+            text: 'サテロク 6,000円',
+          };
+        })
+      );
+
+      // refs設定
+      const tvaaContractInfoHrefs: any[] = [];
+      contractCourseService.tvaaContractInfo.map((x) => {
+        tvaaContractInfoHrefs.push({
+          field: 'contractId',
+          id: x.contractId,
+          href: '-?contractId=' + x.contractId,
+        });
+        tvaaContractInfoHrefs.push({
+          field: 'billingId',
+          id: x.contractId,
+          href: '-?billingId=' + x.billingId,
+        });
+      });
+      setTvaaContractInfoHrefs(tvaaContractInfoHrefs);
+
+      const bikeCountInfoHrefs: any[] = [];
+      contractCourseService.bikeContractInfo.map((x) => {
+        bikeCountInfoHrefs.push({
+          field: 'contractId',
+          id: x.contractId,
+          href: '-?contractId=' + x.contractId,
+        });
+        bikeCountInfoHrefs.push({
+          field: 'billingId',
+          id: x.contractId,
+          href: '-?billingId=' + x.billingId,
+        });
+      });
+      setBikeCountInfoHrefs(bikeCountInfoHrefs);
+
+      setBillingInfoHrefs(
+        contractCourseService.billingInfo.map((x) => {
+          return {
+            field: 'billingId',
+            id: x.billingId,
+            href: '/mem/corporations/' + x.billingId + '/billings/',
+          };
+        })
+      );
+
+      setAssignmentDocumentDestinationHrefs(
+        contractCourseService.assignmentDocumentDestination.map((x) => {
+          return {
+            field: 'contractId',
+            id: x.contractId,
+            href: '-?contractId=' + x.contractId,
+          };
+        })
+      );
+    };
+
+    if (corporationId !== undefined && applicationId !== null) {
+      historyInitialize(corporationId, applicationId);
     }
 
-    if(corporationId !== undefined) {
-      initialize(corporationId)
+    if (corporationId !== undefined) {
+      initialize(corporationId);
       return;
-    };
-
-  }, [corporationId]);
+    }
+  }, [corporationId, applicationId]);
 
   const handleIconContractAddClick = async () => {
-    if(corporationId === undefined) return;
-    
+    if (corporationId === undefined) return;
+
     // 契約情報追加チェック
     const request: ScrMem0003AddCheckContractInfoRequest = {
-      corporationId: corporationId
+      corporationId: corporationId,
     };
     const response = await ScrMem0003AddCheckContractInfo(request);
-    if(response.errorList.length < 0){
+    if (response.errorList.length < 0) {
       // 請求先詳細遷移
-      navigate('/mem/corporations/'+ corporationId+ '/billings/');
-    }else{
+      navigate('/mem/corporations/' + corporationId + '/billings/');
+    } else {
       // TODO: エラー確認ポップアップを表示
       setScrCom0038PopupData(response);
       setIsOpenScrCom0038Popup(true);
@@ -527,11 +727,14 @@ const ScrMem0003ContractTab = () => {
 
   const handleIconBillingAddClick = () => {
     // 請求先詳細遷移
-    navigate('/mem/corporations/'+ corporationId+ '/billings/');    
+    navigate('/mem/corporations/' + corporationId + '/billings/');
   };
 
+  /**
+   * CSV出力リック時のイベントハンドラ
+   */
   const handleIconOutputCsvClick = () => {
-    console.log("CSV出力")
+    console.log('CSV出力');
   };
 
   const handleLinkClick = (url: string) => {
@@ -545,103 +748,111 @@ const ScrMem0003ContractTab = () => {
     setIsOpenScrCom0038Popup(false);
     // 契約情報詳細遷移
     // TODO:パス確認
-    navigate('-?corporationId='+ corporationId);
-  }
+    navigate('-?corporationId=' + corporationId);
+  };
 
   /**
    * エラー確認ポップアップのキャンセルボタンクリック時のイベントハンドラ
    */
   const handlePopupCancel = () => {
     setIsOpenScrCom0038Popup(false);
-  }
+  };
 
   return (
     <>
-    <MainLayout>
-      <MainLayout main>
-        <RightBox>
-          <MarginBox mt={2} mb={4} ml={2} mr={2} gap={2}>
-            <AddButton onClick={handleIconContractAddClick}>
-              契約情報追加
-            </AddButton>
-            <AddButton onClick={handleIconBillingAddClick}>
-              請求先追加
-            </AddButton>
-          </MarginBox>
-        </RightBox>
-        <Section 
-          name='【四輪】契約情報'
-          decoration={
-            <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-              <AddButton onClick={handleIconOutputCsvClick}>
-                CSV出力
+      <MainLayout>
+        <MainLayout main>
+          <RightBox>
+            <MarginBox mt={2} mb={4} ml={2} mr={2} gap={2}>
+              <AddButton onClick={handleIconContractAddClick}>
+                契約情報追加
+              </AddButton>
+              <AddButton onClick={handleIconBillingAddClick}>
+                請求先追加
               </AddButton>
             </MarginBox>
-          }>
-          <DataGrid 
-            columns={contractInfoColumns}
-            columnGroupingModel={contractInfoColumnGroups}
-            rows={tvaaContractInfoRows}
-            tooltips={tvaaContractInfoTooltips}
-            hrefs={tvaaContractInfoHrefs}
-            onLinkClick={handleLinkClick}
-          />
-        </Section>
-        <Section 
-          name='【二輪】契約情報'
-          decoration={
-            <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-              <AddButton onClick={handleIconOutputCsvClick}>
-                CSV出力
-              </AddButton>
-            </MarginBox>
-          }>
-          <DataGrid 
-            columns={contractInfoColumns}
-            columnGroupingModel={contractInfoColumnGroups}
-            rows={bikeCountInfoRows}
-            tooltips={bikeContractInfoTooltips}
-            hrefs={bikeCountInfoHrefs}
-            onLinkClick={handleLinkClick}
-          />
-        </Section>
-        <Section 
-          name='請求先一覧'
-          decoration={
-            <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-              <AddButton onClick={handleIconOutputCsvClick}>
-                CSV出力
-              </AddButton>
-            </MarginBox>
-          }>
-          <DataGrid 
-            columns={billingInfoColumns}
-            rows={billingInfoRows}
-            hrefs={billingInfoHrefs}
-            onLinkClick={handleLinkClick}
-          />
-        </Section>
-        <Section 
-          name='譲渡書類送付先一覧'
-          decoration={
-            <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-              <AddButton onClick={handleIconOutputCsvClick}>
-                CSV出力
-              </AddButton>
-            </MarginBox>
-          }>
-          <DataGrid 
-            columns={assignmentDocumentDestinationInfoColumns}
-            rows={assignmentDocumentDestinationRows}
-            hrefs={assignmentDocumentDestinationHrefs}
-            onLinkClick={handleLinkClick}
-          />
-        </Section>
+          </RightBox>
+          {/* 【四輪】契約情報セクション */}
+          <Section
+            name='【四輪】契約情報'
+            decoration={
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                <AddButton onClick={handleIconOutputCsvClick}>
+                  CSV出力
+                </AddButton>
+              </MarginBox>
+            }
+          >
+            <DataGrid
+              columns={contractInfoColumns}
+              columnGroupingModel={contractInfoColumnGroups}
+              rows={tvaaContractInfoRows}
+              tooltips={tvaaContractInfoTooltips}
+              hrefs={tvaaContractInfoHrefs}
+              onLinkClick={handleLinkClick}
+            />
+          </Section>
+          {/* 【二輪】契約情報セクション */}
+          <Section
+            name='【二輪】契約情報'
+            decoration={
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                <AddButton onClick={handleIconOutputCsvClick}>
+                  CSV出力
+                </AddButton>
+              </MarginBox>
+            }
+          >
+            <DataGrid
+              columns={contractInfoColumns}
+              columnGroupingModel={contractInfoColumnGroups}
+              rows={bikeCountInfoRows}
+              tooltips={bikeContractInfoTooltips}
+              hrefs={bikeCountInfoHrefs}
+              onLinkClick={handleLinkClick}
+            />
+          </Section>
+          {/* 請求先一覧セクション */}
+          <Section
+            name='請求先一覧'
+            decoration={
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                <AddButton onClick={handleIconOutputCsvClick}>
+                  CSV出力
+                </AddButton>
+              </MarginBox>
+            }
+          >
+            <DataGrid
+              columns={billingInfoColumns}
+              rows={billingInfoRows}
+              hrefs={billingInfoHrefs}
+              onLinkClick={handleLinkClick}
+            />
+          </Section>
+          {/* 譲渡書類送付先一覧セクション */}
+          <Section
+            name='譲渡書類送付先一覧'
+            decoration={
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                <AddButton onClick={handleIconOutputCsvClick}>
+                  CSV出力
+                </AddButton>
+              </MarginBox>
+            }
+          >
+            <DataGrid
+              columns={assignmentDocumentDestinationInfoColumns}
+              rows={assignmentDocumentDestinationRows}
+              hrefs={assignmentDocumentDestinationHrefs}
+              onLinkClick={handleLinkClick}
+            />
+          </Section>
+        </MainLayout>
       </MainLayout>
-    </MainLayout>
 
-    {/* エラー確認ポップアップ */}
-    {/*
+      {/* エラー確認ポップアップ */}
+      {/*
     <ScrCom0038Popup
       isOpen={isOpenScrCom0038Popup}
       data={scrCom0032PopupData}
@@ -654,3 +865,4 @@ const ScrMem0003ContractTab = () => {
 };
 
 export default ScrMem0003ContractTab;
+

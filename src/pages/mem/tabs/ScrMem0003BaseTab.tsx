@@ -1,24 +1,46 @@
+import React, { useContext, useEffect, useState } from 'react';
+import { FormProvider } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
+
 import { yupResolver } from '@hookform/resolvers/yup';
-import { ScrMem0003AddCheckLogisticsBase, ScrMem0003AddCheckLogisticsBaseRequest, ScrMem0003SearchBusinessBase, ScrMem0003SearchBusinessBaseRequest, ScrMem0003SearchBusinessBaseResponse, ScrMem0003SearchLogisticsBase, ScrMem0003SearchLogisticsBaseRequest, ScrMem0003SearchLogisticsBaseResponse } from 'apis/mem/ScrMem0003Api';
+
+import { CenterBox, MarginBox } from 'layouts/Box';
+import { MainLayout } from 'layouts/MainLayout';
+import { Section } from 'layouts/Section';
+import { ColStack, RowStack } from 'layouts/Stack';
+
 import { AddButton, AddIconButton, SearchButton } from 'controls/Button';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { Dialog } from 'controls/Dialog';
 import { ContentsDivider } from 'controls/Divider';
 import { Select, SelectValue } from 'controls/Select';
 import { TextField } from 'controls/TextField';
 import { SerchLabelText } from 'controls/Typography';
+
+import {
+  ScrCom9999GetCodeManagementMaster,
+  ScrCom9999GetCodeValue,
+  ScrMem0003AddCheckLogisticsBase,
+  ScrMem0003AddCheckLogisticsBaseRequest,
+  ScrMem0003SearchBusinessBase,
+  ScrMem0003SearchBusinessBaseRequest,
+  ScrMem0003SearchBusinessBaseResponse,
+  ScrMem0003SearchLogisticsBase,
+  ScrMem0003SearchLogisticsBaseRequest,
+  ScrMem0003SearchLogisticsBaseResponse,
+  ScrMem9999GetBill,
+  ScrMem9999GetCodeValue,
+  ScrMem9999GetEmployeeFromDistrict,
+  ScrMem9999GetLogisticsBaseRepresentativeContract,
+} from 'apis/mem/ScrMem0003Api';
+
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
-import { CenterBox, MarginBox } from 'layouts/Box';
-import { Grid } from 'layouts/Grid';
-import { MainLayout } from 'layouts/MainLayout';
-import { Section } from 'layouts/Section';
-import { ColStack, RowStack } from 'layouts/Stack';
-import { string } from 'prop-types';
-import React, { useState } from 'react';
-import { FormProvider } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
-import { generate } from 'utils/validation/BaseYup';
 
+import { MessageContext } from 'providers/MessageProvider';
+
+import { Format } from 'utils/FormatUtil';
+import yup from 'utils/validation/ValidationDefinition';
 
 /**
  * 検索条件データモデル
@@ -77,6 +99,7 @@ interface SelectValuesModel {
   prefectureCodeSelectValues: SelectValue[];
   regionCodeSelectValues: SelectValue[];
   logisticsBaseRepresentativeContractIdSelectValues: SelectValue[];
+  contractIdSelectValues: SelectValue[];
 }
 
 /**
@@ -94,7 +117,7 @@ const SearchLogisticsBaseinitialValues: SearchModel = {
   logisticsBaseMunicipalities: '',
   regionCode: '',
   logisticsBaseRepresentativeContractId: '',
-  
+
   businessBaseId: '',
   businessBaseName: '',
   businessBaseNameKana: '',
@@ -103,7 +126,7 @@ const SearchLogisticsBaseinitialValues: SearchModel = {
   businessBasePrefectureCode: '',
   businessBaseMunicipalities: '',
   contractId: '',
-}
+};
 
 /**
  * プルダウン初期データ
@@ -115,32 +138,55 @@ const selectValuesInitialValues: SelectValuesModel = {
   prefectureCodeSelectValues: [],
   regionCodeSelectValues: [],
   logisticsBaseRepresentativeContractIdSelectValues: [],
+  contractIdSelectValues: [],
 };
-
 
 /**
  * バリデーションスキーマ
  */
-const validationSchama = generate([
-  'logisticsBaseId',
-  'logisticsBaseName',
-  'logisticsBaseNameKana',
-  'usePurpose',
-  'logisticsBaseTvaaSalesStaffId',
-  'logisticsBaseBikeSalesStaffId',
-  'logisticsBasePrefectureCode',
-  'logisticsBaseMunicipalities',
-  'regionCode',
-  'logisticsBaseRepresentativeContractId',
-  'businessBaseId',
-  'businessBaseName',
-  'businessBaseNameKana',
-  'businessBaseTvaaSalesStaffId',
-  'businessBaseBikeSalesStaffId',
-  'businessBasePrefectureCode',
-  'businessBaseMunicipalities',
-  'contractId',
-]);
+const validationSchama = {
+  logisticsBaseId: yup.string().label('物流拠点ID').max(4).halfWidthOnly(),
+  logisticsBaseName: yup
+    .string()
+    .label('物流拠点名')
+    .max(40)
+    .fullAndHalfWidth(),
+  logisticsBaseNameKana: yup
+    .string()
+    .label('物流拠点名カナ')
+    .max(10)
+    .halfWidthOnly(),
+  usePurpose: yup.array().label('利用目的'),
+  logisticsBaseTvaaSalesStaffId: yup.string().label('四輪営業担当'),
+  logisticsBaseBikeSalesStaffId: yup.string().label('二輪営業担当'),
+  logisticsBasePrefectureCode: yup.string().label('住所（都道府県）'),
+  logisticsBaseMunicipalities: yup
+    .string()
+    .label('住所（市区町村以降）')
+    .max(80)
+    .fullAndHalfWidth(),
+  regionCode: yup.string().label('地区コード/地区名'),
+  logisticsBaseRepresentativeContractId: yup
+    .string()
+    .label('物流拠点代表契約ID'),
+
+  businessBaseId: yup.string().label('物流拠点ID').max(4).halfWidthOnly(),
+  businessBaseName: yup.string().label('物流拠点名').max(40).fullAndHalfWidth(),
+  businessBaseNameKana: yup
+    .string()
+    .label('物流拠点名カナ')
+    .max(40)
+    .halfWidthOnly(),
+  businessBaseTvaaSalesStaffId: yup.string().label('四輪営業担当'),
+  businessBaseBikeSalesStaffId: yup.string().label('二輪営業担当'),
+  businessBasePrefectureCode: yup.string().label('住所（都道府県）'),
+  businessBaseMunicipalities: yup
+    .string()
+    .label('住所（市区町村以降）')
+    .max(80)
+    .fullAndHalfWidth(),
+  contractId: yup.string().label('契約ID'),
+};
 
 /**
  * 物流拠点一覧列定義
@@ -252,7 +298,6 @@ interface LogisticsBaseModel {
   changeReservationfFlag: string;
 }
 
-
 /**
  * 物流拠点一覧モデルデータ
  */
@@ -275,7 +320,7 @@ const logisticsBaseRows: LogisticsBaseModel[] = [
     bikeStaffName: '',
     logisticsBaseRepresentativeContractId: '',
     changeReservationfFlag: '',
-  }
+  },
 ];
 
 /**
@@ -363,19 +408,23 @@ interface BusinessBaseModel {
  */
 interface ScrCom0038PopupDataModel {
   // エラー内容リスト
-  errorList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  errorList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
   // ワーニング内容リスト
-  warnList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  warnList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
 }
 
 /**
@@ -395,13 +444,13 @@ const businessBaseRows: BusinessBaseModel[] = [
     bikeStaffName: '',
     contractId: '',
     changeReservationfFlag: '',
-  }
+  },
 ];
 
 const convertFromlogisticsBase = (
   request: SearchModel
-):ScrMem0003SearchLogisticsBaseRequest => {
-  return{
+): ScrMem0003SearchLogisticsBaseRequest => {
+  return {
     corporationId: request.corporationId,
     logisticsBaseId: request.logisticsBaseId,
     logisticsBaseName: request.logisticsBaseName,
@@ -412,21 +461,22 @@ const convertFromlogisticsBase = (
     prefectureCode: request.logisticsBasePrefectureCode,
     municipalities: request.logisticsBaseMunicipalities,
     regionCode: request.regionCode,
-    logisticsBaseRepresentativeContractId:request.logisticsBaseRepresentativeContractId,
+    logisticsBaseRepresentativeContractId:
+      request.logisticsBaseRepresentativeContractId,
     businessDate: new Date(),
     limit: 0,
-  }
+  };
 };
 
 const convertToLogisticsBaseModel = (
   response: ScrMem0003SearchLogisticsBaseResponse
 ): LogisticsBaseModel[] => {
-  return response.logisticsBase.map((x) =>{
+  return response.logisticsBase.map((x) => {
     const usePurpose = [];
-    x.tvaaInformationFlag?usePurpose.push('四輪情報'):'';
-    x.bikeInformationFlag?usePurpose.push('二輪情報'):'';
-    x.collectionInformationFlag?usePurpose.push('集荷情報'):'';
-    return{
+    x.tvaaInformationFlag ? usePurpose.push('四輪情報') : '';
+    x.bikeInformationFlag ? usePurpose.push('二輪情報') : '';
+    x.collectionInformationFlag ? usePurpose.push('集荷情報') : '';
+    return {
       id: x.logisticsBaseId,
       logisticsBaseId: x.logisticsBaseId,
       logisticsBaseName: x.logisticsBaseName,
@@ -436,22 +486,24 @@ const convertToLogisticsBaseModel = (
       regionCode: x.regionCode,
       regionName: x.regionName,
       zipCode: x.zipCode,
-      address: x.zipCode+x.prefectureName+x.municipalities+x.addressBuildingName,
+      address:
+        x.zipCode + x.prefectureName + x.municipalities + x.addressBuildingName,
       telNumber: x.telNumber,
       faxNumber: x.faxNumber,
       mailAddress: x.mailAddress,
       tvaaStaffName: x.tvaaStaffName,
       bikeStaffName: x.bikeStaffName,
-      logisticsBaseRepresentativeContractId: x.logisticsBaseRepresentativeContractId,
-      changeReservationfFlag: x.changeReservationfFlag?'あり':"",
+      logisticsBaseRepresentativeContractId:
+        x.logisticsBaseRepresentativeContractId,
+      changeReservationfFlag: x.changeReservationfFlag ? 'あり' : '',
     };
   });
-}
+};
 
 const convertFromBusinessBase = (
   request: SearchModel
-):ScrMem0003SearchBusinessBaseRequest => {
-  return{
+): ScrMem0003SearchBusinessBaseRequest => {
+  return {
     corporationId: request.corporationId,
     businessBaseId: request.businessBaseId,
     businessBaseName: request.businessBaseName,
@@ -460,32 +512,33 @@ const convertFromBusinessBase = (
     bikeSalesStaffId: request.businessBaseBikeSalesStaffId,
     prefectureCode: request.businessBasePrefectureCode,
     municipalities: request.businessBaseMunicipalities,
-    contractId:request.contractId,
+    contractId: request.contractId,
     businessDate: new Date(),
     limit: 0,
-  }
+  };
 };
 
 const convertToBusinessBaseModel = (
   response: ScrMem0003SearchBusinessBaseResponse
 ): BusinessBaseModel[] => {
-  return response.businessBase.map((x) =>{
-    return{
+  return response.businessBase.map((x) => {
+    return {
       id: x.businessBaseId,
       businessBaseId: x.businessBaseId,
       businessBaseName: x.businessBaseName,
       businessBaseNameKana: x.businessBaseNameKana,
       businessBaseStaffName: x.businessBaseStaffName,
       zipCode: x.zipCode,
-      address: x.zipCode+x.prefectureName+x.municipalities+x.addressBuildingName,
+      address:
+        x.zipCode + x.prefectureName + x.municipalities + x.addressBuildingName,
       telNumber: x.telNumber,
       tvaaStaffName: x.tvaaStaffName,
       bikeStaffName: x.bikeStaffName,
       contractId: x.contractId,
-      changeReservationfFlag: x.changeReservationfFlag?'あり':"",
+      changeReservationfFlag: x.changeReservationfFlag ? 'あり' : '',
     };
   });
-}
+};
 
 type key = keyof SearchModel;
 
@@ -499,7 +552,10 @@ const logisticsBaseSerchData: { label: string; name: key }[] = [
   { label: '住所（都道府県）', name: 'logisticsBasePrefectureCode' },
   { label: '住所（市区町村以降）', name: 'logisticsBaseMunicipalities' },
   { label: '地区コード/地区名', name: 'regionCode' },
-  { label: '物流拠点代表契約ID', name: 'logisticsBaseRepresentativeContractId' },
+  {
+    label: '物流拠点代表契約ID',
+    name: 'logisticsBaseRepresentativeContractId',
+  },
 ];
 
 const businessBaseSerchData: { label: string; name: key }[] = [
@@ -517,21 +573,30 @@ const ScrMem0003BaseTab = () => {
   // router
   const navigate = useNavigate();
   const { corporationId } = useParams();
-  
+  const { getMessage } = useContext(MessageContext);
+
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
-  const [logisticsBaseSearchResult ,setLogisticsBaseSearchResult] = useState<LogisticsBaseModel[]>([]);
-  const [logisticsBaseHrefs ,setLogisticsBaseHrefs] = useState<any[]>([]);
-  const [openLogisticsBaseSection ,setOpenLogisticsBaseSection] = useState<boolean>(true);
-
-  const [businessBaseSearchResult ,setBusinessBaseSearchResult] = useState<BusinessBaseModel[]>([]);
-  const [businessBaseHrefs ,setBusinessBaseHrefs] = useState<any[]>([]);
-  const [openBusinessBaseSection ,setOpenBusinessBaseSection] = useState<boolean>(true);
-  const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] = useState(false);
-  const [scrCom0038PopupData, setScrCom0038PopupData] = useState<ScrCom0038PopupDataModel>();
-
+  const [logisticsBaseSearchResult, setLogisticsBaseSearchResult] = useState<
+    LogisticsBaseModel[]
+  >([]);
+  const [logisticsBaseHrefs, setLogisticsBaseHrefs] = useState<any[]>([]);
+  const [openLogisticsBaseSection, setOpenLogisticsBaseSection] =
+    useState<boolean>(true);
+  const [businessBaseSearchResult, setBusinessBaseSearchResult] = useState<
+    BusinessBaseModel[]
+  >([]);
+  const [businessBaseHrefs, setBusinessBaseHrefs] = useState<any[]>([]);
+  const [openBusinessBaseSection, setOpenBusinessBaseSection] =
+    useState<boolean>(true);
+  const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] =
+    useState<boolean>(false);
+  const [scrCom0038PopupData, setScrCom0038PopupData] =
+    useState<ScrCom0038PopupDataModel>();
+  const [handleDialog, setHandleDialog] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>('');
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -539,14 +604,117 @@ const ScrMem0003BaseTab = () => {
   // form
   const methods = useForm<SearchModel>({
     defaultValues: SearchLogisticsBaseinitialValues,
-    resolver: yupResolver(validationSchama),
+    resolver: yupResolver(yup.object(validationSchama)),
     context: isReadOnly,
   });
-  const {
-    getValues,
-  } = methods;
-  
-  
+  const { getValues } = methods;
+
+  // 初期表示処理
+  useEffect(() => {
+    const initialize = async (corporationId: string) => {
+      // リスト取得
+      const getCodeManagementMasterRequest = { codeId: 'CDE-MEM-1026' };
+      const getCodeManagementMasterResponse =
+        await ScrCom9999GetCodeManagementMaster(getCodeManagementMasterRequest);
+      const usePurposeSelectValues = getCodeManagementMasterResponse.list.map(
+        (x) => {
+          return {
+            value: x.codeValue,
+            displayValue: x.codeName,
+          };
+        }
+      );
+
+      const getEmployeeFromDistrictRequest = { corporationId: corporationId };
+      const getEmployeeFromDistrictResponse =
+        await ScrMem9999GetEmployeeFromDistrict(getEmployeeFromDistrictRequest);
+      const tvaaSalesStaffIdSelectValues =
+        getEmployeeFromDistrictResponse.tvaaSalesInfo.map((x) => {
+          return {
+            value: x.salesId,
+            displayValue: x.salesId + '　' + x.salesName,
+          };
+        });
+      const bikeSalesStaffIdSelectValues =
+        getEmployeeFromDistrictResponse.bikeSalesInfo.map((x) => {
+          return {
+            value: x.salesId,
+            displayValue: x.salesId + '　' + x.salesName,
+          };
+        });
+      const getCodeValueRequest = {
+        entityList: [{ entityName: 'region_code_master' }],
+      };
+      const getCodeValueResponse = await ScrMem9999GetCodeValue(
+        getCodeValueRequest
+      );
+      const regionCodeSelectValues =
+        getCodeValueResponse.resultList[0].codeValueList.map((x) => {
+          return {
+            value: x.codeValue,
+            displayValue: x.codeValue + '　' + x.codeValueName,
+          };
+        });
+      const comGetCodeValueRequest = {
+        entityList: [{ entityName: 'prefecture_master' }],
+      };
+      const comGetCodeValueResponse = await ScrCom9999GetCodeValue(
+        comGetCodeValueRequest
+      );
+      const prefectureCodeSelectValues =
+        comGetCodeValueResponse.resultList[0].codeValueList.map((x) => {
+          return {
+            value: x.codeValue,
+            displayValue: x.codeValueName,
+          };
+        });
+
+      const getLogisticsBaseRepresentativeContractRequest = {
+        corporationId: corporationId,
+      };
+      const getLogisticsBaseRepresentativeContractResponse =
+        await ScrMem9999GetLogisticsBaseRepresentativeContract(
+          getLogisticsBaseRepresentativeContractRequest
+        );
+      const logisticsBaseRepresentativeContractIdSelectValues =
+        getLogisticsBaseRepresentativeContractResponse.logisticsBaseRepresentativeContractIdList.map(
+          (x) => {
+            return {
+              value: x,
+              displayValue: x,
+            };
+          }
+        );
+
+      const getBillRequest = {
+        corporationId: corporationId,
+        sortKey: '',
+        sortDirection: '',
+      };
+      const getBillResponse = await ScrMem9999GetBill(getBillRequest);
+      const contractIdSelectValues = getBillResponse.list.map((x) => {
+        return {
+          value: x.billId,
+          displayValue: x.billId,
+        };
+      });
+
+      setSelectValues({
+        usePurposeSelectValues: usePurposeSelectValues,
+        tvaaSalesStaffIdSelectValues: tvaaSalesStaffIdSelectValues,
+        bikeSalesStaffIdSelectValues: bikeSalesStaffIdSelectValues,
+        regionCodeSelectValues: regionCodeSelectValues,
+        prefectureCodeSelectValues: prefectureCodeSelectValues,
+        logisticsBaseRepresentativeContractIdSelectValues:
+          logisticsBaseRepresentativeContractIdSelectValues,
+        contractIdSelectValues: contractIdSelectValues,
+      });
+    };
+    if (corporationId !== undefined) {
+      initialize(corporationId);
+    }
+  }, [corporationId]);
+
   // リンク押下イベント
   const handleLinkClick = (url: string) => {
     navigate(url, true);
@@ -554,53 +722,55 @@ const ScrMem0003BaseTab = () => {
 
   // 物流拠点一覧検索押下イベント
   const logisticsBaseHandleSearchClick = async () => {
-    
     // 物流拠点一覧取得
     const request = convertFromlogisticsBase(getValues());
     const response = await ScrMem0003SearchLogisticsBase(request);
     const searchResult = convertToLogisticsBaseModel(response);
 
     // 制限件数 <  取得件数の場合
-    if(response.limitCount < response.acquisitionCount){
+    if (response.limitCount < response.acquisitionCount) {
       // メッセージ取得機能へ引数を渡しメッセージを取得する
-      // TODO：メッセージ取得機能未実装
-      // メッセージID: 'MSG-FR-INF-00003'
-      // セクション名: '物流拠点一覧'
-      // 取得件数: response.acquisitionCount
-      // 返却件数: response.responseCount
-
+      const messege = Format(getMessage('MSG-FR-INF-00003'), [
+        '物流拠点一覧',
+        response.acquisitionCount.toString(),
+        response.responseCount.toString(),
+      ]);
       // ダイアログを表示
+      setTitle(messege);
+      setHandleDialog(true);
     }
 
     const hrefs = searchResult.map((x) => {
       return {
         field: 'logisticsBaseId',
         id: x.logisticsBaseId,
-        href: '/mem/corporations/:corporationId/logistics-bases/' + x.logisticsBaseId,
+        href:
+          '/mem/corporations/:corporationId/logistics-bases/' +
+          x.logisticsBaseId,
       };
     });
     setLogisticsBaseSearchResult(searchResult);
     setLogisticsBaseHrefs(hrefs);
     setOpenLogisticsBaseSection(false);
-  }
+  };
 
   // 事業拠点一覧検索押下イベント
   const businessBaseHandleSearchClick = async () => {
-
     // 事業拠点一覧取得
     const request = convertFromBusinessBase(getValues());
     const response = await ScrMem0003SearchBusinessBase(request);
     const searchResult = convertToBusinessBaseModel(response);
     // 制限件数 <  取得件数の場合
-    if(response.limitCount < response.acquisitionCount){
+    if (response.limitCount < response.acquisitionCount) {
       // メッセージ取得機能へ引数を渡しメッセージを取得する
-      // TODO：メッセージ取得機能未実装
-      // メッセージID: 'MSG-FR-INF-00003'
-      // セクション名: '事業拠点一覧'
-      // 取得件数: response.acquisitionCount
-      // 返却件数: response.responseCount
-
+      const messege = Format(getMessage('MSG-FR-INF-00003'), [
+        '事業拠点一覧',
+        response.acquisitionCount.toString(),
+        response.responseCount.toString(),
+      ]);
       // ダイアログを表示
+      setTitle(messege);
+      setHandleDialog(true);
     }
     const hrefs = searchResult.map((x) => {
       return {
@@ -612,7 +782,7 @@ const ScrMem0003BaseTab = () => {
     setBusinessBaseSearchResult(searchResult);
     setBusinessBaseHrefs(hrefs);
     setOpenBusinessBaseSection(false);
-  }
+  };
 
   /**
    * Sectionを閉じた際のラベル作成
@@ -623,7 +793,7 @@ const ScrMem0003BaseTab = () => {
       nameVal && <SerchLabelText key={index} label={val.label} name={nameVal} />
     );
   });
-  
+
   /**
    * Sectionを閉じた際のラベル作成
    */
@@ -633,248 +803,264 @@ const ScrMem0003BaseTab = () => {
       nameVal && <SerchLabelText key={index} label={val.label} name={nameVal} />
     );
   });
-  
+
   /**
    * CSV出力リック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
     // TODO: アーキのCSV実装待ち
-    console.log("CSV出力")
+    console.log('CSV出力');
   };
-  
+
   /**
    * 追加（物流拠点一覧）ボタンクリック時のイベントハンドラ
    */
   const handleIconLogisticsBaseAddClick = async () => {
-    if(corporationId === undefined) return;
-    
+    if (corporationId === undefined) return;
+
     // 契約情報追加チェック
     const request: ScrMem0003AddCheckLogisticsBaseRequest = {
-      corporationId: corporationId
+      corporationId: corporationId,
     };
     const response = await ScrMem0003AddCheckLogisticsBase(request);
-    if(response.errorList.length < 0){
-      navigate('/mem/corporations/:corporationId/logistics-bases/'+ corporationId);
-    }else{
+    if (response.errorList.length < 0) {
+      navigate(
+        '/mem/corporations/:corporationId/logistics-bases/' + corporationId
+      );
+    } else {
       // TODO: エラー確認ポップアップを表示
       setScrCom0038PopupData(response);
       setIsOpenScrCom0038Popup(true);
     }
   };
-  
+
   const handleIconBusinessBaseAddClick = () => {
     // 事業拠点詳細遷移
     // TODO:パス確認
-    navigate('-?corporationId='+ corporationId);
-  }
-  
+    navigate('-?corporationId=' + corporationId);
+  };
+
   /**
    * エラー確認ポップアップの確定ボタンクリック時のイベントハンドラ
    */
   const handlePopupConfirm = () => {
     setIsOpenScrCom0038Popup(false);
     // 物流拠点詳細遷移
-    navigate('/mem/corporations/:corporationId/logistics-bases/'+ corporationId);
-  }
+    navigate(
+      '/mem/corporations/:corporationId/logistics-bases/' + corporationId
+    );
+  };
 
   /**
    * エラー確認ポップアップのキャンセルボタンクリック時のイベントハンドラ
    */
   const handlePopupCancel = () => {
     setIsOpenScrCom0038Popup(false);
-  }
+  };
 
   return (
     <>
-    <MainLayout>
-      {/* main*/}
-      <MainLayout main>
-        <FormProvider {...methods}>
-          {/* 物流拠点一覧セクション */}
-          <Section name='物流拠点一覧'>
-            {/* 検索条件セクション */}
-            <Section name='検索条件'
-              isSearch
-              serchLabels={logisticsBaseSerchLabels}
-              open={openLogisticsBaseSection}
-            >
-              <RowStack>
-                <ColStack>
-                  <TextField
-                    label='物流拠点ID'
-                    name='logisticsBaseId'
-                  />
-                  <TextField
-                    label='物流拠点名'
-                    name='logisticsBaseName'
-                  />
-                  <TextField
-                    label='物流拠点名カナ'
-                    name='logisticsBaseNameKana'
-                  />
-                </ColStack>
-                <ColStack>
-                  <Select
-                    label='利用目的'
-                    name='usePurpose'
-                    selectValues={selectValues.usePurposeSelectValues}
-                    multiple
-                  />
-                  <Select
-                    label='四輪営業担当'
-                    name='tvaaSalesStaffId'
-                    selectValues={selectValues.tvaaSalesStaffIdSelectValues}
-                  />
-                  <Select
-                    label='二輪営業担当'
-                    name='bikeSalesStaffId'
-                    selectValues={selectValues.bikeSalesStaffIdSelectValues}
-                  />
-                </ColStack>
-                <ColStack>
-                  <Select
-                    label='住所（都道府県）'
-                    name='prefectureCode'
-                    selectValues={selectValues.prefectureCodeSelectValues}
-                  />
-                  <TextField
-                    label='住所（市区町村以降）'
-                    name='municipalities'
-                  />
-                  <Select
-                    label='地区コード/地区名'
-                    name='regionCode'
-                    selectValues={selectValues.regionCodeSelectValues}
-                  />
-                </ColStack>
-                <ColStack>
-                  <Select
-                    label='物流拠点代表契約ID'
-                    name='logisticsBaseRepresentativeContractId'
-                    selectValues={selectValues.logisticsBaseRepresentativeContractIdSelectValues}
-                  />
-                </ColStack>
-              </RowStack>
-              <ContentsDivider />
-              <CenterBox>
-                <SearchButton
-                  onClick={() => {
-                    logisticsBaseHandleSearchClick();
-                  }}
-                >
-                  検索
-                </SearchButton>
-              </CenterBox>
+      <MainLayout>
+        {/* main*/}
+        <MainLayout main>
+          <FormProvider {...methods}>
+            {/* 物流拠点一覧セクション */}
+            <Section name='物流拠点一覧'>
+              {/* 検索条件セクション */}
+              <Section
+                name='検索条件'
+                isSearch
+                serchLabels={logisticsBaseSerchLabels}
+                open={openLogisticsBaseSection}
+              >
+                <RowStack>
+                  <ColStack>
+                    <TextField label='物流拠点ID' name='logisticsBaseId' />
+                    <TextField label='物流拠点名' name='logisticsBaseName' />
+                    <TextField
+                      label='物流拠点名カナ'
+                      name='logisticsBaseNameKana'
+                    />
+                  </ColStack>
+                  <ColStack>
+                    <Select
+                      label='利用目的'
+                      name='usePurpose'
+                      selectValues={selectValues.usePurposeSelectValues}
+                      multiple
+                      blankOption
+                    />
+                    <Select
+                      label='四輪営業担当'
+                      name='logisticsBaseTvaaSalesStaffId'
+                      selectValues={selectValues.tvaaSalesStaffIdSelectValues}
+                      blankOption
+                    />
+                    <Select
+                      label='二輪営業担当'
+                      name='logisticsBaseBikeSalesStaffId'
+                      selectValues={selectValues.bikeSalesStaffIdSelectValues}
+                      blankOption
+                    />
+                  </ColStack>
+                  <ColStack>
+                    <Select
+                      label='住所（都道府県）'
+                      name='logisticsBasePrefectureCode'
+                      selectValues={selectValues.prefectureCodeSelectValues}
+                      blankOption
+                    />
+                    <TextField
+                      label='住所（市区町村以降）'
+                      name='logisticsBaseMunicipalities'
+                    />
+                    <Select
+                      label='地区コード/地区名'
+                      name='regionCode'
+                      selectValues={selectValues.regionCodeSelectValues}
+                      blankOption
+                    />
+                  </ColStack>
+                  <ColStack>
+                    <Select
+                      label='物流拠点代表契約ID'
+                      name='logisticsBaseRepresentativeContractId'
+                      selectValues={
+                        selectValues.logisticsBaseRepresentativeContractIdSelectValues
+                      }
+                      blankOption
+                    />
+                  </ColStack>
+                </RowStack>
+                <ContentsDivider />
+                <CenterBox>
+                  <SearchButton
+                    onClick={() => {
+                      logisticsBaseHandleSearchClick();
+                    }}
+                  >
+                    検索
+                  </SearchButton>
+                </CenterBox>
+              </Section>
+              {/* 検索結果セクション */}
+              <Section
+                name='検索結果'
+                decoration={
+                  <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                    <AddButton onClick={handleIconOutputCsvClick}>
+                      CSV出力
+                    </AddButton>
+                    {/* 追加（事業拠点一覧） */}
+                    <AddIconButton onClick={handleIconBusinessBaseAddClick} />
+                  </MarginBox>
+                }
+              >
+                <DataGrid
+                  columns={logisticsBaseColumns}
+                  rows={logisticsBaseSearchResult}
+                  hrefs={logisticsBaseHrefs}
+                  onLinkClick={handleLinkClick}
+                />
+              </Section>
             </Section>
-            {/* 検索結果セクション */}
-            <Section name='検索結果'
-              decoration={
-                <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                  <AddButton onClick={handleIconOutputCsvClick}>
-                    CSV出力
-                  </AddButton>
-                  {/* 追加（事業拠点一覧） */}
-                  <AddIconButton onClick={handleIconBusinessBaseAddClick} />
-                </MarginBox>
-              }>
-              <DataGrid 
-                columns={logisticsBaseColumns}
-                rows={logisticsBaseSearchResult}
-                hrefs={logisticsBaseHrefs}
-                onLinkClick={handleLinkClick}
-              />
+            {/* 事業拠点一覧セクション */}
+            <Section name='事業拠点一覧'>
+              {/* 検索条件セクション */}
+              <Section
+                name='検索条件'
+                isSearch
+                serchLabels={businessBaseSerchLabels}
+                open={openLogisticsBaseSection}
+              >
+                <RowStack>
+                  <ColStack>
+                    <TextField label='事業拠点ID' name='businessBaseId' />
+                    <TextField label='事業拠点名' name='businessBaseName' />
+                    <TextField
+                      label='事業拠点名カナ'
+                      name='businessBaseNameKana'
+                    />
+                  </ColStack>
+                  <ColStack>
+                    <Select
+                      label='四輪営業担当'
+                      name='businessBaseTvaaSalesStaffId'
+                      selectValues={selectValues.tvaaSalesStaffIdSelectValues}
+                      blankOption
+                    />
+                    <Select
+                      label='二輪営業担当'
+                      name='businessBaseBikeSalesStaffId'
+                      selectValues={selectValues.bikeSalesStaffIdSelectValues}
+                      blankOption
+                    />
+                  </ColStack>
+                  <ColStack>
+                    <Select
+                      label='住所（都道府県）'
+                      name='businessBasePrefectureCode'
+                      selectValues={selectValues.prefectureCodeSelectValues}
+                      blankOption
+                    />
+                    <TextField
+                      label='住所（市区町村以降）'
+                      name='businessBaseMunicipalities'
+                    />
+                  </ColStack>
+                  <ColStack>
+                    <Select
+                      label='契約ID'
+                      name='contractId'
+                      selectValues={selectValues.contractIdSelectValues}
+                      blankOption
+                    />
+                  </ColStack>
+                </RowStack>
+                <ContentsDivider />
+                <CenterBox>
+                  <SearchButton
+                    onClick={() => {
+                      businessBaseHandleSearchClick();
+                    }}
+                  >
+                    検索
+                  </SearchButton>
+                </CenterBox>
+              </Section>
+              {/* 検索結果セクション */}
+              <Section name='検索結果'>
+                <DataGrid
+                  columns={businessBaseColumns}
+                  rows={businessBaseSearchResult}
+                  hrefs={businessBaseHrefs}
+                  onLinkClick={handleLinkClick}
+                />
+              </Section>
             </Section>
-          </Section>
-          {/* 事業拠点一覧セクション */}
-          <Section name='事業拠点一覧'>
-            {/* 検索条件セクション */}
-            <Section name='検索条件'
-              isSearch
-              serchLabels={businessBaseSerchLabels}
-              open={openLogisticsBaseSection}
-            >
-              <RowStack>
-                <ColStack>
-                  <TextField
-                    label='事業拠点ID'
-                    name='businessBaseId'
-                  />
-                  <TextField
-                    label='事業拠点名'
-                    name='businessBaseName'
-                  />
-                  <TextField
-                    label='事業拠点名カナ'
-                    name='businessBaseNameKana'
-                  />
-                </ColStack>
-                <ColStack>
-                  <Select
-                    label='四輪営業担当'
-                    name='businessBaseTvaaSalesStaffId'
-                    selectValues={selectValues.tvaaSalesStaffIdSelectValues}
-                  />
-                  <Select
-                    label='二輪営業担当'
-                    name='businessBaseBikeSalesStaffId'
-                    selectValues={selectValues.bikeSalesStaffIdSelectValues}
-                  />
-                </ColStack>
-                <ColStack>
-                  <Select
-                    label='住所（都道府県）'
-                    name='businessBasePrefectureCode'
-                    selectValues={selectValues.prefectureCodeSelectValues}
-                  />
-                  <TextField
-                    label='住所（市区町村以降）'
-                    name='businessBaseMunicipalities'
-                  />
-                </ColStack>
-                <ColStack>
-                  <Select
-                    label='契約ID'
-                    name='contractId'
-                    selectValues={selectValues.logisticsBaseRepresentativeContractIdSelectValues}
-                  />
-                </ColStack>
-              </RowStack>
-              <ContentsDivider />
-              <CenterBox>
-                <SearchButton
-                  onClick={() => {
-                    businessBaseHandleSearchClick();
-                  }}
-                >
-                  検索
-                </SearchButton>
-              </CenterBox>
-            </Section>
-            {/* 検索結果セクション */}
-            <Section name='検索結果'>
-              <DataGrid 
-                columns={businessBaseColumns}
-                rows={businessBaseSearchResult}
-                hrefs={businessBaseHrefs}
-                onLinkClick={handleLinkClick}
-              />
-            </Section>
-          </Section>
-        </FormProvider>
+          </FormProvider>
+        </MainLayout>
       </MainLayout>
-    </MainLayout>
 
-    {/* エラー確認ポップアップ */}
-    {/*
-    <ScrCom0038Popup
-      isOpen={isOpenScrCom0038Popup}
-      data={scrCom0032PopupData}
-      handleConfirm={handlePopupConfirm}
-      handleCancel={handlePopupCancel}
-    />
-    */}
+      {/* エラー確認ポップアップ */}
+      {/*
+      <ScrCom0038Popup
+        isOpen={isOpenScrCom0038Popup}
+        data={scrCom0032PopupData}
+        handleConfirm={handlePopupConfirm}
+        handleCancel={handlePopupCancel}
+      />
+      */}
+
+      {/* ダイアログ */}
+      <Dialog
+        open={handleDialog}
+        title={title}
+        buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
+      />
     </>
   );
 };
 
 export default ScrMem0003BaseTab;
+

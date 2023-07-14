@@ -1,226 +1,203 @@
 import { comApiClient, memApiClient } from 'providers/ApiClient';
 
-
 /**
  * 基本情報タブ
  */
 
 /** 法人基本情報取得APIリクエスト */
 export interface ScrMem0003GetCorporationRequest {
-  /** 法人ID */
+  // 法人ID
   corporationId: string;
+  // 制限件数
+  limitCount: number;
 }
 
 /** 法人基本情報取得APIレスポンス */
 export interface ScrMem0003GetCorporationResponse {
-  /** 法人ID */
+  // 制限件数
+  limitCount: number;
+  // 返却件数
+  responseCount: number;
+  // 取得件数
+  acquisitionCount: number;
+  // 法人ID
   corporationId: string;
-  /** 法人名称 */
+  // 法人名称
   corporationName: string;
-  /** 法人名カナ */
+  // 法人名カナ
   corporationNameKana: string;
-  /** 法人グループマスタ */
-  corporationGroupMasters: CorporationGroupMasters[];
-  /** Gold/Silver会員区分 */
+  // 法人グループ
+  CorporationGroup: CorporationGroup[];
+  // Gold/Silver会員区分
   goldSilverMemberKind: string;
-  /** 法人郵便番号 */
+  // 法人郵便番号
   corporationZipCode: string;
-  /** 法人都道府県コード */
+  // 法人都道府県コード
   corporationPrefectureCode: string;
-  /** 法人市区町村 */
+  // 法人市区町村
   corporationMunicipalities: string;
-  /** 法人番地号建物名 */
+  // 法人番地号建物名
   corporationAddressBuildingName: string;
-  /** 法人電話番号 */
+  // 法人電話番号
   corporationPhoneNumber: string;
-  /** 法人FAX番号 */
+  // 法人FAX番号
   corporationFaxNumber: string;
-  /** 法人メールアドレス */
+  // 法人メールアドレス
   corporationMailAddress: string;
-  /** 適格事業者番号 */
+  // 適格事業者番号
   eligibleBusinessNumber: string;
-  /** 税事業者区分 */
+  // 税事業者区分
   taxBusinessKind: string;
-  /** 公安委員会 */
+  // 公安委員会
   publicSafetyCommittee: string;
-  /** 古物商許可番号 */
+  // 古物商許可番号
   antiqueBusinessLicenseNumber: string;
-  /** 交付年月日 */
+  // 交付年月日
   issuanceDate: string;
-  /** 古物名義 */
+  // 古物名義
   antiqueName: string;
-  /** 会員メモ */
+  // 会員メモ
   memberMemo: string;
-  /** 代表者名 */
+  // 代表者名
   representativeName: string;
-  /** 代表者名カナ */
+  // 代表者名カナ
   representativeNameKana: string;
-  /** 代表者性別区分 */
+  // 代表者性別区分
   representativeGenderKind: string;
-  /** 代表者生年月日 */
+  // 代表者生年月日
   representativeBirthDate: string;
-  /** 所有資産区分 */
+  // 所有資産区分
   possessionAssetsKind: string;
-  /** 代表者郵便番号 */
+  // 代表者郵便番号
   representativeZipCode: string;
-  /** 代表者都道府県コード */
+  // 代表者都道府県コード
   representativePrefectureCode: string;
-  /** 代表者市区町村 */
+  // 代表者市区町村
   representativeMunicipalities: string;
-  /** 代表者番地号建物名 */
+  // 代表者番地号建物名
   representativeAddressBuildingName: string;
-  /** 代表者電話番号 */
+  // 代表者電話番号
   representativePhoneNumber: string;
-  /** 代表者FAX番号 */
+  // 代表者FAX番号
   representativeFaxNumber: string;
-  /** 代表者携帯電話番号 */
+  // 代表者携帯電話番号
   representativeMobilePhoneNumber: string;
-  /** 連帯保証人マスタ */
-  guarantorMasters: GuarantorMasters[];
-  /** 会員変更履歴 */
-  memberChangeHistories: Memberchangehistories[];
+  // 連帯保証人
+  guarantor: Guarantor[];
+  /** 変更履歴一覧 */
+  changeHistory: ChangeHistory[];
   /** 未承認申請一覧 */
-  unapprovalApplicationTrans: Unapprovalapplicationtrans[];
+  notPermission: NotPermission[];
 }
 
-/** 法人グループマスタ */
-export interface CorporationGroupMasters {
-  /** 法人グループID */
+/** 法人グループ */
+export interface CorporationGroup {
+  // 法人グループID
   corporationGroupId: string;
-  /** 有効開始日 */
-  validityStartDate: string;
-  /** 法人グループ名 */
+  // 法人グループ名
   corporationGroupName: string;
 }
 
-/** 連帯保証人マスタ */
-export interface GuarantorMasters {
-  /** 連帯保証人No */
+/** 連帯保証人 */
+export interface Guarantor {
+  // 連帯保証人No
   guarantorNo: number;
-  /** 連帯保証人名 */
+  // 連帯保証人名
   guarantorName: string;
-  /** 連帯保証人名カナ */
+  // 連帯保証人カナ
   guarantorNameKana: string;
-  /** 連帯保証人性別区分 */
+  // 連帯保証人性別区分コード
   guarantorGenderKind: string;
-  /** 連帯保証人生年月日 */
+  // 連帯保証人生年月日
   guarantorBirthDate: string;
-  /** 連帯保証人所有資産区分 */
+  // 連帯保証人所有資産区分
   guarantorPossessionAssetsKind: string;
-  /** 連帯保証人続柄 */
+  // 連帯保証人続柄
   guarantorRelationship: string;
-  /** 連帯保証人郵便番号 */
+  // 連帯保証人郵便番号
   guarantorZipCode: string;
-  /** 連帯保証人都道府県コード */
+  // 連帯保証人都道府県コード
   guarantorPrefectureCode: string;
-  /** 連帯保証人市区町村 */
+  // 連帯保証人市区町村
   guarantorMunicipalities: string;
-  /** 連帯保証人番地号建物名 */
+  // 連帯保証人番地号建物名
   guarantorAddressBuildingName: string;
-  /** 連帯保証人電話番号 */
+  // 連帯保証人電話番号
   guarantorPhoneNumber: string;
-  /** 連帯保証人FAX番号 */
+  // 連帯保証人FAX番号
   guarantorFaxNumber: string;
-  /** 連帯保証人携帯電話番号 */
+  // 連帯保証人携帯電話番号
   guarantorMobilePhoneNumber: string;
 }
 
-/** 会員変更履歴 */
-export interface Memberchangehistories {
-  /** 変更履歴番号 */
+/** 変更履歴一覧 */
+export interface ChangeHistory {
+  // 変更履歴番号
   changeHistoryNumber: number;
-  /** 画面ID */
-  screenId: string;
-  /** 画面名 */
+  // 画面名
   screenName: string;
-  /** 画面システム種別 */
-  screenSystemKind: string;
-  /** 画面システム種別名称 */
-  screenSystemKindName: string;
-  /** タブID */
-  tabId: string;
-  /** タブ名称 */
+  // タブ名称
   tabName: string;
-  /** 一括登録ID */
-  allRegistrationId: string;
-  /** 一括登録名称 */
+  // 一括登録名称
   allRegistrationName: string;
-  /** 登録変更メモ */
-  registrationChangeMemo: string;
-  /** 変更申請反映タイムスタンプ */
-  changeApplicationApplyingTimestamp: string;
-  /** 変更申請従業員ID */
+  // 変更予定日
+  changeExpectDate: string;
+  // 変更申請従業員ID
   changeApplicationEmployeeId: string;
-  /** 変更申請従業員名 */
+  // 変更申請従業員名
   changeApplicationEmployeeName: string;
-  /** 変更申請タイムスタンプ */
+  // 変更申請タイムスタンプ
   changeApplicationTimestamp: string;
-  /** 申請コメント */
-  applicationComment: string;
-  /** 最終承認従業員ID */
-  lastApprovalEmployeeId: string;
-  /** 最終承認従業員名 */
-  lastApprovalEmployeeName: string;
-  /** 最終承認タイムスタンプ */
-  lastApprovalTimestamp: string;
-  /** 最終承認者コメント */
-  lastApproverComment: string;
+  // 登録変更メモ
+  registrationChangeMemo: string;
+  // 承認従業員ID
+  approvalEmployeeId: string;
+  // 承認従業員名
+  approvalEmployeeName: string;
+  // 承認タイムスタンプ
+  approvalTimestamp: string;
+  // 承認者コメント
+  approverComment: string;
 }
 
-/** 未承認申請一覧 */
-export interface Unapprovalapplicationtrans {
-  /** 変更履歴番号 */
+/** 未承認一覧 */
+export interface NotPermission {
+  // 変更履歴番号
   changeHistoryNumber: number;
-  /** 画面ID */
-  screenId: string;
-  /** 画面名 */
+  // 画面名
   screenName: string;
-  /** 画面システム種別 */
-  screenSystemKind: string;
-  /** 画面システム種別名称 */
-  screenSystemKindName: string;
-  /** タブID */
-  tabId: string;
-  /** タブ名称 */
+  // タブ名称
   tabName: string;
-  /** 一括登録ID */
-  allRegistrationId: string;
-  /** 一括登録名称 */
+  // 一括登録名称
   allRegistrationName: string;
-  /** 登録変更メモ */
-  registrationChangeMemo: string;
-  /** 変更申請反映タイムスタンプ */
-  changeApplicationApplyingTimestamp: string;
-  /** 変更申請従業員ID */
+  // 変更予定日
+  changeExpectDate: string;
+  // 変更申請従業員ID
   changeApplicationEmployeeId: string;
-  /** 変更申請従業員名 */
+  // 変更申請従業員名
   changeApplicationEmployeeName: string;
-  /** 変更申請タイムスタンプ */
+  // 変更申請タイムスタンプ
   changeApplicationTimestamp: string;
-  /** 申請コメント */
-  applicationComment: string;
-  /** 承認ステータス */
+  // 登録変更メモ
+  registrationChangeMemo: string;
+  // 承認ステータス
   approvalStatus: string;
-  /** 承認ステータス名称 */
-  approvalStatusName: string;
-  /** 承認タイムスタンプ */
-  approvalTimestamp: string;
-  /** 1次承認従業員ID */
-  primaryApprovalEmployeeId: string;
-  /** 1次承認従業員名 */
-  primaryApprovalEmployeeName: string;
-  /** 2次承認従業員ID */
-  secondaryApprovalEmployeeId: string;
-  /** 2次承認従業員名 */
-  secondaryApprovalEmployeeName: string;
-  /** 3次承認従業員ID */
-  tertiaryApprovalEmployeeId: string;
-  /** 3次承認従業員名 */
-  tertiaryApprovalEmployeeName: string;
-  /** 4次承認従業員ID */
-  quaternaryApprovalEmployeeId: string;
-  /** 4次承認従業員名 */
-  quaternaryApprovalEmployeeName: string;
+  // 承認設定従業員ID１
+  approvalSettingEmployeeId1: string;
+  // 承認設定従業員名１
+  approvalSettingEmployeeName1: string;
+  // 承認設定従業員ID２
+  approvalSettingEmployeeId2: string;
+  // 承認設定従業員名２
+  approvalSettingEmployeeName2: string;
+  // 承認設定従業員ID３
+  approvalSettingEmployeeId3: string;
+  // 承認設定従業員名３
+  approvalSettingEmployeeName3: string;
+  // 承認設定従業員ID４
+  approvalSettingEmployeeId4: string;
+  // 承認設定従業員名４
+  approvalSettingEmployeeName4: string;
 }
 
 /** 法人基本情報取得API */
@@ -233,6 +210,44 @@ export const ScrMem0003GetCorporation = async (
   );
   return response.data;
 };
+
+/** 法人ID新規採番APIレスポンス */
+export interface ScrMem0003GetNewCorporationIdResponse {
+  // 法人ID
+  corporationId: string;
+}
+
+/** 法人ID新規採番API */
+export const ScrMem0003GetNewCorporationId =
+  async (): Promise<ScrMem0003GetNewCorporationIdResponse> => {
+    const response = await memApiClient.post(
+      '/scr-mem-0003/get-new-corporation-id'
+    );
+    return response.data;
+  };
+
+/** 法人グループ取得APIレスポンス */
+export interface ScrMem0003GetCorporationGroupResponse {
+  // 法人グループリスト
+  corporationGroupList: corporationGroupList[];
+}
+
+/** 法人グループリスト */
+export interface corporationGroupList {
+  // 法人グループID
+  corporationGroupId: string;
+  // 法人グループ名
+  corporationGroupName: string;
+}
+
+/** 法人グループ取得API */
+export const ScrMem0003GetCorporationGroup =
+  async (): Promise<ScrMem0003GetCorporationGroupResponse> => {
+    const response = await memApiClient.post(
+      '/scr-mem-0003/get-corporation-group'
+    );
+    return response.data;
+  };
 
 /** 法人基本情報入力チェックAPIリクエスト */
 export interface ScrMem0003InputCheckCorporationInfoRequest {
@@ -260,15 +275,15 @@ export interface ScrMem0003InputCheckCorporationInfoRequest {
 
 /** 法人基本情報入力チェックAPIレスポンス */
 export interface ScrMem0003InputCheckCorporationInfoResponse {
-  errorList:errorResult[],
-  warnList:errorResult[]
+  errorList: errorResult[];
+  warnList: errorResult[];
 }
 
 // リスト
 export interface errorResult {
-  'errorCode':string;
-  'errorMessage':string;
-  'detail':string;
+  errorCode: string;
+  errorMessage: string;
+  detail: string;
 }
 
 /** 法人基本情報入力チェックAPI */
@@ -280,141 +295,282 @@ export const ScrMem0003InputCheckCorporationInfo = async (
     request
   );
   return response.data;
-}
+};
 
-/** 法人基本情報申請APIリクエスト */
-export interface ScrMem0003ApplyForChangeCorporationRequest {
-  /** 法人ID */
+/** 法人基本情報登録APIリクエスト */
+export interface ScrMem0003RegistrationCorporationInfoRequest {
+  // 法人ID
   corporationId: string;
-  /** 法人名称 */
+  // 法人名
   corporationName: string;
-  /** 法人名称カナ */
+  // 法人名カナ
   corporationNameKana: string;
-  /** Gold/Silver会員区分 */
+  // 法人グループID
+  corporationGroupId: string[];
+  // Gold/Silver会員区分
   goldSilverMemberKind: string;
-  /** 法人郵便番号 */
+  // 法人郵便番号
   corporationZipCode: string;
-  /** 法人都道府県コード */
+  // 法人都道府県コード
   corporationPrefectureCode: string;
-  /** 法人市区町村 */
+  // 法人市区町村
   corporationMunicipalities: string;
-  /** 法人番地号建物名 */
+  // 法人番地号建物名
   corporationAddressBuildingName: string;
-  /** 法人電話番号 */
+  // 法人電話番号
   corporationPhoneNumber: string;
-  /** 法人FAX番号 */
+  // 法人FAX番号
   corporationFaxNumber: string;
-  /** 法人メールアドレス */
+  // 法人メールアドレス
   corporationMailAddress: string;
-  /** 適格事業者番号 */
+  // 適格事業者番号
   eligibleBusinessNumber: string;
-  /** 税事業者区分 */
+  // 税事業者区分
   taxBusinessKind: string;
-  /** 公安委員会 */
+  // 公安委員会
   publicSafetyCommittee: string;
-  /** 古物商許可番号 */
+  // 古物商許可番号
   antiqueBusinessLicenseNumber: string;
-  /** 交付年月日 */
-  issuanceDate: string;
-  /** 古物名義 */
+  // 交付年月日
+  issuanceDate: Date;
+  // 古物名義
   antiqueName: string;
-  /** 会員メモ */
+  // 会員メモ
   memberMemo: string;
-  /** 代表者名 */
+  // 代表者名
   representativeName: string;
-  /** 代表者名カナ */
+  // 代表者名カナ
   representativeNameKana: string;
-  /** 代表者性別区分 */
+  // 性別
   representativeGenderKind: string;
-  /** 代表者生年月日 */
-  representativeBirthDate: string;
-  /** 所有資産区分 */
+  // 生年月日
+  representativeBirthDate: Date;
+  // 所有資産
   possessionAssetsKind: string;
-  /** 代表者郵便番号 */
+  // 郵便番号
   representativeZipCode: string;
-  /** 代表者都道府県コード */
+  // 都道府県
   representativePrefectureCode: string;
-  /** 代表者市区町村 */
+  // 市区町村
   representativeMunicipalities: string;
-  /** 代表者番地号建物名 */
+  // 番地・号・建物名など
   representativeAddressBuildingName: string;
-  /** 代表者電話番号 */
+  // TEL
   representativePhoneNumber: string;
-  /** 代表者FAX番号 */
+  // FAX
   representativeFaxNumber: string;
-  /** 代表者携帯電話番号 */
+  // 携帯番号
   representativeMobilePhoneNumber: string;
-  /** 法人グループマスタ */
-  corporationGroupMasters: CorporationGroupMasters[];
-  /** 連帯保証人マスタ */
-  guarantor: GuarantorMasters[];
-  /** 申請従業員ID */
+  // 連帯保証人
+  guarantor: RegistGuarantor[];
+
+  // 基本法人与信額
+  basicsCorporationCreditAmount: number;
+  // 法人与信取引額
+  corporationCreditDealAmount: number;
+  // 与信加算額
+  creditAdditionAmount: number;
+  // 臨時法人与信額
+  temporaryCorporationCreditAmount: number;
+  // 臨時与信開始日
+  temporaryCreditStartDate: string;
+  // 臨時与信終了日
+  temporaryCreditEndDate: string;
+  // 臨時与信設定日
+  temporaryCreditSettingDate: string;
+  // 従業員名
+  employeeName: string;
+  // 変更理由
+  changeEeason: string;
+  // 稟議書ID
+  approvalDocumentId: string;
+  // 支払延長与信額
+  paymentExtensionCreditAmount: number;
+  // 支払延長取引額
+  paymentExtensionDealAmount: number;
+
+  // 自動制限フラグ
+  automaticLimitFlag: boolean;
+  // 制限状況フラグ
+  limitStatusKind: string;
+  // 制限種別
+  limitKind: string;
+
+  //  四輪】制限件数
+  tvaaLimitCount: number;
+  // 【四輪】返却件数
+  tvaaResponseCount: number;
+  // 【四輪】取得件数
+  tvaaAcquisitionCount: number;
+  // 【四輪】契約情報一覧
+  tvaaContractInfo: RegistContractInfo[];
+  // 【二輪】制限件数
+  bikeLimitCount: number;
+  // 【二輪】返却件数
+  bikeResponseCount: number;
+  // 【二輪】取得件数
+  bikeAcquisitionCount: number;
+  // 【二輪】契約情報一覧
+  bikeContractInfo: RegistContractInfo[];
+  // 請求先一覧制限件数
+  billingLimitCount: number;
+  // 請求先一覧返却件数
+  billingResponseCount: number;
+  // 請求先一覧取得件数
+  billingAcquisitionCount: number;
+  // 請求先一覧
+  billingInfo: RegistBillingInfo[];
+  // 譲渡書類送付先一覧制限件数
+  assignmentLimitCount: number;
+  // 譲渡書類送付先一覧返却件数
+  assignmentResponseCount: number;
+  // 譲渡書類送付先一覧取得件数
+  assignmentAcquisitionCount: number;
+  // 譲渡書類送付先一覧
+  assignmentDocumentDestinationInfo: RegistAssignmentDocumentDestinationInfo[];
+
+  // 申請従業員ID
   applicationEmployeeId: string;
-  /** 変更予定日 */
-  changeHistoryDate: string;
-  /** 登録変更メモ */
+  // 変更予定日
+  changeExpectDate: string;
+  // 登録変更メモ
   registrationChangeMemo: string;
-  /** 画面ID */
+  // 画面ID
   screenId: string;
-  /** タブID */
+  // タブID
   tabId: string;
 }
 
-/** 法人グループマスタ */
-export interface CorporationGroupMasters {
-  /** 法人グループID */
-  corporationGroupId: string;
-}
-
-/** 連帯保証人マスタ */
-export interface GuarantorMasters {
-  /** 連帯保証人No */
+/** 連帯保証人 */
+export interface RegistGuarantor {
+  // 連帯保証人No
   guarantorNo: number;
-  /** 連帯保証人名 */
+  // 連帯保証人名
   guarantorName: string;
-  /** 連帯保証人名カナ */
+  // 連帯保証人カナ
   guarantorNameKana: string;
-  /** 連帯保証人性別区分 */
+  // 連帯保証人性別区分コード
   guarantorGenderKind: string;
-  /** 連帯保証人生年月日 */
-  guarantorBirthDate: string;
-  /** 連帯保証人所有資産区分 */
+  // 連帯保証人生年月日
+  guarantorBirthDate: Date;
+  // 連帯保証人所有資産区分
   guarantorPossessionAssetsKind: string;
-  /** 連帯保証人続柄 */
+  // 連帯保証人続柄
   guarantorRelationship: string;
-  /** 連帯保証人郵便番号 */
+  // 連帯保証人郵便番号
   guarantorZipCode: string;
-  /** 連帯保証人都道府県コード */
+  // 連帯保証人都道府県コード
   guarantorPrefectureCode: string;
-  /** 連帯保証人市区町村 */
+  // 連帯保証人市区町村
   guarantorMunicipalities: string;
-  /** 連帯保証人番地号建物名 */
+  // 連帯保証人番地号建物名
   guarantorAddressBuildingName: string;
-  /** 連帯保証人電話番号 */
+  // 連帯保証人電話番号
   guarantorPhoneNumber: string;
-  /** 連帯保証人FAX番号 */
+  // 連帯保証人FAX番号
   guarantorFaxNumber: string;
-  /** 連帯保証人携帯電話番号 */
+  // 連帯保証人携帯電話番号
   guarantorMobilePhoneNumber: string;
 }
 
-/** 法人基本情報申請APIレスポンス */
-export interface ScrMem0003ApplyForChangeCorporationResponse {
-  /** 変更履歴番号 */
-  changeHistoryNumber: string;
+/** 【四輪（二輪）】契約情報一覧 */
+interface RegistContractInfo {
+  // 契約ID
+  contractId: string;
+  // 契約情報変更予約
+  contractChangeReservationfFlag: boolean;
+  // 事業拠点ID
+  businessBaseId: string;
+  // 事業拠点名称
+  businessBaseName: string;
+  // 請求先ID
+  billingId: string;
+  // 請求方法区分
+  claimMethodKind: string;
+  // コース名
+  courseName: string;
+  // 参加区分
+  optionEntryKind: string;
+  // オプション契約
+  optionContractFlag: boolean;
+  // 入会金
+  admissionPrice: number;
+  // コース定価
+  courselistPrice: number;
+  // 会員別会費_値引値増金額区分
+  memberDistinctionDiscountPriceKind: string;
+  // 会員別会費_値引値増金額
+  memberDistinctionDiscountPrice: number;
+  // コース別サービス定価
+  courseDistinctionListPrice: number;
+  // 契約本数
+  contractCount: number;
+  // コース別オプション会費_値引値増金額区分
+  courseDistinctionDiscountPriceKind: string;
+  // コース別オプション会費_値引値増金額
+  courseDistinctionDiscountPrice: number;
 }
 
-/** 法人基本情報申請API */
-export const ScrMem0003ApplyForChangeCorporation = async (
-  request: ScrMem0003ApplyForChangeCorporationRequest
-): Promise<ScrMem0003ApplyForChangeCorporationResponse> => {
+/** 請求先一覧 */
+export interface RegistBillingInfo {
+  // 請求先ID
+  billingId: string;
+  // 契約ID
+  contractId: string;
+  // コース名
+  courseName: string;
+  // 請求方法区分
+  claimMethodKind: string;
+  // 銀行名 （引落）
+  debitBankName: string;
+  // 支店名 （引落）
+  debitBranchName: string;
+  // 口座番号（引落）
+  debitAccountNumber: string;
+  // 銀行名 （支払）
+  payingBankName: string;
+  // 支店名 （支払）
+  payingBranchName: string;
+  // 口座番号（支払）
+  payingAccountNumber: string;
+  // 変更予約
+  changeReservationfFlag: boolean;
+}
+
+/** 譲渡書類送付先一覧 */
+interface RegistAssignmentDocumentDestinationInfo {
+  // 契約ID
+  contractId: string;
+  // 譲渡書類送付先郵便番号
+  assignmentDocumentDestinationZipCode: string;
+  // 譲渡書類送付先都道府県名称
+  assignmentDocumentDestinationPrefectureName: string;
+  // 譲渡書類送付先市区町村
+  assignmentDocumentDestinationMunicipalities: string;
+  // 譲渡書類送付先番地号建物名
+  assignmentDocumentDestinationAddressBuildingName: string;
+  // 譲渡書類送付先電話番号
+  assignmentDocumentDestinationPhoneNumber: string;
+  // 譲渡書類送付先FAX番号
+  assignmentDocumentDestinationFaxNumber: string;
+  // 譲渡書類送付先メールアドレス
+  assignmentDocumentDestinationMailAddress: string;
+  // 譲渡書類送付先配送方法伝票種類区分
+  assignmentDocumentDestinationShippingMethodSlipKind: string;
+  // 変更予約
+  changeReservationfFlag: boolean;
+}
+
+/** 法人基本情報登録API */
+export const ScrMem0003RegistrationCorporationInfo = async (
+  request: ScrMem0003RegistrationCorporationInfoRequest
+): Promise<null> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/apply-for-change-corporation',
+    '/scr-mem-0003/registration-corporation-info',
     request
   );
-  return response.data;
+  return null;
 };
-
 
 /**
  * 与信情報タブ
@@ -422,7 +578,7 @@ export const ScrMem0003ApplyForChangeCorporation = async (
 
 /** 与信情報取得APIリクエスト */
 export interface ScrMem0003GetCreditInfoRequest {
-  corporationId: string
+  corporationId: string;
 }
 
 /** 与信情報取得APIレスポンス */
@@ -464,44 +620,16 @@ export const ScrMem0003GetCreditInfo = async (
   return response.data;
 };
 
-/** 与信情報登録APIリクエスト */
-export interface ScrMem0003RegistrationCreditInfoRequest {
-  // 法人ID
-  corporationId: string;
-  // 基本法人与信額
-  basicsCorporationCreditAmount: number;
-  // 法人与信取引額
-  corporationCreditDealAmount: number;
-  // 与信加算額
-  creditAdditionAmount: number;
-  // 支払延長与信額
-  paymentExtensionCreditAmount: number;
-  // 支払延長取引額
-  paymentExtensionDealAmount: number;
-  // 申請従業員ID
-  applicationEmployeeId: string;
-  // 業務日付
-  businessDate: Date;
-  // 登録変更メモ
-  registrationChangeMemo: string;
-  // 画面ID
-  screenId: string;
-  // タブID	
-  tabId	: string;
-
-}
-
-/** 与信情報登録API */
+/** 与信情報登録申請API */
 export const ScrMem0003RegistrationCreditInfo = async (
-  request: ScrMem0003RegistrationCreditInfoRequest
-) => {
+  request: ScrMem0003RegistrationCorporationInfoRequest
+): Promise<null> => {
   const response = await memApiClient.post(
     '/scr-mem-0003/registration-credit-info',
     request
   );
-  return;
+  return null;
 };
-
 
 /**
  * 与信制限タブ
@@ -534,37 +662,16 @@ export const ScrMem0003GetCreditLimitInfo = async (
   return response.data;
 };
 
-/** 与信制限登録APIリクエスト */
-export interface ScrMem0003RegistrationCreditLimitInfoRequest {
-  // 法人ID
-  corporationId: string;
-  // 自動制限フラグ
-  automaticLimitFlag: boolean;
-  // 制限状況区分
-  limit_statusKind: string;
-  // 制限種別
-  limitKind: string;
-  // 申請従業員ID
-  applicationEmployeeId: string;
-  // 登録変更メモ
-  registrationChangeMemo: string;
-  // 画面ID
-  screenId: string;
-  // タブID	
-  tabId	: string;
-
-}
-
 /** 与信制限登録API */
 export const ScrMem0003RegistrationCreditLimitInfo = async (
-  request: ScrMem0003RegistrationCreditLimitInfoRequest
-) => {
+  request: ScrMem0003RegistrationCorporationInfoRequest
+): Promise<null> => {
   const response = await memApiClient.post(
     '/scr-mem-0003/registration-credit-limit-info',
     request
   );
+  return null;
 };
-
 
 /**
  * 契約情報タブ
@@ -722,19 +829,23 @@ export interface ScrMem0003AddCheckContractInfoRequest {
 /** 契約情報追加チェックAPIレスポンス */
 export interface ScrMem0003AddCheckContractInfoResponse {
   // エラー内容リスト
-  errorList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  errorList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
   // ワーニング内容リスト
-  warnList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  warnList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
 }
 
 /** 契約情報追加チェックAPI */
@@ -747,7 +858,6 @@ export const ScrMem0003AddCheckContractInfo = async (
   );
   return response.data;
 };
-
 
 /**
  * 拠点情報タブ
@@ -762,19 +872,23 @@ export interface ScrMem0003AddCheckLogisticsBaseRequest {
 /** 物流拠点追加チェックAPIレスポンス */
 export interface ScrMem0003AddCheckLogisticsBaseResponse {
   // エラー内容リスト
-  errorList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  errorList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
   // ワーニング内容リスト
-  warnList: [{
-    // エラーコード
-    errorCode: string;
-    // エラーメッセージ
-    errorMessage: string;
-  }];
+  warnList: [
+    {
+      // エラーコード
+      errorCode: string;
+      // エラーメッセージ
+      errorMessage: string;
+    }
+  ];
 }
 
 /** 物流拠点追加チェックAPI */
@@ -872,7 +986,6 @@ export interface LogisticsBase {
   logisticsBaseRepresentativeContractId: string;
   // 変更予約
   changeReservationfFlag: boolean;
-
 }
 
 /** 物流拠点一覧取得API */
@@ -952,7 +1065,6 @@ export interface BusinessBase {
   contractId: string;
   // 変更予約
   changeReservationfFlag: boolean;
-
 }
 
 /** 事業拠点一覧取得API */
@@ -965,7 +1077,6 @@ export const ScrMem0003SearchBusinessBase = async (
   );
   return response.data;
 };
-
 
 /**
  * 取引履歴タブ
@@ -1074,36 +1185,166 @@ export const ScrMem0003SearchAuctionDealHistory = async (
   return response.data;
 };
 
-/**
- * 変更履歴タブ
- */
+/** 一般請求取引履歴取得APIリクエスト */
+export interface ScrMem0003SearchBillingDealHistoryRequest {
+  // 法人ID
+  corporationId: string;
+  // 請求先IDリスト
+  billingIdList: string[];
+  // 契約IDリスト
+  contractIdList: string[];
+  // 表示開始期間
+  displayStartPeriod: string;
+  // 表示終了期間
+  displayEndPeriod: string;
+  // 制限件数
+  limit: number;
+}
 
+/** 一般請求取引履歴取得APIレスポンス */
+export interface ScrMem0003SearchBillingDealHistoryResponse {
+  // 制限件数
+  limitCount: number;
+  // 返却件数
+  responseCount: number;
+  // 取得件数
+  acquisitionCount: number;
+  // 請求件数合計
+  claimCountTotal: number;
+  // 請求金額合計
+  claimAmountTotal: number;
+  // 延滞回数合計
+  arrearsCountTotal: number;
+  // 遅延状況件数（1日）合計
+  day1ArrearsCountTotal: number;
+  // 遅延状況件数（2-3日）合計
+  day3ArrearsCountTotal: number;
+  // 遅延状況件数（4-7日）合計
+  day7ArrearsCountTotal: number;
+  // 遅延状況件数（8-14日）合計
+  day14ArrearsCountTotal: number;
+  // 遅延状況件数（15日-）合計
+  day15ArrearsCountTotal: number;
+  // 一般請求取引履歴
+  billingDealHistory: BillingDealHistory[];
+}
+
+/** 一般請求取引履歴 */
+export interface BillingDealHistory {
+  // 取引年月
+  dealYm: string;
+  // 請求先ID
+  billingId: string;
+  // 契約ID
+  contractId: string;
+  // 請求件数
+  claimCount: number;
+  // 請求金額
+  claimAmount: number;
+  // 延滞回数
+  arrearsCount: number;
+  // 遅延状況件数（1日）
+  day1ArrearsCount: number;
+  // 遅延状況件数（2-3日）
+  day3ArrearsCount: number;
+  // 遅延状況件数（4-7日）
+  day7ArrearsCount: number;
+  // 遅延状況件数（8-14日）
+  day14ArrearsCount: number;
+  // 遅延状況件数（15日-）
+  day15ArrearsCount: number;
+}
+
+/** 一般請求取引履歴取得API */
+export const ScrMem0003SearchBillingDealHistory = async (
+  request: ScrMem0003SearchBillingDealHistoryRequest
+): Promise<ScrMem0003SearchBillingDealHistoryResponse> => {
+  const response = await memApiClient.post(
+    '/scr-mem-0003/search-billing-deal-history',
+    request
+  );
+  return response.data;
+};
+
+/** 代行請求履歴取得APIリクエスト */
+export interface ScrMem0003SearchProxyBillingHistoryRequest {
+  // 法人ID
+  corporationId: string;
+  // 請求先IDリスト
+  billingIdList: string[];
+  // 契約IDリスト
+  contractIdList: string[];
+  // 表示開始期間
+  displayStartPeriod: string;
+  // 表示終了期間
+  displayEndPeriod: string;
+  // 制限件数
+  limit: number;
+}
+
+/** 代行請求履歴取得APIレスポンス */
+export interface ScrMem0003SearchProxyBillingHistoryResponse {
+  // 制限件数
+  limitCount: number;
+  // 返却件数
+  responseCount: number;
+  // 取得件数
+  acquisitionCount: number;
+  // 代行請求履歴
+  proxyBillingHistory: ProxyBillingHistory[];
+}
+
+/** 代行請求履歴 */
+export interface ProxyBillingHistory {
+  // 取引年月
+  dealYm: string;
+  // 請求先ID
+  billingId: string;
+  // 契約ID
+  contractId: string;
+  // 請求会費内容
+  goodsClaim: string;
+  // 請求金額
+  claimAmount: number;
+  // 振替処理結果
+  transferProcessResult: string;
+}
+
+/** 代行請求履歴取得API */
+export const ScrMem0003SearchProxyBillingHistory = async (
+  request: ScrMem0003SearchProxyBillingHistoryRequest
+): Promise<ScrMem0003SearchProxyBillingHistoryResponse> => {
+  const response = await memApiClient.post(
+    '/scr-mem-0003/search-proxy-billing-history',
+    request
+  );
+  return response.data;
+};
 
 /**
  * 共通
  */
 
-
 /** コード値取得API（コード管理マスタ以外）リクエスト */
-export interface ScrMem0003GetCodeValueRequest {
+export interface GetCodeValueRequest {
   // エンティティリスト
   entityList: EntityList[];
 }
 
-export interface EntityList{
+export interface EntityList {
   // エンティティ名
   entityName: string;
 }
 
 /** コード値取得API（コード管理マスタ以外）レスポンス */
-export interface ScrMem0003GetCodeValueResponse {
+export interface GetCodeValueResponse {
   // 結果リスト
   resultList: ResultList[];
 }
 
 export interface ResultList {
   // エンティティ名
-  entityName:string;
+  entityName: string;
   // コード値リスト
   codeValueList: CodeValueList[];
 }
@@ -1118,13 +1359,18 @@ export interface CodeValueList {
 }
 
 /** コード値取得API（コード管理マスタ以外） */
-export const ScrMem0003GetCodeValue = async (
-  request: ScrMem0003GetCodeValueRequest
-): Promise<ScrMem0003GetCodeValueResponse> => {
-  const response = await memApiClient.post(
-    '/scr/get-code-value',
-    request
-  );
+export const ScrMem9999GetCodeValue = async (
+  request: GetCodeValueRequest
+): Promise<GetCodeValueResponse> => {
+  const response = await memApiClient.post('/scr/get-code-value', request);
+  return response.data;
+};
+
+/** 共通コード値取得API（コード管理マスタ以外） */
+export const ScrCom9999GetCodeValue = async (
+  request: GetCodeValueRequest
+): Promise<GetCodeValueResponse> => {
+  const response = await comApiClient.post('/com/scr/get-code-value', request);
   return response.data;
 };
 
@@ -1152,8 +1398,160 @@ export const ScrCom9999GetCodeManagementMaster = async (
   request: ScrCom9999GetCodeManagementMasterRequest
 ): Promise<ScrCom9999GetCodeManagementMasterResponse> => {
   const response = await comApiClient.post(
-    'com/scr-com-9999/get-code-management-master',
+    '/com/scr-com-9999/get-code-management-master',
     request
   );
   return response.data;
 };
+
+/** コード管理マスタ情報取得API（複数取得）リクエスト */
+export interface ScrCom9999GetCodeManagementMasterMultipleRequest {
+  // コードIDリスト
+  codeIdList: codeIdList[];
+}
+
+export interface codeIdList {
+  // コードID
+  codeId: string;
+}
+
+/** コード管理マスタ情報取得API（複数取得）レスポンス */
+export interface ScrCom9999GetCodeManagementMasterMultipleResponse {
+  // 結果リスト
+  resultList: resultList[];
+}
+
+export interface resultList {
+  // コードID
+  codeId: string;
+  // コード値リスト
+  codeValueList: codeValueList[];
+}
+
+export interface codeValueList {
+  // コード値
+  codeValue: string;
+  // コード名称
+  codeName: string;
+}
+
+/** コード管理マスタ情報取得API（複数取得） */
+export const ScrCom9999GetCodeManagementMasterMultiple = async (
+  request: ScrCom9999GetCodeManagementMasterMultipleRequest
+): Promise<ScrCom9999GetCodeManagementMasterMultipleResponse> => {
+  const response = await comApiClient.post(
+    '/com/scr-com-9999/get-code-management-master-multiple',
+    request
+  );
+  return response.data;
+};
+
+/** 営業担当情報取得API（物流拠点マスタ）リクエスト */
+export interface ScrMem9999GetEmployeeFromDistrictRequest {
+  // 法人ID
+  corporationId: string;
+}
+
+/** 営業担当情報取得API（物流拠点マスタ）レスポンス */
+export interface ScrMem9999GetEmployeeFromDistrictResponse {
+  // 四輪営業担当情報
+  tvaaSalesInfo: SalesInfo[];
+  // 二輪営業担当情報
+  bikeSalesInfo: SalesInfo[];
+}
+
+export interface SalesInfo {
+  // 営業担当ID
+  salesId: string;
+  // 営業担当名
+  salesName: string;
+}
+
+/** 営業担当情報取得API（物流拠点マスタ） */
+export const ScrMem9999GetEmployeeFromDistrict = async (
+  request: ScrMem9999GetEmployeeFromDistrictRequest
+): Promise<ScrMem9999GetEmployeeFromDistrictResponse> => {
+  const response = await memApiClient.post(
+    '/scr/get-employee-from-district',
+    request
+  );
+  return response.data;
+};
+
+/** 物流拠点代表契約ID取得APIリクエスト */
+export interface ScrMem9999GetLogisticsBaseRepresentativeContractRequest {
+  // 法人ID
+  corporationId: string;
+}
+
+/** 物流拠点代表契約ID取得APIレスポンス */
+export interface ScrMem9999GetLogisticsBaseRepresentativeContractResponse {
+  // 物流拠点代表契約IDリスト
+  logisticsBaseRepresentativeContractIdList: string[];
+}
+
+/** 物流拠点代表契約ID取得API */
+export const ScrMem9999GetLogisticsBaseRepresentativeContract = async (
+  request: ScrMem9999GetLogisticsBaseRepresentativeContractRequest
+): Promise<ScrMem9999GetLogisticsBaseRepresentativeContractResponse> => {
+  const response = await memApiClient.post(
+    '/scr/get-logistics-base-representative-contract',
+    request
+  );
+  return response.data;
+};
+
+/** 請求先契約情報取得APIリクエスト */
+export interface ScrMem9999GetBillingContractRequest {
+  // 法人ID
+  corporationId: string;
+  // 業務日付
+  businessDate: Date;
+}
+
+/** 請求先契約情報取得APIレスポンス */
+export interface ScrMem9999GetBillingContractResponse {
+  // 契約IDリスト
+  contractIdList: string[];
+}
+
+/** 請求先契約情報取得API */
+export const ScrMem9999GetBillingContract = async (
+  request: ScrMem9999GetBillingContractRequest
+): Promise<ScrMem9999GetBillingContractResponse> => {
+  const response = await memApiClient.post(
+    '/scr/get-billing-contract',
+    request
+  );
+  return response.data;
+};
+
+/** 請求先情報取得APIリクエスト */
+export interface ScrMem9999GetBillRequest {
+  // 法人ID
+  corporationId: string;
+  // ソートキー
+  sortKey: string;
+  // ソート方向
+  sortDirection: string;
+}
+
+/** 請求先情報取得APIレスポンス */
+export interface ScrMem9999GetBillResponse {
+  // リスト
+  list: list[];
+}
+
+export interface list {
+  // 請求先ID
+  billId: string;
+}
+
+/** 請求先情報取得API */
+export const ScrMem9999GetBill = async (
+  request: ScrMem9999GetBillRequest
+): Promise<ScrMem9999GetBillResponse> => {
+  const response = await memApiClient.post('/scr/get-bill', request);
+  return response.data;
+};
+

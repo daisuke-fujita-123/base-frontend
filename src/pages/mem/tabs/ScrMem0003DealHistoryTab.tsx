@@ -1,25 +1,44 @@
+import React, { useContext, useEffect, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
+
 import { yupResolver } from '@hookform/resolvers/yup';
-import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
-import { ScrCom9999GetCodeManagementMaster, ScrCom9999GetCodeManagementMasterRequest, ScrCom9999GetCodeManagementMasterResponse, ScrMem0003GetCodeValue, ScrMem0003GetCodeValueRequest, ScrMem0003GetCodeValueResponse, ScrMem0003SearchAuctionDealHistory, ScrMem0003SearchAuctionDealHistoryRequest, ScrMem0003SearchAuctionDealHistoryResponse } from 'apis/mem/ScrMem0003Api';
-import { AddButton, SearchButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
-import { ContentsDivider } from 'controls/Divider';
-import { Select, SelectValue } from 'controls/Select';
-import { Typography } from 'controls/Typography';
-import { useNavigate } from 'hooks/useNavigate';
+
 import { CenterBox, MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
-import { Grid } from 'layouts/Grid';
-import { InputLayout } from 'layouts/InputLayout';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 import { ColStack, InputRowStack, RowStack } from 'layouts/Stack';
-import { comApiClient, memApiClient } from 'providers/ApiClient';
-import React, { useEffect, useState } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
-import { generate } from 'utils/validation/BaseYup';
 
+import { AddButton, SearchButton } from 'controls/Button';
+import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { Dialog } from 'controls/Dialog';
+import { ContentsDivider } from 'controls/Divider';
+import { Select, SelectValue } from 'controls/Select';
+import { SerchLabelText } from 'controls/Typography';
+
+import {
+  ScrCom9999GetCodeManagementMaster,
+  ScrCom9999GetCodeManagementMasterRequest,
+  ScrMem0003SearchAuctionDealHistory,
+  ScrMem0003SearchAuctionDealHistoryRequest,
+  ScrMem0003SearchAuctionDealHistoryResponse,
+  ScrMem0003SearchBillingDealHistory,
+  ScrMem0003SearchBillingDealHistoryRequest,
+  ScrMem0003SearchBillingDealHistoryResponse,
+  ScrMem0003SearchProxyBillingHistory,
+  ScrMem0003SearchProxyBillingHistoryRequest,
+  ScrMem0003SearchProxyBillingHistoryResponse,
+  ScrMem9999GetBill,
+  ScrMem9999GetBillingContract,
+} from 'apis/mem/ScrMem0003Api';
+
+import { MessageContext } from 'providers/MessageProvider';
+
+import { Format } from 'utils/FormatUtil';
+import yup from 'utils/validation/ValidationDefinition';
+
+import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件データモデル
@@ -27,7 +46,7 @@ import { generate } from 'utils/validation/BaseYup';
 interface SearchModel {
   // 法人ID
   corporationId: string;
-  
+
   // オークション取引履歴セクション
   // 請求先IDリスト
   auctionDealHistoryBillingIdList: string[];
@@ -57,6 +76,20 @@ interface SearchModel {
   billingDealHistoryDisplayEndPeriodYear: string;
   // 表示終了期間（月）
   billingDealHistoryDisplayEndPeriodMonth: string;
+
+  // 代行請求履歴セクション
+  // 請求先IDリスト
+  proxyBillingHistoryBillingIdList: string[];
+  // 契約IDリスト
+  proxyBillingHistoryContractIdList: string[];
+  // 表示開始期間（年）
+  proxyBillingHistoryDisplayStartPeriodYear: string;
+  // 表示開始期間（月）
+  proxyBillingHistoryDisplayStartPeriodMonth: string;
+  // 表示終了期間（年）
+  proxyBillingHistoryDisplayEndPeriodYear: string;
+  // 表示終了期間（月）
+  proxyBillingHistoryDisplayEndPeriodMonth: string;
 }
 
 /**
@@ -89,7 +122,14 @@ const SearchLogisticsBaseinitialValues: SearchModel = {
   billingDealHistoryDisplayStartPeriodMonth: '',
   billingDealHistoryDisplayEndPeriodYear: '',
   billingDealHistoryDisplayEndPeriodMonth: '',
-}
+
+  proxyBillingHistoryBillingIdList: [],
+  proxyBillingHistoryContractIdList: [],
+  proxyBillingHistoryDisplayStartPeriodYear: '',
+  proxyBillingHistoryDisplayStartPeriodMonth: '',
+  proxyBillingHistoryDisplayEndPeriodYear: '',
+  proxyBillingHistoryDisplayEndPeriodMonth: '',
+};
 
 /**
  * プルダウン初期データ
@@ -105,26 +145,51 @@ const selectValuesInitialValues: SelectValuesModel = {
 /**
  * バリデーションスキーマ
  */
-const validationSchama = generate([
-  'logisticsBaseId',
-  'logisticsBaseName',
-  'logisticsBaseNameKana',
-  'usePurpose',
-  'logisticsBaseTvaaSalesStaffId',
-  'logisticsBaseBikeSalesStaffId',
-  'logisticsBasePrefectureCode',
-  'logisticsBaseMunicipalities',
-  'regionCode',
-  'logisticsBaseRepresentativeContractId',
-  'businessBaseId',
-  'businessBaseName',
-  'businessBaseNameKana',
-  'businessBaseTvaaSalesStaffId',
-  'businessBaseBikeSalesStaffId',
-  'businessBasePrefectureCode',
-  'businessBaseMunicipalities',
-  'contractId',
-]);
+const validationSchama = {
+  auctionDealHistoryBillingIdList: yup.array().label('請求先ID'),
+  auctionDealHistoryContractIdList: yup.array().label('契約ID'),
+  auctionKindList: yup.array().label('オークション種類'),
+  auctionDealHistoryDisplayStartPeriodYear: yup
+    .string()
+    .label('表示開始期間（年）'),
+  auctionDealHistoryDisplayStartPeriodMonth: yup
+    .string()
+    .label('表示開始期間（月）'),
+  auctionDealHistoryDisplayEndPeriodYear: yup
+    .string()
+    .label('表示終了期間（年）'),
+  auctionDealHistoryDisplayEndPeriodMonth: yup
+    .string()
+    .label('表示終了期間（月）'),
+  billingDealHistoryBillingIdList: yup.array().label('請求先ID'),
+  billingDealHistoryContractIdList: yup.array().label('契約ID'),
+  billingDealHistoryDisplayStartPeriodYear: yup
+    .string()
+    .label('表示開始期間（年）'),
+  billingDealHistoryDisplayStartPeriodMonth: yup
+    .string()
+    .label('表示開始期間（月）'),
+  billingDealHistoryDisplayEndPeriodYear: yup
+    .string()
+    .label('表示終了期間（年）'),
+  billingDealHistoryDisplayEndPeriodMonth: yup
+    .string()
+    .label('表示終了期間（月）'),
+  proxyBillingHistoryBillingIdList: yup.array().label('請求先ID'),
+  proxyBillingHistoryContractIdList: yup.array().label('契約ID'),
+  proxyBillingHistoryDisplayStartPeriodYear: yup
+    .string()
+    .label('表示開始期間（年）'),
+  proxyBillingHistoryDisplayStartPeriodMonth: yup
+    .string()
+    .label('表示開始期間（月）'),
+  proxyBillingHistoryDisplayEndPeriodYear: yup
+    .string()
+    .label('表示終了期間（年）'),
+  proxyBillingHistoryDisplayEndPeriodMonth: yup
+    .string()
+    .label('表示終了期間（月）'),
+};
 
 /**
  * オークション取引履歴列定義
@@ -134,6 +199,7 @@ const auctionDealHistoryColumns: GridColDef[] = [
     field: 'dealYm',
     headerName: '取引年月',
     size: 's',
+    cellType: 'link',
   },
   {
     field: 'billingId',
@@ -163,12 +229,12 @@ const auctionDealHistoryColumns: GridColDef[] = [
   {
     field: 'purchaseClaimCount',
     headerName: '成約クレーム数',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'documentDelayCount',
     headerName: '書類遅延台数',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'bidCount',
@@ -188,28 +254,28 @@ const auctionDealHistoryColumns: GridColDef[] = [
   {
     field: 'day1ArrearsCount',
     headerName: '遅延状況件数（1日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day3ArrearsCount',
     headerName: '遅延状況件数（2-3日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day7ArrearsCount',
     headerName: '遅延状況件数（4-7日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day14ArrearsCount',
     headerName: '遅延状況件数（8-14日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day15ArrearsCount',
     headerName: '遅延状況件数（15日-）',
-    size: 's',
-  }
+    size: 'm',
+  },
 ];
 
 /**
@@ -252,6 +318,7 @@ const billingDealHistoryColumns: GridColDef[] = [
     field: 'dealYm',
     headerName: '取引年月',
     size: 's',
+    cellType: 'link',
   },
   {
     field: 'billingId',
@@ -281,28 +348,28 @@ const billingDealHistoryColumns: GridColDef[] = [
   {
     field: 'day1ArrearsCount',
     headerName: '遅延状況件数（1日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day3ArrearsCount',
     headerName: '遅延状況件数（2-3日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day7ArrearsCount',
     headerName: '遅延状況件数（4-7日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day14ArrearsCount',
     headerName: '遅延状況件数（8-14日）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'day15ArrearsCount',
     headerName: '遅延状況件数（15日-）',
-    size: 's',
-  }
+    size: 'm',
+  },
 ];
 
 /**
@@ -332,6 +399,41 @@ const billingDealHistoryColumnGroups: GridColumnGroupingModel = [
   },
 ];
 
+/**
+ * 代行請求履歴列定義
+ */
+const proxyBillingHistoryColumns: GridColDef[] = [
+  {
+    field: 'dealYm',
+    headerName: '取引年月',
+    size: 's',
+  },
+  {
+    field: 'billingId',
+    headerName: '請求先ID',
+    size: 's',
+  },
+  {
+    field: 'contractId',
+    headerName: '契約ID',
+    size: 'm',
+  },
+  {
+    field: 'goodsClaim',
+    headerName: '請求会費内容',
+    size: 'm',
+  },
+  {
+    field: 'claimAmount',
+    headerName: '請求金額',
+    size: 's',
+  },
+  {
+    field: 'transferProcessResult',
+    headerName: '振替処理結果',
+    size: 'm',
+  },
+];
 
 /**
  * オークション取引履歴一覧モデル
@@ -343,11 +445,11 @@ interface auctionDealHistoryModel {
   contractId: string;
   exhibitCount: number;
   purchaseCount: number;
-  purchaseAmount: number;
+  purchaseAmount: string;
   purchaseClaimCount: number;
   documentDelayCount: number;
   bidCount: number;
-  bidAmount: number;
+  bidAmount: string;
   arrearsCount: number;
   day1ArrearsCount: number;
   day3ArrearsCount: number;
@@ -365,7 +467,7 @@ interface billingDealHistoryModel {
   billingId: string;
   contractId: string;
   claimCount: number;
-  claimAmount: number;
+  claimAmount: string;
   arrearsCount: number;
   day1ArrearsCount: number;
   day3ArrearsCount: number;
@@ -375,71 +477,25 @@ interface billingDealHistoryModel {
 }
 
 /**
- * 取得したコード値情報からプルダウンデータモデルへの変換
+ * 代行請求履歴一覧モデル
  */
-const convertToSelectValuesModel = (
-  codeValueResponse: ScrMem0003GetCodeValueResponse,
-  codeManagementMasterResponse: ScrCom9999GetCodeManagementMasterResponse
-): SelectValuesModel => {
-  const useBillingIdSelectValues: SelectValue[] = [];
-  const useContractIdSelectValues: SelectValue[] = [];
-  codeValueResponse.resultList.map((x) => {
-    if(x.entityName === 'billing_master'){
-      x.codeValueList.map((y) => {
-        useBillingIdSelectValues.push({
-          value: y.codeValue,
-          displayValue: y.codeValueName,
-        })
-      })
-    }
-    if(x.entityName === 'contract_master'){
-      x.codeValueList.map((y) => {
-        useContractIdSelectValues.push({
-          value: y.codeValue,
-          displayValue: y.codeValueName,
-        })
-      })
-    }
-  });
-  
-  const years: SelectValue[] = [];
-  const year = new Date().getFullYear();
-  for(let i = 0; i < 4; i++){
-    years.push({
-      value: (year+i).toString(),
-      displayValue: (year+i).toString(),
-    });
-  }
-
-  const months: SelectValue[] = [];
-  for(let i = 1; i < 13; i++){
-    months.push({
-      value: i.toString(),
-      displayValue: i.toString(),
-    });
-  }
-
-  return{
-    useBillingIdSelectValues: useBillingIdSelectValues,
-    useContractIdSelectValues: useContractIdSelectValues,
-    useAuctionKindSelectValues: codeManagementMasterResponse.list.map((x) => {
-      return{
-        value: x.codeValue,
-        displayValue: x.codeName,
-      }
-    }),
-    useYearSelectValues: years,
-    useMonthSelectValues: months,
-  }
-};
+interface proxyBillingHistoryModel {
+  id: string;
+  dealYm: string;
+  billingId: string;
+  contractId: string;
+  goodsClaim: string;
+  claimAmount: string;
+  transferProcessResult: string;
+}
 
 /**
  * 検索条件モデルからオークション取引履歴取得APIリクエストへの変換
  */
 const convertFromSearchAuctionDealHistory = (
   search: SearchModel
-):ScrMem0003SearchAuctionDealHistoryRequest => {
-  return{
+): ScrMem0003SearchAuctionDealHistoryRequest => {
+  return {
     // 法人ID
     corporationId: search.corporationId,
     // 請求先IDリスト
@@ -449,34 +505,81 @@ const convertFromSearchAuctionDealHistory = (
     // オークション種類リスト
     auctionKindList: search.auctionKindList,
     // 表示開始期間
-    displayStartPeriod: search.auctionDealHistoryDisplayStartPeriodYear + search.auctionDealHistoryDisplayStartPeriodMonth,
+    displayStartPeriod:
+      search.auctionDealHistoryDisplayStartPeriodYear +
+      search.auctionDealHistoryDisplayStartPeriodMonth,
     // 表示終了期間
-    displayEndPeriod: search.auctionDealHistoryDisplayEndPeriodYear + search.auctionDealHistoryDisplayEndPeriodMonth,
+    displayEndPeriod:
+      search.auctionDealHistoryDisplayEndPeriodYear +
+      search.auctionDealHistoryDisplayEndPeriodMonth,
     // 制限件数
     limit: 0,
-
-  }
-}
+  };
+};
 
 /**
- * オークション取引履歴取得APIリクエストから物流拠点一覧モデルへの変換
+ * 検索条件モデルから一般請求取引履歴取得APIリクエストへの変換
  */
-const convertToauctionDealHistoryModel = (
+const convertFromSearchBillingDealHistory = (
+  search: SearchModel
+): ScrMem0003SearchBillingDealHistoryRequest => {
+  return {
+    corporationId: search.corporationId,
+    billingIdList: search.billingDealHistoryBillingIdList,
+    contractIdList: search.billingDealHistoryContractIdList,
+    displayStartPeriod:
+      search.billingDealHistoryDisplayStartPeriodYear +
+      search.billingDealHistoryDisplayStartPeriodMonth,
+    displayEndPeriod:
+      search.billingDealHistoryDisplayEndPeriodYear +
+      search.billingDealHistoryDisplayEndPeriodMonth,
+    limit: 0,
+  };
+};
+
+/**
+ * 検索条件モデルから代行請求履歴取得APIリクエストへの変換
+ */
+const convertFromSearchProxyBillingHistory = (
+  search: SearchModel
+): ScrMem0003SearchProxyBillingHistoryRequest => {
+  return {
+    corporationId: search.corporationId,
+    billingIdList: search.billingDealHistoryBillingIdList,
+    contractIdList: search.billingDealHistoryContractIdList,
+    displayStartPeriod:
+      search.billingDealHistoryDisplayStartPeriodYear +
+      search.billingDealHistoryDisplayStartPeriodMonth,
+    displayEndPeriod:
+      search.billingDealHistoryDisplayEndPeriodYear +
+      search.billingDealHistoryDisplayEndPeriodMonth,
+    limit: 0,
+  };
+};
+
+/**
+ * オークション取引履歴取得APIリクエストからオークション取引履歴一覧への変換
+ */
+const convertToAuctionDealHistoryModel = (
   response: ScrMem0003SearchAuctionDealHistoryResponse
 ): auctionDealHistoryModel[] => {
-  return response.auctionDealHistory.map((x) =>{
+  return response.auctionDealHistory.map((x) => {
     return {
       id: x.dealYm + x.billingId + x.contractId,
-      dealYm: x.dealYm,
+      dealYm:
+        x.dealYm.substring(0, 4) +
+        '年' +
+        x.dealYm.substring(4).replace(/^0+/, '') +
+        '月',
       billingId: x.billingId,
       contractId: x.contractId,
       exhibitCount: x.exhibitCount,
       purchaseCount: x.purchaseCount,
-      purchaseAmount: x.purchaseAmount,
+      purchaseAmount: x.purchaseAmount.toLocaleString(),
       purchaseClaimCount: x.purchaseClaimCount,
       documentDelayCount: x.documentDelayCount,
       bidCount: x.bidCount,
-      bidAmount: x.bidAmount,
+      bidAmount: x.bidAmount.toLocaleString(),
       arrearsCount: x.arrearsCount,
       day1ArrearsCount: x.day1ArrearsCount,
       day3ArrearsCount: x.day3ArrearsCount,
@@ -487,80 +590,391 @@ const convertToauctionDealHistoryModel = (
   });
 };
 
+/**
+ * 一般請求取引履歴取得APIリクエストから一般請求取引履歴一覧モデルへの変換
+ */
+const convertToBillingDealHistoryModel = (
+  response: ScrMem0003SearchBillingDealHistoryResponse
+): billingDealHistoryModel[] => {
+  return response.billingDealHistory.map((x) => {
+    return {
+      id: x.dealYm + x.billingId + x.contractId,
+      dealYm:
+        x.dealYm.substring(0, 4) +
+        '年' +
+        x.dealYm.substring(4).replace(/^0+/, '') +
+        '月',
+      billingId: x.billingId,
+      contractId: x.contractId,
+      claimCount: x.claimCount,
+      claimAmount: x.claimAmount.toLocaleString(),
+      arrearsCount: x.arrearsCount,
+      day1ArrearsCount: x.day1ArrearsCount,
+      day3ArrearsCount: x.day3ArrearsCount,
+      day7ArrearsCount: x.day7ArrearsCount,
+      day14ArrearsCount: x.day14ArrearsCount,
+      day15ArrearsCount: x.day15ArrearsCount,
+    };
+  });
+};
+
+/**
+ * 代行請求履歴取得APIリクエストから代行請求履歴一覧モデルへの変換
+ */
+const convertToProxyBillingHistoryModel = (
+  response: ScrMem0003SearchProxyBillingHistoryResponse
+): proxyBillingHistoryModel[] => {
+  return response.proxyBillingHistory.map((x) => {
+    return {
+      id: x.dealYm + x.billingId + x.contractId,
+      dealYm:
+        x.dealYm.substring(0, 4) +
+        '年' +
+        x.dealYm.substring(4).replace(/^0+/, '') +
+        '月',
+      billingId: x.billingId,
+      contractId: x.contractId,
+      goodsClaim: x.goodsClaim,
+      claimAmount: x.claimAmount.toLocaleString(),
+      transferProcessResult: x.transferProcessResult,
+    };
+  });
+};
+
+type key = keyof SearchModel;
+
+const auctionDealHistorySerchData: { label: string; name: key }[] = [
+  { label: '請求先ID', name: 'auctionDealHistoryBillingIdList' },
+  { label: '契約ID', name: 'auctionDealHistoryContractIdList' },
+  { label: 'オークション種類', name: 'auctionKindList' },
+  {
+    label: '表示開始期間（年）',
+    name: 'auctionDealHistoryDisplayStartPeriodYear',
+  },
+  {
+    label: '表示開始期間（月）',
+    name: 'auctionDealHistoryDisplayStartPeriodMonth',
+  },
+  {
+    label: '表示終了期間（年）',
+    name: 'auctionDealHistoryDisplayEndPeriodYear',
+  },
+  {
+    label: '表示終了期間（月））',
+    name: 'auctionDealHistoryDisplayEndPeriodMonth',
+  },
+];
+
+const billingDealHistorySerchData: { label: string; name: key }[] = [
+  { label: '請求先ID', name: 'billingDealHistoryBillingIdList' },
+  { label: '契約ID', name: 'billingDealHistoryContractIdList' },
+  {
+    label: '表示開始期間（年）',
+    name: 'billingDealHistoryDisplayStartPeriodYear',
+  },
+  {
+    label: '表示開始期間（月）',
+    name: 'billingDealHistoryDisplayStartPeriodMonth',
+  },
+  {
+    label: '表示終了期間（年）',
+    name: 'billingDealHistoryDisplayEndPeriodYear',
+  },
+  {
+    label: '表示終了期間（月））',
+    name: 'billingDealHistoryDisplayEndPeriodMonth',
+  },
+];
+
+const proxyBillingHistorySerchData: { label: string; name: key }[] = [
+  { label: '請求先ID', name: 'proxyBillingHistoryBillingIdList' },
+  { label: '契約ID', name: 'proxyBillingHistoryContractIdList' },
+  {
+    label: '表示開始期間（年）',
+    name: 'proxyBillingHistoryDisplayStartPeriodYear',
+  },
+  {
+    label: '表示開始期間（月）',
+    name: 'proxyBillingHistoryDisplayStartPeriodMonth',
+  },
+  {
+    label: '表示終了期間（年）',
+    name: 'proxyBillingHistoryDisplayEndPeriodYear',
+  },
+  {
+    label: '表示終了期間（月））',
+    name: 'proxyBillingHistoryDisplayEndPeriodMonth',
+  },
+];
+
 const ScrMem0003DealHistoryTab = () => {
   // router
   const { corporationId } = useParams();
+  const { getMessage } = useContext(MessageContext);
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
-  const [auctionDealHistoryRows, setAuctionDealHistoryRows] = useState<auctionDealHistoryModel[]>([]);
-  const [billingDealHistoryRows, setBillingDealHistoryRows] = useState<billingDealHistoryModel[]>([]);
-  
+  const [auctionDealHistoryRows, setAuctionDealHistoryRows] = useState<
+    auctionDealHistoryModel[]
+  >([]);
+  const [auctionDealHistoryHrefs, setAuctionDealHistoryHrefs] = useState<any[]>(
+    []
+  );
+  const [billingDealHistoryRows, setBillingDealHistoryRows] = useState<
+    billingDealHistoryModel[]
+  >([]);
+  const [billingDealHistoryHrefs, setBillingDealHistoryHrefs] = useState<any[]>(
+    []
+  );
+  const [proxyBillingHistoryRows, setProxyBillingHistoryRows] = useState<
+    proxyBillingHistoryModel[]
+  >([]);
+  const [openAuctionDealHistorySection, setOpenAuctionDealHistorySection] =
+    useState<boolean>(true);
+  const [openBillingDealHistorySection, setOpenBillingDealHistorySection] =
+    useState<boolean>(true);
+  const [openProxyBillingHistorySection, setOpenProxyBillingHistorySection] =
+    useState<boolean>(true);
+  const [handleDialog, setHandleDialog] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>('');
+
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
 
   // form
   const methods = useForm<SearchModel>({
     defaultValues: SearchLogisticsBaseinitialValues,
-    resolver: yupResolver(validationSchama),
+    resolver: yupResolver(yup.object(validationSchama)),
     context: isReadOnly,
   });
-  const {
-    getValues,
-  } = methods;
-    
+  const { getValues, setValue } = methods;
+
   // 初期表示処理
-  useEffect(() => { 
-    const initialize = async () => {
-      const scrMem0003GetCodeValueRequest: ScrMem0003GetCodeValueRequest  = {
-        entityList:[
-          {entityName:'billing_master'},
-          {entityName:'contract_master'}
-        ]
-      }
-      const codeValueResponse = await ScrMem0003GetCodeValue(scrMem0003GetCodeValueRequest);
-      const scrCom9999GetCodeManagementMasterRequest: ScrCom9999GetCodeManagementMasterRequest = {
-        codeId:'CDE-COM-0066'
-      }
-      const codeManagementMasterResponse = await ScrCom9999GetCodeManagementMaster(scrCom9999GetCodeManagementMasterRequest);
-      const selectValues =  convertToSelectValuesModel(codeValueResponse, codeManagementMasterResponse);
-      setSelectValues({
-        useBillingIdSelectValues: selectValues.useBillingIdSelectValues,
-        useContractIdSelectValues: selectValues.useContractIdSelectValues,
-        useAuctionKindSelectValues: selectValues.useAuctionKindSelectValues,
-        useYearSelectValues: selectValues.useYearSelectValues,
-        useMonthSelectValues: selectValues.useMonthSelectValues,
+  useEffect(() => {
+    const initialize = async (corporationId: string) => {
+      const getBillRequest = {
+        corporationId: corporationId,
+        sortKey: '',
+        sortDirection: '',
+      };
+      const getBillResponse = await ScrMem9999GetBill(getBillRequest);
+      const useBillingIdSelectValues = getBillResponse.list.map((x) => {
+        return {
+          value: x.billId,
+          displayValue: x.billId,
+        };
       });
 
+      const getLogisticsBaseRepresentativeContractRequest = {
+        corporationId: corporationId,
+        // TODO:業務日付取得方法実装待ち
+        businessDate: new Date(),
+      };
+      const getLogisticsBaseRepresentativeContractResponse =
+        await ScrMem9999GetBillingContract(
+          getLogisticsBaseRepresentativeContractRequest
+        );
+      const useContractIdSelectValues =
+        getLogisticsBaseRepresentativeContractResponse.contractIdList.map(
+          (x) => {
+            return {
+              value: x,
+              displayValue: x,
+            };
+          }
+        );
+
+      const scrCom9999GetCodeManagementMasterRequest: ScrCom9999GetCodeManagementMasterRequest =
+        {
+          codeId: 'CDE-COM-0066',
+        };
+      const codeManagementMasterResponse =
+        await ScrCom9999GetCodeManagementMaster(
+          scrCom9999GetCodeManagementMasterRequest
+        );
+
+      const years: SelectValue[] = [];
+      const year = new Date().getFullYear();
+      for (let i = 0; i < 4; i++) {
+        years.push({
+          value: (year + i).toString(),
+          displayValue: (year + i).toString(),
+        });
+      }
+
+      const months: SelectValue[] = [];
+      for (let i = 1; i < 13; i++) {
+        months.push({
+          value: i.toString(),
+          displayValue: i.toString(),
+        });
+      }
+      setSelectValues({
+        useBillingIdSelectValues: useBillingIdSelectValues,
+        useContractIdSelectValues: useContractIdSelectValues,
+        useAuctionKindSelectValues: codeManagementMasterResponse.list.map(
+          (x) => {
+            return {
+              value: x.codeValue,
+              displayValue: x.codeName,
+            };
+          }
+        ),
+        useYearSelectValues: years,
+        useMonthSelectValues: months,
+      });
+
+      setValue('corporationId', corporationId);
     };
-    initialize();
-    
-  }, []);
+    if (corporationId !== undefined) {
+      initialize(corporationId);
+    }
+  }, [corporationId]);
 
   /**
    * オークション取引履歴検索押下イベント
    */
-  const searchClick = async () => {
-    console.log('オークション取引履歴検索')
+  const auctionDealHistorySearchClick = async () => {
     // オークション取引履歴取得
     const request = convertFromSearchAuctionDealHistory(getValues());
     const response = await ScrMem0003SearchAuctionDealHistory(request);
-    const auctionDealHistory = convertToauctionDealHistoryModel(response);
+    const auctionDealHistory = convertToAuctionDealHistoryModel(response);
     setAuctionDealHistoryRows(auctionDealHistory);
 
+    const hrefs = auctionDealHistory.map((x) => {
+      return {
+        field: 'dealYm',
+        id: x.id,
+        // TODO:元帳一覧画面
+        href: '-/' + x.dealYm,
+      };
+    });
+    setAuctionDealHistoryHrefs(hrefs);
 
-  }
-  
+    // 制限件数 <  取得件数の場合
+    if (response.limitCount < response.acquisitionCount) {
+      // メッセージ取得機能へ引数を渡しメッセージを取得する
+      const messege = Format(getMessage('MSG-FR-INF-00003'), [
+        '一般請求取引履歴',
+        response.acquisitionCount.toString(),
+        response.responseCount.toString(),
+      ]);
+      // ダイアログを表示
+      setTitle(messege);
+      setHandleDialog(true);
+    }
+
+    setOpenAuctionDealHistorySection(false);
+  };
+
+  /**
+   * 一般請求取引履歴検索押下イベント
+   */
+  const billingDealHistorySearchClick = async () => {
+    // 一般請求取引履歴取得
+    const request = convertFromSearchBillingDealHistory(getValues());
+    const response = await ScrMem0003SearchBillingDealHistory(request);
+    const billingDealHistory = convertToBillingDealHistoryModel(response);
+    setBillingDealHistoryRows(billingDealHistory);
+
+    const hrefs = billingDealHistory.map((x) => {
+      return {
+        field: 'dealYm',
+        id: x.id,
+        // TODO:請求書一覧画面
+        href: '-/' + x.dealYm,
+      };
+    });
+    setBillingDealHistoryHrefs(hrefs);
+
+    // 制限件数 <  取得件数の場合
+    if (response.limitCount < response.acquisitionCount) {
+      // メッセージ取得機能へ引数を渡しメッセージを取得する
+      const messege = Format(getMessage('MSG-FR-INF-00003'), [
+        '一般請求取引履歴',
+        response.acquisitionCount.toString(),
+        response.responseCount.toString(),
+      ]);
+      // ダイアログを表示
+      setTitle(messege);
+      setHandleDialog(true);
+    }
+
+    setOpenBillingDealHistorySection(false);
+  };
+
+  /**
+   * 代行請求履歴検索押下イベント
+   */
+  const proxyBillingHistorySearchClick = async () => {
+    // 代行請求履歴取得
+    const request = convertFromSearchProxyBillingHistory(getValues());
+    const response = await ScrMem0003SearchProxyBillingHistory(request);
+    const proxyBillingHistory = convertToProxyBillingHistoryModel(response);
+    setProxyBillingHistoryRows(proxyBillingHistory);
+
+    // 制限件数 <  取得件数の場合
+    if (response.limitCount < response.acquisitionCount) {
+      // メッセージ取得機能へ引数を渡しメッセージを取得する
+      const messege = Format(getMessage('MSG-FR-INF-00003'), [
+        '代行請求履歴',
+        response.acquisitionCount.toString(),
+        response.responseCount.toString(),
+      ]);
+      // ダイアログを表示
+      setTitle(messege);
+      setHandleDialog(true);
+    }
+
+    setOpenProxyBillingHistorySection(false);
+  };
+
   /**
    * CSV出力リック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
     // TODO: アーキのCSV実装待ち
-    console.log("CSV出力")
+    console.log('CSV出力');
   };
-  
+
+  /**
+   * Sectionを閉じた際のラベル作成
+   */
+  const auctionDealHistorySerchLabels = auctionDealHistorySerchData.map(
+    (val, index) => {
+      const nameVal = getValues(val.name);
+      return (
+        nameVal && (
+          <SerchLabelText key={index} label={val.label} name={nameVal} />
+        )
+      );
+    }
+  );
+
+  const billingDealHistorySerchLabels = billingDealHistorySerchData.map(
+    (val, index) => {
+      const nameVal = getValues(val.name);
+      return (
+        nameVal && (
+          <SerchLabelText key={index} label={val.label} name={nameVal} />
+        )
+      );
+    }
+  );
+
+  const proxyBillingHistorySerchLabels = proxyBillingHistorySerchData.map(
+    (val, index) => {
+      const nameVal = getValues(val.name);
+      return (
+        nameVal && (
+          <SerchLabelText key={index} label={val.label} name={nameVal} />
+        )
+      );
+    }
+  );
+
   return (
     <>
       <MainLayout>
@@ -568,17 +982,13 @@ const ScrMem0003DealHistoryTab = () => {
         <MainLayout main>
           <FormProvider {...methods}>
             {/* オークション取引履歴セクション */}
-            <Section name='オークション取引履歴'
-              decoration={
-                <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                  <AddButton onClick={handleIconOutputCsvClick}>
-                    CSV出力
-                  </AddButton>
-                </MarginBox>
-              }>
+            <Section name='オークション取引履歴'>
               {/* 検索条件セクション */}
-              <Section name='検索条件'
+              <Section
+                name='検索条件'
                 isSearch
+                serchLabels={auctionDealHistorySerchLabels}
+                open={openAuctionDealHistorySection}
               >
                 <RowStack>
                   <ColStack>
@@ -609,7 +1019,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'年'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'年'}</div>
                         </ColStack>
                         <ColStack>
                           <Select
@@ -618,7 +1028,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'月'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'月'}</div>
                         </ColStack>
                       </InputRowStack>
                       <InputRowStack>
@@ -629,7 +1039,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'年'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'年'}</div>
                         </ColStack>
                         <ColStack>
                           <Select
@@ -638,7 +1048,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'月'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'月'}</div>
                         </ColStack>
                       </InputRowStack>
                     </FromTo>
@@ -648,7 +1058,7 @@ const ScrMem0003DealHistoryTab = () => {
                 <CenterBox>
                   <SearchButton
                     onClick={() => {
-                      searchClick();
+                      auctionDealHistorySearchClick();
                     }}
                   >
                     検索
@@ -656,26 +1066,32 @@ const ScrMem0003DealHistoryTab = () => {
                 </CenterBox>
               </Section>
               {/* 検索結果セクション */}
-              <Section name='検索結果'>
-                <DataGrid 
+              <Section
+                name='検索結果'
+                decoration={
+                  <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                    <AddButton onClick={handleIconOutputCsvClick}>
+                      CSV出力
+                    </AddButton>
+                  </MarginBox>
+                }
+              >
+                <DataGrid
                   columns={auctionDealHistoryColumns}
                   columnGroupingModel={auctionDealHistoryColumnGroups}
                   rows={auctionDealHistoryRows}
+                  hrefs={auctionDealHistoryHrefs}
                 />
               </Section>
             </Section>
             {/* 一般請求取引履歴セクション */}
-            <Section name='一般請求取引履歴'
-              decoration={
-                <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                  <AddButton onClick={handleIconOutputCsvClick}>
-                    CSV出力
-                  </AddButton>
-                </MarginBox>
-              }>
+            <Section name='一般請求取引履歴'>
               {/* 検索条件セクション */}
-              <Section name='検索条件'
+              <Section
+                name='検索条件'
                 isSearch
+                serchLabels={billingDealHistorySerchLabels}
+                open={openBillingDealHistorySection}
               >
                 <RowStack>
                   <ColStack>
@@ -700,7 +1116,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'年'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'年'}</div>
                         </ColStack>
                         <ColStack>
                           <Select
@@ -709,7 +1125,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'月'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'月'}</div>
                         </ColStack>
                       </InputRowStack>
                       <InputRowStack>
@@ -720,7 +1136,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'年'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'年'}</div>
                         </ColStack>
                         <ColStack>
                           <Select
@@ -729,7 +1145,7 @@ const ScrMem0003DealHistoryTab = () => {
                           />
                         </ColStack>
                         <ColStack>
-                          <div style={{paddingRight:"5px"}}>{'月'}</div>
+                          <div style={{ paddingRight: '5px' }}>{'月'}</div>
                         </ColStack>
                       </InputRowStack>
                     </FromTo>
@@ -739,7 +1155,7 @@ const ScrMem0003DealHistoryTab = () => {
                 <CenterBox>
                   <SearchButton
                     onClick={() => {
-                      searchClick();
+                      billingDealHistorySearchClick();
                     }}
                   >
                     検索
@@ -747,17 +1163,129 @@ const ScrMem0003DealHistoryTab = () => {
                 </CenterBox>
               </Section>
               {/* 検索結果セクション */}
-              <Section name='検索結果'>
-                <DataGrid 
+              <Section
+                name='検索結果'
+                decoration={
+                  <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                    <AddButton onClick={handleIconOutputCsvClick}>
+                      CSV出力
+                    </AddButton>
+                  </MarginBox>
+                }
+              >
+                <DataGrid
                   columns={billingDealHistoryColumns}
                   columnGroupingModel={billingDealHistoryColumnGroups}
                   rows={billingDealHistoryRows}
+                  hrefs={billingDealHistoryHrefs}
+                />
+              </Section>
+            </Section>
+            {/* 代行請求履歴セクション */}
+            <Section name='代行請求履歴'>
+              {/* 検索条件セクション */}
+              <Section
+                name='検索条件'
+                isSearch
+                serchLabels={proxyBillingHistorySerchLabels}
+                open={openProxyBillingHistorySection}
+              >
+                <RowStack>
+                  <ColStack>
+                    <Select
+                      label='請求先ID'
+                      name='proxyBillingHistoryBillingIdList'
+                      selectValues={selectValues.useBillingIdSelectValues}
+                      multiple
+                    />
+                    <Select
+                      label='契約ID'
+                      name='proxyBillingHistoryContractIdList'
+                      selectValues={selectValues.useContractIdSelectValues}
+                      multiple
+                    />
+                    <FromTo label='表示期間'>
+                      <InputRowStack>
+                        <ColStack>
+                          <Select
+                            name='proxyBillingHistoryDisplayStartPeriodYear'
+                            selectValues={selectValues.useYearSelectValues}
+                          />
+                        </ColStack>
+                        <ColStack>
+                          <div style={{ paddingRight: '5px' }}>{'年'}</div>
+                        </ColStack>
+                        <ColStack>
+                          <Select
+                            name='proxyBillingHistoryDisplayStartPeriodMonth'
+                            selectValues={selectValues.useMonthSelectValues}
+                          />
+                        </ColStack>
+                        <ColStack>
+                          <div style={{ paddingRight: '5px' }}>{'月'}</div>
+                        </ColStack>
+                      </InputRowStack>
+                      <InputRowStack>
+                        <ColStack>
+                          <Select
+                            name='proxyBillingHistoryDisplayEndPeriodYear'
+                            selectValues={selectValues.useYearSelectValues}
+                          />
+                        </ColStack>
+                        <ColStack>
+                          <div style={{ paddingRight: '5px' }}>{'年'}</div>
+                        </ColStack>
+                        <ColStack>
+                          <Select
+                            name='proxyBillingHistoryDisplayEndPeriodMonth'
+                            selectValues={selectValues.useMonthSelectValues}
+                          />
+                        </ColStack>
+                        <ColStack>
+                          <div style={{ paddingRight: '5px' }}>{'月'}</div>
+                        </ColStack>
+                      </InputRowStack>
+                    </FromTo>
+                  </ColStack>
+                </RowStack>
+                <ContentsDivider />
+                <CenterBox>
+                  <SearchButton
+                    onClick={() => {
+                      proxyBillingHistorySearchClick();
+                    }}
+                  >
+                    検索
+                  </SearchButton>
+                </CenterBox>
+              </Section>
+              {/* 検索結果セクション */}
+              <Section
+                name='検索結果'
+                decoration={
+                  <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                    <AddButton onClick={handleIconOutputCsvClick}>
+                      CSV出力
+                    </AddButton>
+                  </MarginBox>
+                }
+              >
+                <DataGrid
+                  columns={proxyBillingHistoryColumns}
+                  rows={proxyBillingHistoryRows}
                 />
               </Section>
             </Section>
           </FormProvider>
         </MainLayout>
       </MainLayout>
+
+      {/* ダイアログ */}
+      <Dialog
+        open={handleDialog}
+        title={title}
+        buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
+      />
     </>
   );
 };
