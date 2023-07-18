@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Dialog } from 'controls/Dialog';
 
@@ -30,7 +30,7 @@ const dialogInfos = [
 type AppType = {
   user: any;
   transitionDestination: string | number;
-  needsConfitmTransition: boolean;
+  needsConfirmTransition: boolean;
   // isLoading: boolean;
   // isError: boolean;
 };
@@ -41,11 +41,13 @@ type AppType = {
 type AppContextType = {
   appContext: AppType;
   navigate: (to: string | number) => void;
-  setNeedsConfitmTransition: (value: boolean) => void;
+  setNeedsConfirmTransition: (value: boolean) => void;
   showDialog: (
     messageId: string,
     onClick: (buttonName: string) => void
   ) => void;
+  saveState: (state: object) => void;
+  loadState: () => object;
 };
 
 /**
@@ -59,7 +61,7 @@ export const AppContext = createContext<AppContextType>({} as AppContextType);
 const initialValues: AppType = {
   user: undefined,
   transitionDestination: '',
-  needsConfitmTransition: false,
+  needsConfirmTransition: false,
 };
 
 /**
@@ -68,6 +70,8 @@ const initialValues: AppType = {
 interface AppContextProvicerProps {
   children: ReactNode;
 }
+
+const globalState: { [key: string]: any } = {};
 
 /**
  * AppContextProvider
@@ -85,10 +89,32 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
 
   // router
   const navigateReact = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     initialize();
   }, []);
+
+  useEffect(() => {
+    console.log(appContext);
+    if (appContext.needsConfirmTransition) {
+      showDialog('TRANSITION_CONFIRM', (buttonName: string) => {
+        if (buttonName === 'OK') {
+          setAppContext((prev) => ({
+            ...prev,
+            needsConfirmTransition: false,
+          }));
+        }
+      });
+    } else {
+      if (typeof appContext.transitionDestination === 'string') {
+        navigateReact(appContext.transitionDestination);
+      }
+      if (typeof appContext.transitionDestination === 'number') {
+        navigateReact(appContext.transitionDestination);
+      }
+    }
+  }, [appContext]);
 
   const initialize = async () => {
     const response = await _expApiClient.get('/_exp/user');
@@ -96,36 +122,12 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
   };
 
   const navigate = (to: string | number) => {
-    if (appContext.needsConfitmTransition) {
-      setAppContext((prev) => ({ ...prev, transitionDestination: to }));
-      showDialog('TRANSITION_CONFIRM', (buttonName: string) => {
-        if (buttonName === 'OK') {
-          setAppContext((prev) => ({
-            ...prev,
-            needsConfitmTransition: false,
-            transitionDestination: '',
-          }));
-          if (typeof appContext.transitionDestination === 'string') {
-            navigateReact(appContext.transitionDestination);
-          }
-          if (typeof appContext.transitionDestination === 'number') {
-            navigateReact(appContext.transitionDestination);
-          }
-        }
-      });
-      return;
-    }
-    if (typeof to === 'string') {
-      navigateReact(to);
-    }
-    if (typeof to === 'number') {
-      navigateReact(to);
-    }
+    setAppContext((prev) => ({ ...prev, transitionDestination: to }));
   };
 
-  const setNeedsConfitmTransition = (value: boolean) => {
+  const setNeedsConfirmTransition = (value: boolean) => {
     // レンダリングが無限ループするので、setAppContextしないで直接更新する
-    appContext.needsConfitmTransition = value;
+    appContext.needsConfirmTransition = value;
   };
 
   const showDialog = (
@@ -153,14 +155,26 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
     return <></>;
   }
 
+  const saveState = (state: object) => {
+    globalState[location.pathname] = state;
+  };
+
+  const loadState = (): object => {
+    const state = globalState[location.pathname];
+    // delete globalState[location.pathname];
+    return state;
+  };
+
   return (
     <>
       <AppContext.Provider
         value={{
           appContext,
           navigate,
-          setNeedsConfitmTransition,
+          setNeedsConfirmTransition,
           showDialog,
+          saveState,
+          loadState,
         }}
       >
         {children}

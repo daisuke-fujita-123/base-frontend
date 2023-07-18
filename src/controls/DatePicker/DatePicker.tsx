@@ -1,12 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 import {
-  FieldPath,
-  FieldPathValue,
   FieldValues,
   Path,
-  PathValue,
+  useController,
   useFormContext,
-  useWatch,
 } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
@@ -16,11 +13,13 @@ import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
 import { Stack, styled } from '@mui/material';
-import { PickersDay } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker as DatePickerMui } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import {
+  DatePicker as DatePickerMui,
+  LocalizationProvider,
+} from '@mui/x-date-pickers-pro';
+import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
 import { ja } from 'date-fns/locale';
+import dayjs from 'dayjs';
 
 export interface DatePickerProps<T extends FieldValues> {
   name: Path<T>;
@@ -28,7 +27,7 @@ export interface DatePickerProps<T extends FieldValues> {
   labelPosition?: 'above' | 'side';
   required?: boolean;
   disabled?: boolean;
-  wareki?: boolean;
+  withWareki?: boolean;
   size?: 's' | 'm' | 'l' | 'xl';
 }
 
@@ -51,52 +50,53 @@ export const DatePicker = <T extends FieldValues>(
     required = false,
     name,
     disabled,
-    wareki,
+    withWareki,
     size = 's',
   } = props;
 
-  const { register, formState, setValue, control } = useFormContext();
-  const watchValue = useWatch({ name, control });
-
-  // 和暦表示用の文字列を作成
-  const [warekiDisplay, setWarekiDisplay] = useState<string>('');
-  const warekiExcahnger = useCallback(
-    (data: PathValue<T, Path<T>> | null) => {
-      if (!wareki && data !== null) {
-        return;
-      } else if (data !== null) {
-        const warekiString = new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
-          era: 'long',
-        }).format(data);
-        const warekiSplitted = warekiString.split('/');
-        const formattedWareki = `${warekiSplitted[0]}年${warekiSplitted[1]}月${warekiSplitted[2]}日`;
-        setWarekiDisplay(formattedWareki);
-      }
-    },
-    [wareki]
-  );
-
-  // 和暦の初期表示
-  useEffect(() => {
-    const initialize = () => {
-      warekiExcahnger(watchValue);
-    };
-    initialize();
-  }, [warekiExcahnger, watchValue]);
-
-  // 日付を文字列に変換
-  const transformFromDateToString = (
-    dateString: PathValue<T, Path<T>> | null
-  ) => {
-    const date = new Date(String(dateString));
-    const formattedDate = `${date.getFullYear()}-${String(
-      date.getMonth() + 1
-    ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    return formattedDate;
-  };
-
+  // form
+  const {
+    control,
+    getValues,
+    formState: { errors },
+  } = useFormContext();
+  const { field } = useController({ name, control });
   const isReadOnly = control?._options?.context[0];
 
+  const isInvalidDate = (date: Date) => Number.isNaN(date.getTime());
+
+  const transformWareki = (date: Date): string => {
+    if (isInvalidDate(date)) return '';
+    const formatted = new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
+      era: 'long',
+    }).format(date);
+    const splitted = formatted.split('/');
+    const transformed = `${splitted[0]}年${splitted[1]}月${splitted[2]}日`;
+    return transformed;
+  };
+
+  const transformYyyymmdd = (date: Date): string => {
+    if (isInvalidDate(date)) return '';
+    const yyyymmdd = [
+      String(date.getFullYear()),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0'),
+    ];
+    const transformed = yyyymmdd.join('/');
+    return transformed;
+  };
+
+  const handleValueChange = (value: Date | null) => {
+    if (value === null) return;
+    if (isInvalidDate(value)) return;
+    field.onChange(transformYyyymmdd(value));
+    field.onBlur();
+  };
+
+  const wareki = transformWareki(new Date(getValues(name)));
+  const helperText = errors[name]?.message
+    ? String(errors[name]?.message)
+    : null;
   return (
     <InputLayout
       label={label}
@@ -105,56 +105,21 @@ export const DatePicker = <T extends FieldValues>(
       size={size}
     >
       <Stack spacing={0}>
-        <Typography>{warekiDisplay}</Typography>
+        {withWareki && <Typography>{wareki}</Typography>}
         <LocalizationProvider
-          dateAdapter={AdapterDayjs}
+          // dateAdapter={AdapterDayjs}
+          dateAdapter={AdapterDateFns}
           adapterLocale={ja}
-          dateFormats={{ monthAndYear: 'YYYY年MM月' }}
         >
           <DatePickerMui
-            {...register(name)}
-            disabled={disabled}
-            inputFormat='YYYY/MM/DD'
-            onChange={(data) => {
-              const parsedDate = transformFromDateToString(data);
-              warekiExcahnger(data);
-              setValue(
-                name,
-                parsedDate as FieldPathValue<
-                  FieldValues,
-                  FieldPath<FieldValues>
-                >
-              );
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                error={!!formState.errors[name]}
-                helperText={
-                  formState.errors[name]?.message
-                    ? String(formState.errors[name]?.message)
-                    : null
-                }
-                defaultValue={null}
-              />
-            )}
-            renderDay={(day, selectedDays, pickersDayProps) => {
-              const selected =
-                selectedDays.length !== 0 &&
-                day.$d.getTime() === selectedDays[0].$d.getTime();
-              return (
-                <PickersDay
-                  {...pickersDayProps}
-                  style={{
-                    border: selected ? '3px solid #f37246' : 'transparent',
-                    backgroundColor: selected ? '#fde8d4' : 'transparent',
-                    color: '#000000',
-                  }}
-                />
-              );
-            }}
-            value={watchValue}
+            {...field}
+            value={new Date(field.value)}
+            onChange={handleValueChange}
+            // slots={{ textField: TextField }}
+            // slotProps={{ textField: { helperText: helperText } }}
+            // format='yyyy/mm/dd'
             readOnly={isReadOnly}
+            disabled={disabled}
           />
         </LocalizationProvider>
       </Stack>
