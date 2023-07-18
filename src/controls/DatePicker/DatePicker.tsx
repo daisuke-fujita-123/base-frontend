@@ -115,8 +115,8 @@ export const DatePicker = <T extends FieldValues>(
             {...field}
             value={new Date(field.value)}
             onChange={handleValueChange}
-            slots={{ textField: TextField }}
-            slotProps={{ textField: { helperText: helperText } }}
+            // slots={{ textField: TextField }}
+            // slotProps={{ textField: { helperText: helperText } }}
             // format='yyyy/mm/dd'
             readOnly={isReadOnly}
             disabled={disabled}

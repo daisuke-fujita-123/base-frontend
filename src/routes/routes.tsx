@@ -496,6 +496,8 @@ export const routes = [
   },
 ];
 
+export type Rootes = NonNullable<ReturnType<typeof getRoute>>;
+
 export const getRoute = (id: string) => {
   return _routes.find((x) => x.id === id);
 };

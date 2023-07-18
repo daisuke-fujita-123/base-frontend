@@ -19,7 +19,7 @@ export const useForm = <
   const { defaultValues, resolver, context = false } = props;
 
   // context
-  const { setNeedsConfitmTransition } = useContext(AppContext);
+  const { setNeedsConfirmTransition } = useContext(AppContext);
 
   // form
   const methods = useFormReact<TFieldValues>({
@@ -44,9 +44,9 @@ export const useForm = <
   // 初回値変更時処理
   useEffect(() => {
     if (isDirty) {
-      setNeedsConfitmTransition(true);
+      setNeedsConfirmTransition(true);
     }
-  }, [isDirty, setNeedsConfitmTransition]);
+  }, [isDirty]);
 
   return methods;
 };
