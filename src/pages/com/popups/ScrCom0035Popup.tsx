@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useForm, FormProvider } from 'react-hook-form';
+import { FormProvider } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -9,6 +9,10 @@ import { Select, SelectValue } from 'controls/Select';
 // Layouts
 import { Popup } from 'layouts/Popup';
 import { PopSection } from 'layouts/Section';
+import { Stack } from 'layouts/Stack';
+// Hooks
+import { useForm } from 'hooks/useForm';
+// import { useNavigate } from 'hooks/useForm';
 // Pages
 import { ScrCom0034PageParamModel } from 'pages/com/ScrCom0034Page';
 
@@ -88,8 +92,6 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
       allRegistrationId:
         importTargets.length > 1 ? '' : importTargets[0].value.toString(),
     },
-    mode: 'all',
-    criteriaMode: 'all',
     resolver: yupResolver(ScrCom0035PopupValidationSchama),
     context: isReadOnly,
   });
@@ -97,7 +99,7 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
     getValues,
     setValue,
     trigger,
-    formState: { errors, isValid },
+    formState: { errors },
   } = methods;
 
   // イベントハンドル：キャンセル
@@ -122,7 +124,6 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
       screanId: popupParams.screanId,
       tabId: popupParams.tabId,
       ...form,
-      changeHistoryNumber: null,
     };
     navigate('/com/all-registration', { state: { scrCom0034PageParams } });
   };
@@ -138,23 +139,25 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
       <Popup open={isOpen} buttons={popupButtons}>
         <PopSection name='CSV読込'>
           <FormProvider {...methods}>
-            {/* FIXME:エラーがファイルパス（ラベル）にかぶる */}
-            <Select
-              label='取込対象選択'
-              name='allRegistrationId'
-              labelPosition='above'
-              selectValues={importTargets}
-              minWidth={350}
-              multiple={false}
-              required={true}
-            />
-            {/* FIXME:ファイル自体のエラーが表示・正常時の更新がされない。 */}
-            <FileSelect
-              label='ファイルパス'
-              name='importFile'
-              setValue={setValue}
-              size='l'
-            />
+            <Stack>
+              {/* FIXME:エラーがファイルパス（ラベル）にかぶる */}
+              <Select
+                label='取込対象選択'
+                name='allRegistrationId'
+                labelPosition='above'
+                selectValues={importTargets}
+                minWidth={350}
+                multiple={false}
+                required={true}
+              />
+              {/* FIXME:ファイル自体のエラーが表示・正常時の更新がされない。 */}
+              <FileSelect
+                label='ファイルパス'
+                name='importFile'
+                setValue={setValue}
+                size='l'
+              />
+            </Stack>
           </FormProvider>
         </PopSection>
       </Popup>
@@ -163,4 +166,3 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
 };
 
 export default ScrCom0035Popup;
-

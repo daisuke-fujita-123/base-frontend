@@ -6,15 +6,15 @@ import { useLocation } from 'react-router-dom';
  */
 export interface ScrCom0034PageParamModel {
   // 画面ID
-  screanId?: string | null;
+  screanId?: string;
   // タブID
-  tabId?: number | null;
+  tabId?: number;
   // 一括登録ID
-  allRegistrationId?: string | null;
+  allRegistrationId?: string;
   // 取込ファイル
-  importFile?: File | null;
+  importFile?: File;
   // 変更履歴番号
-  changeHistoryNumber?: number | null;
+  changeHistoryNumber?: number;
 }
 
 /**
