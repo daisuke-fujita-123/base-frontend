@@ -50,7 +50,7 @@ yup.addMethod(yup.ArraySchema, 'required', function () {
  */
 const ScrCom0035PopupValidationSchama = yup.object().shape({
   allRegistrationId: yup.string().required(),
-  importFile: yup.object().required(),
+  importFile: yup.string().required(),
 });
 
 /**
@@ -95,12 +95,7 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
     resolver: yupResolver(ScrCom0035PopupValidationSchama),
     context: isReadOnly,
   });
-  const {
-    getValues,
-    setValue,
-    trigger,
-    formState: { errors },
-  } = methods;
+  const { getValues, setValue } = methods;
 
   // イベントハンドル：キャンセル
   const handleCancel = () => {
@@ -110,9 +105,8 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
   // イベントハンドル：確定
   const handleConfirm = async () => {
     // バリデーション
-    await trigger();
-    // FIXME:バリデーションは行われているが、errorsにエラー情報がアサインされていない。
-    const errCount = Object.keys(errors).length;
+    await methods.trigger();
+    const errCount = Object.keys(methods.formState.errors).length;
     if (errCount > 0) {
       return;
     }
