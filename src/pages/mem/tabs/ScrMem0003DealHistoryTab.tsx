@@ -11,7 +11,7 @@ import { Section } from 'layouts/Section';
 import { ColStack, InputRowStack, RowStack } from 'layouts/Stack';
 
 import { AddButton, SearchButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { DataGrid, GridColDef, GridHrefsModel } from 'controls/Datagrid';
 import { Dialog } from 'controls/Dialog';
 import { ContentsDivider } from 'controls/Divider';
 import { Select, SelectValue } from 'controls/Select';
@@ -719,15 +719,15 @@ const ScrMem0003DealHistoryTab = () => {
   const [auctionDealHistoryRows, setAuctionDealHistoryRows] = useState<
     auctionDealHistoryModel[]
   >([]);
-  const [auctionDealHistoryHrefs, setAuctionDealHistoryHrefs] = useState<any[]>(
-    []
-  );
+  const [auctionDealHistoryHrefs, setAuctionDealHistoryHrefs] = useState<
+    GridHrefsModel[]
+  >([]);
   const [billingDealHistoryRows, setBillingDealHistoryRows] = useState<
     billingDealHistoryModel[]
   >([]);
-  const [billingDealHistoryHrefs, setBillingDealHistoryHrefs] = useState<any[]>(
-    []
-  );
+  const [billingDealHistoryHrefs, setBillingDealHistoryHrefs] = useState<
+    GridHrefsModel[]
+  >([]);
   const [proxyBillingHistoryRows, setProxyBillingHistoryRows] = useState<
     proxyBillingHistoryModel[]
   >([]);
@@ -845,13 +845,17 @@ const ScrMem0003DealHistoryTab = () => {
 
     const hrefs = auctionDealHistory.map((x) => {
       return {
-        field: 'dealYm',
         id: x.id,
         // TODO:元帳一覧画面
         href: '-/' + x.dealYm,
       };
     });
-    setAuctionDealHistoryHrefs(hrefs);
+    setAuctionDealHistoryHrefs([
+      {
+        field: 'dealYm',
+        hrefs: hrefs,
+      },
+    ]);
 
     // 制限件数 <  取得件数の場合
     if (response.limitCount < response.acquisitionCount) {
@@ -881,13 +885,17 @@ const ScrMem0003DealHistoryTab = () => {
 
     const hrefs = billingDealHistory.map((x) => {
       return {
-        field: 'dealYm',
         id: x.id,
         // TODO:請求書一覧画面
         href: '-/' + x.dealYm,
       };
     });
-    setBillingDealHistoryHrefs(hrefs);
+    setBillingDealHistoryHrefs([
+      {
+        field: 'dealYm',
+        hrefs: hrefs,
+      },
+    ]);
 
     // 制限件数 <  取得件数の場合
     if (response.limitCount < response.acquisitionCount) {

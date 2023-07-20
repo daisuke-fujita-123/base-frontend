@@ -6,7 +6,12 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import {
+  DataGrid,
+  GridColDef,
+  GridHrefsModel,
+  GridTooltipsModel,
+} from 'controls/Datagrid';
 
 import {
   ScrMem0003AddCheckContractInfo,
@@ -479,18 +484,24 @@ const ScrMem0003ContractTab = (props: {
     setAssignmentDocumentDestinationRows,
   ] = useState<AssignmentDocumentDestinationModel[]>([]);
   const [tvaaContractInfoTooltips, setTvaaContractInfoTooltips] = useState<
-    any[]
+    GridTooltipsModel[]
   >([]);
   const [bikeContractInfoTooltips, setBikeContractInfoTooltips] = useState<
-    any[]
+    GridTooltipsModel[]
   >([]);
-  const [tvaaContractInfoHrefs, setTvaaContractInfoHrefs] = useState<any[]>([]);
-  const [bikeCountInfoHrefs, setBikeCountInfoHrefs] = useState<any[]>([]);
-  const [billingInfoHrefs, setBillingInfoHrefs] = useState<any[]>([]);
+  const [tvaaContractInfoHrefs, setTvaaContractInfoHrefs] = useState<
+    GridHrefsModel[]
+  >([]);
+  const [bikeCountInfoHrefs, setBikeCountInfoHrefs] = useState<
+    GridHrefsModel[]
+  >([]);
+  const [billingInfoHrefs, setBillingInfoHrefs] = useState<GridHrefsModel[]>(
+    []
+  );
   const [
     assignmentDocumentDestinationHrefs,
     setAssignmentDocumentDestinationHrefs,
-  ] = useState<any[]>([]);
+  ] = useState<GridHrefsModel[]>([]);
   const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] = useState(false);
   const [scrCom0038PopupData, setScrCom0038PopupData] =
     useState<ScrCom0038PopupDataModel>();
@@ -521,78 +532,99 @@ const ScrMem0003ContractTab = (props: {
 
       // ツールチップ設定
       // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
-      setTvaaContractInfoTooltips(
-        contractCourseService.tvaaContractInfo.map((x) => {
-          return {
-            field: 'priceTotal',
-            id: x.contractId,
-            value: '',
-            text: 'サテロク 6,000円',
-          };
-        })
-      );
+      setTvaaContractInfoTooltips([
+        {
+          field: 'priceTotal',
+          tooltips: contractCourseService.tvaaContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              text: 'サテロク 6,000円',
+            };
+          }),
+        },
+      ]);
 
-      setBikeContractInfoTooltips(
-        contractCourseService.bikeContractInfo.map((x) => {
-          return {
-            field: 'priceTotal',
-            id: x.contractId,
-            value: '',
-            text: 'サテロク 6,000円',
-          };
-        })
-      );
+      setBikeContractInfoTooltips([
+        {
+          field: 'priceTotal',
+          tooltips: contractCourseService.bikeContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              text: 'サテロク 6,000円',
+            };
+          }),
+        },
+      ]);
 
       // refs設定
-      const tvaaContractInfoHrefs: any[] = [];
-      contractCourseService.tvaaContractInfo.map((x) => {
-        tvaaContractInfoHrefs.push({
+      setTvaaContractInfoHrefs([
+        {
           field: 'contractId',
-          id: x.contractId,
-          href: '-?contractId=' + x.contractId,
-        });
-        tvaaContractInfoHrefs.push({
+          hrefs: contractCourseService.tvaaContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?contractId=' + x.contractId,
+            };
+          }),
+        },
+        {
           field: 'billingId',
-          id: x.contractId,
-          href: '-?billingId=' + x.billingId,
-        });
-      });
-      setTvaaContractInfoHrefs(tvaaContractInfoHrefs);
+          hrefs: contractCourseService.tvaaContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?billingId=' + x.billingId,
+            };
+          }),
+        },
+      ]);
 
-      const bikeCountInfoHrefs: any[] = [];
-      contractCourseService.bikeContractInfo.map((x) => {
-        bikeCountInfoHrefs.push({
+      setBikeCountInfoHrefs([
+        {
           field: 'contractId',
-          id: x.contractId,
-          href: '-?contractId=' + x.contractId,
-        });
-        bikeCountInfoHrefs.push({
+          hrefs: contractCourseService.bikeContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?contractId=' + x.contractId,
+            };
+          }),
+        },
+        {
           field: 'billingId',
-          id: x.contractId,
-          href: '-?billingId=' + x.billingId,
-        });
-      });
-      setBikeCountInfoHrefs(bikeCountInfoHrefs);
+          hrefs: contractCourseService.bikeContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?billingId=' + x.billingId,
+            };
+          }),
+        },
+      ]);
 
-      setBillingInfoHrefs(
-        contractCourseService.billingInfo.map((x) => {
-          return {
-            field: 'billingId',
-            id: x.billingId,
-            href: '/mem/corporations/' + x.billingId + '/billings/',
-          };
-        })
-      );
+      setBillingInfoHrefs([
+        {
+          field: 'billingId',
+          hrefs: contractCourseService.billingInfo.map((x) => {
+            return {
+              field: 'billingId',
+              id: x.billingId,
+              href: '/mem/corporations/' + x.billingId + '/billings/',
+            };
+          }),
+        },
+      ]);
 
-      setAssignmentDocumentDestinationHrefs(
-        contractCourseService.assignmentDocumentDestination.map((x) => {
-          return {
-            field: 'contractId',
-            id: x.contractId,
-            href: '-?contractId=' + x.contractId,
-          };
-        })
-      );
+      setAssignmentDocumentDestinationHrefs([
+        {
+          field: 'contractId',
+          hrefs: contractCourseService.assignmentDocumentDestination.map(
+            (x) => {
+              return {
+                id: x.contractId,
+                href: '-?contractId=' + x.contractId,
+              };
+            }
+          ),
+        },
+      ]);
     };
 
     const historyInitialize = async (
@@ -623,78 +655,99 @@ const ScrMem0003ContractTab = (props: {
 
       // ツールチップ設定
       // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
-      setTvaaContractInfoTooltips(
-        contractCourseService.tvaaContractInfo.map((x) => {
-          return {
-            field: 'priceTotal',
-            id: x.contractId,
-            value: '',
-            text: 'サテロク 6,000円',
-          };
-        })
-      );
+      setTvaaContractInfoTooltips([
+        {
+          field: 'priceTotal',
+          tooltips: contractCourseService.tvaaContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              text: 'サテロク 6,000円',
+            };
+          }),
+        },
+      ]);
 
-      setBikeContractInfoTooltips(
-        contractCourseService.bikeContractInfo.map((x) => {
-          return {
-            field: 'priceTotal',
-            id: x.contractId,
-            value: '',
-            text: 'サテロク 6,000円',
-          };
-        })
-      );
+      setBikeContractInfoTooltips([
+        {
+          field: 'priceTotal',
+          tooltips: contractCourseService.bikeContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              text: 'サテロク 6,000円',
+            };
+          }),
+        },
+      ]);
 
       // refs設定
-      const tvaaContractInfoHrefs: any[] = [];
-      contractCourseService.tvaaContractInfo.map((x) => {
-        tvaaContractInfoHrefs.push({
+      setTvaaContractInfoHrefs([
+        {
           field: 'contractId',
-          id: x.contractId,
-          href: '-?contractId=' + x.contractId,
-        });
-        tvaaContractInfoHrefs.push({
+          hrefs: contractCourseService.tvaaContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?contractId=' + x.contractId,
+            };
+          }),
+        },
+        {
           field: 'billingId',
-          id: x.contractId,
-          href: '-?billingId=' + x.billingId,
-        });
-      });
-      setTvaaContractInfoHrefs(tvaaContractInfoHrefs);
+          hrefs: contractCourseService.tvaaContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?billingId=' + x.billingId,
+            };
+          }),
+        },
+      ]);
 
-      const bikeCountInfoHrefs: any[] = [];
-      contractCourseService.bikeContractInfo.map((x) => {
-        bikeCountInfoHrefs.push({
+      setBikeCountInfoHrefs([
+        {
           field: 'contractId',
-          id: x.contractId,
-          href: '-?contractId=' + x.contractId,
-        });
-        bikeCountInfoHrefs.push({
+          hrefs: contractCourseService.bikeContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?contractId=' + x.contractId,
+            };
+          }),
+        },
+        {
           field: 'billingId',
-          id: x.contractId,
-          href: '-?billingId=' + x.billingId,
-        });
-      });
-      setBikeCountInfoHrefs(bikeCountInfoHrefs);
+          hrefs: contractCourseService.bikeContractInfo.map((x) => {
+            return {
+              id: x.contractId,
+              href: '-?billingId=' + x.billingId,
+            };
+          }),
+        },
+      ]);
 
-      setBillingInfoHrefs(
-        contractCourseService.billingInfo.map((x) => {
-          return {
-            field: 'billingId',
-            id: x.billingId,
-            href: '/mem/corporations/' + x.billingId + '/billings/',
-          };
-        })
-      );
+      setBillingInfoHrefs([
+        {
+          field: 'billingId',
+          hrefs: contractCourseService.billingInfo.map((x) => {
+            return {
+              field: 'billingId',
+              id: x.billingId,
+              href: '/mem/corporations/' + x.billingId + '/billings/',
+            };
+          }),
+        },
+      ]);
 
-      setAssignmentDocumentDestinationHrefs(
-        contractCourseService.assignmentDocumentDestination.map((x) => {
-          return {
-            field: 'contractId',
-            id: x.contractId,
-            href: '-?contractId=' + x.contractId,
-          };
-        })
-      );
+      setAssignmentDocumentDestinationHrefs([
+        {
+          field: 'contractId',
+          hrefs: contractCourseService.assignmentDocumentDestination.map(
+            (x) => {
+              return {
+                id: x.contractId,
+                href: '-?contractId=' + x.contractId,
+              };
+            }
+          ),
+        },
+      ]);
     };
 
     if (corporationId !== undefined && applicationId !== null) {

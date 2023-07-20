@@ -6,7 +6,12 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import {
+  DataGrid,
+  GridColDef,
+  GridHrefsModel,
+  GridTooltipsModel,
+} from 'controls/Datagrid';
 
 import {
   ScrMem0003GetCorporation,
@@ -255,10 +260,18 @@ const ScrMem0003ChangeHistoryTab = () => {
   const [notPermissionRows, setNotPermissionRows] = useState<
     notPermissionModel[]
   >([]);
-  const [changeHistoryHrefs, setChangeHistoryHrefs] = useState<any[]>([]);
-  const [notPermissionHrefs, setNotPermissionHrefs] = useState<any[]>([]);
-  const [changeHistoryTooltips, setChangeHistoryTooltips] = useState<any[]>([]);
-  const [notPermissionTooltips, setNotPermissionTooltips] = useState<any[]>([]);
+  const [changeHistoryHrefs, setChangeHistoryHrefs] = useState<
+    GridHrefsModel[]
+  >([]);
+  const [notPermissionHrefs, setNotPermissionHrefs] = useState<
+    GridHrefsModel[]
+  >([]);
+  const [changeHistoryTooltips, setChangeHistoryTooltips] = useState<
+    GridTooltipsModel[]
+  >([]);
+  const [notPermissionTooltips, setNotPermissionTooltips] = useState<
+    GridTooltipsModel[]
+  >([]);
 
   // 初期表示処理
   useEffect(() => {
@@ -331,12 +344,16 @@ const ScrMem0003ChangeHistoryTab = () => {
             break;
         }
         return {
-          field: 'changeHistoryNumber',
           id: x.id,
           href: href,
         };
       });
-      setChangeHistoryHrefs(changeHistoryHrefs);
+      setChangeHistoryHrefs([
+        {
+          field: 'changeHistoryNumber',
+          hrefs: changeHistoryHrefs,
+        },
+      ]);
 
       const notPermissionHrefs = dateRows.notPermission.map((x) => {
         let href = '';
@@ -370,40 +387,50 @@ const ScrMem0003ChangeHistoryTab = () => {
             break;
         }
         return {
-          field: 'changeHistoryNumber',
           id: x.id,
           href: href,
         };
       });
-      setNotPermissionHrefs(notPermissionHrefs);
+      setNotPermissionHrefs([
+        {
+          field: 'changeHistoryNumber',
+          hrefs: notPermissionHrefs,
+        },
+      ]);
 
       // ツールチップ設定
-      const changeHistoryTooltips: any[] = [];
-      response.changeHistory.map((x) => {
-        changeHistoryTooltips.push({
+      setChangeHistoryTooltips([
+        {
           field: 'registrationChangeMemo',
-          id: x.changeHistoryNumber,
-          value: 'あり',
-          text: x.registrationChangeMemo,
-        });
-        changeHistoryTooltips.push({
+          tooltips: response.changeHistory.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              text: x.registrationChangeMemo,
+            };
+          }),
+        },
+        {
           field: 'approverComment',
-          id: x.changeHistoryNumber,
-          value: 'あり',
-          text: x.approverComment,
-        });
-      });
-      setChangeHistoryTooltips(changeHistoryTooltips);
+          tooltips: response.changeHistory.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              text: x.approverComment,
+            };
+          }),
+        },
+      ]);
 
-      const notPermissionTooltips = response.notPermission.map((x) => {
-        return {
+      setNotPermissionTooltips([
+        {
           field: 'registrationChangeMemo',
-          id: x.changeHistoryNumber,
-          value: 'あり',
-          text: x.registrationChangeMemo,
-        };
-      });
-      setNotPermissionTooltips(notPermissionTooltips);
+          tooltips: response.changeHistory.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              text: x.registrationChangeMemo,
+            };
+          }),
+        },
+      ]);
     };
 
     if (corporationId !== undefined) {

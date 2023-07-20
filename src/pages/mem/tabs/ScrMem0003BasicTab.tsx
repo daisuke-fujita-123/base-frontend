@@ -1666,7 +1666,11 @@ const ScrMem0003BasicTab = (props: {
                     name='antiqueBusinessLicenseNumber'
                     required
                   />
-                  <DatePicker label='交付年月日' name='issuanceDate' wareki />
+                  <DatePicker
+                    label='交付年月日'
+                    name='issuanceDate'
+                    withWareki
+                  />
                   <TextField label='古物名義' name='antiqueName' />
                 </ColStack>
               </RowStack>
@@ -1707,7 +1711,7 @@ const ScrMem0003BasicTab = (props: {
                   <DatePicker
                     label='生年月日'
                     name='representativeBirth'
-                    wareki
+                    withWareki
                   />
                   <Select
                     label='所有資産'
@@ -1772,7 +1776,11 @@ const ScrMem0003BasicTab = (props: {
                       { value: '2', displayValue: '女' },
                     ]}
                   />
-                  <DatePicker label='生年月日' name='guarantorBirth1' wareki />
+                  <DatePicker
+                    label='生年月日'
+                    name='guarantorBirth1'
+                    withWareki
+                  />
                   <Select
                     label='所有資産'
                     name='guarantorAsset1'
@@ -1838,7 +1846,11 @@ const ScrMem0003BasicTab = (props: {
                       { value: '2', displayValue: '女' },
                     ]}
                   />
-                  <DatePicker label='生年月日' name='guarantorBirth2' wareki />
+                  <DatePicker
+                    label='生年月日'
+                    name='guarantorBirth2'
+                    withWareki
+                  />
                   <Select
                     label='所有資産'
                     name='guarantorAsset2'

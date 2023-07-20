@@ -10,7 +10,7 @@ import { Section } from 'layouts/Section';
 import { ColStack, RowStack } from 'layouts/Stack';
 
 import { AddButton, AddIconButton, SearchButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { DataGrid, GridColDef, GridHrefsModel } from 'controls/Datagrid';
 import { Dialog } from 'controls/Dialog';
 import { ContentsDivider } from 'controls/Divider';
 import { Select, SelectValue } from 'controls/Select';
@@ -582,13 +582,17 @@ const ScrMem0003BaseTab = () => {
   const [logisticsBaseSearchResult, setLogisticsBaseSearchResult] = useState<
     LogisticsBaseModel[]
   >([]);
-  const [logisticsBaseHrefs, setLogisticsBaseHrefs] = useState<any[]>([]);
+  const [logisticsBaseHrefs, setLogisticsBaseHrefs] = useState<
+    GridHrefsModel[]
+  >([]);
   const [openLogisticsBaseSection, setOpenLogisticsBaseSection] =
     useState<boolean>(true);
   const [businessBaseSearchResult, setBusinessBaseSearchResult] = useState<
     BusinessBaseModel[]
   >([]);
-  const [businessBaseHrefs, setBusinessBaseHrefs] = useState<any[]>([]);
+  const [businessBaseHrefs, setBusinessBaseHrefs] = useState<GridHrefsModel[]>(
+    []
+  );
   const [openBusinessBaseSection, setOpenBusinessBaseSection] =
     useState<boolean>(true);
   const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] =
@@ -740,17 +744,20 @@ const ScrMem0003BaseTab = () => {
       setHandleDialog(true);
     }
 
-    const hrefs = searchResult.map((x) => {
-      return {
-        field: 'logisticsBaseId',
-        id: x.logisticsBaseId,
-        href:
-          '/mem/corporations/:corporationId/logistics-bases/' +
-          x.logisticsBaseId,
-      };
-    });
     setLogisticsBaseSearchResult(searchResult);
-    setLogisticsBaseHrefs(hrefs);
+    setLogisticsBaseHrefs([
+      {
+        field: 'logisticsBaseId',
+        hrefs: searchResult.map((x) => {
+          return {
+            id: x.logisticsBaseId,
+            href:
+              '/mem/corporations/:corporationId/logistics-bases/' +
+              x.logisticsBaseId,
+          };
+        }),
+      },
+    ]);
     setOpenLogisticsBaseSection(false);
   };
 
@@ -772,15 +779,18 @@ const ScrMem0003BaseTab = () => {
       setTitle(messege);
       setHandleDialog(true);
     }
-    const hrefs = searchResult.map((x) => {
-      return {
-        field: 'businessBaseId',
-        id: x.businessBaseId,
-        href: '-?businessBaseId=' + x.businessBaseId,
-      };
-    });
     setBusinessBaseSearchResult(searchResult);
-    setBusinessBaseHrefs(hrefs);
+    setBusinessBaseHrefs([
+      {
+        field: 'businessBaseId',
+        hrefs: searchResult.map((x) => {
+          return {
+            id: x.businessBaseId,
+            href: '-?businessBaseId=' + x.businessBaseId,
+          };
+        }),
+      },
+    ]);
     setOpenBusinessBaseSection(false);
   };
 
