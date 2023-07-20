@@ -5,7 +5,7 @@ import { comApiClient, memApiClient } from 'providers/ApiClient';
  */
 
 /** 法人基本情報取得APIリクエスト */
-export interface ScrMem0003GetCorporationRequest {
+export interface ScrMem0003GetCorporationInfoRequest {
   // 法人ID
   corporationId: string;
   // 制限件数
@@ -13,7 +13,7 @@ export interface ScrMem0003GetCorporationRequest {
 }
 
 /** 法人基本情報取得APIレスポンス */
-export interface ScrMem0003GetCorporationResponse {
+export interface ScrMem0003GetCorporationInfoResponse {
   // 制限件数
   limitCount: number;
   // 返却件数
@@ -201,11 +201,11 @@ export interface NotPermission {
 }
 
 /** 法人基本情報取得API */
-export const ScrMem0003GetCorporation = async (
-  request: ScrMem0003GetCorporationRequest
-): Promise<ScrMem0003GetCorporationResponse> => {
+export const ScrMem0003GetCorporationInfo = async (
+  request: ScrMem0003GetCorporationInfoRequest
+): Promise<ScrMem0003GetCorporationInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/get-corporation',
+    '/scr-mem-0003/get-corporation-info',
     request
   );
   return response.data;
@@ -894,7 +894,7 @@ export const ScrMem0003AddCheckLogisticsBase = async (
   request: ScrMem0003AddCheckLogisticsBaseRequest
 ): Promise<ScrMem0003AddCheckLogisticsBaseResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/add-check-logistics-Base',
+    '/scr-mem-0003/add-check-logistics-base',
     request
   );
   return response.data;

@@ -31,9 +31,9 @@ import {
   RegistGuarantor,
   ScrCom9999GetCodeManagementMasterMultiple,
   ScrCom9999GetCodeValue,
-  ScrMem0003GetCorporation,
-  ScrMem0003GetCorporationRequest,
-  ScrMem0003GetCorporationResponse,
+  ScrMem0003GetCorporationInfo,
+  ScrMem0003GetCorporationInfoRequest,
+  ScrMem0003GetCorporationInfoResponse,
   ScrMem0003GetNewCorporationId,
   ScrMem0003InputCheckCorporationInfo,
   ScrMem0003InputCheckCorporationInfoRequest,
@@ -630,7 +630,7 @@ const sectionDef = [
  * 法人基本情報取得APIリクエストから法人基本情報データモデルへの変換
  */
 const convertToCorporationBasicModel = (
-  response: ScrMem0003GetCorporationResponse
+  response: ScrMem0003GetCorporationInfoResponse
 ): CorporationBasicModel => {
   const guarantorMasters = response.guarantor;
   guarantorMasters.sort((a, b) => (a.guarantorNo > b.guarantorNo ? 1 : -1));
@@ -802,7 +802,7 @@ const convertToScrMem0003DataModel = (
 };
 
 const convertToCreditInfoModel = (
-  response: ScrMem0003GetCorporationResponse,
+  response: ScrMem0003GetCorporationInfoResponse,
   changeHistoryNumber: string
 ): CorporationBasicModel => {
   const guarantorMasters = response.guarantor;
@@ -1249,11 +1249,11 @@ const ScrMem0003BasicTab = (props: {
       });
 
       // 法人基本情報申請API
-      const request: ScrMem0003GetCorporationRequest = {
+      const request: ScrMem0003GetCorporationInfoRequest = {
         corporationId: corporationId,
         limitCount: 15000,
       };
-      const response = await ScrMem0003GetCorporation(request);
+      const response = await ScrMem0003GetCorporationInfo(request);
       const corporationBasic = convertToCorporationBasicModel(response);
 
       // 画面にデータを設定

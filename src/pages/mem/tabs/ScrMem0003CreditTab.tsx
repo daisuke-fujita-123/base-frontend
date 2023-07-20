@@ -190,7 +190,8 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
 const convertToCreditInfoModel = (
   response: ScrMem0003GetCreditInfoResponse,
   corporationId: string,
-  changeExpectedDate: string
+  changeExpectedDate: string,
+  applicationId: string
 ): CreditInfoModel => {
   const temporaryCreditEndDate: Date = new Date(
     response.temporaryCreditEndDate
@@ -246,7 +247,7 @@ const convertToCreditInfoModel = (
     ).toLocaleString(),
 
     changeExpectedDate: changeExpectedDate,
-    changeHistoryNumber: '',
+    changeHistoryNumber: applicationId,
   };
 };
 
@@ -416,6 +417,7 @@ const ScrMem0003CreditTab = (props: {
       const corporationBasic = convertToCreditInfoModel(
         response,
         corporationId,
+        '',
         ''
       );
       reset(corporationBasic);
@@ -468,6 +470,7 @@ const ScrMem0003CreditTab = (props: {
       const corporationBasic = convertToCreditInfoModel(
         response,
         corporationId,
+        '',
         applicationId
       );
       reset(corporationBasic);
@@ -552,7 +555,8 @@ const ScrMem0003CreditTab = (props: {
     const CreditInfo = convertToCreditInfoModel(
       response,
       corporationId,
-      getValues('changeExpectedDate')
+      getValues('changeExpectedDate'),
+      ''
     );
 
     // 画面にデータを設定

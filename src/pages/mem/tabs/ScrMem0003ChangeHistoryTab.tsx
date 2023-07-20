@@ -14,9 +14,9 @@ import {
 } from 'controls/Datagrid';
 
 import {
-  ScrMem0003GetCorporation,
-  ScrMem0003GetCorporationRequest,
-  ScrMem0003GetCorporationResponse,
+  ScrMem0003GetCorporationInfo,
+  ScrMem0003GetCorporationInfoRequest,
+  ScrMem0003GetCorporationInfoResponse,
 } from 'apis/mem/ScrMem0003Api';
 
 /**
@@ -194,7 +194,7 @@ interface DateRowsModel {
  * 法人契約コース・サービス一覧取得APIリクエストから【四輪】契約情報セクションモデルへの変換
  */
 const convertToDateRows = (
-  response: ScrMem0003GetCorporationResponse
+  response: ScrMem0003GetCorporationInfoResponse
 ): DateRowsModel => {
   return {
     changeHistory: response.changeHistory.map((x) => {
@@ -277,11 +277,11 @@ const ScrMem0003ChangeHistoryTab = () => {
   useEffect(() => {
     const initialize = async (corporationId: string) => {
       // 法人基本情報申請API
-      const request: ScrMem0003GetCorporationRequest = {
+      const request: ScrMem0003GetCorporationInfoRequest = {
         corporationId: corporationId,
         limitCount: 15000,
       };
-      const response = await ScrMem0003GetCorporation(request);
+      const response = await ScrMem0003GetCorporationInfo(request);
       const dateRows = convertToDateRows(response);
       setChangeHistoryRows(dateRows.changeHistory);
       setNotPermissionRows(dateRows.notPermission);
