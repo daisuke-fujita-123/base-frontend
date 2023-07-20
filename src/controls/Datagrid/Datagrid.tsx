@@ -198,7 +198,7 @@ export interface DataGridProps extends DataGridProProps {
   /**
    * refs
    */
-  hrefs?: GridRefsModel[]; // add, cellType = 'link'
+  hrefs?: GridHrefsModel[]; // add, cellType = 'link'
   /**
    * ツールチップ
    */
@@ -218,24 +218,20 @@ export interface DataGridProps extends DataGridProProps {
   onCellHelperButtonClick?: (firld: string, row: number) => void; // add, cellOptionalButton
 }
 
-export interface GridRefModel {
-  id: string | number;
-  href: string;
-}
-
-export interface GridRefsModel {
+export interface GridHrefsModel {
   field: string;
-  hrefs: GridRefModel[];
-}
-
-export interface GridTooltipModel {
-  id: string | number;
-  text: string;
+  hrefs: {
+    id: string | number;
+    href: string;
+  }[];
 }
 
 export interface GridTooltipsModel {
   field: string;
-  tooltips: GridTooltipModel[];
+  tooltips: {
+    id: string | number;
+    text: string;
+  }[];
 }
 
 /**
