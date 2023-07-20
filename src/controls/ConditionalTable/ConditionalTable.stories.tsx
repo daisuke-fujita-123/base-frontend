@@ -1,9 +1,16 @@
 import { ComponentMeta } from '@storybook/react';
 import React, { useState } from 'react';
 
+import { MarginBox } from 'layouts/Box';
+import { Section } from 'layouts/Section';
+
+import { Icon } from 'controls/Icon';
+
 import {
   ConditionalTable,
+  DeepKey,
   PricingTable,
+  SearchConditionProps,
   TableColDef,
 } from './ConditionalTable';
 
@@ -12,28 +19,11 @@ export default {
   parameters: { controls: { expanded: true } },
 } as ComponentMeta<typeof ConditionalTable>;
 
-/**
- * 検索条件データモデル
- */
-export interface SearchConditionProps {
-  conditionType: string;
-  condition: {
-    conditions: number;
-    conditionVal: string | number;
-  }[];
-}
-
-export type DeepKey<T> = T extends object
-  ? {
-      [K in keyof T]: `${K & string}` | `${K & string}.${DeepKey<T[K]>}`;
-    }[keyof T]
-  : '';
-
 export const Example = () => {
   const columns: TableColDef[] = [
     { headerName: '条件種類', width: 150 },
     { headerName: '条件', width: 100 },
-    { headerName: '値', width: 100 },
+    { headerName: '値', width: 150 },
   ];
 
   /**
@@ -126,6 +116,11 @@ export const Example = () => {
     },
   ];
 
+  // 条件種類変更後にAPIより条件、値を取得する
+  const handleGetConditionData = (select: string) => {
+    return rows.find((val) => val.value === select) ?? null;
+  };
+
   const initialVal: SearchConditionProps = {
     conditionType: '',
     condition: [
@@ -188,23 +183,59 @@ export const Example = () => {
   const onClickExport = () => {
     console.log('exportCSV');
   };
-  console.log(pricingTableVisible);
+
+  const changeCodeToValue = (code: string | number): string => {
+    for (const r of rows) {
+      if (r.value === code) {
+        return r.displayValue;
+      }
+      if (r.conditions) {
+        for (const c of r.conditions) {
+          if (c.value === Number(code)) {
+            return c.displayValue;
+          }
+        }
+      }
+      if (typeof r.conditionVal === 'string') {
+        return String(code);
+      } else if (r.conditionVal) {
+        for (const v of r.conditionVal) {
+          if (v?.value === code) {
+            return v.displayValue;
+          }
+        }
+      }
+    }
+    return '';
+  };
+  const decoration = (
+    <MarginBox mr={5} gap={2}>
+      <Icon iconName='一括登録' iconType='import' onClick={onClickExport} />
+      <Icon iconName='CSV出力' iconType='export' onClick={onClickExport} />
+    </MarginBox>
+  );
   return (
     <>
-      <ConditionalTable
-        columns={columns}
-        rows={rows}
-        conditions={conditions}
-        handleChange={handleChange}
-        searchCondition={searchCondition}
-        handleSetItem={handleSetItem}
-        handleVisibleTable={handleVisibleTable}
-      />
-      {pricingTableVisible && (
-        <PricingTable
-          setCondition={searchCondition}
-          onClickExport={onClickExport}
+      <Section name='条件設定'>
+        <ConditionalTable
+          columns={columns}
+          rows={rows}
+          conditions={conditions}
+          handleChange={handleChange}
+          searchCondition={searchCondition}
+          handleSetItem={handleSetItem}
+          handleVisibleTable={handleVisibleTable}
+          handleGetConditionData={handleGetConditionData}
         />
+      </Section>
+      {pricingTableVisible && (
+        <Section name='価格設定' decoration={decoration}>
+          <PricingTable
+            setCondition={searchCondition}
+            changeCodeToValue={changeCodeToValue}
+            handleVisibleTable={handleVisibleTable}
+          />
+        </Section>
       )}
     </>
   );

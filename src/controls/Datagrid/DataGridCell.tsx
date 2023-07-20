@@ -2,11 +2,11 @@ import React, { forwardRef, memo, useCallback, useState } from 'react';
 
 import { Typography } from 'controls/Typography';
 
-import { TextField } from '@mui/material';
 import { useGridApiContext } from '@mui/x-data-grid';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers-pro';
+import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
 import { ja } from 'date-fns/locale';
+import dayjs from 'dayjs';
 
 /**
  * GridInputCellコンポーネントのProps
@@ -222,20 +222,15 @@ export const GridCustomizableRadiioCell = memo(
             />
             {x === 'fromto' && (
               <LocalizationProvider
-                dateAdapter={AdapterDayjs}
-                adapterLocale={ja}
-                dateFormats={{ monthAndYear: 'YYYY年MM月' }}
+                // dateAdapter={AdapterDayjs}
+                dateAdapter={AdapterDateFns}
               >
                 <DatePicker
-                  value={value.values[i][0]}
-                  inputFormat='YYYY/MM/DD'
-                  renderInput={(params) => <TextField {...params} />}
+                  value={new Date(value.values[i][1])}
                   onChange={(value) => handleDateValueChange(value, i, 0)}
                 />
                 <DatePicker
-                  value={value.values[i][1]}
-                  inputFormat='YYYY/MM/DD'
-                  renderInput={(params) => <TextField {...params} />}
+                  value={new Date(value.values[i][1])}
                   onChange={(value) => handleDateValueChange(value, i, 1)}
                 />
               </LocalizationProvider>
@@ -328,16 +323,11 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
 
   return (
     <LocalizationProvider
-      dateAdapter={AdapterDayjs}
+      // dateAdapter={AdapterDayjs}
+      dateAdapter={AdapterDateFns}
       adapterLocale={ja}
-      dateFormats={{ monthAndYear: 'YYYY年MM月' }}
     >
-      <DatePicker
-        value={value}
-        inputFormat='YYYY/MM/DD'
-        renderInput={(params) => <TextField {...params} />}
-        onChange={handleValueChange}
-      />
+      <DatePicker value={new Date(value)} onChange={handleValueChange} />
     </LocalizationProvider>
   );
 });
