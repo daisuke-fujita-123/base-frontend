@@ -227,7 +227,7 @@ export const ScrMem0003GetNewCorporationId =
   };
 
 /** 法人グループ取得APIレスポンス */
-export interface ScrMem0003GetCorporationGroupResponse {
+export interface ScrMem9999GetCorporationGroupResponse {
   // 法人グループリスト
   corporationGroupList: corporationGroupList[];
 }
@@ -241,11 +241,9 @@ export interface corporationGroupList {
 }
 
 /** 法人グループ取得API */
-export const ScrMem0003GetCorporationGroup =
-  async (): Promise<ScrMem0003GetCorporationGroupResponse> => {
-    const response = await memApiClient.post(
-      '/scr-mem-0003/get-corporation-group'
-    );
+export const ScrMem9999GetCorporationGroup =
+  async (): Promise<ScrMem9999GetCorporationGroupResponse> => {
+    const response = await memApiClient.post('/scr/get-corporation-group');
     return response.data;
   };
 

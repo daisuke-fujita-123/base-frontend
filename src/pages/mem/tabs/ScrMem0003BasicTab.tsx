@@ -32,7 +32,6 @@ import {
   ScrCom9999GetCodeManagementMasterMultiple,
   ScrCom9999GetCodeValue,
   ScrMem0003GetCorporation,
-  ScrMem0003GetCorporationGroup,
   ScrMem0003GetCorporationRequest,
   ScrMem0003GetCorporationResponse,
   ScrMem0003GetNewCorporationId,
@@ -40,6 +39,7 @@ import {
   ScrMem0003InputCheckCorporationInfoRequest,
   ScrMem0003RegistrationCorporationInfo,
   ScrMem0003RegistrationCorporationInfoRequest,
+  ScrMem9999GetCorporationGroup,
 } from 'apis/mem/ScrMem0003Api';
 
 import { useForm } from 'hooks/useForm';
@@ -1134,7 +1134,7 @@ const ScrMem0003BasicTab = (props: {
         });
 
       // 法人グループ取得API
-      const corporationGroupResponse = await ScrMem0003GetCorporationGroup();
+      const corporationGroupResponse = await ScrMem9999GetCorporationGroup();
       const corporationGroupSelectValues =
         corporationGroupResponse.corporationGroupList.map((x) => {
           return {
@@ -1232,7 +1232,7 @@ const ScrMem0003BasicTab = (props: {
         });
 
       // 法人グループ取得API
-      const corporationGroupResponse = await ScrMem0003GetCorporationGroup();
+      const corporationGroupResponse = await ScrMem9999GetCorporationGroup();
       const corporationGroupSelectValues =
         corporationGroupResponse.corporationGroupList.map((x) => {
           return {
