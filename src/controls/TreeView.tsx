@@ -30,7 +30,7 @@ import {
   IconButton,
   styled,
 } from '@mui/material';
-import { getRoute, Rootes } from 'routes/routes';
+import { getRoute, Rootes } from 'definitions/routes';
 import { AccordionContentText, AccordionSubTitle } from './Typography';
 
 const menuDef = [

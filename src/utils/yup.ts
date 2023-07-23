@@ -1,125 +1,154 @@
 import * as yup from 'yup';
 
-const locale = {
+const locale: yup.LocaleObject = {
   mixed: {
-    required: '必須で入力してください',
+    required: '${label}は必須入力です',
   },
   string: {
-    max: '${max}桁以内で入力してください。',
-    email: '${path}はメールアドレス形式である必要があります',
-  },
-  /*
-  mixed: {
-    default: '${path}は無効です',
-    required: '${path}は必須フィールドです',
-    oneOf: '${path}は次の値のいずれかでなければなりません:${values}',
-    notOneOf: '${path}は次の値のいずれかであってはなりません:${values}',
-    notType: '形式が違います',
-  },
-  string: {
-    length: '${path}は正確に${length}文字でなければなりません',
-    min: '${path}は少なくとも${min}文字でなければなりません',
-    max: '${path}は最大${max}文字でなければなりません',
-    matches: '${path}は次と一致する必要があります: "${regex}"',
-    email: '${path}はメールアドレス形式である必要があります',
-    url: '${path}は有効なURLでなければなりません',
-    trim: '${path}はトリミングされた文字列でなければなりません',
-    lowercase: '${path}は小文字の文字列でなければなりません',
-    uppercase: '${path}は大文字の文字列でなければなりません',
+    max: '${label}は${max}桁以下です',
+    email: 'メールアドレス形式です',
   },
   number: {
-    min: '${path}は${min}以上である必要があります',
-    max: '${path}は${max}以下でなければなりません',
-    lessThan: '${path}は${less}より小さくなければなりません',
-    moreThan: '${path}は${more}より大きくなければなりません',
-    notEqual: '${path}は${notEqual}と等しくない必要があります',
-    positive: '${path}は正の数でなければなりません',
-    negative: '${path}は負の数でなければなりません',
-    integer: '${path}は整数でなければなりません',
+    max: '${label}は${max}桁以下です',
+    positive: '${label}はプラスです',
   },
-  date: {
-    min: '${path}フィールドは${min}より後でなければなりません',
-    max: '${path}フィールドは${max}より前でなければなりません',
-  },
-  object: {
-    noUnknown: '${path}フィールドには,オブジェクトシェイプで指定されていないキーを含めることはできません',
-  },
-  array: {
-    min: '${path}フィールドには少なくとも${min}の項目が必要です',
-    max: '${path}フィールドには${max}以下の項目が必要です',
-  },
-*/
+  date: {},
+  boolean: {},
+  object: {},
+  array: {},
 };
+
+yup.setLocale(locale);
 
 declare module 'yup' {
   interface StringSchema {
-    // 全角＆半角
-    fullAndHalfWidth(this: StringSchema): StringSchema;
-    // 半角のみ
-    halfWidthOnly(this: StringSchema): StringSchema;
-    // 半角数字のみ
-    numberOnly(this: StringSchema): StringSchema;
-    // 金額形式のみ
-    formatMoney(this: StringSchema): StringSchema;
-    // 電話番号フォーマット
-    formatTel(this: StringSchema): StringSchema;
-    // 日付フォーマット：YYYY/MM/DD形式
-    formatYmd(this: StringSchema): StringSchema;
+    // 数字（カンマ無）
+    number(this: StringSchema): StringSchema;
+    // 数字（カンマ有）
+    numberWithComma(this: StringSchema): StringSchema;
+    // 数字（半角のみ）
+    half(this: StringSchema): StringSchema;
+    // 数字（日付）
+    date(this: StringSchema): StringSchema;
+    // 数字（時刻）
+    time(this: StringSchema): StringSchema;
+    // 数字（日付/時刻）
+    datetime(this: StringSchema): StringSchema;
+    // 千円単位表示
+    unitOf1000Yen(this: StringSchema): StringSchema;
+    // マイナス
+    positive(this: StringSchema): StringSchema;
+    // ０入力
+    notZero(this: StringSchema): StringSchema;
+    // 電話番号、FAX
+    phone(this: StringSchema): StringSchema;
+  }
+  interface NumberSchema {
+    // 千円単位表示
+    unitOf1000Yen(this: NumberSchema): NumberSchema;
+    // ０入力
+    notZero(this: NumberSchema): NumberSchema;
   }
 }
 
-yup.addMethod(yup.StringSchema, 'fullAndHalfWidth', function () {
-  // 必要な場合は、検査実装
-  return this;
-});
-
-yup.addMethod(yup.StringSchema, 'halfWidthOnly', function () {
-  return this.matches(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/, {
-    message: '半角で入力してください。',
-  });
-});
-
-yup.addMethod(yup.StringSchema, 'numberOnly', function () {
+yup.addMethod(yup.StringSchema, 'number', function () {
   return this.matches(/^[0-9]*$/, {
-    message: '数字で入力してください。',
+    message: ({ label }) => `${label}は半角数字です`,
   });
 });
 
-yup.addMethod(yup.StringSchema, 'formatMoney', function () {
-  return this.matches(/^((([1-9]\d*)(,\d{3})*)|0)$/, {
-    message: '数字で入力してください。',
+yup.addMethod(yup.StringSchema, 'numberWithComma', function () {
+  return this.matches(/^[0-9,]*$/, {
+    message: ({ label }) => `${label}は半角数字カンマです`,
   });
 });
 
-yup.addMethod(yup.StringSchema, 'formatTel', function () {
-  // TODO 電話番号フォーマット要確認
-  return this.matches(/^[0-9-]*$/, {
-    message: '半角数字・ハイフンのみで入力してください。',
+yup.addMethod(yup.StringSchema, 'half', function () {
+  return this.matches(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/, {
+    message: ({ label }) => `${label}は半角英数字カナ記号です`,
   });
 });
 
-yup.addMethod(yup.StringSchema, 'formatYmd', function () {
+yup.addMethod(yup.StringSchema, 'date', function () {
+  return this.matches(/^[0-9]*$/, {
+    message: ({ label }) => `${label}は日付形式です`,
+  });
+});
+
+yup.addMethod(yup.StringSchema, 'time', function () {
+  return this.matches(/^[0-9]*$/, {
+    message: ({ label }) => `${label}は時刻形式です`,
+  });
+});
+
+yup.addMethod(yup.StringSchema, 'datetime', function () {
+  return this.matches(/^[0-9]*$/, {
+    message: ({ label }) => `${label}は日付時刻形式です`,
+  });
+});
+
+yup.addMethod(yup.StringSchema, 'unitOf1000Yen', function () {
   return this.test(
-    '日付項目',
-    '正しい日付（YYYY/MM/DD形式）を入力してください。',
-    function (value) {
-      const date = new Date(value as string);
-      return !Number.isNaN(date.getTime());
+    'unitOf1000Yen',
+    ({ label }) => `${label}は千円単位です`,
+    (value) => {
+      if (!value) return false;
+      if (Number(value) < 1000) return false;
+      return value.slice(-3) === '000';
     }
   );
 });
 
-yup.addMethod(yup.ArraySchema, 'required', function () {
-  return this.test('選択項目', '必須で選択してください。', function (value) {
-    if (value === null) {
-      return false;
+yup.addMethod(yup.StringSchema, 'positive', function () {
+  return this.test(
+    'positive',
+    ({ label }) => `${label}はプラスです`,
+    (value) => {
+      if (!value) return false;
+      return Number(value) >= 0;
     }
-    const values: string[] = Object.values(value);
-    return values.length > 0;
+  );
+});
+
+yup.addMethod(yup.StringSchema, 'notZero', function () {
+  return this.test(
+    'notZero',
+    ({ label }) => `${label}は０以外です`,
+    (value) => {
+      if (!value) return false;
+      return Number(value) !== 0;
+    }
+  );
+});
+
+yup.addMethod(yup.StringSchema, 'phone', function () {
+  return this.matches(/^\d{2,5}-\d{1,4}-\d{4}$/, {
+    message: '電話番号形式です',
   });
 });
 
-yup.setLocale(locale);
+yup.addMethod(yup.NumberSchema, 'unitOf1000Yen', function () {
+  return this.test(
+    'unitOf1000Yen',
+    ({ label }) => `${label}は千円単位です`,
+    (value) => {
+      if (!value) return false;
+      if (value < 1000) return false;
+      return String(value).slice(-3) === '000';
+    }
+  );
+});
+
+yup.addMethod(yup.NumberSchema, 'notZero', function () {
+  return this.test(
+    'notZero',
+    ({ label }) => `${label}は０以外です`,
+    (value) => {
+      if (!value) return false;
+      return value !== 0;
+    }
+  );
+});
 
 export default yup;
 
