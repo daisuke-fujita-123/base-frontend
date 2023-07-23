@@ -178,7 +178,7 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
         value={{
           appContext,
           navigate,
-          setNeedsConfirmNavigate,
+          setNeedsConfirmNavigate: setNeedsConfirmNavigate,
           showDialog,
           saveState,
           loadState,

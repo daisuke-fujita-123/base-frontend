@@ -191,10 +191,20 @@ export interface DataGridProps extends DataGridProProps {
    * 列の定義情報
    */
   columns: GridColDef[];
+  disabledRows?: any[];
+  disabledCells?: any[];
   /**
-   * 行データ<br>
+   * 行データ
    */
   rows: GridRowsProp;
+  /**
+   * height
+   */
+  height?: number;
+  /**
+   * width
+   */
+  width?: number;
   /**
    * refs
    */
@@ -216,8 +226,13 @@ export interface DataGridProps extends DataGridProProps {
   onLinkClick?: (url: string) => void; // add, cellType = 'link'
 
   onCellHelperButtonClick?: (firld: string, row: number) => void; // add, cellOptionalButton
+
+  getCellDisabled?: (params: any) => boolean;
 }
 
+/**
+ * hrefリンクデータモデル
+ */
 export interface GridHrefsModel {
   field: string;
   hrefs: {
@@ -226,6 +241,9 @@ export interface GridHrefsModel {
   }[];
 }
 
+/**
+ * ツールチップデータモデル
+ */
 export interface GridTooltipsModel {
   field: string;
   tooltips: {
@@ -243,9 +261,15 @@ export const DataGrid = (props: DataGridProps) => {
   const {
     columns,
     rows,
+    disabledRows,
+    disabledCells,
     tooltips,
     hrefs,
     initialState,
+    /** size */
+    height,
+    width,
+    /** sorting */
     /** sorting */
     /** filtering */
     /** pagination */
@@ -256,6 +280,7 @@ export const DataGrid = (props: DataGridProps) => {
     onRowChange,
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
+    getCellDisabled,
     apiRef,
   } = props;
 
@@ -284,84 +309,114 @@ export const DataGrid = (props: DataGridProps) => {
     return newRow;
   };
 
-  const generateInputCell = (params: any) => (
-    <>
-      <GridInputCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        helperText={params.colDef.cellHelperText}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={() => handleClick(params)} />
-      )}
-    </>
-  );
+  const generateInputCell = (params: any) => {
+    const disabled = getCellDisabled ? getCellDisabled(params) : false;
 
-  const generateSelectCell = (params: any) => (
-    <>
-      <GridSelectCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        selectValues={params.colDef.selectValues}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={() => handleClick(params)} />
-      )}
-    </>
-  );
+    return (
+      <>
+        <GridInputCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          helperText={params.colDef.cellHelperText}
+          disabled={disabled}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={() => handleClick(params)} />
+        )}
+      </>
+    );
+  };
 
-  const generateRadioCell = (params: any) => (
-    <>
-      <GridRadioCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        radioValues={params.colDef.radioValues}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={handleClick} />
-      )}
-    </>
-  );
+  const generateSelectCell = (params: any) => {
+    const disabled = getCellDisabled ? getCellDisabled(params) : false;
 
-  const generateCustomizableRadioCell = (params: any) => (
-    <>
-      <GridCustomizableRadiioCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        radioValues={params.colDef.radioInputTypes}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={handleClick} />
-      )}
-    </>
-  );
+    return (
+      <>
+        <GridSelectCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          selectValues={params.colDef.selectValues}
+          disabled={disabled}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={() => handleClick(params)} />
+        )}
+      </>
+    );
+  };
 
-  const generateCheckboxCell = (params: any) => (
-    <>
-      <GridCheckboxCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-      />
-    </>
-  );
+  const generateRadioCell = (params: any) => {
+    const disabled = getCellDisabled ? getCellDisabled(params) : false;
 
-  const generateDatepickerCell = (params: any) => (
-    <>
-      <GridDatepickerCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-      />
-      {params.colDef.cellOptionalButton === 'info' && (
-        <InfoButton onClick={handleClick} />
-      )}
-    </>
-  );
+    return (
+      <>
+        <GridRadioCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          radioValues={params.colDef.radioValues}
+          disabled={disabled}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
+
+  const generateCustomizableRadioCell = (params: any) => {
+    const disabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    return (
+      <>
+        <GridCustomizableRadiioCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          radioValues={params.colDef.radioInputTypes}
+          disabled={disabled}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
+
+  const generateCheckboxCell = (params: any) => {
+    const disabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    return (
+      <>
+        <GridCheckboxCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          disabled={disabled}
+        />
+      </>
+    );
+  };
+
+  const generateDatepickerCell = (params: any) => {
+    const disabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    return (
+      <>
+        <GridDatepickerCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          disabled={disabled}
+        />
+        {params.colDef.cellOptionalButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
 
   const generateMultiInputCell = (params: any) => {
     const cellTypes = params.colDef.cellType;
@@ -475,23 +530,30 @@ export const DataGrid = (props: DataGridProps) => {
     };
   });
 
+  const gridHeight = height ? height : '100%';
+  const gridWidth = width
+    ? width
+    : muiColumns.reduce((acc, val) => acc + (val.width ? val.width : 0), 3);
+
   return (
     <>
       <Box
         sx={{
-          height: 500,
-          width: '100%',
+          height: gridHeight,
+          width: gridWidth,
           '& .cold': {
             backgroundColor: '#b9d5ff91',
-            color: '#1a3e72',
           },
           '& .hot': {
             backgroundColor: '#ff943975',
-            color: '#1a3e72',
+          },
+          '& .disabled': {
+            backgroundColor: '#D8D8D8',
           },
         }}
       >
         <StyledDataGrid
+          {...props}
           columns={muiColumns}
           rows={rows}
           initialState={{
@@ -505,6 +567,7 @@ export const DataGrid = (props: DataGridProps) => {
           /** size */
           columnHeaderHeight={28}
           rowHeight={30}
+          autoHeight={height === undefined}
           /** sorting */
           /** pagination */
           pagination={pagination}

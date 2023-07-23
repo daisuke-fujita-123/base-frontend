@@ -1,25 +1,28 @@
 import { ComponentMeta } from '@storybook/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
 
-import { MarginBox } from 'layouts/Box';
 import { Section } from 'layouts/Section';
+import { RowStack, Stack } from 'layouts/Stack';
 
-import { Icon } from 'controls/Icon';
+import { DeepKey, SetConditionTable } from 'controls/ConditionalTable';
+import { Radio } from 'controls/Radio';
+import { Select } from 'controls/Select';
 import { TableColDef } from 'controls/Table';
+import { PriceTextField } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
-import { ThemeProvider } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
 import {
-  ConditionalTable,
-  DeepKey,
-  PricingTable,
+  CommissionFormValues,
   SearchConditionProps,
-} from './ConditionalTable';
+  SetCommissionTable,
+} from './SetCommissionTable';
 
 export default {
-  component: ConditionalTable,
+  component: SetCommissionTable,
   parameters: { controls: { expanded: true } },
-} as ComponentMeta<typeof ConditionalTable>;
+} as ComponentMeta<typeof SetCommissionTable>;
 
 export const Example = () => {
   const columns: TableColDef[] = [
@@ -173,71 +176,121 @@ export const Example = () => {
   const handleSetItem = (sortValues: SearchConditionProps[]) => {
     setRows(sortValues);
   };
+  // 明細設定
+  const isReadOnly = useState<boolean>(false);
 
-  const [pricingTableVisible, setPricingTableVisible] =
-    useState<boolean>(false);
-
-  const handleVisibleTable = () => {
-    setPricingTableVisible(!pricingTableVisible);
+  const fieldInitVal = {
+    commissionType: 1,
+    productCode: 1,
+    priceChange: 0,
+    plusMinus: 0,
+    price: 0,
   };
-  const onClickExport = () => {
-    console.log('exportCSV');
-  };
+  const [datalist, setDatalist] = useState([fieldInitVal]);
 
-  const changeCodeToValue = (code: string | number): string => {
-    for (const r of getItems) {
-      if (r.value === code) {
-        return r.displayValue;
-      }
-      if (r.conditions) {
-        for (const c of r.conditions) {
-          if (c.value === Number(code)) {
-            return c.displayValue;
-          }
-        }
-      }
-      if (typeof r.conditionVal === 'string') {
-        return String(code);
-      } else if (r.conditionVal) {
-        for (const v of r.conditionVal) {
-          if (v?.value === code) {
-            return v.displayValue;
-          }
-        }
-      }
+  const CommissionMethods = useForm<CommissionFormValues>({
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
+    context: isReadOnly,
+  });
+
+  const control = CommissionMethods.control;
+
+  const { fields, append, remove } = useFieldArray({
+    name: 'rows',
+    control,
+  });
+
+  useEffect(() => {
+    CommissionMethods.setValue('rows', datalist);
+  }, [CommissionMethods, datalist]);
+
+  // 明細追加
+  const handleAddClick = () => {
+    try {
+      setDatalist((prev) => [...prev, fieldInitVal]);
+      append(fieldInitVal);
+    } catch (error) {
+      console.error(error);
     }
-    return '';
   };
-  const decoration = (
-    <MarginBox mr={5} gap={2}>
-      <Icon iconName='一括登録' iconType='import' onClick={onClickExport} />
-      <Icon iconName='CSV出力' iconType='export' onClick={onClickExport} />
-    </MarginBox>
-  );
+
+  // 明細削除
+  const handleRemoveClick = (index: number) => {
+    try {
+      setDatalist(datalist.filter((_, i) => index !== i));
+      remove(index);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  /**
+   * APIから取得した手数料データ
+   */
+  const commissionType = [{ displayValue: '出品料', value: 1 }];
+
+  const productCode = [{ displayValue: 'XXXXXXXX', value: 1 }];
+
+  const price = [
+    { value: 0, displayValue: '変動金額' },
+    { value: 1, displayValue: '変動後の金額' },
+  ];
+
+  const plusMinus = [
+    { value: 0, displayValue: '+' },
+    { value: 1, displayValue: '-' },
+  ];
   return (
-    <ThemeProvider theme={theme}>
-      <Section name='条件設定'>
-        <ConditionalTable
-          columns={columns}
-          getItems={getItems}
-          conditions={conditions}
-          handleChange={handleChange}
-          rows={rows}
-          handleSetItem={handleSetItem}
-          handleVisibleTable={handleVisibleTable}
-          handleGetConditionData={handleGetConditionData}
-        />
-      </Section>
-      {pricingTableVisible && (
-        <Section name='価格設定' decoration={decoration}>
-          <PricingTable
-            setCondition={rows}
-            changeCodeToValue={changeCodeToValue}
-            handleVisibleTable={handleVisibleTable}
-          />
+    <FormProvider {...CommissionMethods}>
+      <ThemeProvider theme={theme}>
+        <Section name='条件' isTransparent>
+          <SetCommissionTable
+            handleAddClick={handleAddClick}
+            handleRemoveClick={handleRemoveClick}
+          >
+            {fields.map((val) => (
+              <Stack spacing={6} key={val.id}>
+                <RowStack>
+                  <Select
+                    required
+                    name='commissionType'
+                    label='手数料種類'
+                    selectValues={commissionType}
+                  ></Select>
+                  <Select
+                    required
+                    name='productCode'
+                    label='商品コード'
+                    selectValues={productCode}
+                  ></Select>
+                </RowStack>
+                <SetConditionTable
+                  columns={columns}
+                  getItems={getItems}
+                  conditions={conditions}
+                  handleChange={handleChange}
+                  rows={rows}
+                  handleSetItem={handleSetItem}
+                  handleGetConditionData={handleGetConditionData}
+                  isEditable={false}
+                />
+                <RowStack spacing={2}>
+                  <Radio
+                    required
+                    name='priceChange'
+                    label='値引値増金額'
+                    radioValues={price}
+                  ></Radio>
+                  <Radio name='plusMinus' radioValues={plusMinus} row></Radio>
+                  <PriceTextField name='price'></PriceTextField>円
+                </RowStack>
+              </Stack>
+            ))}
+          </SetCommissionTable>
         </Section>
-      )}
-    </ThemeProvider>
+      </ThemeProvider>
+    </FormProvider>
   );
 };
 

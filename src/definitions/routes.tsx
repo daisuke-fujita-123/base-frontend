@@ -68,14 +68,7 @@ import GlobalLayout from 'layouts/GlobalLayout';
 /**
  * _routes
  */
-const _routes = [
-  {
-    // SCR-COM-0002 TOP
-    id: 'SCR-COM-0002',
-    name: 'TOP',
-    index: true,
-    element: <ScrCom0002Page />,
-  },
+const _ROUTES = [
   {
     // SCR-COM-0001 ログイン
     id: 'SCR-COM-0001',
@@ -516,16 +509,16 @@ const _routes = [
 /**
  * routes
  */
-export const routes = [
+export const ROUTES = [
   {
     path: '/',
     element: <GlobalLayout />,
-    children: _routes,
+    children: _ROUTES,
   },
 ];
 
 export type Rootes = NonNullable<ReturnType<typeof getRoute>>;
 
 export const getRoute = (id: string) => {
-  return _routes.find((x) => x.id === id);
+  return _ROUTES.find((x) => x.id === id);
 };

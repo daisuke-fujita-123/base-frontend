@@ -12,24 +12,23 @@ export default {
   component: Radio,
   parameters: { controls: { expanded: true } },
   argTypes: {
+    name: {
+      description: 'reacthookformで管理する名前',
+    },
+    radioValues: {
+      description:
+        'ラジオボタンの中身。valueがradioの値、displayValueが表示名、disabledがradioボタンを選択可能かどうか判定',
+    },
     label: {
       description: 'ラベルの表示名。ラベルが不要な場合は空文字。',
     },
     labelPosition: {
       description:
         'テキストフィールドから見て左横にラベルを表示したい場合はrow、上にラベルを表示したい場合はcolumn。',
-      defaultValue: { summary: 'side' },
     },
     required: {
       description: '必須かどうか',
       defaultValue: { summary: 'true' },
-    },
-    name: {
-      description: 'reacthookformで管理する名前',
-    },
-    radioValues: {
-      description:
-        'ラジオボタンの中身。valueがradioの値、valueLableが表示名、disabledがradioボタンを選択可能かどうか判定',
     },
     row: {
       description: 'radioボタンの配置を横並びにするか、縦並びにするか',

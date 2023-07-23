@@ -12,7 +12,7 @@ import { Typography } from 'controls/Typography';
 
 import { AppContext } from 'providers/AppContextProvider';
 
-import { routes } from 'routes/routes';
+import { ROUTES } from 'definitions/routes';
 
 // const routes = [
 //   // { index: true, element: 'ScrCom0002' },
@@ -79,7 +79,7 @@ const TopBar = () => {
   // URIの履歴からパンくずリストに渡すpropsを作成
   const breadcrumbs = uris.map((uri, index) => {
     // IDを入る部分を考慮してroutesの定義から一致するURIを検索
-    const matched = routes[0].children.find((route) => {
+    const matched = ROUTES[0].children.find((route) => {
       if (route.path === undefined) return false;
       return matchPath(route.path, uri) !== null;
     });
