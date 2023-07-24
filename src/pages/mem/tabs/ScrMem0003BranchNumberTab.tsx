@@ -125,7 +125,7 @@ interface BranchNumbersRowModel {
 const selectValuesInitialValues: SelectValuesModel = {
   /** 枝番選択肢(空文字、00～99までの選択肢) */
   branchNumberSelectValues: [{ value: '', displayValue: '' }].concat(
-    [...Array(100)].map<SelectValue>((o, i) => {
+    [...Array(100)].map<{ value: string; displayValue: string }>((o, i) => {
       const val = i.toString().padStart(2, '0');
       return { value: val, displayValue: val };
     })
@@ -525,7 +525,7 @@ const ScrMem0003BranchNumberTab = () => {
             </Section>
             <Section name='契約ID別枝番設定状況'>
               <DataGrid
-                pageSize={100}
+                pagination={true}
                 columns={contractBranchNumberSummariesColumns}
                 rows={contractBranchNumberSummaries}
               />

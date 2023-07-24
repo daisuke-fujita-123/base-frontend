@@ -21,6 +21,7 @@ export interface CheckBoxProps<T extends FieldValues> {
   children?: ReactNode;
   blank?: boolean;
   size?: 's' | 'm' | 'l' | 'xl';
+  disable?: boolean;
 }
 
 const StyledFormControl = styled(FormControl)({
@@ -45,7 +46,15 @@ const StyledCheckbox = styled(MuiCheckbox)({
 });
 
 export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
-  const { name, label, required, children, blank = false, size = 's' } = props;
+  const {
+    name,
+    label,
+    required,
+    children,
+    blank = false,
+    size = 's',
+    disable,
+  } = props;
 
   const { register, formState, control } = useFormContext();
   const defaultChecked = formState.defaultValues?.[name];
@@ -61,7 +70,7 @@ export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
           id={name}
           required={required}
           control={<StyledCheckbox defaultChecked={defaultChecked} />}
-          disabled={isReadOnly}
+          disabled={disable || isReadOnly}
           {...register(name)}
         />
       </StyledFormControl>

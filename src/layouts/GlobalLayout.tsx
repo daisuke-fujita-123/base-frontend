@@ -49,8 +49,11 @@ const GlobalLayout = () => {
             minWidth: isOpen ? 250 : 40,
             backgroundColor: 'accordion.backgroundColor',
             transition: '0.5s ease',
-            overflow: 'hidden',
+            overflowY: 'auto',
             display: 'inline-block',
+            '::-webkit-scrollbar': {
+              display: 'none',
+            },
           }}
         >
           <TreeView open={isOpen} />

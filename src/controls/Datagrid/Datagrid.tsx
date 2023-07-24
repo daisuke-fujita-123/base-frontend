@@ -1,37 +1,37 @@
 import React from 'react';
 
-import { Box } from 'layouts/Box';
-
+import { InfoButton } from 'controls/Button';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
 
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import {
+  Box,
   Pagination as MuiPagination,
   PaginationItem as MuiPaginationItem,
   Stack,
   styled,
+  Tooltip,
   Typography,
 } from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import {
-  gridPageCountSelector,
-  gridPageSelector,
-  GridRowsProp,
-  useGridApiContext,
-  useGridApiRef,
-  useGridSelector,
-} from '@mui/x-data-grid';
 import {
   DataGridPro as MuiDataGridPro,
-  DataGridProProps as MuiDataGridProProps,
+  DataGridProProps,
   GridColDef as MuiGridColDef,
+  gridPageCountSelector,
+  gridPaginationModelSelector,
   GridRenderCellParams,
+  GridRowsProp,
+  useGridApiContext,
+  useGridSelector,
 } from '@mui/x-data-grid-pro';
+import saveAs from 'file-saver';
+import Papa from 'papaparse';
 import {
   GridCellForTooltip,
   GridCheckboxCell,
+  GridCustomizableRadiioCell,
   GridDatepickerCell,
   GridInputCell,
   GridRadioCell,
@@ -81,20 +81,14 @@ const StyledDataGrid = styled(MuiDataGridPro)({
 });
 
 /**
- * PaginationコンポーネントのProps
- */
-interface PaginationProps {
-  total: number;
-}
-
-/**
  * Paginationコンポーネント
  */
-const Pagination = (props: PaginationProps) => {
-  const { total } = props;
+const Pagination = () => {
+  // const { total } = props;
 
   const apiRef = useGridApiContext();
-  const page = useGridSelector(apiRef, gridPageSelector);
+  const totalRowCount = apiRef.current.state.rows.totalRowCount;
+  const paginationModel = useGridSelector(apiRef, gridPaginationModelSelector);
   const pageCount = useGridSelector(apiRef, gridPageCountSelector);
 
   const pageNumber = (page: number) => {
@@ -103,14 +97,25 @@ const Pagination = (props: PaginationProps) => {
     }
     return page;
   };
-  const currentPageStart = pageNumber((total / pageCount) * page + 1);
-  const cureentPageEnd = pageNumber((total / pageCount) * (page + 1));
+  const currentPageStart = pageNumber(
+    paginationModel.pageSize * paginationModel.page + 1
+  );
+  const cureentPageEnd = pageNumber(
+    paginationModel.pageSize * (paginationModel.page + 1)
+  );
+
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    apiRef.current.setPage(page - 1);
+  };
 
   return (
     <Stack
       spacing={2}
       direction='row'
-      justifyContent='flex-end'
+      // justifyContent='flex-end'
       alignItems='center'
     >
       <MuiPagination
@@ -118,18 +123,21 @@ const Pagination = (props: PaginationProps) => {
         shape='rounded'
         variant='outlined'
         count={pageCount}
-        page={page + 1}
-        onChange={(event, value) => apiRef.current.setPage(value - 1)}
+        page={paginationModel.page + 1}
+        onChange={handlePageChange}
         renderItem={(item) => (
           <MuiPaginationItem
-            slots={{ previous: ArrowLeftIcon, next: ArrowRightIcon }}
+            slots={{
+              previous: ArrowLeftIcon,
+              next: ArrowRightIcon,
+            }}
             {...item}
           />
         )}
       />
       <Typography>
-        {total.toLocaleString()} 件（ {currentPageStart} ～ {cureentPageEnd}{' '}
-        件）
+        {totalRowCount.toLocaleString()} 件 （ {currentPageStart}～
+        {cureentPageEnd} 件）
       </Typography>
     </Stack>
   );
@@ -138,7 +146,7 @@ const Pagination = (props: PaginationProps) => {
 /**
  * DataGridの列モデル定義
  */
-export interface GridColDef extends MuiGridColDef {
+export type GridColDef = MuiGridColDef & {
   /**
    * size
    */
@@ -153,7 +161,8 @@ export interface GridColDef extends MuiGridColDef {
     | 'radio'
     | 'checkbox'
     | 'datepicker'
-    | 'link';
+    | 'link'
+    | any[];
   /**
    * tooltip
    */
@@ -166,12 +175,18 @@ export interface GridColDef extends MuiGridColDef {
    * radioValues
    */
   radioValues?: any[]; // cellType = 'radio'
-}
+
+  radioInputTypes?: string[];
+
+  cellHelperText?: string; // cellType = 'input'
+
+  cellHelperButton?: 'info';
+};
 
 /**
  * DataGridコンポーネントのProps
  */
-export interface DataGridProps extends MuiDataGridProProps {
+export interface DataGridProps extends DataGridProProps {
   /**
    * 列の定義情報
    */
@@ -183,11 +198,11 @@ export interface DataGridProps extends MuiDataGridProProps {
   /**
    * refs
    */
-  hrefs?: any[]; // add, cellType = 'link'
+  hrefs?: GridRefsModel[]; // add, cellType = 'link'
   /**
    * ツールチップ
    */
-  tooltips?: any[]; // add, tooltip = 'true'
+  tooltips?: GridTooltipsModel[]; // add, tooltip = 'true'
   /**
    * onRowChange
    */
@@ -199,6 +214,28 @@ export interface DataGridProps extends MuiDataGridProProps {
    * @returns
    */
   onLinkClick?: (url: string) => void; // add, cellType = 'link'
+
+  onCellHelperButtonClick?: (firld: string, row: number) => void; // add, cellOptionalButton
+}
+
+export interface GridRefModel {
+  id: string | number;
+  href: string;
+}
+
+export interface GridRefsModel {
+  field: string;
+  hrefs: GridRefModel[];
+}
+
+export interface GridTooltipModel {
+  id: string | number;
+  text: string;
+}
+
+export interface GridTooltipsModel {
+  field: string;
+  tooltips: GridTooltipModel[];
 }
 
 /**
@@ -209,7 +246,6 @@ export interface DataGridProps extends MuiDataGridProProps {
 export const DataGrid = (props: DataGridProps) => {
   const {
     columns,
-    columnGroupingModel = undefined,
     rows,
     tooltips,
     hrefs,
@@ -217,16 +253,18 @@ export const DataGrid = (props: DataGridProps) => {
     /** sorting */
     /** filtering */
     /** pagination */
-    pageSize = undefined,
+    pagination = false,
     /** selection */
     checkboxSelection = false,
     /** misc */
     onRowChange,
     onLinkClick, // cellType = 'link'
+    onCellHelperButtonClick,
+    apiRef,
   } = props;
 
   // ref
-  const apiRef = useGridApiRef();
+  // const apiRef = useGridApiRef();
 
   // handler
   const handleRowChange = (row: any) => {
@@ -240,61 +278,134 @@ export const DataGrid = (props: DataGridProps) => {
     onLinkClick(url);
   };
 
+  // heander
+  const handleClick = (params: any) => {
+    if (onCellHelperButtonClick === undefined) return;
+    onCellHelperButtonClick(params.field, params.id);
+  };
+
   const handleProcessRowUpdate = (newRow: any, oldRow: any) => {
     return newRow;
   };
 
-  const generateInputCell = (params: GridRenderCellParams<any>) => (
-    <GridInputCell
-      id={params.id}
-      value={params.value}
-      field={params.field}
-      // onRowChange={handleRowChange}
-    />
+  const generateInputCell = (params: any) => (
+    <>
+      <GridInputCell
+        id={params.id}
+        value={params.value}
+        field={params.field}
+        helperText={params.colDef.cellHelperText}
+      />
+      {params.colDef.cellHelperButton === 'info' && (
+        <InfoButton onClick={() => handleClick(params)} />
+      )}
+    </>
   );
 
   const generateSelectCell = (params: any) => (
-    <GridSelectCell
-      id={params.id}
-      value={params.value}
-      field={params.field}
-      selectValues={params.colDef.selectValues}
-      // onRowChange={handleRowChange}
-    />
+    <>
+      <GridSelectCell
+        id={params.id}
+        value={params.value}
+        field={params.field}
+        selectValues={params.colDef.selectValues}
+      />
+      {params.colDef.cellHelperButton === 'info' && (
+        <InfoButton onClick={() => handleClick(params)} />
+      )}
+    </>
   );
 
   const generateRadioCell = (params: any) => (
-    <GridRadioCell
-      id={params.id}
-      value={params.value}
-      field={params.field}
-      radioValues={params.colDef.radioValues}
-      // onRowChange={handleRowChange}
-    />
+    <>
+      <GridRadioCell
+        id={params.id}
+        value={params.value}
+        field={params.field}
+        radioValues={params.colDef.radioValues}
+      />
+      {params.colDef.cellHelperButton === 'info' && (
+        <InfoButton onClick={handleClick} />
+      )}
+    </>
+  );
+
+  const generateCustomizableRadioCell = (params: any) => (
+    <>
+      <GridCustomizableRadiioCell
+        id={params.id}
+        value={params.value}
+        field={params.field}
+        radioValues={params.colDef.radioInputTypes}
+      />
+      {params.colDef.cellHelperButton === 'info' && (
+        <InfoButton onClick={handleClick} />
+      )}
+    </>
   );
 
   const generateCheckboxCell = (params: any) => (
-    <GridCheckboxCell
-      id={params.id}
-      value={params.value}
-      field={params.field}
-      // onRowChange={handleRowChange}
-    />
+    <>
+      <GridCheckboxCell
+        id={params.id}
+        value={params.value}
+        field={params.field}
+      />
+    </>
   );
 
   const generateDatepickerCell = (params: any) => (
-    <GridDatepickerCell
-      id={params.id}
-      value={params.value}
-      field={params.field}
-      // onRowChange={handleRowChange}
-    />
+    <>
+      <GridDatepickerCell
+        id={params.id}
+        value={params.value}
+        field={params.field}
+      />
+      {params.colDef.cellOptionalButton === 'info' && (
+        <InfoButton onClick={handleClick} />
+      )}
+    </>
   );
 
+  const generateMultiInputCell = (params: any) => {
+    const cellTypes = params.colDef.cellType;
+
+    return (
+      <>
+        {cellTypes.map((x: any, i: number) => {
+          if (x.type === 'input') {
+            return (
+              <GridInputCell
+                key={i}
+                id={params.id}
+                value={params.value[i]}
+                field={[params.field, i]}
+                helperText={x.helperText}
+              />
+            );
+          }
+          if (x.type === 'select') {
+            return (
+              <GridSelectCell
+                key={i}
+                id={params.id}
+                value={params.value[i]}
+                field={[params.field, i]}
+                selectValues={x.selectValues}
+              />
+            );
+          }
+          return <>cellType error</>;
+        })}
+      </>
+    );
+  };
+
   const generateLinkCell = (params: any) => {
-    const href = hrefs?.find((x) => {
-      return x.id === params.id && x.field === params.field;
-    });
+    const map = hrefs?.find((x) => x.field === params.field);
+    const href = map?.hrefs.find((x: any) => x.id === params.id);
+
+    if (href === undefined) return <div>{params.value}</div>;
     return (
       <Link href={href.href} onClick={handleLinkClick}>
         {params.value}
@@ -303,9 +414,9 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateTooltipCell = (params: GridRenderCellParams<any>) => {
-    const tooltip = tooltips?.find((x) => {
-      return x.id === params.id && x.field === params.field;
-    });
+    const map = tooltips?.find((x) => x.field === params.field);
+    const tooltip = map?.tooltips.find((x: any) => x.id === params.id);
+
     const text = tooltip !== undefined ? tooltip.text : '';
     return (
       <Tooltip title={text} placement='right'>
@@ -316,7 +427,7 @@ export const DataGrid = (props: DataGridProps) => {
 
   // 独自のカラム定義からMUI DataGridのカラム定義へ変換
   const muiColumns: MuiGridColDef[] = columns.map((value) => {
-    let width = 80;
+    let width = value.width !== undefined ? value.width : 80;
     if (value.size === 'ss') {
       width = 80;
     }
@@ -338,7 +449,12 @@ export const DataGrid = (props: DataGridProps) => {
       renderCell = generateSelectCell;
     }
     if (value.cellType === 'radio') {
-      renderCell = generateRadioCell;
+      if (value.radioValues) {
+        renderCell = generateRadioCell;
+      }
+      if (value.radioInputTypes) {
+        renderCell = generateCustomizableRadioCell;
+      }
     }
     if (value.cellType === 'checkbox') {
       renderCell = generateCheckboxCell;
@@ -352,6 +468,9 @@ export const DataGrid = (props: DataGridProps) => {
     if (value.tooltip) {
       renderCell = generateTooltipCell;
     }
+    if (Array.isArray(value.cellType)) {
+      renderCell = generateMultiInputCell;
+    }
 
     return {
       ...value,
@@ -360,42 +479,80 @@ export const DataGrid = (props: DataGridProps) => {
     };
   });
 
-  const components =
-    pageSize !== undefined
-      ? {
-          Pagination: () => <Pagination total={rows.length} />,
-          // ColumnHeaderFilterIconButton: () => <任意のアイコン />,ケバブアイコン（Menu）を変更
-        }
-      : undefined;
-
   return (
-    <Box height={492}>
-      <StyledDataGrid
-        columns={muiColumns}
-        columnGroupingModel={columnGroupingModel}
-        rows={rows}
-        initialState={initialState}
-        /** size */
-        headerHeight={28}
-        rowHeight={30}
-        /** sorting */
-        /** pagination */
-        pagination
-        pageSize={pageSize}
-        /** selection */
-        checkboxSelection={checkboxSelection}
-        disableSelectionOnClick={true}
-        /** misc */
-        showCellRightBorder
-        hideFooter={pageSize === undefined}
-        components={components}
-        processRowUpdate={handleProcessRowUpdate}
-        experimentalFeatures={{
-          columnGrouping: true,
-          newEditingApi: true,
+    <>
+      <Box
+        sx={{
+          height: 500,
+          width: '100%',
+          '& .cold': {
+            backgroundColor: '#b9d5ff91',
+            color: '#1a3e72',
+          },
+          '& .hot': {
+            backgroundColor: '#ff943975',
+            color: '#1a3e72',
+          },
         }}
-      />
-    </Box>
+      >
+        <StyledDataGrid
+          columns={muiColumns}
+          rows={rows}
+          initialState={{
+            ...initialState,
+            pagination: {
+              paginationModel: {
+                pageSize: pagination ? 100 : undefined,
+              },
+            },
+          }}
+          /** size */
+          columnHeaderHeight={28}
+          rowHeight={30}
+          /** sorting */
+          /** pagination */
+          pagination={pagination}
+          /** selection */
+          checkboxSelection={checkboxSelection}
+          disableRowSelectionOnClick
+          /** misc */
+          showCellVerticalBorder
+          showColumnVerticalBorder
+          hideFooter
+          processRowUpdate={handleProcessRowUpdate}
+          slots={{
+            toolbar: pagination ? Pagination : undefined,
+          }}
+          experimentalFeatures={{
+            columnGrouping: true,
+          }}
+          apiRef={apiRef}
+        />
+      </Box>
+    </>
   );
+};
+
+export const exportCsv = (data: any[], filename: string) => {
+  // DataGridのid列の除外、囲み文字の追加
+  const transformed = data.map((line) => {
+    delete line.id;
+    Object.keys(line).forEach((key) => {
+      const value = line[key];
+      line[key] = `"${value}"`;
+    });
+    return line;
+  });
+
+  const csv = Papa.unparse(transformed, {
+    delimiter: ',',
+    newline: '\r\n',
+    quoteChar: '',
+    escapeChar: '',
+    header: true,
+  });
+
+  const blob = new Blob([csv]);
+  saveAs(blob, filename);
 };
 
