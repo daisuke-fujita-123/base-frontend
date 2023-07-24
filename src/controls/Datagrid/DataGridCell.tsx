@@ -1,10 +1,12 @@
-import React, { forwardRef, memo, useCallback } from 'react';
+import React, { forwardRef, memo, useCallback, useState } from 'react';
 
-import { TextField } from '@mui/material';
+import { Typography } from 'controls/Typography';
+
 import { useGridApiContext } from '@mui/x-data-grid';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers-pro';
+import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
 import { ja } from 'date-fns/locale';
+import dayjs from 'dayjs';
 
 /**
  * GridInputCellコンポーネントのProps
@@ -12,7 +14,8 @@ import { ja } from 'date-fns/locale';
 interface GridInputCellProps {
   id: string | number;
   value: string;
-  field: string;
+  field: string | any[];
+  helperText?: string;
 }
 
 /**
@@ -21,7 +24,7 @@ interface GridInputCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridInputCell = memo((props: GridInputCellProps) => {
-  const { id, value, field } = props;
+  const { id, value, field, helperText } = props;
 
   const apiRef = useGridApiContext();
 
@@ -29,18 +32,25 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
     (event: any) => {
       const newValue = event.target.value;
       const row = apiRef.current.getRow(id);
-      row[field] = newValue;
+      if (Array.isArray(field)) {
+        row[field[0]][field[1]] = newValue;
+      } else {
+        row[field] = newValue;
+      }
     },
     [apiRef, field, id]
   );
 
   return (
-    <input
-      style={{ width: '60px' }}
-      value={value}
-      type='text'
-      onChange={handleValueChange}
-    />
+    <>
+      <input
+        style={{ width: '60px' }}
+        defaultValue={value}
+        type='text'
+        onChange={handleValueChange}
+      />
+      {helperText && <Typography>{helperText}</Typography>}
+    </>
   );
 });
 
@@ -49,8 +59,8 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
  */
 interface GridSelectCellProps {
   id: string | number;
-  value: string;
-  field: string;
+  value: number;
+  field: string | any[];
   selectValues: any[];
   readOnly?: boolean;
 }
@@ -65,19 +75,26 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
 
   const apiRef = useGridApiContext();
 
+  const [selection, setSelection] = useState(value);
+
   const handleValueChange = useCallback(
     (event: any) => {
-      const newValue = event.target.value;
+      const newSelection = Number(event.target.value);
       const row = apiRef.current.getRow(id);
-      row[field] = newValue;
+      if (Array.isArray(field)) {
+        row[field[0]][field[1]] = newSelection;
+      } else {
+        row[field] = newSelection;
+      }
+      setSelection(newSelection);
     },
     [apiRef, field, id]
   );
 
   return (
     <select
-      style={{ width: '60px' }}
-      value={value}
+      style={{ width: '100px' }}
+      value={selection}
       onChange={handleValueChange}
     >
       {selectValues.map((x, i) => (
@@ -94,7 +111,7 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
  */
 interface GridRadioCellProps {
   id: string | number;
-  value: boolean | undefined;
+  value: number | undefined;
   radioValues: any[];
   field: string;
 }
@@ -109,11 +126,14 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
 
   const apiRef = useGridApiContext();
 
+  const [selection, setSelection] = useState(value);
+
   const handleValueChange = useCallback(
     (event: any) => {
-      const newValue = event.target.value;
+      const newSelection = Number(event.target.value);
       const row = apiRef.current.getRow(id);
-      row[field] = newValue;
+      row[field] = newSelection;
+      setSelection(newSelection);
     },
     [apiRef, field, id]
   );
@@ -126,7 +146,7 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
             type='radio'
             style={{ width: '60px' }}
             value={x.value}
-            checked={x.value === value}
+            checked={x.value === selection}
             onChange={handleValueChange}
           />
           <label>{x.displayValue}</label>
@@ -135,6 +155,101 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
     </>
   );
 });
+
+/**
+ * GridRadioCellPropsコンポーネントのProps
+ */
+interface GridCustomizableRadioCellProps {
+  id: string | number;
+  value: any;
+  radioValues: any[];
+  field: string;
+}
+
+/**
+ * GridRadioCellPropsコンポーネント
+ * プルダウン用のセル
+ */
+// eslint-disable-next-line react/display-name
+export const GridCustomizableRadiioCell = memo(
+  (props: GridCustomizableRadioCellProps) => {
+    const { id, value, radioValues, field } = props;
+
+    const apiRef = useGridApiContext();
+
+    const [selection, setSelection] = useState(value.selection);
+
+    const handleRadioSelectionChange = useCallback(
+      (index: number) => {
+        const row = apiRef.current.getRow(id);
+        row[field].selection = index;
+        setSelection(index);
+      },
+      [apiRef, field, id]
+    );
+
+    const handleValueChange = useCallback(
+      (event: any, index: number) => {
+        const newValue = event.target.value;
+        const row = apiRef.current.getRow(id);
+        row[field].values[index] = newValue;
+      },
+      [apiRef, field, id]
+    );
+
+    const handleDateValueChange = useCallback(
+      (value: any, index: number, fromto: number) => {
+        const date = new Date(String(value));
+        const formattedValue = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const row = apiRef.current.getRow(id);
+        row[field].values[index][fromto] = formattedValue;
+      },
+      [apiRef, field, id]
+    );
+
+    return (
+      <>
+        {radioValues.map((x, i) => (
+          <div key={i}>
+            <input
+              type='radio'
+              style={{ width: '60px' }}
+              value={x.value}
+              checked={selection === i}
+              onChange={() => handleRadioSelectionChange(i)}
+            />
+            {x === 'fromto' && (
+              <LocalizationProvider
+                // dateAdapter={AdapterDayjs}
+                dateAdapter={AdapterDateFns}
+              >
+                <DatePicker
+                  value={new Date(value.values[i][1])}
+                  onChange={(value) => handleDateValueChange(value, i, 0)}
+                />
+                <DatePicker
+                  value={new Date(value.values[i][1])}
+                  onChange={(value) => handleDateValueChange(value, i, 1)}
+                />
+              </LocalizationProvider>
+            )}
+            {x === 'input' && (
+              <input
+                id={String(i)}
+                type='input'
+                style={{ width: '60px' }}
+                defaultValue={value.values[i]}
+                onChange={(event) => handleValueChange(event, i)}
+              />
+            )}
+          </div>
+        ))}
+      </>
+    );
+  }
+);
 
 /**
  * GridCheckboxCellPropsコンポーネントのProps
@@ -208,16 +323,11 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
 
   return (
     <LocalizationProvider
-      dateAdapter={AdapterDayjs}
+      // dateAdapter={AdapterDayjs}
+      dateAdapter={AdapterDateFns}
       adapterLocale={ja}
-      dateFormats={{ monthAndYear: 'YYYY年MM月' }}
     >
-      <DatePicker
-        value={value}
-        inputFormat='YYYY/MM/DD'
-        renderInput={(params) => <TextField {...params} />}
-        onChange={handleValueChange}
-      />
+      <DatePicker value={new Date(value)} onChange={handleValueChange} />
     </LocalizationProvider>
   );
 });

@@ -1,5 +1,4 @@
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 import { theme } from 'controls/theme';
 
@@ -31,13 +30,8 @@ import {
   IconButton,
   styled,
 } from '@mui/material';
-import { getRoute, routes } from 'routes/routes';
+import { getRoute, Rootes } from 'routes/routes';
 import { AccordionContentText, AccordionSubTitle } from './Typography';
-
-// interface menuColumnInfo {
-//   name: string;
-//   href: string;
-// }
 
 const menuDef = [
   {
@@ -94,7 +88,7 @@ const menuDef = [
 interface menuItemModel {
   title: string;
   icon: ReactNode;
-  routes: any[];
+  routes: Rootes[];
 }
 
 /**
@@ -169,6 +163,10 @@ const StyledIconButton = styled(IconButton)({
   color: theme.palette.accordion.color,
 });
 
+const StarIconButton = styled(IconButton)({
+  color: theme.palette.accordion.color,
+});
+
 const StyledIcon = styled(Icon)({
   marginRight: theme.spacing(1),
   marginTop: theme.spacing(0.4),
@@ -194,54 +192,60 @@ const TreeView = (props: TreeViewProps) => {
   // テスト用
   const [bookmarkList, setBookmarkList] =
     useState<ScrCom0002GetFavoriteResponse | null>(null);
+  const [isRegister, setIsRegister] = useState<boolean>(false);
+  const [menuItems, setMenuItems] = useState<menuItemModel[] | null>(null);
 
+  // 初期表示
   useEffect(() => {
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const getRequest: ScrCom0002GetFavoriteRequest = {
-    businessDate: '',
-    userId: appContext.user.id,
-  };
   const initialize = async () => {
     const response = await ScrCom0002GetFavorite(getRequest);
     setBookmarkList(response);
   };
 
-  // location
-  const location = useLocation();
-  const thisScreen = routes.map((val) =>
-    val.children.find((value) => {
-      if (value.path === location.pathname) return value.id;
-    })
-  );
-  // router
-  const navigate = useNavigate();
+  // メニューリスト更新
+  useEffect(() => {
+    const newItems = menuDef.map((item) => {
+      // お気に入りのリンクを更新
+      if (item.title === 'お気に入り' && bookmarkList) {
+        item.children = bookmarkList.list.map((obj) => obj.screenName);
+      }
 
-  // 現在ページがお気に入り登録済みかどうかの判定
-  const isBookmarked =
-    bookmarkList?.list.findIndex(
-      (screen) => screen.screenName === thisScreen[0]?.id
-    ) !== -1;
+      const routes: Rootes[] = item.children
+        .map((id) => getRoute(id))
+        .filter(
+          (val): val is Exclude<typeof val, undefined> =>
+            val !== undefined && typeof val.path === 'string'
+        );
+      return {
+        title: item.title,
+        icon: item.icon,
+        routes: routes,
+      };
+    });
+    setMenuItems(newItems);
+  }, [bookmarkList]);
 
-  const handleAddIconClick = async (event: { stopPropagation: () => void }) => {
+  const getRequest: ScrCom0002GetFavoriteRequest = {
+    businessDate: '',
+    userId: appContext.user.id,
+  };
+
+  // 完了ボタン押下処理
+  const handleRegister = async (event: { stopPropagation: () => void }) => {
     event.stopPropagation();
 
     // 更新APIに渡す値を設定
     const updateList: ScrCom0002GetFavoriteResponse = bookmarkList
       ? { ...bookmarkList }
       : { list: [] };
-    if (thisScreen[0]) {
-      const newList: ScrCom0002GetFavoriteResponse['list'][0] = {
-        screenName: thisScreen[0].id,
-        link: thisScreen[0].path ?? '',
-      };
-      updateList.list.push(newList);
-    }
-    const reqList: ScrCom0002UpdateFavoriteRequest['list'] = updateList.list
-      .filter((val) => val.screenName !== thisScreen[0]?.id)
-      .map((val) => {
+
+    // APIに渡すリクエストを作成
+    const reqList: ScrCom0002UpdateFavoriteRequest['list'] =
+      updateList.list.map((val) => {
         return { screenId: val.screenName };
       });
     const updateRequest: ScrCom0002UpdateFavoriteRequest = {
@@ -249,35 +253,93 @@ const TreeView = (props: TreeViewProps) => {
       employeeId: appContext.user.id,
       list: reqList,
     };
-
     const response = await ScrCom0002UpdateFavorite(updateRequest);
+    setIsRegister(!isRegister);
+    handleExpand(false);
     if (response.rtnCode) return initialize();
   };
+
+  // アコーディオン開閉処理
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const handleExpand = (change: boolean) => {
+    setIsOpen(change);
+  };
+
+  // 閉じているアコーディオンを格納
+  const [closed, setClosed] = useState<string[]>(['default']);
+  console.log('closed', closed);
+  const handleChange =
+    (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+      event.stopPropagation();
+      const newArray = closed.filter((val) => val !== 'default');
+
+      setClosed(
+        isExpanded
+          ? newArray.filter((val) => val !== panel)
+          : [...newArray, panel]
+      );
+    };
+
+  // 追加ボタン押下処理
+  const handleClickAdd = (event: { stopPropagation: () => void }) => {
+    event.stopPropagation();
+    setIsRegister(!isRegister);
+    handleExpand(true);
+  };
+
+  // アコーディオン開閉判定処理
+  const isOpenAccordion = (index: number): boolean => {
+    return (
+      closed.findIndex((open) => open === `panel${index}`) === -1 ||
+      closed[0] === 'default' ||
+      isOpen
+    );
+  };
+
+  // ☆or★アイコン押下処理
+  const handleClickFavorite = (
+    event: { stopPropagation: () => void },
+    id: string,
+    path: string
+  ) => {
+    event.stopPropagation();
+    const isExistent =
+      bookmarkList?.list.findIndex((i) => i.screenName === id) !== -1;
+
+    const newArray = (): ScrCom0002GetFavoriteResponse['list'] => {
+      if (bookmarkList) {
+        if (isExistent) {
+          return bookmarkList.list.filter((val) => val.screenName !== id);
+        } else {
+          return bookmarkList.list.concat({ screenName: id, link: path });
+        }
+      } else {
+        return [{ screenName: id, link: path }];
+      }
+    };
+
+    setBookmarkList({ list: newArray() });
+  };
+
+  // router
+  const navigate = useNavigate();
 
   const handleMenuItemClick = (href: string) => {
     navigate(href);
   };
 
-  const menuItems: menuItemModel[] = menuDef.map((item) => {
-    // お気に入りのリンクを更新
-    if (item.title === 'お気に入り' && bookmarkList) {
-      item.children = bookmarkList.list.map((obj) => obj.screenName);
-      // お気に入り登録済み画面の場合はアイコンを☆→★に変更
-      item.icon = isBookmarked ? <StarIcon /> : <StarBorderIcon />;
-    }
-
-    const routes = item.children.map((id) => getRoute(id));
-    return {
-      title: item.title,
-      icon: item.icon,
-      routes: routes,
-    };
-  });
+  if (!menuItems) return null;
   if (open)
     return (
       <>
         {menuItems.map((item, index: number) => (
-          <StyledAccordion disableGutters defaultExpanded={open} key={index}>
+          <StyledAccordion
+            disableGutters
+            defaultExpanded={true}
+            key={index}
+            expanded={isOpenAccordion(index)}
+            onChange={handleChange(`panel${index}`)}
+          >
             <StyledAccordionSummary expandIcon={<StyledExpandMoreIcon />}>
               {index === 0 || index === 1 || index === 4 ? (
                 <StyledIcon>{item.icon}</StyledIcon>
@@ -285,19 +347,48 @@ const TreeView = (props: TreeViewProps) => {
                 <StyledIcon sx={{ width: 13 }}>{item.icon}</StyledIcon>
               )}
               <AccordionSubTitle>{item.title}</AccordionSubTitle>
-              {index === 0 && (
-                <StyledIconButton onClick={handleAddIconClick}>
-                  <AddCircleOutlineIcon />
-                  追加
-                </StyledIconButton>
-              )}
+              {index === 0 &&
+                // 登録時
+                (isRegister ? (
+                  <StyledIconButton onClick={handleRegister}>
+                    <AddCircleOutlineIcon />
+                    完了
+                  </StyledIconButton>
+                ) : (
+                  <StyledIconButton onClick={handleClickAdd}>
+                    <AddCircleOutlineIcon />
+                    追加
+                  </StyledIconButton>
+                ))}
             </StyledAccordionSummary>
             <StyledAccordionDetails>
               {item.routes.map((route, index: number) => (
                 <AccordionContentText
                   key={index}
-                  onClick={() => handleMenuItemClick(route.path)}
+                  onClick={() => {
+                    handleMenuItemClick(route.path ?? '');
+                  }}
                 >
+                  {isRegister &&
+                    (bookmarkList?.list.findIndex(
+                      (screen) => screen.screenName === route.id
+                    ) !== -1 ? (
+                      <StarIconButton
+                        onClick={(e) =>
+                          handleClickFavorite(e, route.id, route.path ?? '-')
+                        }
+                      >
+                        <StarIcon />
+                      </StarIconButton>
+                    ) : (
+                      <StarIconButton
+                        onClick={(e) =>
+                          handleClickFavorite(e, route.id, route.path ?? '-')
+                        }
+                      >
+                        <StarBorderIcon />
+                      </StarIconButton>
+                    ))}
                   {route.name}
                 </AccordionContentText>
               ))}
