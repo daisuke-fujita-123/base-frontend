@@ -2,7 +2,6 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 
 import ScrMem0003BranchNumberTab from 'pages/mem/tabs/ScrMem0003BranchNumberTab';
-import ScrMem0003ChangeHistoryTab from 'pages/mem/tabs/ScrMem0003ChangeHistoryTab';
 
 import { TabDef, Tabs } from 'layouts/Tabs';
 
@@ -21,9 +20,9 @@ const ScrMem0003Page = () => {
     { title: '契約情報', hash: '#contract' },
     { title: '拠点情報', hash: '#base' },
     { title: '取引履歴', hash: '#deal-history' },
+    { title: '変更履歴', hash: '#change-hisotry' },
     */
     { title: '拠点枝番紐付け', hash: '#branch-number' },
-    { title: '変更履歴', hash: '#change-hisotry' },
   ];
 
   return (
@@ -35,9 +34,11 @@ const ScrMem0003Page = () => {
       <ScrMem0003ContractTab />
       <ScrMem0003BaseTab />
       <ScrMem0003DealHistoryTab />
+      <ScrMem0003ChangeHistoryTab />
       */}
       <ScrMem0003BranchNumberTab />
-      <ScrMem0003ChangeHistoryTab />
+      {/* TODO 複数Tabを配置しないとエラーとなるため、同じTab定義を重複して配置 */}
+      <ScrMem0003BranchNumberTab />
     </Tabs>
   );
 };

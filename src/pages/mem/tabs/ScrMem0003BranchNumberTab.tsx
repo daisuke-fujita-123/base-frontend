@@ -180,15 +180,6 @@ const branchNumberColumns: GridColDef[] = [
     editable: false,
     filterable: false,
   },
-  {
-    field: 'logisticsBaseRepresentativeContractId',
-    headerName: '物流拠点代表契約ID',
-    size: 'ss',
-    cellType: 'default',
-    hideable: false,
-    hide: true,
-    disableColumnMenu: true,
-  },
 ];
 /** 枝番設定一覧 カラムグルーピング定義 */
 const branchNumberColumnGrouping: GridColumnGroupingModel = [
@@ -212,9 +203,7 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
   registrationChangeList: [],
   changeExpectDate: '',
 };
-/**
- * 法人基本情報取得APIリクエストから法人基本情報データモデルへの変換
- */
+/** 法人基本情報取得APIリクエストから法人基本情報データモデルへの変換処理 */
 const convertToBranchNumberInfoModel = (
   response: ScrMem0003GetBranchNumberInfoResponse
 ): BranchNumberInfoModel => {
@@ -241,9 +230,7 @@ const convertToBranchNumberInfoModel = (
   };
 };
 
-/**
- * 変更した項目から登録・変更内容データへの変換
- */
+/** 変更した項目から登録・変更内容データへの変換処理 */
 const convertToChangedSections = (
   bf: BranchNumbersRowModel[],
   af: BranchNumbersRowModel[]
@@ -300,6 +287,7 @@ const convertToChangedSections = (
   ];
 };
 
+/** SCR-MEM-0003：法人情報詳細 拠点枝番紐付けタブ */
 const ScrMem0003BranchNumberTab = () => {
   // router
   const { corporationId } = useParams();
@@ -369,7 +357,9 @@ const ScrMem0003BranchNumberTab = () => {
 
       // 物流拠点別枝番設定
       // 列定義を設定
+      // ページ再読み込み時に配列要素重複エラーが発生するため、最初に動的生成する要素を削除する
       branchNumberColumns.splice(2);
+      branchNumberColumnGrouping[0].children.splice(0);
       for (let i = 0; i < branchNumberInfo.contracts.length; i++) {
         const tmpGridColDef: GridColDef = {
           field: 'branchNumber' + i.toString(),
@@ -385,6 +375,7 @@ const ScrMem0003BranchNumberTab = () => {
             CDE_COM_0025_LEAVING,
         };
         branchNumberColumns.push(tmpGridColDef);
+        // カラムグルーピングの子要素を削除
         branchNumberColumnGrouping[0].children.push({
           field: 'branchNumber' + i.toString(),
         });
@@ -398,10 +389,6 @@ const ScrMem0003BranchNumberTab = () => {
           branchNumberInfo.logisticsBases[i].logisticsBaseId;
         tmp['logisticsBaseName'] =
           branchNumberInfo.logisticsBases[i].logisticsBaseName;
-        tmp['logisticsBaseRepresentativeContractId'] =
-          branchNumberInfo.logisticsBases[
-            i
-          ].logisticsBaseRepresentativeContractId;
 
         for (let j = 0; j < branchNumberInfo.contracts.length; j++) {
           const val = branchNumberInfo.branchNumbers.filter(
