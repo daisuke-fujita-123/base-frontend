@@ -200,11 +200,11 @@ export interface DataGridProps extends DataGridProProps {
   /**
    * height
    */
-  height?: number;
+  height?: string | number;
   /**
    * width
    */
-  width?: number;
+  width?: string | number;
   /**
    * refs
    */
