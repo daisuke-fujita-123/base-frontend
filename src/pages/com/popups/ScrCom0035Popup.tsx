@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FormProvider } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 // Controls
 import { FileSelect } from 'controls/FileSelect';
 import { Select, SelectValue } from 'controls/Select';
+import { CancelButton, ConfirmButton } from 'controls/Button';
 // Layouts
+import { Box } from 'layouts/Box';
 import { Popup } from 'layouts/Popup';
-import { PopSection } from 'layouts/Section';
 import { Stack } from 'layouts/Stack';
+import { StackSection } from 'layouts/StackSection';
 // Hooks
 import { useForm } from 'hooks/useForm';
-// import { useNavigate } from 'hooks/useForm';
+import { useNavigate } from 'hooks/useNavigate';
+// Utils
+import yup from 'utils/yup';
 // Pages
 import { ScrCom0034PageParamModel } from 'pages/com/ScrCom0034Page';
 
@@ -34,23 +36,12 @@ interface ScrCom0035PopupFormModel {
   importFile: File;
 }
 
-// yupローカライズ
-yup.addMethod(yup.ArraySchema, 'required', function () {
-  return this.test('選択項目', '必須で選択してください。', function (value) {
-    if (value === null) {
-      return false;
-    }
-    const values: string[] = Object.values(value);
-    return values.length > 0;
-  });
-});
-
 /**
  * CSV読込（ポップアップ）検査スキーマ
  */
 const ScrCom0035PopupValidationSchama = yup.object().shape({
-  allRegistrationId: yup.string().required(),
-  importFile: yup.string().required(),
+  allRegistrationId: yup.string().label('取込対象選択').required(),
+  importFile: yup.string().label('ファイルパス').required(),
 });
 
 /**
@@ -110,8 +101,6 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
     if (errCount > 0) {
       return;
     }
-    // ポップアップ非表示
-    setIsOpen(false);
     // ページ遷移：一括登録確認画面
     const form: ScrCom0035PopupFormModel = getValues();
     const scrCom0034PageParams: ScrCom0034PageParamModel = {
@@ -119,41 +108,43 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
       tabId: popupParams.tabId,
       ...form,
     };
-    navigate('/com/all-registration', { state: { scrCom0034PageParams } });
+    navigate('/com/all-registration', false, {
+      state: { scrCom0034PageParams },
+    });
   };
-
-  // ポップアップボタン定義
-  const popupButtons = [
-    { name: 'キャンセル', onClick: handleCancel },
-    { name: '確定', onClick: handleConfirm },
-  ];
 
   return (
     <>
-      <Popup open={isOpen} buttons={popupButtons}>
-        <PopSection name='CSV読込'>
-          <FormProvider {...methods}>
-            <Stack>
-              {/* FIXME:エラーがファイルパス（ラベル）にかぶる */}
-              <Select
-                label='取込対象選択'
-                name='allRegistrationId'
-                labelPosition='above'
-                selectValues={importTargets}
-                minWidth={350}
-                multiple={false}
-                required={true}
-              />
-              {/* FIXME:ファイル自体のエラーが表示・正常時の更新がされない。 */}
-              <FileSelect
-                label='ファイルパス'
-                name='importFile'
-                setValue={setValue}
-                size='l'
-              />
-            </Stack>
-          </FormProvider>
-        </PopSection>
+      <Popup open={isOpen}>
+        <Popup main>
+          <StackSection titles={[{ name: 'CSV読込' }]}>
+            <Box>
+              <FormProvider {...methods}>
+                <Stack>
+                  <Select
+                    label='取込対象選択'
+                    name='allRegistrationId'
+                    labelPosition='above'
+                    selectValues={importTargets}
+                    minWidth={350}
+                    multiple={false}
+                    required={true}
+                  />
+                  <FileSelect
+                    label='ファイルパス'
+                    name='importFile'
+                    labelPosition='above'
+                    size='l'
+                  />
+                </Stack>
+              </FormProvider>
+            </Box>
+          </StackSection>
+        </Popup>
+        <Popup bottom>
+          <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
+          <ConfirmButton onClick={handleConfirm}>確定</ConfirmButton>
+        </Popup>
       </Popup>
     </>
   );

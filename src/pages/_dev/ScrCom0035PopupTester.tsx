@@ -95,12 +95,12 @@ const ScrCom0035PopupTester = () => {
           <h1>SCR-COM-0035 CSV読込ポップアップ動確用クッションページ</h1>
           <Typography>画面ID：{screanId}</Typography>
           <Typography>タブID：{tabId}</Typography>
-          <Typography>
-            <div style={{ whiteSpace: 'break-spaces' }}>
+          <div style={{ whiteSpace: 'break-spaces' }}>
+            <Typography>
               取込対象選択：
               {JSON.stringify(allRegistrationDefinitions, null, '\t')}
-            </div>
-          </Typography>
+            </Typography>
+          </div>
         </MainLayout>
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
