@@ -125,7 +125,7 @@ interface BranchNumbersRowModel {
 const selectValuesInitialValues: SelectValuesModel = {
   /** 枝番選択肢(空文字、00～99までの選択肢) */
   branchNumberSelectValues: [{ value: '', displayValue: '' }].concat(
-    [...Array(100)].map<SelectValue>((o, i) => {
+    [...Array(100)].map<{ value: string; displayValue: string }>((o, i) => {
       const val = i.toString().padStart(2, '0');
       return { value: val, displayValue: val };
     })
@@ -368,7 +368,12 @@ const ScrMem0003BranchNumberTab = () => {
           sortable: false,
           filterable: false,
           disableColumnMenu: true,
-          cellType: isReadOnly ? 'default' : 'select', // TODO 表上入力オブジェクトの入力不可に対応できていないので、暫定対処
+          cellType:
+            isReadOnly ||
+            branchNumberInfo.contracts[i].courseEntryKind ===
+              CDE_COM_0025_LEAVING
+              ? 'default'
+              : 'select', // TODO 表上入力オブジェクトの入力不可に対応できていないので、暫定対処
           selectValues: selectValuesInitialValues.branchNumberSelectValues,
           editable:
             branchNumberInfo.contracts[i].courseEntryKind !==
@@ -525,16 +530,14 @@ const ScrMem0003BranchNumberTab = () => {
             </Section>
             <Section name='契約ID別枝番設定状況'>
               <DataGrid
-                pageSize={100}
+                pagination={true}
                 columns={contractBranchNumberSummariesColumns}
                 rows={contractBranchNumberSummaries}
               />
             </Section>
             <Section name='物流拠点別枝番設定'>
-              {/* TODO getCellClassNameを利用するかどうかはアーキ確認中 */}
               <DataGrid
                 disableColumnFilter
-                sx={dataGridStyle.grid}
                 columns={branchNumberColumns}
                 rows={branchNumbers}
                 columnGroupingModel={branchNumberColumnGrouping}
@@ -550,7 +553,7 @@ const ScrMem0003BranchNumberTab = () => {
                         o.courseEntryKind === CDE_COM_0025_LEAVING
                     ).length > 0
                   ) {
-                    return 'leaving';
+                    return 'cold';
                   }
                   // 物流拠点代表契約判定
                   if (
@@ -558,7 +561,7 @@ const ScrMem0003BranchNumberTab = () => {
                     initValues.logisticsBases[params.row['id']]
                       .logisticsBaseRepresentativeContractId
                   ) {
-                    return 'representativeContract';
+                    return 'hot';
                   }
                   return '';
                 }}
