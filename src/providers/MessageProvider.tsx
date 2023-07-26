@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode } from 'react';
 
-import { messages } from 'providers/Message';
+import { MESSAGES } from 'definitions/messages';
 
 /**
  * MessageContextType
@@ -30,7 +30,7 @@ const MessageProvider = (props: MessageProviderProps) => {
   const { children } = props;
 
   const getMessage = (messageId: string): string => {
-    const message = messages.find((x) => x.id === messageId);
+    const message = MESSAGES.find((x) => x.id === messageId);
     return message !== undefined ? message.message : 'undefined';
   };
 

@@ -12,21 +12,20 @@ export default {
   component: Checkbox,
   parameters: { controls: { expanded: true } },
   argTypes: {
-    label: {
-      description: 'ラベルの表示名。ラベルが不要な場合は空文字。',
-    },
-    required: {
-      description: '必須かどうか',
-      defaultValue: { summary: 'true' },
-    },
     name: {
       description: 'reacthookformで管理する名前',
     },
-    blank: {
-      description: 'コンポーネント上部にラベル分のブランクを追加したい場合。',
+    label: {
+      description: 'ラベルの表示名。ラベルが不要な場合は空文字。',
+    },
+    helperText: {
+      description: 'チェックボックスの下部に表示するテキスト。',
+    },
+    required: {
+      description: '必須かどうか',
       defaultValue: { summary: 'false' },
     },
-    disable: {
+    disabled: {
       description: 'チェックボックスの使用可否',
       defaultValue: { summary: 'false' },
     },
@@ -58,9 +57,12 @@ export const Example = () => {
   return (
     <ThemeProvider theme={theme}>
       <FormProvider {...methods}>
-        <Checkbox disable name='cancelFlag1' label='キャンセルフラグ1'>
-          キャンセル日:YYYY/MM/DD
-        </Checkbox>
+        <Checkbox
+          name='cancelFlag1'
+          label='キャンセルフラグ1'
+          helperText='キャンセル日:YYYY/MM/DD'
+          disabled
+        />
         <Checkbox name='cancelFlag2' label='キャンセルフラグ2' />
         <Button onClick={handleClick}>click</Button>
       </FormProvider>

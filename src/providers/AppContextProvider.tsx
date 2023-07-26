@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { NavigateOptions, useLocation, useNavigate } from 'react-router-dom';
 
 import { Dialog } from 'controls/Dialog';
 
@@ -19,20 +19,20 @@ const dialogInfos = [
     buttons: ['閉じる'],
   },
   {
-    id: 'TRANSITION_CONFIRM',
+    id: 'NAVIGATE_CONFIRM',
     messageId: 'MSG-0003',
     buttons: ['キャンセル', 'OK'],
   },
 ];
+
 /**
  * AppType
  */
 type AppType = {
   user: any;
-  transitionDestination: string | number;
-  needsConfitmTransition: boolean;
-  // isLoading: boolean;
-  // isError: boolean;
+  navigateTo: string | number;
+  navigateOptions?: NavigateOptions;
+  needsConfirmNavigate: boolean;
 };
 
 /**
@@ -40,12 +40,14 @@ type AppType = {
  */
 type AppContextType = {
   appContext: AppType;
-  navigate: (to: string | number) => void;
-  setNeedsConfitmTransition: (value: boolean) => void;
+  navigate: (to: string | number, options?: NavigateOptions) => void;
+  setNeedsConfirmNavigate: (value: boolean) => void;
   showDialog: (
     messageId: string,
     onClick: (buttonName: string) => void
   ) => void;
+  saveState: (state: object) => void;
+  loadState: () => object;
 };
 
 /**
@@ -58,8 +60,9 @@ export const AppContext = createContext<AppContextType>({} as AppContextType);
  */
 const initialValues: AppType = {
   user: undefined,
-  transitionDestination: '',
-  needsConfitmTransition: false,
+  navigateTo: '',
+  navigateOptions: undefined,
+  needsConfirmNavigate: false,
 };
 
 /**
@@ -68,6 +71,8 @@ const initialValues: AppType = {
 interface AppContextProvicerProps {
   children: ReactNode;
 }
+
+const globalState: { [key: string]: any } = {};
 
 /**
  * AppContextProvider
@@ -78,54 +83,58 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
   // context
   const { getMessage } = useContext(MessageContext);
 
-  // state
-  const [appContext, setAppContext] = useState<AppType>(initialValues);
-  const [isOpenDialog, setIsOpenDialog] = useState(false);
-  const [dialogInfo, setDialogInfo] = useState<any>({});
-
   // router
   const navigateReact = useNavigate();
+  const location = useLocation();
+
+  // state
+  const [appContext, setAppContext] = useState<AppType>({
+    ...initialValues,
+    navigateTo: location.pathname,
+  });
+  const [isOpenDialog, setIsOpenDialog] = useState(false);
+  const [dialogInfo, setDialogInfo] = useState<any>({});
 
   useEffect(() => {
     initialize();
   }, []);
+
+  useEffect(() => {
+    if (appContext.needsConfirmNavigate) {
+      showDialog('NAVIGATE_CONFIRM', (buttonName: string) => {
+        if (buttonName === 'OK') {
+          setAppContext((prev) => ({
+            ...prev,
+            needsConfirmNavigate: false,
+          }));
+        }
+      });
+    } else {
+      if (typeof appContext.navigateTo === 'string') {
+        navigateReact(appContext.navigateTo, appContext.navigateOptions);
+      }
+      if (typeof appContext.navigateTo === 'number') {
+        navigateReact(appContext.navigateTo);
+      }
+    }
+  }, [appContext]);
 
   const initialize = async () => {
     const response = await _expApiClient.get('/_exp/user');
     setAppContext((prev) => ({ ...prev, user: response.data }));
   };
 
-  const navigate = (to: string | number) => {
-    if (appContext.needsConfitmTransition) {
-      setAppContext((prev) => ({ ...prev, transitionDestination: to }));
-      showDialog('TRANSITION_CONFIRM', (buttonName: string) => {
-        if (buttonName === 'OK') {
-          setAppContext((prev) => ({
-            ...prev,
-            needsConfitmTransition: false,
-            transitionDestination: '',
-          }));
-          if (typeof appContext.transitionDestination === 'string') {
-            navigateReact(appContext.transitionDestination);
-          }
-          if (typeof appContext.transitionDestination === 'number') {
-            navigateReact(appContext.transitionDestination);
-          }
-        }
-      });
-      return;
-    }
-    if (typeof to === 'string') {
-      navigateReact(to);
-    }
-    if (typeof to === 'number') {
-      navigateReact(to);
-    }
+  const navigate = (to: string | number, options?: NavigateOptions) => {
+    setAppContext((prev) => ({
+      ...prev,
+      navigateTo: to,
+      navigateOptions: options,
+    }));
   };
 
-  const setNeedsConfitmTransition = (value: boolean) => {
+  const setNeedsConfirmNavigate = (value: boolean) => {
     // レンダリングが無限ループするので、setAppContextしないで直接更新する
-    appContext.needsConfitmTransition = value;
+    appContext.needsConfirmNavigate = value;
   };
 
   const showDialog = (
@@ -153,14 +162,26 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
     return <></>;
   }
 
+  const saveState = (state: object) => {
+    globalState[location.pathname] = state;
+  };
+
+  const loadState = (): object => {
+    const state = globalState[location.pathname];
+    // delete globalState[location.pathname];
+    return state;
+  };
+
   return (
     <>
       <AppContext.Provider
         value={{
           appContext,
           navigate,
-          setNeedsConfitmTransition,
+          setNeedsConfirmNavigate: setNeedsConfirmNavigate,
           showDialog,
+          saveState,
+          loadState,
         }}
       >
         {children}

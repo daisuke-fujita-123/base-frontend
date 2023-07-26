@@ -1,7 +1,14 @@
 import { ComponentMeta, Story } from '@storybook/react';
-import { FileSelect, FileSelectProps } from './FileSelect';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
+
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
+import { Button } from 'controls/Button';
+
+import { FileSelect, FileSelectProps } from './FileSelect';
+
 export default {
   component: FileSelect,
   title: 'Controls/FileSelect',
@@ -11,20 +18,22 @@ export default {
       description: 'ラベルの表示名。ラベルが不要な場合は空文字。',
     },
     setValue: {
-      description: 'テキストフィールドから見て左横にラベルを表示したい場合はrow、上にラベルを表示したい場合はcolumn。',
+      description:
+        'テキストフィールドから見て左横にラベルを表示したい場合はrow、上にラベルを表示したい場合はcolumn。',
       defaultValue: { summary: 'side' },
     },
     label: {
       description: 'ラベルの表示名。ラベルが不要な場合は空文字。',
     },
     labelPosition: {
-      description: 'テキストフィールドから見て左横にラベルを表示したい場合はrow、上にラベルを表示したい場合はcolumn。',
+      description:
+        'テキストフィールドから見て左横にラベルを表示したい場合はrow、上にラベルを表示したい場合はcolumn。',
       defaultValue: { summary: 'side' },
     },
   },
 } as ComponentMeta<typeof FileSelect>;
 interface SampleInput {
-  sampleFileSelect:File
+  sampleFileSelect: File;
 }
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 const Template: Story<FileSelectProps<SampleInput>> = (args) => {
@@ -35,20 +44,37 @@ const Template: Story<FileSelectProps<SampleInput>> = (args) => {
       sampleFileSelect: undefined,
     },
   });
-  return <FileSelect {...args} setValue={setValue} />;
+  return <FileSelect {...args} />;
 };
 export const index = Template.bind({});
 index.args = {
   name: 'sampleFileSelect',
 };
+const schema = yup.object({
+  sampleFileSelect: yup.mixed().required('選択してください'),
+});
 
 export const Example = () => {
-  const { setValue } = useForm<{ sampleFileSelect: File }>({
-    mode: 'onBlur',
-    reValidateMode: 'onBlur',
+  const methods = useForm<{ sampleFileSelect: File | null }>({
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
-      sampleFileSelect: undefined,
+      sampleFileSelect: null,
     },
+    resolver: yupResolver(schema),
   });
-  return <FileSelect name='sampleFileSelect' setValue={setValue} />;
+  const onSubmit = (data: { sampleFileSelect: File | null }) => {
+    console.log(data);
+  };
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <FileSelect name='sampleFileSelect' />
+        <Button type='submit' variant='outlined'>
+          submit
+        </Button>
+      </form>
+    </FormProvider>
+  );
 };
+

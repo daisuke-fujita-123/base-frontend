@@ -5,6 +5,7 @@ import { theme } from 'controls/theme';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
@@ -251,7 +252,7 @@ export const AccordionButton = (props: AccordionButtonProps) => {
   );
 };
 
-const StyledInfoButton = styled(IconButton)({
+const StyledIconButton = styled(IconButton)({
   color: '#0075ff',
   width: theme.spacing(6),
   height: theme.spacing(6),
@@ -264,9 +265,18 @@ const StyledInfoButton = styled(IconButton)({
 export const InfoButton = (props: ButtonProps) => {
   const { children, onClick, onBlur } = props;
   return (
-    <StyledInfoButton onClick={onClick} onBlur={onBlur}>
+    <StyledIconButton onClick={onClick} onBlur={onBlur}>
       <InfoOutlinedIcon>{children}</InfoOutlinedIcon>
-    </StyledInfoButton>
+    </StyledIconButton>
+  );
+};
+
+export const ClearButton = (props: ButtonProps) => {
+  const { children, onClick } = props;
+  return (
+    <StyledAddIconButton onClick={onClick}>
+      <ClearIcon>{children}</ClearIcon>
+    </StyledAddIconButton>
   );
 };
 

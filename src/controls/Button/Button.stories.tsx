@@ -10,6 +10,7 @@ import {
   AddIconButton,
   Button,
   CancelButton,
+  ConfirmButton,
   DeleteButton,
   InfoButton,
   LogoutButton,
@@ -77,6 +78,7 @@ export const Example = () => {
       <CancelButton disable={false} onClick={onClickFunction}>
         キャンセル
       </CancelButton>
+      <ConfirmButton onClick={onClickFunction}>確定</ConfirmButton>
       <LogoutButton disable={false} onClick={onClickFunction}>
         ログアウト
       </LogoutButton>
