@@ -368,6 +368,7 @@ const ScrMem0003BranchNumberTab = () => {
           sortable: false,
           filterable: false,
           disableColumnMenu: true,
+<<<<<<< HEAD
           cellType:
             isReadOnly ||
             branchNumberInfo.contracts[i].courseEntryKind ===
@@ -562,6 +563,199 @@ const ScrMem0003BranchNumberTab = () => {
                       .logisticsBaseRepresentativeContractId
                   ) {
                     return 'hot';
+=======
+          cellType: isReadOnly ? 'default' : 'select', // TODO 表上入力オブジェクトの入力不可に対応できていないので、暫定対処
+          selectValues: selectValuesInitialValues.branchNumberSelectValues,
+          editable:
+            branchNumberInfo.contracts[i].courseEntryKind !==
+            CDE_COM_0025_LEAVING,
+        };
+        branchNumberColumns.push(tmpGridColDef);
+        // カラムグルーピングの子要素を削除
+        branchNumberColumnGrouping[0].children.push({
+          field: 'branchNumber' + i.toString(),
+        });
+      }
+      // セル内データを設定
+      const branchNumbersData = [];
+      for (let i = 0; i < branchNumberInfo.logisticsBases.length; i++) {
+        const tmp: { [key: string]: string } = {};
+        tmp['id'] = i.toString();
+        tmp['logisticsBaseId'] =
+          branchNumberInfo.logisticsBases[i].logisticsBaseId;
+        tmp['logisticsBaseName'] =
+          branchNumberInfo.logisticsBases[i].logisticsBaseName;
+
+        for (let j = 0; j < branchNumberInfo.contracts.length; j++) {
+          const val = branchNumberInfo.branchNumbers.filter(
+            (o: { logisticsBaseId: string; contractId: string }) =>
+              o.logisticsBaseId ===
+                branchNumberInfo.logisticsBases[i].logisticsBaseId &&
+              o.contractId === branchNumberInfo.contracts[j].contractId
+          );
+          if (val.length > 0) {
+            tmp['branchNumber' + j.toString()] = val[0].branchNumber;
+          } else {
+            tmp['branchNumber' + j.toString()] = '';
+          }
+        }
+        branchNumbersData.push(tmp);
+      }
+      setBranchNumbers(branchNumbersData);
+    };
+
+    if (corporationId === undefined || corporationId === 'new') {
+      return;
+    }
+
+    initialize(corporationId);
+  }, [corporationId, reset, isReadOnly, location]);
+
+  /**
+   * 物流拠点別枝番設定一覧の値取得
+   */
+  const getBranchNumberValues = () => {
+    const branchNumberValues: BranchNumbersRowModel[] = [];
+    for (let i = 0; i < initValues.logisticsBases.length; i++) {
+      for (let j = 0; j < initValues.contracts.length; j++) {
+        const val = branchNumbers[i]['branchNumber' + j.toString()];
+        if (val !== '') {
+          branchNumberValues.push({
+            logisticsBaseId: initValues.logisticsBases[i].logisticsBaseId,
+            contractId: initValues.contracts[j].contractId,
+            branchNumber: val,
+          });
+        }
+      }
+    }
+    return branchNumberValues;
+  };
+
+  /**
+   * 確定ボタンクリック時のイベントハンドラ
+   */
+  const handleConfirm = async () => {
+    const branchNumbersReqData: BranchNumbersRowModel[] =
+      getBranchNumberValues();
+    const registrationChangeList: registrationChangeList[] =
+      convertToChangedSections(initValues.branchNumbers, branchNumbersReqData);
+
+    // 変更箇所なしの場合、エラー
+    if (registrationChangeList.length === 0) {
+      // TODO エラーメッセージを表示する MSG-FR-ERR-00053:画面入力内容が編集されていません
+    }
+
+    // 拠点枝番紐付け情報入力チェックAPI
+    const request: ScrMem0003InputCheckBranchNumberInfoRequest = {
+      corporationId: initValues.corporationId,
+      branchNumbers: branchNumbersReqData,
+    };
+    const response = await ScrMem0003InputCheckBranchNumberInfo(request);
+
+    setIsOpenPopup(true);
+    setScrCom0032PopupData({
+      errorList: response.errorList.map((o) => {
+        return {
+          errorCode: o.errorCode,
+          errorMessages: [o.errorMessage],
+        };
+      }),
+      warningList: [],
+      registrationChangeList: convertToChangedSections(
+        initValues.branchNumbers,
+        branchNumbersReqData
+      ),
+      changeExpectDate: '',
+    });
+  };
+
+  /**
+   * キャンセルボタンクリック時のイベントハンドラ
+   */
+  const handleCancel = () => {
+    navigate('/mem/corporations');
+  };
+
+  /**
+   * ポップアップの確定ボタンクリック時のイベントハンドラ
+   */
+  const handlePopupConfirm = async () => {
+    setIsOpenPopup(false);
+
+    // 拠点枝番紐付け情報登録API
+    const request: ScrMem0003RegistrationBranchNumberInfoRequest = {
+      corporationId: initValues.corporationId,
+      branchNumbers: getBranchNumberValues(),
+      changeTimestamp: initValues.changeTimestamp,
+    };
+    const response = await ScrMem0003RegistrationBranchNumberInfo(request);
+    console.log(response);
+  };
+
+  /**
+   * ポップアップのキャンセルボタンクリック時のイベントハンドラ
+   */
+  const handlePopupCancel = () => {
+    setIsOpenPopup(false);
+  };
+
+  return (
+    <>
+      <MainLayout>
+        <MainLayout main>
+          <FormProvider {...methods}>
+            <Section name='法人情報'>
+              <RowStack>
+                <ColStack>
+                  <TextField label='法人ID' name='corporationId' readonly />
+                </ColStack>
+                <ColStack>
+                  <TextField
+                    label='法人名'
+                    name='corporationName'
+                    size='m'
+                    readonly
+                  />
+                </ColStack>
+              </RowStack>
+            </Section>
+            <Section name='契約ID別枝番設定状況'>
+              <DataGrid
+                pagination={true}
+                columns={contractBranchNumberSummariesColumns}
+                rows={contractBranchNumberSummaries}
+              />
+            </Section>
+            <Section name='物流拠点別枝番設定'>
+              {/* TODO getCellClassNameを利用するかどうかはアーキ確認中 */}
+              <DataGrid
+                disableColumnFilter
+                sx={dataGridStyle.grid}
+                columns={branchNumberColumns}
+                rows={branchNumbers}
+                columnGroupingModel={branchNumberColumnGrouping}
+                initialState={branchNumberInitialState}
+                getCellClassName={(
+                  params: GridCellParams<any, any, number>
+                ) => {
+                  // 脱会している契約判定
+                  if (
+                    initValues.contracts.filter(
+                      (o: { contractId: string; courseEntryKind: string }) =>
+                        o.contractId === params.colDef.headerName &&
+                        o.courseEntryKind === CDE_COM_0025_LEAVING
+                    ).length > 0
+                  ) {
+                    return 'leaving';
+                  }
+                  // 物流拠点代表契約判定
+                  if (
+                    params.colDef.headerName ===
+                    initValues.logisticsBases[params.row['id']]
+                      .logisticsBaseRepresentativeContractId
+                  ) {
+                    return 'representativeContract';
+>>>>>>> branch 'feature/SCR-MEM-0003-BRANCH-NUMBER' of git@github.com:aucnet-dev/base-frontend.git
                   }
                   return '';
                 }}
