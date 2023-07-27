@@ -328,7 +328,6 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
                   <br />
                   <PopSection> </PopSection>
                   <ControlsStackItem size='m'>
-                    {/* TODO:縦スクロールバー未設定_アーキチームに確認中 */}
                     <DataGrid
                       columns={columns}
                       rows={serviceResult}
@@ -338,6 +337,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
                       }}
                       rowSelectionModel={rowSelectionModel}
                       width={552}
+                      height={120}
                     />
                   </ControlsStackItem>
                 </PopSection>
