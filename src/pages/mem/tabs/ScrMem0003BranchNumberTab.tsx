@@ -37,18 +37,6 @@ import { useNavigate } from 'hooks/useNavigate';
 import { GridCellParams, GridColumnGroupingModel } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
 
-/** CSS定義 (TODO アーキにてDataGridの背景色の設定方法検討中、検討結果が出てから修正予定) */
-const dataGridStyle = {
-  grid: {
-    '.representativeContract': {
-      background: 'yellow',
-    },
-    '.leaving': {
-      background: 'darkgray',
-    },
-  },
-};
-
 /** 定数定義 */
 const CDE_COM_0025_LEAVING = '4';
 const SCREEN_ID_SCR_MEM_0003 = 'SCR-MEM-0003';
@@ -530,6 +518,7 @@ const ScrMem0003BranchNumberTab = () => {
             </Section>
             <Section name='契約ID別枝番設定状況'>
               <DataGrid
+                height={200}
                 pagination={true}
                 columns={contractBranchNumberSummariesColumns}
                 rows={contractBranchNumberSummaries}
@@ -537,6 +526,7 @@ const ScrMem0003BranchNumberTab = () => {
             </Section>
             <Section name='物流拠点別枝番設定'>
               <DataGrid
+                width='100%'
                 disableColumnFilter
                 columns={branchNumberColumns}
                 rows={branchNumbers}
