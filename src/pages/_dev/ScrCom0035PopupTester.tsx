@@ -4,10 +4,8 @@ import React, { useState } from 'react';
 import { PrimaryButton } from 'controls/Button';
 import { Typography } from 'controls/Typography';
 // layouts
-import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout/MainLayout';
-import { Section } from 'layouts/Section';
-import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
+import { Stack } from 'layouts/Stack';
 // pages
 import ScrCom0035Popup from 'pages/com/popups/ScrCom0035Popup';
 
@@ -123,3 +121,4 @@ const ScrCom0035PopupTester = () => {
 };
 
 export default ScrCom0035PopupTester;
+

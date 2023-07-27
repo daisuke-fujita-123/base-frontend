@@ -86,7 +86,7 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
     resolver: yupResolver(ScrCom0035PopupValidationSchama),
     context: isReadOnly,
   });
-  const { getValues, setValue } = methods;
+  const { getValues } = methods;
 
   // イベントハンドル：キャンセル
   const handleCancel = () => {
@@ -151,3 +151,4 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
 };
 
 export default ScrCom0035Popup;
+

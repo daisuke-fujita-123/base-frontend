@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 // controls
 import { Typography } from 'controls/Typography';
 // layouts
 import { MainLayout } from 'layouts/MainLayout/MainLayout';
-import { Stack } from 'layouts/Stack';
 
 /**
  * SCR-COM-0034 一括登録確認画面パラメータモデル
@@ -50,3 +49,4 @@ const ScrCom0034Page = () => {
 };
 
 export default ScrCom0034Page;
+
