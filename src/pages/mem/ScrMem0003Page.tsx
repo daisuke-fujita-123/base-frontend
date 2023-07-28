@@ -6,7 +6,7 @@ import ScrMem0003BranchNumberTab from 'pages/mem/tabs/ScrMem0003BranchNumberTab'
 import { TabDef, Tabs } from 'layouts/Tabs';
 
 /**
- * 法人情報詳細画面
+ * SCR-MEM-0003 法人情報詳細画面
  */
 const ScrMem0003Page = () => {
   // router
