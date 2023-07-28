@@ -25,7 +25,7 @@ export const ScrCom9999GetParentorganizationidListbox = async (
   request: ScrCom9999GetParentorganizationidListboxRequest
 ): Promise<ScrCom9999GetParentorganizationidListboxResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-parentorganizationid',
+    '/api/com/scr-com-9999/get-parentorganizationid',
     request
   );
   return response.data;
@@ -56,7 +56,7 @@ export const ScrCom9999GetOrganizationidListbox = async (
   request: ScrCom9999GetOrganizationidListboxRequest
 ): Promise<ScrCom9999GetOrganizationidListboxResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-organizationid-listbox',
+    '/api/com/scr-com-9999/get-organizationid',
     request
   );
   return response.data;
@@ -81,20 +81,20 @@ export const ScrCom9999GetScreenpermissionidListbox = async (
   request: null
 ): Promise<ScrCom9999GetScreenpermissionidListboxResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-screenpermissionid',
+    '/api/com/scr-com-9999/get-screenpermissionid',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0005: マスタ権限ID情報取得API レスポンス */
-export interface ScrCom9999GetMasterpermissionidListboxResponse {
+export interface ScrCom9999GetMasterpermissionidResponse {
   // リスト
-  searchGetMasterpermissionidListbox: SearchGetMasterpermissionidListbox[];
+  searchGetMasterpermissionidListbox: SearchGetMasterpermissionid[];
 }
 
 /** API-COM-9999-0005: マスタ権限ID情報取得API レスポンス(リスト行) */
-export interface SearchGetMasterpermissionidListbox {
+export interface SearchGetMasterpermissionid {
   // マスタ権限ID
   masterPermissionId: string;
   // マスタ権限名
@@ -102,18 +102,18 @@ export interface SearchGetMasterpermissionidListbox {
 }
 
 /** API-COM-9999-0005: マスタ権限ID情報取得API */
-export const ScrCom9999GetMasterpermissionidListbox = async (
+export const ScrCom9999GetMasterpermissionid = async (
   request: null
-): Promise<ScrCom9999GetMasterpermissionidListboxResponse> => {
+): Promise<ScrCom9999GetMasterpermissionidResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-masterpermissionid-listbox',
+    '/api/com/scr-com-9999/get-masterpermissionid',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0006: 承認権限ID情報取得API レスポンス */
-export interface ScrCom9999GetApprovalPermissionIdListboxResponse {
+export interface ScrCom9999GetApprovalPermissionIdResponse {
   // リスト
   searchGetApprovalPermissionIdListbox: SearchGetApprovalPermissionIdListbox[];
 }
@@ -127,18 +127,18 @@ export interface SearchGetApprovalPermissionIdListbox {
 }
 
 /** API-COM-9999-0006: 承認権限ID情報取得API */
-export const ScrCom9999GetApprovalPermissionIdListbox = async (
+export const ScrCom9999GetApprovalPermissionId = async (
   request: null
-): Promise<ScrCom9999GetApprovalPermissionIdListboxResponse> => {
+): Promise<ScrCom9999GetApprovalPermissionIdResponse> => {
   const response = await comApiClient.post(
-    ' /scr-com-9999/get-approvalpermissionid',
+    '/api/com/scr-com-9999/get-approvalpermissionid',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0007: 所属組織IDリストボックス情報取得API レスポンス */
-export interface ScrCom9999GetBelongOrganizationIdListboxResponse {
+export interface ScrCom9999GetBelongOrganizationIdResponse {
   // リスト
   searchGetBelongOrganizationIdListbox: SearchGetBelongOrganizationIdListbox[];
 }
@@ -152,18 +152,18 @@ export interface SearchGetBelongOrganizationIdListbox {
 }
 
 /** API-COM-9999-0007: 所属組織IDリストボックス情報取得API */
-export const ScrCom9999GetBelongOrganizationIdListbox = async (
+export const ScrCom9999GetBelongOrganizationId = async (
   request: null
-): Promise<ScrCom9999GetBelongOrganizationIdListboxResponse> => {
+): Promise<ScrCom9999GetBelongOrganizationIdResponse> => {
   const response = await comApiClient.post(
-    ' /scr-com-9999/get-organizationid-listbox',
+    '/api/com/scr-com-9999/get-organizationid',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0008: 所属役職IDリストボックス情報取得API レスポンス */
-export interface ScrCom9999GetPostIdListboxResponse {
+export interface ScrCom9999GetPostIdResponse {
   // リスト
   searchGetPostIdListbox: SearchGetPostIdListbox[];
 }
@@ -179,16 +179,16 @@ export interface SearchGetPostIdListbox {
 /** API-COM-9999-0008: 所属役職IDリストボックス情報取得API */
 export const ScrCom9999GetPostIdListbox = async (
   request: null
-): Promise<ScrCom9999GetPostIdListboxResponse> => {
+): Promise<ScrCom9999GetPostIdResponse> => {
   const response = await comApiClient.post(
-    ' /scr-com-9999/get-postid-listbox',
+    '/api/com/scr-com-9999/get-postid',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API リクエスト */
-export interface ScrCom9999GetCodeManagementMasterListboxRequest {
+export interface ScrCom9999GetCodeManagementMasterRequest {
   /** 業務日付 */
   businessDate?: string;
   /** コードID */
@@ -196,7 +196,7 @@ export interface ScrCom9999GetCodeManagementMasterListboxRequest {
 }
 
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API レスポンス */
-export interface ScrCom9999GetCodeManagementMasterListboxResponse {
+export interface ScrCom9999GetCodeManagementMasterResponse {
   // リスト
   searchGetCodeManagementMasterListbox: SearchGetCodeManagementMasterListbox[];
 }
@@ -210,11 +210,11 @@ export interface SearchGetCodeManagementMasterListbox {
 }
 
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API */
-export const ScrCom9999GetCodeManagementMasterListbox = async (
-  request: ScrCom9999GetCodeManagementMasterListboxRequest
-): Promise<ScrCom9999GetCodeManagementMasterListboxResponse> => {
+export const ScrCom9999GetCodeManagementMaster = async (
+  request: ScrCom9999GetCodeManagementMasterRequest
+): Promise<ScrCom9999GetCodeManagementMasterResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-code-management-master-listbox',
+    '/api/com/scr-com-9999/get-code-management-master',
     request
   );
   return response.data;
@@ -247,7 +247,7 @@ export const ScrCom9999GetStatementKind = async (
   request?: ScrCom9999GetStatementKindRequest
 ): Promise<ScrCom9999GetStatementKindResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-statement-kind',
+    '/api/com/scr-com-9999/get-statement-kind',
     request
   );
   return response.data;
@@ -280,20 +280,20 @@ export const ScrCom9999GetCommissionCondition = async (
   request?: ScrCom9999GetCommissionConditionRequest
 ): Promise<ScrCom9999GetCommissionConditionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-commission-condition',
+    '/api/com/scr-com-9999/get-commission-condition',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0016: 会場マスタリストボックス情報取得API リクエスト */
-export interface ScrCom9999GetPlaceMasterListboxRequest {
+export interface ScrCom9999GetPlaceMasterRequest {
   /** 業務日付 */
   businessDate: string;
 }
 
 /** API-COM-9999-0016: 会場マスタリストボックス情報取得API レスポンス */
-export interface ScrCom9999GetPlaceMasterListboxResponse {
+export interface ScrCom9999GetPlaceMasterResponse {
   // リスト
   searchGetPlaceMasterListbox: SearchGetPlaceMasterListbox[];
 }
@@ -307,24 +307,24 @@ export interface SearchGetPlaceMasterListbox {
 }
 
 /** API-COM-9999-0016: 会場マスタリストボックス情報取得API */
-export const ScrCom9999GetPlaceMasterListbox = async (
-  request: ScrCom9999GetPlaceMasterListboxRequest
-): Promise<ScrCom9999GetPlaceMasterListboxResponse> => {
+export const ScrCom9999GetPlaceMaster = async (
+  request: ScrCom9999GetPlaceMasterRequest
+): Promise<ScrCom9999GetPlaceMasterResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-place-master-listbox',
+    '/api/com/scr-com-9999/get-place-master',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0017: 銀行名リストボックス リクエスト */
-export interface ScrCom9999GetBankMasterListboxRequest {
+export interface ScrCom9999GetBankMasterRequest {
   /** 業務日付 */
   businessDate: string;
 }
 
 /** API-COM-9999-0017: 銀行名リストボックス レスポンス */
-export interface ScrCom9999GetBankMasterListboxResponse {
+export interface ScrCom9999GetBankMasterResponse {
   // リスト
   searchGetBankMasterListbox: SearchGetBankMasterListbox[];
 }
@@ -338,11 +338,11 @@ export interface SearchGetBankMasterListbox {
 }
 
 /** API-COM-9999-0017: 銀行名リストボックス情報取得API */
-export const ScrCom9999GetBankMasterListbox = async (
-  request: ScrCom9999GetBankMasterListboxRequest
-): Promise<ScrCom9999GetBankMasterListboxResponse> => {
+export const ScrCom9999GetBankMaster = async (
+  request: ScrCom9999GetBankMasterRequest
+): Promise<ScrCom9999GetBankMasterResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-bank-master-listbox',
+    '/api/com/scr-com-9999/get-bank-master',
     request
   );
   return response.data;
@@ -375,20 +375,20 @@ export const ScrCom9999GetBranchMaster = async (
   request: ScrCom9999GetBranchMasterRequest
 ): Promise<ScrCom9999GetBranchMasterResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-branch-master',
+    '/api/com/scr-com-9999/get-branch-master',
     request
   );
   return response.data;
 };
 
 /** API-COM-9999-0020: 値属性変換API リクエスト */
-export interface ScrCom9999ValueAttributeConversionListRequest {
+export interface ScrCom9999ValueAttributeConversionRequest {
   /** 条件種類コード */
   conditionKindCode: string;
 }
 
 /** API-COM-9999-0020: 値属性変換API レスポンス */
-export interface ScrCom9999ValueAttributeConversionListResponse {
+export interface ScrCom9999ValueAttributeConversionResponse {
   // 型区分
   typeKind: string;
   // リスト
@@ -404,11 +404,11 @@ export interface CommissionDiscountConditionValueList {
 }
 
 /** API-COM-9999-0020: 値属性変換API */
-export const ScrCom9999ValueAttributeConversionListbox = async (
-  request: ScrCom9999ValueAttributeConversionListRequest
-): Promise<ScrCom9999ValueAttributeConversionListResponse> => {
+export const ScrCom9999ValueAttributeConversion = async (
+  request: ScrCom9999ValueAttributeConversionRequest
+): Promise<ScrCom9999ValueAttributeConversionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/value-attribute-conversion',
+    '/api/com/scr-com-9999/value-attribute-conversion',
     request
   );
   return response.data;
@@ -431,7 +431,9 @@ export interface courceList {
 /** API-COM-9999-0021: コース名情報取得API */
 export const ScrCom9999GetCoursename =
   async (): Promise<ScrCom9999GetCoursenameResponse> => {
-    const response = await comApiClient.post('/scr-com-9999/get-coursename');
+    const response = await comApiClient.post(
+      '/api/com/scr-com-9999/get-coursename'
+    );
     return response.data;
   };
 
@@ -452,7 +454,9 @@ export interface serviceList {
 /** API-COM-9999-0022: サービス名情報取得API */
 export const ScrCom9999GetServiceInfo =
   async (): Promise<ScrCom9999GetServiceInfoResponse> => {
-    const response = await comApiClient.post(' /scr-com-9999/get-servicename');
+    const response = await comApiClient.post(
+      '/api/com/scr-com-9999/get-servicename'
+    );
     return response.data;
   };
 
@@ -480,7 +484,10 @@ export interface ScrCom9999GetAddressInfoResponse {
 export const ScrCom9999GetAddressInfo = async (
   request: ScrCom9999GetAddressInfoRequest
 ): Promise<ScrCom9999GetAddressInfoResponse> => {
-  const response = await comApiClient.post('/scr/get-address-info', request);
+  const response = await comApiClient.post(
+    '/api/com/scr-com-9999/get-address-info',
+    request
+  );
   return response.data;
 };
 
@@ -501,7 +508,7 @@ export const ScrCom9999GetHistoryInfo = async (
   request: ScrCom9999GetHistoryInfoRequest
 ): Promise<ScrCom9999GetHistoryInfoResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-change-date',
+    '/api/com/scr-com-9999/get-history-info',
     request
   );
   return response.data;
@@ -538,7 +545,7 @@ export const ScrCom9999GetChangeDatebox = async (
   request: ScrCom9999GetChangeDateRequest
 ): Promise<ScrCom9999GetChangeDateResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-change-date',
+    '/api/com/scr-com-9999/get-change-date',
     request
   );
   return response.data;
@@ -584,7 +591,7 @@ export const ScrCom9999GetCodeValueListbox = async (
   request: ScrCom9999GetCodeValueListRequest
 ): Promise<ScrCom9999GetCodeValueListResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-code-value',
+    '/api/com/scr-com-9999/get-code-value',
     request
   );
   return response.data;
