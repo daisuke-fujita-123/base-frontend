@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,8 +11,11 @@ import { CancelButton, ConfirmButton } from 'controls/Button';
 import { Checkbox } from 'controls/Checkbox';
 
 import { useForm } from 'hooks/useForm';
+import { useNavigate } from 'hooks/useNavigate';
 
 import { generate } from 'utils/BaseYup';
+
+import { SCREEN_ID } from 'definitions/screenId';
 
 /**
  * エラー確認ポップアップ データモデル
@@ -43,23 +46,19 @@ export interface warningList {
 }
 
 /**
-* エラー確認ポップアップ Props
-*/
+ * エラー確認ポップアップ Props
+ */
 interface ScrCom0038PopupProps {
   isOpen: boolean;
   data: ScrCom0038PopupModel;
   // キャンセルボタン押下時に渡すパラメータ
   handleErrorPopupCancel: () => void;
-  // 確定ボタン押下時に渡すパラメータ
-  handleErrorPopupConfirm: () => void;
 }
 
 /**
- * バリデーションスキーマ
+ * TODO: バリデーションスキーマ
  */
-const validationSchama = generate([
-  'applicationComment',
-])
+const validationSchama = generate(['applicationComment']);
 
 /**
  * エラー確認ポップアップ
@@ -74,41 +73,45 @@ const ScrCom0038Popup = (props: ScrCom0038PopupProps) => {
       checkbox: false,
     },
     resolver: yupResolver(validationSchama),
-    context: false
+    context: false,
   });
+  const { setValue, watch } = methods;
 
   // state
-  const isFirstRender = useRef(false)
+  // ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
+  const [isWarningChecked, setIsWarningChecked] = useState<boolean>(false);
 
-  // 呼び出し元画面遷移時の処理
+  // route
+  const navigate = useNavigate();
+
+  // TODO: チェックボックス処理
   useEffect(() => {
-    isFirstRender.current = true
-  }, [])
+    const subscription = watch((value, { name, type }) => {
+      // textの変更も監視対象のため、setValueでtextを変更した場合を無視しないと無弁ループする
+      if (name !== 'checkbox') return;
+      if (value.checkbox === undefined) return;
+      // TODO: 全てのワーニングのチェックボックス選択したら確定ボタンが活性化
+      value.checkbox;
+      setIsWarningChecked(true);
+    });
+    return () => subscription.unsubscribe();
+  }, [setValue, watch]);
 
-  // 登録内容申請ポップアップ表示時の処理
-  useEffect(() => {
-    const initialize = async () => {
-
+  /**
+   * 確定ボタン押下時のイベントハンドラ
+   */
+  const handleConfirm = () => {
+    // 遷移元画面が入金詳細 => 入金一覧画面へ遷移
+    if (props.data.expirationScreenId === SCREEN_ID[0].screenId) {
+      navigate('/tra/recepts');
+      // 遷移元画面が計算書詳細 => 計算書一覧画面へ遷移
+    } else if (props.data.expirationScreenId === SCREEN_ID[1].screenId) {
+      navigate('/tra/statements');
+      // 遷移元画面が到着一括入力画面 => 到着一括入力画面へ遷移
+    } else if (props.data.expirationScreenId === SCREEN_ID[2].screenId) {
+      navigate('/doc/arrives');
     }
-
-    // ポップアップ起動時にのみ処理を実行する
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-    } else {
-      initialize();
-    }
-  }, [isOpen])
-
-
-  // ポップアップ確定ボタン押下時の処理(ダイアログを呼び出す)
-  const handlePopupConfirm = () => {
-    console.log("");
-  }
-
-  // ポップアップキャンセルボタン押下時の処理
-  const handlePopupCancel = () => {
-    console.log("");
-  }
+  };
 
   return (
     <>
@@ -117,43 +120,66 @@ const ScrCom0038Popup = (props: ScrCom0038PopupProps) => {
           <FormProvider {...methods}>
             <Popup open={isOpen}>
               <PopSection name='エラー内容'>
-                {data.errorList.map((errorValue: any, errorIndex: any) => {
-                  return (
-                    <>
-                      {/* TODO： エラー発生有の場合は非活性 */}
-                      <Checkbox
-                        name='checkbox'
-                        label={'エラーメッセージ' + errorIndex + 1 + ":" + errorValue.errorMessage}
-                        key={errorIndex}
-                      />
-                    </>
-                  );
-                })}
+                {/* エラー発生無の場合は非表示 */}
+                {data.errorList.length > 0
+                  ? data.errorList.map((errorValue: any, errorIndex: any) => {
+                      return (
+                        <>
+                          <Checkbox
+                            name='checkbox'
+                            label={
+                              'エラーメッセージ' +
+                              errorIndex +
+                              1 +
+                              ':' +
+                              errorValue.errorMessage
+                            }
+                            key={errorIndex}
+                          />
+                        </>
+                      );
+                    })
+                  : ''}
               </PopSection>
               <PopSection name='ワーニング内容'>
-                {data.warningList.map((warningValue: any, warningIndex: any) => {
-                  return (
-                    <>
-                      {/* TODO： エラー発生有の場合は非活性 */}
-                      <Checkbox
-                        name='checkbox'
-                        label={'ワーニングメッセージ' + warningIndex + 1 + ":" + warningValue.warningMessage}
-                        key={warningIndex}
-                        disabled={data.errorList.length > 0 ? true : false}
-                      />
-                    </>
-                  );
-                })}
+                {/* ワーニング発生無の場合は非表示 */}
+                {data.warningList.length > 0
+                  ? data.warningList.map(
+                      (warningValue: any, warningIndex: any) => {
+                        return (
+                          <>
+                            {/* エラー発生有の場合はチェックボックス非活性 */}
+                            <Checkbox
+                              name='checkbox'
+                              label={
+                                'ワーニングメッセージ' +
+                                warningIndex +
+                                1 +
+                                ':' +
+                                warningValue.warningMessage
+                              }
+                              key={warningIndex}
+                              disabled={
+                                data.errorList.length > 0 ? true : false
+                              }
+                            />
+                          </>
+                        );
+                      }
+                    )
+                  : ''}
               </PopSection>
             </Popup>
             <Popup bottom>
-              <CancelButton onClick={handlePopupConfirm}>キャンセル</CancelButton>
-              <ConfirmButton onClick={handlePopupCancel}>確定</ConfirmButton>
+              <CancelButton onClick={props.handleErrorPopupCancel}>
+                キャンセル
+              </CancelButton>
+              <ConfirmButton onClick={handleConfirm}>確定</ConfirmButton>
             </Popup>
           </FormProvider>
-        </MainLayout >
-      </MainLayout >
+        </MainLayout>
+      </MainLayout>
     </>
   );
-}
+};
 export default ScrCom0038Popup;

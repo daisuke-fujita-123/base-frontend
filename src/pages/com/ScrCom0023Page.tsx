@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-import ScrCom0038Popup, { ScrCom0038PopupModel } from './popups/ScrCom0038Popup';
+import ScrCom0038Popup, {
+  ScrCom0038PopupModel,
+} from './popups/ScrCom0038Popup';
 
 /**
  * SCR-COM-0023 ライブ会場一覧画面
  */
 const ScrCom0023Page = () => {
-
   const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] =
     useState<boolean>(false);
   const [scrCom0038PopupData, setScrCom0038PopupData] =
@@ -17,31 +18,31 @@ const ScrCom0023Page = () => {
     setScrCom0038PopupData({
       errorList: [
         {
-          errorMessage: 'エラー１'
+          errorMessage: 'エラー１',
         },
         {
-          errorMessage: 'エラー２'
-        }
+          errorMessage: 'エラー２',
+        },
       ],
       warningList: [
         {
-          warningMessage: 'ワーニング１'
+          warningMessage: 'ワーニング１',
         },
         {
-          warningMessage: 'ワーニング２'
-        }
+          warningMessage: 'ワーニング２',
+        },
       ],
       expirationScreenId: '',
     });
     setIsOpenScrCom0038Popup(true);
-  }, [])
+  }, []);
 
-  /**
-   * エラー確認ポップアップの確定ボタンクリック時のイベントハンドラ
-   */
-  const handleErrorPopupConfirm = () => {
-    setIsOpenScrCom0038Popup(false);
-  };
+  // /**
+  //  * エラー確認ポップアップの確定ボタンクリック時のイベントハンドラ
+  //  */
+  // const handleErrorPopupConfirm = () => {
+  //   setIsOpenScrCom0038Popup(false);
+  // };
 
   /**
    * エラー確認ポップアップのキャンセルボタンクリック時のイベントハンドラ
@@ -55,7 +56,7 @@ const ScrCom0023Page = () => {
     <ScrCom0038Popup
       isOpen={isOpenScrCom0038Popup}
       data={scrCom0038PopupData}
-      handleConfirm={handleErrorPopupConfirm}
+      // handleConfirm={handleErrorPopupConfirm}
       handleCancel={handleErrorPopupCancel}
     />
   );
