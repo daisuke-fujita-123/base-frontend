@@ -86,11 +86,18 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
   // router
   const navigateReact = useNavigate();
   const location = useLocation();
+  let to = location.pathname;
+  if (location.search !== '') {
+    to += location.search;
+  }
+  if (location.hash !== '') {
+    to += location.hash;
+  }
 
   // state
   const [appContext, setAppContext] = useState<AppType>({
     ...initialValues,
-    navigateTo: location.pathname,
+    navigateTo: to,
   });
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [dialogInfo, setDialogInfo] = useState<any>({});
