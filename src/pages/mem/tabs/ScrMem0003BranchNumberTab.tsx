@@ -509,9 +509,9 @@ const ScrMem0003BranchNumberTab = () => {
   /**
    * キャンセルボタンクリック時のイベントハンドラ
    */
-  const handleCancel = async () => {
-    // リロードを行う
-    await setInitData(corporationId ? corporationId : '', null);
+  const handleCancel = () => {
+    // 遷移元に戻る
+    navigate(-1);
   };
 
   /**
@@ -529,7 +529,7 @@ const ScrMem0003BranchNumberTab = () => {
     };
     await ScrMem0003RegistrationBranchNumberInfo(request);
     // 自画面リロード
-    navigate(0);
+    await setInitData(corporationId ? corporationId : '', null);
   };
 
   /**
@@ -591,7 +591,7 @@ const ScrMem0003BranchNumberTab = () => {
                           o.courseEntryKind === CDE_COM_0025_LEAVING
                       ).length > 0
                     ) {
-                      return 'cold'; // TODO
+                      return 'cold'; // TODO 脱会の背景色指定のスタイル追加待ち
                     }
                     // 物流拠点代表契約判定
                     if (
@@ -599,7 +599,7 @@ const ScrMem0003BranchNumberTab = () => {
                       initValues.logisticsBases[params.row['id']]
                         .logisticsBaseRepresentativeContractId
                     ) {
-                      return 'hot';
+                      return 'hot'; // TODO 物流拠点代表契約の背景色指定のスタイル追加待ち
                     }
                     return '';
                   }}
