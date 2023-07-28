@@ -456,6 +456,34 @@ export const ScrCom9999GetServiceInfo =
     return response.data;
   };
 
+/** API-COM-9999-0024: 住所情報取得表示API リクエスト */
+export interface ScrCom9999GetAddressInfoRequest {
+  // 郵便番号
+  zipCode: string;
+}
+
+/** API-COM-9999-0024: 住所情報取得表示API レスポンス */
+export interface ScrCom9999GetAddressInfoResponse {
+  // 都道府県コード
+  prefectureCode: string;
+  // 都道府県名称
+  prefectureName: string;
+  // 市区群コード
+  districtCode: string;
+  // 市区町村
+  municipalities: string;
+  // 町域名
+  townOrStreetName: string;
+}
+
+/** API-COM-9999-0024: 住所情報取得表示API */
+export const ScrCom9999GetAddressInfo = async (
+  request: ScrCom9999GetAddressInfoRequest
+): Promise<ScrCom9999GetAddressInfoResponse> => {
+  const response = await comApiClient.post('/scr/get-address-info', request);
+  return response.data;
+};
+
 /** API-COM-9999-0025: 変更履歴情報取得API リクエスト */
 export interface ScrCom9999GetHistoryInfoRequest {
   // 変更履歴番号
