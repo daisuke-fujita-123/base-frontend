@@ -23,6 +23,7 @@ import {
   gridPaginationModelSelector,
   GridRenderCellParams,
   GridRowsProp,
+  GridValidRowModel,
   useGridApiContext,
   useGridSelector,
 } from '@mui/x-data-grid-pro';
@@ -37,6 +38,15 @@ import {
   GridRadioCell,
   GridSelectCell,
 } from './DataGridCell';
+
+const convertFromSizeToWidth = (size: string | undefined): number => {
+  if (size === undefined) return 80;
+  if (size === 'ss') return 80;
+  if (size === 's') return 100;
+  if (size === 'm') return 150;
+  if (size === 'l') return 300;
+  return 80;
+};
 
 const StyledDataGrid = styled(MuiDataGridPro)({
   fontSize: 13,
@@ -143,6 +153,29 @@ const Pagination = () => {
   );
 };
 
+interface ToolbarProps {
+  columns: any[];
+  row: GridValidRowModel;
+  checkboxSelection?: boolean;
+}
+
+const Toolbar = (props: ToolbarProps) => {
+  const { columns, row, checkboxSelection = false } = props;
+
+  const displayRow = row !== undefined ? row : { id: -1 };
+
+  return (
+    <>
+      <Pagination />
+      {/* <StyledDataGrid
+        columnHeaderHeight={0}
+        columns={columns}
+        rows={[displayRow]}
+        checkboxSelection={checkboxSelection}
+      /> */}
+    </>
+  );
+};
 /**
  * DataGridの列モデル定義
  */
@@ -191,7 +224,13 @@ export interface DataGridProps extends DataGridProProps {
    * 列の定義情報
    */
   columns: GridColDef[];
+  /**
+   * disabledRows
+   */
   disabledRows?: any[];
+  /**
+   * disabledCells
+   */
   disabledCells?: any[];
   /**
    * 行データ
@@ -200,11 +239,11 @@ export interface DataGridProps extends DataGridProProps {
   /**
    * height
    */
-  height?: number;
+  height?: string | number;
   /**
    * width
    */
-  width?: number;
+  width?: string | number;
   /**
    * refs
    */
@@ -213,6 +252,10 @@ export interface DataGridProps extends DataGridProProps {
    * ツールチップ
    */
   tooltips?: GridTooltipsModel[]; // add, tooltip = 'true'
+  /**
+   * headerRow
+   */
+  headerRow?: GridValidRowModel;
   /**
    * onRowChange
    */
@@ -265,6 +308,7 @@ export const DataGrid = (props: DataGridProps) => {
     disabledCells,
     tooltips,
     hrefs,
+    headerRow,
     initialState,
     /** size */
     height,
@@ -478,19 +522,7 @@ export const DataGrid = (props: DataGridProps) => {
 
   // 独自のカラム定義からMUI DataGridのカラム定義へ変換
   const muiColumns: MuiGridColDef[] = columns.map((value) => {
-    let width = value.width !== undefined ? value.width : 80;
-    if (value.size === 'ss') {
-      width = 80;
-    }
-    if (value.size === 's') {
-      width = 100;
-    }
-    if (value.size === 'm') {
-      width = 150;
-    }
-    if (value.size === 'l') {
-      width = 300;
-    }
+    const width = convertFromSizeToWidth(value.size);
 
     let renderCell = undefined;
     if (value.cellType === 'input') {
@@ -580,7 +612,14 @@ export const DataGrid = (props: DataGridProps) => {
           hideFooter
           processRowUpdate={handleProcessRowUpdate}
           slots={{
-            toolbar: pagination ? Pagination : undefined,
+            toolbar: pagination ? Toolbar : undefined,
+          }}
+          slotProps={{
+            toolbar: {
+              columns: columns,
+              row: headerRow,
+              checkboxSelection: checkboxSelection,
+            },
           }}
           experimentalFeatures={{
             columnGrouping: true,
