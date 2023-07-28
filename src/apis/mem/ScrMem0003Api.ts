@@ -120,6 +120,8 @@ export interface ScrMem0003RegistrationBranchNumberInfoRequest {
   }[];
   /** 変更タイムスタンプ */
   changeTimestamp: string;
+  /** 登録変更メモ */
+  registrationChangeMemo: string;
 }
 /** 拠点枝番紐付け情報登録レスポンス */
 export interface ScrMem0003RegistrationBranchNumberInfoResponse {

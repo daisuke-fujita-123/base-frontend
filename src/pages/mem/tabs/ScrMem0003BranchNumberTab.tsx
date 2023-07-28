@@ -1,9 +1,10 @@
 // React、mui
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useLocation, useParams } from 'react-router-dom';
 
 import ScrCom0032Popup, {
+  errorList,
   registrationChangeList,
   ScrCom0032PopupModel,
   sectionList,
@@ -31,18 +32,22 @@ import {
   ScrMem0003RegistrationBranchNumberInfoRequest,
 } from 'apis/mem/ScrMem0003Api';
 
+// 共通部品
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
+import { MessageContext } from 'providers/MessageProvider';
+
+import { Typography } from '@mui/material';
 import { GridCellParams, GridColumnGroupingModel } from '@mui/x-data-grid-pro';
 import { GridInitialStatePro } from '@mui/x-data-grid-pro/models/gridStatePro';
-
-/** 定数定義 */
-const CDE_COM_0025_LEAVING = '4';
-const SCREEN_ID_SCR_MEM_0003 = 'SCR-MEM-0003';
-const SCREEN_ID_SCR_MEM_0003_NAME = '法人情報詳細';
-const TAB_ID_SCR_MEM_0003_BRANCH_NUMBER = '8';
-const TAB_ID_SCR_MEM_0003_BRANCH_NUMBER_NAME = '拠点枝番紐付け';
+import {
+  CDE_COM_0025_LEAVING,
+  SCREEN_ID_SCR_MEM_0003,
+  SCREEN_ID_SCR_MEM_0003_NAME,
+  TAB_ID_SCR_MEM_0003_BRANCH_NUMBER,
+  TAB_ID_SCR_MEM_0003_BRANCH_NUMBER_NAME,
+} from 'definitions/constants';
 
 /** モデル定義 */
 /** 枝番プルダウンデータモデル */
@@ -127,6 +132,7 @@ const contractBranchNumberSummariesColumns: GridColDef[] = [
     size: 'm',
     cellType: 'default',
     editable: false,
+    filterable: false,
   },
   {
     field: 'courseName',
@@ -134,6 +140,7 @@ const contractBranchNumberSummariesColumns: GridColDef[] = [
     size: 'l',
     cellType: 'default',
     editable: false,
+    filterable: false,
   },
   {
     field: 'courseEntryKindName',
@@ -141,6 +148,7 @@ const contractBranchNumberSummariesColumns: GridColDef[] = [
     size: 'm',
     cellType: 'default',
     editable: false,
+    filterable: false,
   },
   {
     field: 'branchNumberCount',
@@ -148,6 +156,7 @@ const contractBranchNumberSummariesColumns: GridColDef[] = [
     size: 'm',
     cellType: 'default',
     editable: false,
+    filterable: false,
   },
 ];
 /** 枝番設定一覧 カラム定義 */
@@ -279,6 +288,7 @@ const convertToChangedSections = (
 const ScrMem0003BranchNumberTab = () => {
   // router
   const { corporationId } = useParams();
+  const { getMessage } = useContext(MessageContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -307,6 +317,9 @@ const ScrMem0003BranchNumberTab = () => {
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
   // コンポーネントを読み取り専用に変更するフラグ
   const [isReadOnly, setIsReadOnly] = useState<boolean>(false);
+  // 拠点別枝番設定一覧を非表示にするフラグ
+  const [isHideBranchNumbers, setIsHideBranchNumbers] =
+    useState<boolean>(false);
 
   // form
   const methods = useForm<BranchNumberInfoModel>({
@@ -320,34 +333,59 @@ const ScrMem0003BranchNumberTab = () => {
       const search = location.search;
       const qs = new URLSearchParams(search);
       const changeHistoryNumber = qs.get('changeHistoryNumber');
-      if (changeHistoryNumber !== null) {
-        setIsReadOnly(true);
-      }
 
-      // 拠点枝番紐付け情報取得API呼出
-      const request: ScrMem0003GetBranchNumberInfoRequest = {
-        corporationId: corporationId,
-        changeHistoryNumber: changeHistoryNumber,
-      };
-      const response = await ScrMem0003GetBranchNumberInfo(request);
+      await setInitData(corporationId, changeHistoryNumber);
+    };
 
-      // レスポンスを変換、画面にデータを設定
-      const branchNumberInfo = convertToBranchNumberInfoModel(response);
-      reset(branchNumberInfo);
+    if (corporationId === undefined || corporationId === 'new') {
+      return;
+    }
 
-      // 初期処理レスポンスを格納
-      setInitValues(branchNumberInfo);
+    initialize(corporationId);
+  }, [corporationId, reset, isReadOnly, location]);
 
-      // 契約ID別枝番設定状況
-      setContractBranchNumberSummaries(
-        branchNumberInfo.contractBranchNumberSummaries
-      );
+  /**
+   * 物流拠点別枝番設定一覧の値取得
+   */
+  const setInitData = async (
+    corporationId: string,
+    changeHistoryNumber: string | null
+  ) => {
+    // 変更履歴管理番号指定の場合は参照表示に設定
+    if (changeHistoryNumber !== null) {
+      setIsReadOnly(true);
+    }
+    // 拠点枝番紐付け情報取得API呼出
+    const request: ScrMem0003GetBranchNumberInfoRequest = {
+      corporationId: corporationId,
+      changeHistoryNumber: changeHistoryNumber,
+    };
+    const response = await ScrMem0003GetBranchNumberInfo(request);
 
-      // 物流拠点別枝番設定
-      // 列定義を設定
-      // ページ再読み込み時に配列要素重複エラーが発生するため、最初に動的生成する要素を削除する
-      branchNumberColumns.splice(2);
-      branchNumberColumnGrouping[0].children.splice(0);
+    // レスポンスを変換、画面にデータを設定
+    const branchNumberInfo = convertToBranchNumberInfoModel(response);
+    reset(branchNumberInfo);
+
+    // 初期処理レスポンスを格納
+    setInitValues(branchNumberInfo);
+
+    // 契約ID別枝番設定状況
+    setContractBranchNumberSummaries(
+      branchNumberInfo.contractBranchNumberSummaries
+    );
+
+    // 物流拠点別枝番設定
+    // 列定義を設定
+    // ページ再読み込み時に配列要素重複エラーが発生するため、最初に動的生成する要素を削除する
+    branchNumberColumns.splice(2);
+    branchNumberColumnGrouping[0].children.splice(0);
+    // 契約情報、物流拠点情報がいずれか0件の場合は表を非表示に設定
+    if (
+      branchNumberInfo.contracts.length === 0 ||
+      branchNumberInfo.logisticsBases.length === 0
+    ) {
+      setIsHideBranchNumbers(true);
+    } else {
       for (let i = 0; i < branchNumberInfo.contracts.length; i++) {
         const tmpGridColDef: GridColDef = {
           field: 'branchNumber' + i.toString(),
@@ -399,14 +437,8 @@ const ScrMem0003BranchNumberTab = () => {
         branchNumbersData.push(tmp);
       }
       setBranchNumbers(branchNumbersData);
-    };
-
-    if (corporationId === undefined || corporationId === 'new') {
-      return;
     }
-
-    initialize(corporationId);
-  }, [corporationId, reset, isReadOnly, location]);
+  };
 
   /**
    * 物流拠点別枝番設定一覧の値取得
@@ -438,25 +470,33 @@ const ScrMem0003BranchNumberTab = () => {
       convertToChangedSections(initValues.branchNumbers, branchNumbersReqData);
 
     // 変更箇所なしの場合、エラー
-    if (registrationChangeList.length === 0) {
-      // TODO エラーメッセージを表示する MSG-FR-ERR-00053:画面入力内容が編集されていません
-    }
-
-    // 拠点枝番紐付け情報入力チェックAPI
-    const request: ScrMem0003InputCheckBranchNumberInfoRequest = {
-      corporationId: initValues.corporationId,
-      branchNumbers: branchNumbersReqData,
-    };
-    const response = await ScrMem0003InputCheckBranchNumberInfo(request);
-
-    setIsOpenPopup(true);
-    setScrCom0032PopupData({
-      errorList: response.errorList.map((o) => {
+    const errorMsgList: errorList[] = [];
+    if (registrationChangeList[0].sectionList[0].columnList.length === 0) {
+      errorMsgList.push({
+        errorCode: 'MSG-FR-ERR-00053',
+        errorMessages: [getMessage('MSG-FR-ERR-00053')],
+      });
+    } else {
+      // 拠点枝番紐付け情報入力チェックAPI
+      const request: ScrMem0003InputCheckBranchNumberInfoRequest = {
+        corporationId: initValues.corporationId,
+        branchNumbers: branchNumbersReqData,
+      };
+      const response = await ScrMem0003InputCheckBranchNumberInfo(request);
+      const errorMsgListRes: errorList[] = response.errorList.map((o) => {
         return {
           errorCode: o.errorCode,
           errorMessages: [o.errorMessage],
         };
-      }),
+      });
+      errorMsgListRes.forEach((v) => {
+        errorMsgList.push(v);
+      });
+    }
+
+    setIsOpenPopup(true);
+    setScrCom0032PopupData({
+      errorList: errorMsgList,
       warningList: [],
       registrationChangeList: convertToChangedSections(
         initValues.branchNumbers,
@@ -469,8 +509,9 @@ const ScrMem0003BranchNumberTab = () => {
   /**
    * キャンセルボタンクリック時のイベントハンドラ
    */
-  const handleCancel = () => {
-    navigate('/mem/corporations');
+  const handleCancel = async () => {
+    // リロードを行う
+    await setInitData(corporationId ? corporationId : '', null);
   };
 
   /**
@@ -484,9 +525,11 @@ const ScrMem0003BranchNumberTab = () => {
       corporationId: initValues.corporationId,
       branchNumbers: getBranchNumberValues(),
       changeTimestamp: initValues.changeTimestamp,
+      registrationChangeMemo: '', // TODO 登録変更メモが登録内容確認ポップアップから連携されるようになったら修正
     };
-    const response = await ScrMem0003RegistrationBranchNumberInfo(request);
-    console.log(response);
+    await ScrMem0003RegistrationBranchNumberInfo(request);
+    // 自画面リロード
+    navigate(0);
   };
 
   /**
@@ -525,37 +568,43 @@ const ScrMem0003BranchNumberTab = () => {
               />
             </Section>
             <Section name='物流拠点別枝番設定'>
-              <DataGrid
-                width='100%'
-                disableColumnFilter
-                columns={branchNumberColumns}
-                rows={branchNumbers}
-                columnGroupingModel={branchNumberColumnGrouping}
-                initialState={branchNumberInitialState}
-                getCellClassName={(
-                  params: GridCellParams<any, any, number>
-                ) => {
-                  // 脱会している契約判定
-                  if (
-                    initValues.contracts.filter(
-                      (o: { contractId: string; courseEntryKind: string }) =>
-                        o.contractId === params.colDef.headerName &&
-                        o.courseEntryKind === CDE_COM_0025_LEAVING
-                    ).length > 0
-                  ) {
-                    return 'cold';
-                  }
-                  // 物流拠点代表契約判定
-                  if (
-                    params.colDef.headerName ===
-                    initValues.logisticsBases[params.row['id']]
-                      .logisticsBaseRepresentativeContractId
-                  ) {
-                    return 'hot';
-                  }
-                  return '';
-                }}
-              />
+              {isHideBranchNumbers ? (
+                <Typography>
+                  契約情報、物流拠点情報が登録されていません。
+                </Typography>
+              ) : (
+                <DataGrid
+                  width='100%'
+                  disableColumnFilter
+                  columns={branchNumberColumns}
+                  rows={branchNumbers}
+                  columnGroupingModel={branchNumberColumnGrouping}
+                  initialState={branchNumberInitialState}
+                  getCellClassName={(
+                    params: GridCellParams<any, any, number>
+                  ) => {
+                    // 脱会している契約判定
+                    if (
+                      initValues.contracts.filter(
+                        (o: { contractId: string; courseEntryKind: string }) =>
+                          o.contractId === params.colDef.headerName &&
+                          o.courseEntryKind === CDE_COM_0025_LEAVING
+                      ).length > 0
+                    ) {
+                      return 'cold'; // TODO
+                    }
+                    // 物流拠点代表契約判定
+                    if (
+                      params.colDef.headerName ===
+                      initValues.logisticsBases[params.row['id']]
+                        .logisticsBaseRepresentativeContractId
+                    ) {
+                      return 'hot';
+                    }
+                    return '';
+                  }}
+                />
+              )}
             </Section>
           </FormProvider>
         </MainLayout>
@@ -564,7 +613,7 @@ const ScrMem0003BranchNumberTab = () => {
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
             <ConfirmButton
-              disable={isReadOnly ? true : false}
+              disable={isReadOnly || isHideBranchNumbers ? true : false}
               onClick={handleConfirm}
             >
               確定
