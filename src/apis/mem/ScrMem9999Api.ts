@@ -109,11 +109,11 @@ export interface EntityList {
 /** コード値取得API（コード管理マスタ以外）レスポンス */
 export interface ScrMem9999GetCodeValueResponse {
   // 結果リスト
-  resultList: BusinessInfo[];
+  resultList: ResultList[];
 }
 
 // 結果リスト
-export interface EntityList {
+export interface ResultList {
   // エンティティ名
   entityName: string;
   // コード値リスト
@@ -377,3 +377,4 @@ export const ScrMem9999GetCorporationGroup =
     );
     return response.data;
   };
+
