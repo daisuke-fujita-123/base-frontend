@@ -59,7 +59,7 @@ export const ScrCom0009GetReportList = async (
     request: ScrCom0009GetReportListRequest
 ): Promise<ScrCom0009GetReportListResponse> => {
     const response = await comApiClient.post(
-        '/com/scr-com-0009/get-reportlist',
+        '/api/com/scr-com-0009/get-reportlist',
         request
     );
     return response.data;
@@ -88,7 +88,7 @@ export const ScrCom0009GetReportOutput = async (
     request: ScrCom0009GetReportOutputRequest
 ): Promise<null> => {
     const response = await comApiClient.post(
-        '/com/scr-com-0009/file-output',
+        '/api/com/scr-com-0009/file-output',
         request
     );
     return null;
