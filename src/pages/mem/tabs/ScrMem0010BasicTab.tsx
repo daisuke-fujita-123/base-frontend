@@ -1,55 +1,64 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
-import { CenterBox, MarginBox } from 'layouts/Box';
-import { FromTo } from 'layouts/FromTo';
+import ScrCom0032Popup, {
+  columnList,
+  errorList,
+  ScrCom0032PopupModel,
+  sectionList,
+  warningList,
+} from 'pages/com/popups/ScrCom0032Popup';
+
+import { MarginBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
+import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 
-import { AddButton, Button, CancelButton, ConfirmButton, PrimaryButton, SearchButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { CancelButton, ConfirmButton, PrimaryButton } from 'controls/Button';
+import { Checkbox } from 'controls/Checkbox';
 import { DatePicker } from 'controls/DatePicker';
-import { ContentsDivider } from 'controls/Divider';
+import { WarningLabel } from 'controls/Label';
+import { Link } from 'controls/Link';
 import { Select, SelectValue } from 'controls/Select';
-import { PostalTextField, PriceTextField, TextField } from 'controls/TextField';
-import { SerchLabelText, Typography } from 'controls/Typography';
+import { Textarea } from 'controls/Textarea';
+import { PostalTextField, TextField } from 'controls/TextField';
+import { Typography } from 'controls/Typography';
 
-import { ScrMem0010GetBusinessbase, ScrMem0010GetBusinessbaseRequest, ScrMem0010GetBusinessbaseResponse, ScrMem0010GetContract, ScrMem0010GetContractRequest, ScrMem0010GetContractResponse, ScrMem0010GetEmployee, ScrMem0010GetEmployeeRequest, ScrMem0010GetEmployeeResponse, ScrMem0010GetMember, ScrMem0010GetMemberRequest, ScrMem0010GetMemberResponse, ScrMem0010InputCheckBusinessBase, ScrMem0010InputCheckBusinessBaseRequest, ScrMem0010InputCheckBusinessBaseResponse, ScrMem0010RegistrationBusinessBase, ScrMem0010RegistrationBusinessBaseResponse, errorResult } from 'apis/mem/ScrMem0010Api';
+import { ScrCom9999GetAddressInfo } from 'apis/com/ScrCom9999APi';
+import {
+  errorResult,
+  ScrMem0010GetBusinessbase,
+  ScrMem0010GetBusinessbaseRequest,
+  ScrMem0010GetBusinessbaseResponse,
+  ScrMem0010GetContract,
+  ScrMem0010GetContractRequest,
+  ScrMem0010GetContractResponse,
+  ScrMem0010GetEmployeeResponse,
+  ScrMem0010InputCheckBusinessBase,
+  ScrMem0010InputCheckBusinessBaseRequest,
+  ScrMem0010RegistrationBusinessBase,
+  ScrMem0010RegistrationBusinessBaseRequest,
+} from 'apis/mem/ScrMem0010Api';
+import {
+  ScrMem9999GetCodeValue,
+  ScrMem9999GetCorpBasicInfo,
+  ScrMem9999GetCorpBasicInfoRequest,
+  ScrMem9999GetCorpBasicInfoResponse,
+  ScrMem9999GetEmployee,
+} from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { memApiClient, comApiClient } from 'providers/ApiClient';
+import { comApiClient, memApiClient } from 'providers/ApiClient';
+import { AuthContext } from 'providers/AuthProvider';
 
-import { generate } from 'utils/validation/BaseYup';
-import { Checkbox } from 'controls/CheckBox';
-import { Link } from 'controls/Link';
-import { RightElementStack, Stack } from 'layouts/Stack';
-import { TableRowModel } from 'controls/Table';
-import { InputLayout } from 'layouts/InputLayout';
-import { Textarea } from 'controls/Textarea';
-import { Dialog } from 'controls/Dialog';
-import { useParams, useSearchParams } from 'react-router-dom';
-
-import ScrCom0032Popup, {
-  ColumnListModel,
-  ScrCom0032PopupModel, SectionListModel, errorMessagesModel,
-} from 'pages/com/popups/ScrCom0032';
-import { WarningLabel } from 'controls/Label';
-import { AppContext } from 'providers/AppContextProvider';
-
-/**
- * 登録内容確認ポップアップのProps
- */
-interface ScrMem0003PopupProps {
-  isOpen: boolean;
-  data: ScrCom0032PopupModel;
-  handleCancel: () => void;
-  handleConfirm: () => void;
-}
+import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
 /**
  * 法人基本情報データモデル
@@ -61,7 +70,7 @@ interface CorporationBasicModel {
   corporationName: string;
   // 法人郵便番号
   corporationZipCode: string;
-  // 法人都道府県コード 
+  // 法人都道府県コード
   corporationPrefectureCode: string;
   // 法人市区町村
   corporationMunicipalities: string;
@@ -105,7 +114,7 @@ interface CorporationBasicModel {
   // 変更履歴番号
   changeHistoryNumber: string;
   // 変更予定日
-  changeHistoryDate: string;
+  changeExpectedDate: string;
 }
 
 /**
@@ -121,24 +130,27 @@ interface SelectValuesModel {
  * APIリクエストから法人基本情報データモデルへの変換
  */
 const convertToCorporationBasicModel = (
-  scrMem0010GetMemberResponse: ScrMem0010GetMemberResponse,
+  scrMem0010GetMemberResponse: ScrMem9999GetCorpBasicInfoResponse,
   scrMem0010GetBusinessbaseResponse: ScrMem0010GetBusinessbaseResponse
 ): CorporationBasicModel => {
-  return{
+  return {
     // 法人ID
     corporationId: scrMem0010GetMemberResponse.corporationId,
     // 法人名称
     corporationName: scrMem0010GetMemberResponse.corporationName,
     // 法人郵便番号
     corporationZipCode: scrMem0010GetMemberResponse.corporationZipCode,
-    // 法人都道府県コード 
-    corporationPrefectureCode: scrMem0010GetMemberResponse.corporationPrefectureCode,
+    // 法人都道府県コード
+    corporationPrefectureCode:
+      scrMem0010GetMemberResponse.corporationPrefectureCode,
     // 法人市区町村
-    corporationMunicipalities: scrMem0010GetMemberResponse.corporationMunicipalities,
+    corporationMunicipalities:
+      scrMem0010GetMemberResponse.corporationMunicipalities,
     // 法人番地号建物名
-    corporationAddressBuildingName: scrMem0010GetMemberResponse.corporationAddressBuildingName,
+    corporationAddressBuildingName:
+      scrMem0010GetMemberResponse.corporationAddressBuildingName,
     // 住所
-    corporationAddress: scrMem0010GetMemberResponse.corporationAddress,
+    corporationAddress: scrMem0010GetMemberResponse.address,
     // 法人電話番号
     corporationPhoneNumber: scrMem0010GetMemberResponse.corporationPhoneNumber,
     // 法人FAX番号
@@ -146,59 +158,68 @@ const convertToCorporationBasicModel = (
     // 会員メモ
     memberMemo: scrMem0010GetMemberResponse.memberMemo,
     // 事業拠点法人情報同期フラグ
-    businessBaseCorporationInformationSynchronizationFlag: scrMem0010GetBusinessbaseResponse.businessBaseCorporationInformationSynchronizationFlag,
+    businessBaseCorporationInformationSynchronizationFlag:
+      scrMem0010GetBusinessbaseResponse.businessBaseCorporationInformationSynchronizationFlag,
     // 事業拠点ID
     businessBaseId: scrMem0010GetBusinessbaseResponse.businessBaseId,
     // 事業拠点名称
     businessBaseName: scrMem0010GetBusinessbaseResponse.businessBaseName,
     // 事業拠点名称カナ
-    businessBaseNameKana: scrMem0010GetBusinessbaseResponse.businessBaseNameKana,
+    businessBaseNameKana:
+      scrMem0010GetBusinessbaseResponse.businessBaseNameKana,
     // 事業拠点郵便番号
     businessBaseZipCode: scrMem0010GetBusinessbaseResponse.businessBaseZipCode,
     // 事業拠点都道府県コード
-    businessBasePrefectureCode: scrMem0010GetBusinessbaseResponse.businessBasePrefectureCode,
+    businessBasePrefectureCode:
+      scrMem0010GetBusinessbaseResponse.businessBasePrefectureCode,
     // 事業拠点市区町村
-    businessBaseMunicipalities: scrMem0010GetBusinessbaseResponse.businessBaseMunicipalities,
+    businessBaseMunicipalities:
+      scrMem0010GetBusinessbaseResponse.businessBaseMunicipalities,
     // 事業拠点番地号建物名
-    businessBaseAddressBuildingName: scrMem0010GetBusinessbaseResponse.businessBaseAddressBuildingName,
+    businessBaseAddressBuildingName:
+      scrMem0010GetBusinessbaseResponse.businessBaseAddressBuildingName,
     // 事業拠点電話番号
-    businessBasePhoneNumber: scrMem0010GetBusinessbaseResponse.businessBasePhoneNumber,
+    businessBasePhoneNumber:
+      scrMem0010GetBusinessbaseResponse.businessBasePhoneNumber,
     // 事業拠点担当者氏名
-    businessBaseStaffName: scrMem0010GetBusinessbaseResponse.businessBaseStaffName,
+    businessBaseStaffName:
+      scrMem0010GetBusinessbaseResponse.businessBaseStaffName,
     // 事業拠点担当者連絡先電話番号
-    businessBaseStaffContactPhoneNumber: scrMem0010GetBusinessbaseResponse.businessBaseStaffContactPhoneNumber,
+    businessBaseStaffContactPhoneNumber:
+      scrMem0010GetBusinessbaseResponse.businessBaseStaffContactPhoneNumber,
     // 四輪営業担当
     tvaaSalesStaff: scrMem0010GetBusinessbaseResponse.tvaaSalesStaff,
     // 二輪営業担当
     bikeSalesStaff: scrMem0010GetBusinessbaseResponse.bikeSalesStaff,
 
     // 変更履歴番号
-    changeHistoryNumber:  '',
+    changeHistoryNumber: '',
     // 変更予定日
-    changeHistoryDate:  '',
-  }
-}
+    changeExpectedDate: '',
+  };
+};
 
 /**
  * APIリクエストから法人基本情報データモデルへの変換
  */
 const convertToBusinessBaseModel = (
-  corporationBasic:CorporationBasicModel,
+  corporationBasic: CorporationBasicModel,
   scrMem0010GetBusinessbaseResponse: ScrMem0010GetBusinessbaseResponse
 ): CorporationBasicModel => {
-  return{
+  return {
     // 法人ID
     corporationId: corporationBasic.corporationId,
     // 法人名称
     corporationName: corporationBasic.corporationName,
     // 法人郵便番号
     corporationZipCode: corporationBasic.corporationZipCode,
-    // 法人都道府県コード 
+    // 法人都道府県コード
     corporationPrefectureCode: corporationBasic.corporationPrefectureCode,
     // 法人市区町村
     corporationMunicipalities: corporationBasic.corporationMunicipalities,
     // 法人番地号建物名
-    corporationAddressBuildingName: corporationBasic.corporationAddressBuildingName,
+    corporationAddressBuildingName:
+      corporationBasic.corporationAddressBuildingName,
     // 住所
     corporationAddress: corporationBasic.corporationAddress,
     // 法人電話番号
@@ -208,61 +229,69 @@ const convertToBusinessBaseModel = (
     // 会員メモ
     memberMemo: corporationBasic.memberMemo,
     // 事業拠点法人情報同期フラグ
-    businessBaseCorporationInformationSynchronizationFlag: scrMem0010GetBusinessbaseResponse.businessBaseCorporationInformationSynchronizationFlag,
+    businessBaseCorporationInformationSynchronizationFlag:
+      scrMem0010GetBusinessbaseResponse.businessBaseCorporationInformationSynchronizationFlag,
     // 事業拠点ID
     businessBaseId: scrMem0010GetBusinessbaseResponse.businessBaseId,
     // 事業拠点名称
     businessBaseName: scrMem0010GetBusinessbaseResponse.businessBaseName,
     // 事業拠点名称カナ
-    businessBaseNameKana: scrMem0010GetBusinessbaseResponse.businessBaseNameKana,
+    businessBaseNameKana:
+      scrMem0010GetBusinessbaseResponse.businessBaseNameKana,
     // 事業拠点郵便番号
     businessBaseZipCode: scrMem0010GetBusinessbaseResponse.businessBaseZipCode,
     // 事業拠点都道府県コード
-    businessBasePrefectureCode: scrMem0010GetBusinessbaseResponse.businessBasePrefectureCode,
+    businessBasePrefectureCode:
+      scrMem0010GetBusinessbaseResponse.businessBasePrefectureCode,
     // 事業拠点市区町村
-    businessBaseMunicipalities: scrMem0010GetBusinessbaseResponse.businessBaseMunicipalities,
+    businessBaseMunicipalities:
+      scrMem0010GetBusinessbaseResponse.businessBaseMunicipalities,
     // 事業拠点番地号建物名
-    businessBaseAddressBuildingName: scrMem0010GetBusinessbaseResponse.businessBaseAddressBuildingName,
+    businessBaseAddressBuildingName:
+      scrMem0010GetBusinessbaseResponse.businessBaseAddressBuildingName,
     // 事業拠点電話番号
-    businessBasePhoneNumber: scrMem0010GetBusinessbaseResponse.businessBasePhoneNumber,
+    businessBasePhoneNumber:
+      scrMem0010GetBusinessbaseResponse.businessBasePhoneNumber,
     // 事業拠点担当者氏名
-    businessBaseStaffName: scrMem0010GetBusinessbaseResponse.businessBaseStaffName,
+    businessBaseStaffName:
+      scrMem0010GetBusinessbaseResponse.businessBaseStaffName,
     // 事業拠点担当者連絡先電話番号
-    businessBaseStaffContactPhoneNumber: scrMem0010GetBusinessbaseResponse.businessBaseStaffContactPhoneNumber,
+    businessBaseStaffContactPhoneNumber:
+      scrMem0010GetBusinessbaseResponse.businessBaseStaffContactPhoneNumber,
     // 四輪営業担当
     tvaaSalesStaff: scrMem0010GetBusinessbaseResponse.tvaaSalesStaff,
     // 二輪営業担当
     bikeSalesStaff: scrMem0010GetBusinessbaseResponse.bikeSalesStaff,
 
     // 変更履歴番号
-    changeHistoryNumber:  '',
+    changeHistoryNumber: '',
     // 変更予定日
-    changeHistoryDate:  '',
-  }
-}
+    changeExpectedDate: '',
+  };
+};
 
 /**
  * 事業拠点契約コース・サービス一覧取得レスポンスからプルダウンデータモデルへの変換
  */
 const salesStaffSelectValuesModel = (
   response: ScrMem0010GetEmployeeResponse
-): SelectValuesModel =>{
+): SelectValuesModel => {
   return {
     tvaaSalesStaffSelectValues: response.tvaaContractInfo.map((x) => {
       return {
         value: x.salesId,
-        displayValue: x.salesId + '　'+ x.salesName
-      }
+        displayValue: x.salesId + '　' + x.salesName,
+      };
     }),
-    bikeSalesStaffSelectValues: response.bikeContractInfo.map((x) =>{
+    bikeSalesStaffSelectValues: response.bikeContractInfo.map((x) => {
       return {
         value: x.salesId,
-        displayValue: x.salesId + '　'+ x.salesName
-      }
+        displayValue: x.salesId + '　' + x.salesName,
+      };
     }),
-    prefectureCodeSelectValues: []
-  }
-}
+    prefectureCodeSelectValues: [],
+  };
+};
 
 /**
  * 法人基本情報初期データ
@@ -274,7 +303,7 @@ const initialValues: CorporationBasicModel = {
   corporationName: '',
   // 法人郵便番号
   corporationZipCode: '',
-  // 法人都道府県コード 
+  // 法人都道府県コード
   corporationPrefectureCode: '',
   // 法人市区町村
   corporationMunicipalities: '',
@@ -314,11 +343,11 @@ const initialValues: CorporationBasicModel = {
   tvaaSalesStaff: '',
   // 二輪営業担当
   bikeSalesStaff: '',
-  
+
   // 変更履歴番号
-  changeHistoryNumber:  '',
+  changeHistoryNumber: '',
   // 変更予定日
-  changeHistoryDate:  '',
+  changeExpectedDate: '',
 };
 
 /**
@@ -366,63 +395,72 @@ const selectValuesInitialValues: SelectValuesModel = {
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  errorMessages: [{
-    errorCode: '',
-    errorMessage: ''
-  }],
-  warningMessages: [{
-    errorCode: '',
-    errorMessage: '',
-  }],
-  contentsList: {
-    screenName:  '',
-    screenId:  '',
-    tabName:  '',
-    tabId:  '',
-    sectionList: [
-      {
-        sectionName:  '',
-        columnList: [
-          {
-            columnName: '',
-          }
-        ]
-      }
-    ]
-  },
-  changeExpectDate: new Date()
+  errorList: [],
+  warningList: [],
+  registrationChangeList: [
+    {
+      screenId: '',
+      screenName: '',
+      tabId: '',
+      tabName: '',
+      sectionList: [
+        {
+          sectionName: '',
+          columnList: [
+            {
+              columnName: '',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  changeExpectDate: '',
 };
 
 /**
- * 四輪、二輪契約情報初期データ
+ * 事業拠点契約コース・サービス一覧初期データ
  */
-const scrMem0010GetContractValues: ScrMem0010GetContractResponse = {
-  tvaaLimit: 0,
-  tvaaOffset: 0,
-  tvaaCount: 0,
-  bikeLimit: 0,
-  bikeOffset: 0,
-  bikeCount: 0,
+const contractListInitialValues = {
+  tvaaLimitCount: 0,
+  tvaaResponseCount: 0,
+  tvaaAcquisitionCount: 0,
+  bikeLimitCount: 0,
+  bikeResponseCount: 0,
+  bikeAcquisitionCount: 0,
   list1: [],
-  list2: []
+  list2: [],
 };
 
 /**
  * バリデーションスキーマ
  */
-const validationSchama = generate([
-  'businessBaseName',
-  'businessBaseNameKana',
-  'businessBaseZipCode',
-  'businessBasePrefectureCode',
-  'businessBaseMunicipalities',
-  'businessBaseAddressBuildingName',
-  'businessBasePhoneNumber',
-  'businessBaseStaffName',
-  'businessBaseStaffContactPhoneNumber',
-  'tvaaSalesStaff',
-  'bikeSalesStaff',
-]);
+const validationSchama = {
+  businessBaseName: yup.string().label('事業拠点名称').max(40).required(),
+  businessBaseNameKana: yup
+    .string()
+    .label('事業拠点名称カナ')
+    .max(40)
+    .half()
+    .required(),
+  businessBaseZipCode: yup.string().label('郵便番号').max(8).half().required(),
+  businessBasePrefectureCode: yup.string().label('都道府県').max(4).required(),
+  businessBaseMunicipalities: yup.string().label('市区町村').max(40).required(),
+  businessBaseAddressBuildingName: yup
+    .string()
+    .label('番地・号・建物名など')
+    .max(40)
+    .required(),
+  businessBasePhoneNumber: yup.string().label('TEL').max(13).phone().required(),
+  businessBaseStaffName: yup.string().label('担当者').max(30),
+  businessBaseStaffContactPhoneNumber: yup
+    .string()
+    .label('担当者連絡先')
+    .max(13)
+    .phone(),
+  tvaaSalesStaff: yup.string().label('四輪営業担当').max(48),
+  bikeSalesStaff: yup.string().label('二輪営業担当').max(48),
+};
 
 /**
  * セクション構造定義
@@ -457,287 +495,402 @@ const sectionDef = [
       '事業拠点担当者連絡先電話番号',
       '四輪営業担当',
       '二輪営業担当',
-    ]
-  }
+    ],
+  },
 ];
 
 /**
  * 変更した項目から登録・変更内容データへの変換
  */
-const convertToSectionList = (dirtyFields: object): SectionListModel[] => {
+const convertToSectionList = (dirtyFields: object): sectionList[] => {
   const fields = Object.keys(dirtyFields);
-  const sectionList: SectionListModel[] = [];
-  const columnList: ColumnListModel[] = [];
+  const sectionList: sectionList[] = [];
+  const columnList: columnList[] = [];
   sectionDef.forEach((d) => {
     fields.forEach((f) => {
-      if(d.fields.includes(f)){
-        columnList.push({columnName: d.name[d.fields.indexOf(f)]})
+      if (d.fields.includes(f)) {
+        columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
       }
-    })
+    });
     sectionList.push({
       sectionName: d.section,
-      columnList: columnList
-    })
-  })
+      columnList: columnList,
+    });
+  });
   return sectionList;
 };
 
 /**
- * 検索条件モデルから法人情報検索APIリクエストへの変換
+ * 事業拠点登録APIリクエストへの変換
  */
 const convertFromCorporationBasicModel = (
   corporationBasic: CorporationBasicModel,
   contractList: ScrMem0010GetContractResponse,
-  user: string
-): ScrMem0010RegistrationBusinessBaseResponse => {
+  user: string,
+  registrationChangeMemo: string
+): ScrMem0010RegistrationBusinessBaseRequest => {
   return {
     corporationId: corporationBasic.corporationId,
-    businessBaseCorporationInformationSynchronizationFlag: corporationBasic.businessBaseCorporationInformationSynchronizationFlag,
+    businessBaseCorporationInformationSynchronizationFlag:
+      corporationBasic.businessBaseCorporationInformationSynchronizationFlag,
     businessBaseId: corporationBasic.businessBaseId,
     businessBaseName: corporationBasic.businessBaseName,
     businessBaseNameKana: corporationBasic.businessBaseNameKana,
     businessBaseZipCode: corporationBasic.businessBaseZipCode,
     businessBasePrefectureCode: corporationBasic.businessBasePrefectureCode,
     businessBaseMunicipalities: corporationBasic.businessBaseMunicipalities,
-    businessBaseAddressBuildingName: corporationBasic.businessBaseAddressBuildingName,
+    businessBaseAddressBuildingName:
+      corporationBasic.businessBaseAddressBuildingName,
     businessBasePhoneNumber: corporationBasic.businessBasePhoneNumber,
     businessBaseStaffName: corporationBasic.businessBaseStaffName,
-    businessBaseStaffContactPhoneNumber: corporationBasic.businessBaseStaffContactPhoneNumber,
+    businessBaseStaffContactPhoneNumber:
+      corporationBasic.businessBaseStaffContactPhoneNumber,
     tvaaSalesStaff: corporationBasic.tvaaSalesStaff,
     bikeSalesStaff: corporationBasic.bikeSalesStaff,
-    tvaaLimit: contractList.tvaaLimit,
-    tvaaOffset: contractList.tvaaOffset,
-    tvaaCount: contractList.tvaaCount,
-    bikeLimit: contractList.bikeLimit,
-    bikeOffset: contractList.bikeLimit,
-    bikeCount: contractList.bikeCount,
-    list1: contractList.list1,
-    list2: contractList.list2,
+    tvaaResponseCount: contractList.tvaaResponseCount,
+    bikeResponseCount: contractList.bikeResponseCount,
+    tvaaList: contractList.list1,
+    bikeList: contractList.list2,
     applicationEmployeeId: user,
-    businessDate: new Date(corporationBasic.changeHistoryDate),
-    registrationChangeMemo: "",
+    changeExpectDate: new Date(corporationBasic.changeExpectedDate),
+    registrationChangeMemo: registrationChangeMemo,
     screenId: 'SCR-MEM-0010',
-    tabId: 'B-16'
-  }
-}
+    tabId: 'B-16',
+  };
+};
 
-const convertToContractList = (response:ScrMem0010GetContractResponse): ScrMem0010GetContractResponse => {
-  return {
-    tvaaLimit: response.tvaaLimit,
-    tvaaOffset: response.tvaaOffset,
-    tvaaCount: response.tvaaCount,
-    bikeLimit: response.bikeLimit,
-    bikeOffset: response.bikeLimit,
-    bikeCount: response.bikeCount,
-    list1: response.list1,
-    list2: response.list2
-  }
-}
-
-const convertToErrorMessages = (response: errorResult[]): errorMessagesModel[] => {
-  const list:errorMessagesModel[] = []; 
+const convertToErrorMessages = (response: errorResult[]): errorList[] => {
+  const list: errorList[] = [];
   response.map((x) => {
     list.push({
       errorCode: x.errorCode,
-      errorMessage: x.errorMessage
-    })
-  })
+      errorMessages: [x.errorMessage],
+    });
+  });
   return list;
-}
+};
 
-const ScrMem0010BasicTab = () => {
+const convertTowarningMessages = (response: errorResult[]): warningList[] => {
+  const list: warningList[] = [];
+  response.map((x) => {
+    list.push({
+      warningCode: x.errorCode,
+      warningMessages: [x.errorMessage],
+    });
+  });
+  return list;
+};
 
+const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
   // router
   const [searchParams] = useSearchParams();
-  const corporationId = searchParams.get('corporationId');
-  const businessBaseId = searchParams.get('businessBaseId');
+  const { corporationId, bussinessBaseId } = useParams();
   const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
-  // user情報(businessDateも併せて取得)
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
-	//state
-	const [changeHistory, setChangeHistory] = useState<any>([]);
+  //state
+  const [changeHistory, setChangeHistory] = useState<any>([]);
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
   const [linkHref, setLinkHref] = useState<any>();
-  const [changeFlag, setChangeFlag] = useState<boolean>(false)
-  const [isOpenPopup, setIsOpenPopup] = useState(false);
+  const [contractList, setContractList] =
+    useState<ScrMem0010GetContractResponse>(contractListInitialValues);
+  const [scrCom00032PopupIsOpen, setScrCom00032PopupIsOpen] =
+    useState<boolean>(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
-  const [ contractList, setContractList] = useState<ScrMem0010GetContractResponse>(scrMem0010GetContractValues);
+  const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
+  const [changeHistoryDateCheckIsOpen, setChangeHistoryDateCheckIsOpen] =
+    useState<boolean>(false);
 
-	// コンポーネントを読み取り専用に変更するフラグ
-	const isReadOnly = useState<boolean>(false);
+  // コンポーネントを読み取り専用に変更するフラグ
+  const isReadOnly = useState<boolean>(
+    applicationId !== null ? true : props.editPossible
+  );
 
   // form
   const methods = useForm<CorporationBasicModel>({
     defaultValues: initialValues,
-    resolver: yupResolver(validationSchama),
+    resolver: yupResolver(yup.object(validationSchama)),
     context: isReadOnly,
   });
   const {
-    formState: { dirtyFields, errors  },
+    formState: { dirtyFields, errors },
     setValue,
     getValues,
     reset,
-    watch
+    watch,
   } = methods;
 
   useEffect(() => {
     const resistInitialize = async (corporationId: string) => {
-      // TODO: 直接apiClientを使用しない
-      const codeValues = (await memApiClient.post('/scr/get-code-values')).data;
-      // TODO:業務日付取得方法実装待ち、new Date()で登録
-      const employeeRequest:ScrMem0010GetEmployeeRequest = { businessDate: new Date()}
-      // TODO: 直接apiClientを使用しない
-      const scrMem0010GetEmployeeResponse = await ScrMem0010GetEmployee(employeeRequest);
-      const salesStaffSelectValue = salesStaffSelectValuesModel(scrMem0010GetEmployeeResponse);
-      setSelectValues(
-        {...selectValues, 
-          tvaaSalesStaffSelectValues:salesStaffSelectValue.tvaaSalesStaffSelectValues, 
-          bikeSalesStaffSelectValues:salesStaffSelectValue.bikeSalesStaffSelectValues,
-          prefectureCodeSelectValues: codeValues.prefectureCode
-        }
+      // 法人基本情報申請API
+      const getCorpBasicInfoRequest: ScrMem9999GetCorpBasicInfoRequest = {
+        corporationId: corporationId,
+      };
+      const getCorpBasicInfoResponse = await ScrMem9999GetCorpBasicInfo(
+        getCorpBasicInfoRequest
       );
 
-      // 法人基本情報申請API
-      const scrMem0010GetMemberRequest: ScrMem0010GetMemberRequest = {
-        corporationId: corporationId,
-        // TODO:業務日付取得方法実装待ち、new Date()で登録
-        businessDate: new Date(),
-      };
-      const scrMem0010GetMemberResponse = await ScrMem0010GetMember(scrMem0010GetMemberRequest);
+      // 事業拠点基本情報取得
       const scrMem0010GetBusinessbaseResponse = BusinessbaseInitialValues;
-      const corporationBasic = convertToCorporationBasicModel(scrMem0010GetMemberResponse, scrMem0010GetBusinessbaseResponse);
+      const corporationBasic: ScrMem0010GetBusinessbaseResponse =
+        convertToCorporationBasicModel(
+          getCorpBasicInfoResponse,
+          scrMem0010GetBusinessbaseResponse
+        );
 
       // 画面にデータを設定
       reset(corporationBasic);
-      setLinkHref('/mem/corporations/'+scrMem0010GetMemberResponse.corporationId);
+      setLinkHref('/mem/corporations/' + corporationId);
 
+      // リスト取得
+      const selectValues = selectValuesInitialValues;
+      // 共通管理コード値取得（コード管理マスタ以外）
+      const getCodeValueRequest = {
+        entityList: [{ entityName: 'prefecture_master' }],
+      };
+      const getCodeValueResponse = await ScrMem9999GetCodeValue(
+        getCodeValueRequest
+      );
+      getCodeValueResponse.resultList.map((x) => {
+        if (x.entityName === 'prefecture_master') {
+          x.codeValueList.map((f) => {
+            selectValues.prefectureCodeSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeValueName,
+            });
+          });
+        }
+      });
+
+      // 営業担当情報取得(市区郡マスタ)
+      const getEmployeeResponse = await ScrMem9999GetEmployee();
+      getEmployeeResponse.tvaaSalesInfo.map((x) => {
+        selectValues.tvaaSalesStaffSelectValues.push({
+          value: x.salesId,
+          displayValue: x.salesId + '　' + x.salesName,
+        });
+      });
+      getEmployeeResponse.bikeSalesInfo.map((x) => {
+        selectValues.bikeSalesStaffSelectValues.push({
+          value: x.salesId,
+          displayValue: x.salesId + '　' + x.salesName,
+        });
+      });
+
+      setSelectValues({
+        tvaaSalesStaffSelectValues: selectValues.tvaaSalesStaffSelectValues,
+        bikeSalesStaffSelectValues: selectValues.bikeSalesStaffSelectValues,
+        prefectureCodeSelectValues: selectValues.prefectureCodeSelectValues,
+      });
     };
 
-    const initialize = async (corporationId: string, businessBaseId:string) => {
-      // TODO: 直接apiClientを使用しない
-      const codeValues = (await memApiClient.post('/scr/get-code-values')).data;
-      // TODO:業務日付取得方法実装待ち、new Date()で登録
-      const employeeRequest:ScrMem0010GetEmployeeRequest = { businessDate: new Date()}
-      // TODO: 直接apiClientを使用しない
-      const scrMem0010GetEmployeeResponse = await ScrMem0010GetEmployee(employeeRequest);
-      const salesStaffSelectValue = salesStaffSelectValuesModel(scrMem0010GetEmployeeResponse);
-      setSelectValues(
-        {...selectValues, 
-          tvaaSalesStaffSelectValues:salesStaffSelectValue.tvaaSalesStaffSelectValues, 
-          bikeSalesStaffSelectValues:salesStaffSelectValue.bikeSalesStaffSelectValues,
-          prefectureCodeSelectValues: codeValues.prefectureCode
-        }
+    const initialize = async (
+      corporationId: string,
+      businessBaseId: string
+    ) => {
+      // 法人基本情報申請API
+      const getCorpBasicInfoRequest: ScrMem9999GetCorpBasicInfoRequest = {
+        corporationId: corporationId,
+      };
+      const getCorpBasicInfoResponse = await ScrMem9999GetCorpBasicInfo(
+        getCorpBasicInfoRequest
       );
 
-      // 法人基本情報申請API
-      const scrMem0010GetMemberRequest: ScrMem0010GetMemberRequest = {
-        corporationId: corporationId,
-        // TODO:業務日付取得方法実装待ち、new Date()で登録
-        businessDate: new Date(),
-      };
-      const scrMem0010GetMemberResponse = await ScrMem0010GetMember(scrMem0010GetMemberRequest);
-      
       // 事業拠点基本情報取得API
-      const scrMem0010GetBusinessbaseRequest: ScrMem0010GetBusinessbaseRequest = {
-        corporationId: corporationId,
-        businessBaseId: businessBaseId,
-      };
-      const scrMem0010GetBusinessbaseResponse = await ScrMem0010GetBusinessbase(scrMem0010GetBusinessbaseRequest);
-      const corporationBasic = convertToCorporationBasicModel(scrMem0010GetMemberResponse, scrMem0010GetBusinessbaseResponse);
+      const scrMem0010GetBusinessbaseRequest: ScrMem0010GetBusinessbaseRequest =
+        {
+          corporationId: corporationId,
+          businessBaseId: businessBaseId,
+        };
+      const scrMem0010GetBusinessbaseResponse = await ScrMem0010GetBusinessbase(
+        scrMem0010GetBusinessbaseRequest
+      );
+
+      const corporationBasic = convertToCorporationBasicModel(
+        getCorpBasicInfoResponse,
+        scrMem0010GetBusinessbaseResponse
+      );
 
       // 画面にデータを設定
       reset(corporationBasic);
-      setLinkHref('/mem/corporations/'+scrMem0010GetMemberResponse.corporationId);
+      setLinkHref('/mem/corporations/' + corporationId);
+
+      // リスト取得
+      const selectValues = selectValuesInitialValues;
+      // 共通管理コード値取得（コード管理マスタ以外）
+      const getCodeValueRequest = {
+        entityList: [{ entityName: 'prefecture_master' }],
+      };
+      const getCodeValueResponse = await ScrMem9999GetCodeValue(
+        getCodeValueRequest
+      );
+      getCodeValueResponse.resultList.map((x) => {
+        if (x.entityName === 'prefecture_master') {
+          x.codeValueList.map((f) => {
+            selectValues.prefectureCodeSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeValueName,
+            });
+          });
+        }
+      });
+
+      // 営業担当情報取得(市区郡マスタ)
+      const getEmployeeResponse = await ScrMem9999GetEmployee();
+      getEmployeeResponse.tvaaSalesInfo.map((x) => {
+        selectValues.tvaaSalesStaffSelectValues.push({
+          value: x.salesId,
+          displayValue: x.salesId + '　' + x.salesName,
+        });
+      });
+      getEmployeeResponse.bikeSalesInfo.map((x) => {
+        selectValues.bikeSalesStaffSelectValues.push({
+          value: x.salesId,
+          displayValue: x.salesId + '　' + x.salesName,
+        });
+      });
+
+      setSelectValues({
+        tvaaSalesStaffSelectValues: selectValues.tvaaSalesStaffSelectValues,
+        bikeSalesStaffSelectValues: selectValues.bikeSalesStaffSelectValues,
+        prefectureCodeSelectValues: selectValues.prefectureCodeSelectValues,
+      });
 
       // 変更履歴情報
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0010',
         tabId: 'B-16',
-        getKeyValue: '',
-        businessDate: new Date() // TODO:業務日付取得方法実装待ち、new Date()で登録
-      }
-      const getChangeDate = (await comApiClient.post('/com/get-change-date', getChangeDateRequest)).data;
+        masterId: '',
+        businessDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
+      };
+      const getChangeDate = (
+        await comApiClient.post(
+          '/com/scr-com-9999/get-history-info',
+          getChangeDateRequest
+        )
+      ).data;
 
-      const chabngeHistory = getChangeDate.changeExpectDateInfo.map((e: { changeHistoryNumber: number; changeExpectDate: Date; }) => {
-        return{
-          value: e.changeHistoryNumber,
-          displayValue: e.changeExpectDate,
+      const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
+        (e: { changeHistoryNumber: number; changeExpectDate: string }) => {
+          return {
+            value: e.changeHistoryNumber,
+            displayValue: new Date(e.changeExpectDate).toLocaleDateString(),
+          };
         }
-      })
+      );
       setChangeHistory(chabngeHistory);
 
       //四輪、二輪契約情報
       const request: ScrMem0010GetContractRequest = {
+        corporationId: corporationId,
         businessBaseId: businessBaseId,
         businessDate: new Date(),
-        limit:'',
+        limit: '',
       };
       const response = await ScrMem0010GetContract(request);
       setContractList(response);
     };
 
     const historyInitialize = async (applicationId: string) => {
-      // TODO: 直接apiClientを使用しない
-      const codeValues = (await memApiClient.post('/scr/get-code-values')).data;
-      // TODO:業務日付取得方法実装待ち、new Date()で登録
-      const employeeRequest:ScrMem0010GetEmployeeRequest = { businessDate: new Date()}
-      // TODO: 直接apiClientを使用しない
-      const scrMem0010GetEmployeeResponse = await ScrMem0010GetEmployee(employeeRequest);
-      const salesStaffSelectValue = salesStaffSelectValuesModel(scrMem0010GetEmployeeResponse);
-      setSelectValues(
-        {...selectValues, 
-          tvaaSalesStaffSelectValues:salesStaffSelectValue.tvaaSalesStaffSelectValues, 
-          bikeSalesStaffSelectValues:salesStaffSelectValue.bikeSalesStaffSelectValues,
-          prefectureCodeSelectValues: codeValues.prefectureCode
-        }
-      );
-      // 法人基本情報取得API
+      // 変更履歴情報取得API
       const request = {
-        changeHistoryNumber: applicationId
+        changeHistoryNumber: applicationId,
       };
-      const response = (await memApiClient.post('/get-history-info', request)).data;
-      const corporationBasic = convertToBusinessBaseModel(response,response);
+      const response = (
+        await memApiClient.post('/scr-mem-9999/get-history-info', request)
+      ).data;
+      const corporationBasic = convertToBusinessBaseModel(response, response);
 
       // 画面にデータを設定
       reset(corporationBasic);
-      setContractList(convertToContractList(response));
-    }
+      setContractList(response);
 
-    if (corporationId !== null && businessBaseId !== null) {
-      initialize(corporationId, businessBaseId);
+      // リスト取得
+      const selectValues = selectValuesInitialValues;
+      // 共通管理コード値取得（コード管理マスタ以外）
+      const getCodeValueRequest = {
+        entityList: [{ entityName: 'prefecture_master' }],
+      };
+      const getCodeValueResponse = await ScrMem9999GetCodeValue(
+        getCodeValueRequest
+      );
+      getCodeValueResponse.resultList.map((x) => {
+        if (x.entityName === 'prefecture_master') {
+          x.codeValueList.map((f) => {
+            selectValues.prefectureCodeSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeValueName,
+            });
+          });
+        }
+      });
+
+      // 営業担当情報取得(市区郡マスタ)
+      const getEmployeeResponse = await ScrMem9999GetEmployee();
+      getEmployeeResponse.tvaaSalesInfo.map((x) => {
+        selectValues.tvaaSalesStaffSelectValues.push({
+          value: x.salesId,
+          displayValue: x.salesId + '　' + x.salesName,
+        });
+      });
+      getEmployeeResponse.bikeSalesInfo.map((x) => {
+        selectValues.bikeSalesStaffSelectValues.push({
+          value: x.salesId,
+          displayValue: x.salesId + '　' + x.salesName,
+        });
+      });
+
+      setSelectValues({
+        tvaaSalesStaffSelectValues: selectValues.tvaaSalesStaffSelectValues,
+        bikeSalesStaffSelectValues: selectValues.bikeSalesStaffSelectValues,
+        prefectureCodeSelectValues: selectValues.prefectureCodeSelectValues,
+      });
+    };
+
+    if (applicationId !== null) {
+      historyInitialize(applicationId);
       return;
     }
 
-    if(corporationId !== null && businessBaseId === null){
-      resistInitialize(corporationId)
+    if (
+      corporationId !== undefined &&
+      bussinessBaseId !== undefined &&
+      bussinessBaseId !== 'new'
+    ) {
+      initialize(corporationId, bussinessBaseId);
       return;
     }
 
-    if(applicationId !== null){
-      historyInitialize(applicationId)
+    if (corporationId !== undefined && bussinessBaseId === 'new') {
+      resistInitialize(corporationId);
       return;
     }
+  }, [corporationId, bussinessBaseId, applicationId, reset]);
 
-  },[corporationId, businessBaseId, applicationId, reset]);
-  
   // チェックボックスのオンオフイベント
   useEffect(() => {
     const subscription = watch((value, { name, type }) => {
-      const checkbox = 'businessBaseCorporationInformationSynchronizationFlag'
+      const checkbox = 'businessBaseCorporationInformationSynchronizationFlag';
       if (name !== checkbox) return;
-      if(value[checkbox] === true){
-        console.log(value[checkbox]);
-        setValue('businessBaseZipCode', getValues('corporationZipCode'))
-        setValue('businessBasePrefectureCode', getValues('corporationPrefectureCode'))
-        setValue('businessBaseMunicipalities', getValues('corporationMunicipalities'))
-        setValue('businessBaseAddressBuildingName', getValues('corporationAddressBuildingName'))
+      if (value[checkbox] === true) {
+        setValue('businessBaseZipCode', getValues('corporationZipCode'));
+        setValue(
+          'businessBasePrefectureCode',
+          getValues('corporationPrefectureCode')
+        );
+        setValue(
+          'businessBaseMunicipalities',
+          getValues('corporationMunicipalities')
+        );
+        setValue(
+          'businessBaseAddressBuildingName',
+          getValues('corporationAddressBuildingName')
+        );
       }
-
     });
     return () => subscription.unsubscribe();
   }, [setValue, watch]);
@@ -753,54 +906,77 @@ const ScrMem0010BasicTab = () => {
    * 郵便番号onBlur時のイベントハンドラ
    */
   const businessBaseZipCodeOnBlur = async () => {
-    const request = {zipCode: getValues('businessBaseZipCode')}
-    const codeValues = (await comApiClient.post('/com/scr/get-address-info', request)).data;
-    setValue('businessBasePrefectureCode', codeValues.prefectureCode)
-    setValue('businessBaseMunicipalities', codeValues.municipalities)
-    setValue('businessBaseAddressBuildingName', codeValues.townOrStreetName)
-  }
+    const getAddressInfoRequest = { zipCode: getValues('businessBaseZipCode') };
+    const getAddressInfoResponse = await ScrCom9999GetAddressInfo(
+      getAddressInfoRequest
+    );
+    setValue(
+      'businessBasePrefectureCode',
+      getAddressInfoResponse.prefectureCode
+    );
+    setValue(
+      'businessBaseMunicipalities',
+      getAddressInfoResponse.municipalities
+    );
+    setValue(
+      'businessBaseAddressBuildingName',
+      getAddressInfoResponse.townOrStreetName
+    );
+  };
 
   /**
    * 確定ボタンクリック時のイベントハンドラ
    */
-  const handleConfirm = async () => {
-    if(Object.keys(errors).length) return;
-    
-    if(dirtyFields.businessBaseZipCode
-      ||dirtyFields.businessBasePrefectureCode
-      ||dirtyFields.businessBaseMunicipalities
-      ||dirtyFields.businessBaseAddressBuildingName
-      ||dirtyFields.businessBasePhoneNumber
-    ){
-      setChangeFlag(true)
-    }
-    
+  const handleConfirm = () => {
+    if (Object.keys(errors).length) return;
+    // 反映予定日整合性チェック
+    setChangeHistoryDateCheckIsOpen(true);
+  };
+
+  /**
+   * 確定ボタンクリック時（反映予定日整合性チェック後）のイベントハンドラ
+   */
+  const ChangeHistoryDateCheckUtilHandleConfirm = async (checkFlg: boolean) => {
+    setChangeHistoryDateCheckIsOpen(false);
+    if (!checkFlg) return;
+
     // 法人基本情報申請API
-    const scrMem0010InputCheckBusinessBaseRequest: ScrMem0010InputCheckBusinessBaseRequest = {
-      corporationId: getValues('corporationId'),
-      businessBaseId: getValues('businessBaseId'),
-      businessBaseZipCode: getValues('businessBaseZipCode'),
-      businessBasePrefectureCode: getValues('businessBasePrefectureCode'),
-      businessBaseMunicipalities: getValues('businessBaseMunicipalities'),
-      businessBaseAddressBuildingName: getValues('businessBaseAddressBuildingName'),
-      businessBasePhoneNumber: getValues('businessBasePhoneNumber'),
-      changeFlag: changeFlag,
-    };
-    const scrMem0010GetMemberResponse = await ScrMem0010InputCheckBusinessBase(scrMem0010InputCheckBusinessBaseRequest);
-      
-    setIsOpenPopup(true);
+    const scrMem0010InputCheckBusinessBaseRequest: ScrMem0010InputCheckBusinessBaseRequest =
+      {
+        corporationId: getValues('corporationId'),
+        businessBaseId: getValues('businessBaseId'),
+        businessBaseCorporationInformationSynchronizationFlag: getValues(
+          'businessBaseCorporationInformationSynchronizationFlag'
+        ),
+        businessBaseZipCode: getValues('businessBaseZipCode'),
+        businessBasePrefectureCode: getValues('businessBasePrefectureCode'),
+        businessBaseMunicipalities: getValues('businessBaseMunicipalities'),
+        businessBaseAddressBuildingName: getValues(
+          'businessBaseAddressBuildingName'
+        ),
+        businessBasePhoneNumber: getValues('businessBasePhoneNumber'),
+      };
+    const scrMem0010GetMemberResponse = await ScrMem0010InputCheckBusinessBase(
+      scrMem0010InputCheckBusinessBaseRequest
+    );
+
+    setScrCom00032PopupIsOpen(true);
 
     setScrCom0032PopupData({
-      errorMessages: convertToErrorMessages(scrMem0010GetMemberResponse.errorList),
-      warningMessages: convertToErrorMessages(scrMem0010GetMemberResponse.warnList),
-      contentsList: {
-        screenName: '事業拠点情報',
-        screenId: 'SCR-MEM-0010',
-        tabName: '基本情報',
-        tabId: 'B-16',
-        sectionList: convertToSectionList(dirtyFields),
-      },
-      changeExpectDate: new Date(),// TODO:業務日付取得方法実装待ち、new Date()で登録
+      errorList: convertToErrorMessages(scrMem0010GetMemberResponse.errorList),
+      warningList: convertTowarningMessages(
+        scrMem0010GetMemberResponse.warnList
+      ),
+      registrationChangeList: [
+        {
+          screenId: 'SCR-MEM-0010',
+          screenName: '事業拠点情報',
+          tabId: 'B-16',
+          tabName: '基本情報',
+          sectionList: convertToSectionList(dirtyFields),
+        },
+      ],
+      changeExpectDate: '', // TODO:業務日付取得方法実装待ち、new Date()で登録
     });
   };
 
@@ -808,17 +984,22 @@ const ScrMem0010BasicTab = () => {
    * キャンセルボタンクリック時のイベントハンドラ
    */
   const handleCancel = () => {
-    navigate('/mem/corporations');
+    navigate('/mem/corporations/' + corporationId);
   };
-  
+
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
-    setIsOpenPopup(false);
+  const handlePopupConfirm = async (registrationChangeMemo: string) => {
+    setScrCom00032PopupIsOpen(false);
 
     // 法人基本情報変更申請
-    const request = convertFromCorporationBasicModel(getValues(), contractList, appContext.user);
+    const request = convertFromCorporationBasicModel(
+      getValues(),
+      contractList,
+      user.employeeId,
+      registrationChangeMemo
+    );
     await ScrMem0010RegistrationBusinessBase(request);
   };
 
@@ -826,28 +1007,26 @@ const ScrMem0010BasicTab = () => {
    * ポップアップのキャンセルボタンクリック時のイベントハンドラ
    */
   const handlePopupCancel = () => {
-    setIsOpenPopup(false);
+    setScrCom00032PopupIsOpen(false);
   };
 
   /**
    * 表示切替ボタンクリック時のイベントハンドラ
    */
   const handleSwichDisplay = async () => {
-    // 法人基本情報取得API
+    // 変更履歴情報取得API
     const request = {
-      changeHistoryNumber: getValues('changeHistoryNumber')
+      changeHistoryNumber: getValues('changeHistoryNumber'),
     };
-    const response = (await memApiClient.post('/get-history-info', request)).data;
-    const corporationBasic = convertToBusinessBaseModel(getValues(),response);
+    const response = (
+      await memApiClient.post('/scr-mem-9999/get-history-info', request)
+    ).data;
+    const corporationBasic = convertToBusinessBaseModel(getValues(), response);
 
+    setIsChangeHistoryBtn(true);
     // 画面にデータを設定
     reset(corporationBasic);
   };
-
-  //法人情報コピーチェックボックス
-  const CheckBoxBusinessBaseCorporationInformationSynchronizationFlag = [
-    {displayValue: '法人情報コピー', disabled: false}
-  ]
 
   return (
     <>
@@ -855,131 +1034,178 @@ const ScrMem0010BasicTab = () => {
         {/* main */}
         <MainLayout main>
           <FormProvider {...methods}>
+            {/* 法人情報セクション */}
             <Section name='法人情報'>
-              <>
-                <Grid container spacing={5}>
-                  <Grid item size='m'>
-                    <TextField label='法人ID' name='corporationId' readonly/>
-                  </Grid>
-                  <Grid item size='m'>
-                    <TextField label='法人名称' name='corporationName' readonly/>
-                  </Grid>
-                  <Grid item size='el'>
-                    <TextField label='住所' name='corporationAddress' readonly/>
-                  </Grid>
-                  <Grid item size='m'>
-                    <TextField label='TEL' name='corporationPhoneNumber' readonly/>
-                  </Grid>
-                  <Grid item size='m'>
-                    <TextField label='FAX' name='corporationFaxNumber' readonly/>
-                  </Grid>
-                </Grid>
-              </>
+              <RowStack>
+                <ColStack>
+                  <TextField label='法人ID' name='corporationId' readonly />
+                  <TextField
+                    label='住所'
+                    name='corporationAddress'
+                    readonly
+                    size='l'
+                  />
+                  <TextField
+                    label='TEL'
+                    name='corporationPhoneNumber'
+                    readonly
+                  />
+                </ColStack>
+                <ColStack>
+                  <TextField label='法人名称' name='corporationName' readonly />
+                  <MarginBox mt={17}>
+                    <TextField
+                      label='FAX'
+                      name='corporationFaxNumber'
+                      readonly
+                    />
+                  </MarginBox>
+                </ColStack>
+              </RowStack>
             </Section>
+
+            {/* 事業拠点情報セクション */}
             <Section name='事業拠点情報'>
-                <Grid container>
-                  <Grid item xs={12}>
-                    <Checkbox 
-                      name='businessBaseCorporationInformationSynchronizationFlag' 
-                      checkOptions={CheckBoxBusinessBaseCorporationInformationSynchronizationFlag} 
-                    />
-                  </Grid>
-                </Grid>
-                <Grid container spacing={2}>
-                  <Grid item sm={3}>
-                    <TextField label='事業拠点ID' name='businessBaseId' readonly/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <TextField label='事業拠点名称' name='businessBaseName' required/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <TextField label='事業拠点名称カナ' name='businessBaseNameKana' required/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <PostalTextField label='郵便番号' name='businessBaseZipCode' required onBlur={businessBaseZipCodeOnBlur}  disabled={getValues('businessBaseCorporationInformationSynchronizationFlag')}/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <Select
-                      label='都道府県'
-                      name='businessBasePrefectureCode'
-                      selectValues={selectValues.prefectureCodeSelectValues}
-                      blankOption
-                      required
-                      disabled={getValues('businessBaseCorporationInformationSynchronizationFlag')}
-                    />
-                  </Grid>
-                  <Grid item sm={3}>
-                    <TextField label='市区町村' name='businessBaseMunicipalities' required disabled={getValues('businessBaseCorporationInformationSynchronizationFlag')}/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <TextField label='番地・号・建物名など' name='businessBaseAddressBuildingName' required disabled={getValues('businessBaseCorporationInformationSynchronizationFlag')}/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <TextField label='TEL' name='businessBasePhoneNumber' required disabled={getValues('businessBaseCorporationInformationSynchronizationFlag')}/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <TextField label='担当者' name='businessBaseStaffName'/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <TextField label='担当者連絡先' name='businessBaseStaffContactPhoneNumber'/>
-                  </Grid>
-                  <Grid item sm={3}>
-                    <Select
-                      label='四輪営業担当'
-                      name='tvaaSalesStaff'
-                      selectValues={selectValues.tvaaSalesStaffSelectValues}
-                      blankOption
-                    />
-                  </Grid>
-                  <Grid item sm={3}>
-                    <Select
-                      label='二輪営業担当'
-                      name='bikeSalesStaff'
-                      selectValues={selectValues.bikeSalesStaffSelectValues}
-                      blankOption
-                    />
-                  </Grid>
-                </Grid>
+              <RowStack>
+                <ColStack>
+                  <Checkbox
+                    name='businessBaseCorporationInformationSynchronizationFlag'
+                    label='法人情報コピー'
+                  />
+                </ColStack>
+              </RowStack>
+              <MarginBox mb={10}>
+                <></>
+              </MarginBox>
+              <RowStack>
+                <ColStack>
+                  <TextField
+                    label='事業拠点ID'
+                    name='businessBaseId'
+                    readonly
+                  />
+                  <Select
+                    label='都道府県'
+                    name='businessBasePrefectureCode'
+                    selectValues={selectValues.prefectureCodeSelectValues}
+                    blankOption
+                    required
+                    disabled={getValues(
+                      'businessBaseCorporationInformationSynchronizationFlag'
+                    )}
+                  />
+                  <TextField label='担当者' name='businessBaseStaffName' />
+                </ColStack>
+                <ColStack>
+                  <TextField
+                    label='事業拠点名称'
+                    name='businessBaseName'
+                    required
+                  />
+                  <TextField
+                    label='市区町村'
+                    name='businessBaseMunicipalities'
+                    required
+                    disabled={getValues(
+                      'businessBaseCorporationInformationSynchronizationFlag'
+                    )}
+                  />
+                  <TextField
+                    label='担当者連絡先'
+                    name='businessBaseStaffContactPhoneNumber'
+                  />
+                </ColStack>
+                <ColStack>
+                  <TextField
+                    label='事業拠点名称カナ'
+                    name='businessBaseNameKana'
+                    required
+                  />
+                  <TextField
+                    label='番地・号・建物名など'
+                    name='businessBaseAddressBuildingName'
+                    required
+                    disabled={getValues(
+                      'businessBaseCorporationInformationSynchronizationFlag'
+                    )}
+                  />
+                  <Select
+                    label='四輪営業担当'
+                    name='tvaaSalesStaff'
+                    selectValues={selectValues.tvaaSalesStaffSelectValues}
+                    blankOption
+                  />
+                </ColStack>
+                <ColStack>
+                  <PostalTextField
+                    label='郵便番号'
+                    name='businessBaseZipCode'
+                    required
+                    onBlur={businessBaseZipCodeOnBlur}
+                    disabled={getValues(
+                      'businessBaseCorporationInformationSynchronizationFlag'
+                    )}
+                  />
+                  <TextField
+                    label='TEL'
+                    name='businessBasePhoneNumber'
+                    required
+                    disabled={getValues(
+                      'businessBaseCorporationInformationSynchronizationFlag'
+                    )}
+                  />
+                  <Select
+                    label='二輪営業担当'
+                    name='bikeSalesStaff'
+                    selectValues={selectValues.bikeSalesStaffSelectValues}
+                    blankOption
+                  />
+                </ColStack>
+              </RowStack>
             </Section>
+
+            {/* 会員メモセクション */}
             <Section name='会員メモ'>
-              <Grid container>
-                <Grid item size='s'>
-                  <Link href={linkHref} underline='always' color='#00C2FF' onClick={memberMemoLinkClick}>
+              <RowStack>
+                <ColStack>
+                  <Link href={linkHref} onClick={memberMemoLinkClick}>
                     会員メモ
                   </Link>
-                </Grid>
-                <Grid item size='l'>
-                  <TextField label='' name='memberMemo' readonly/>
-                </Grid>
-              </Grid>
+                </ColStack>
+                <ColStack>
+                  <Textarea name='memberMemo' disabled={true} />
+                </ColStack>
+              </RowStack>
             </Section>
           </FormProvider>
-				</MainLayout>
+        </MainLayout>
 
         {/* right */}
         <MainLayout right>
           <FormProvider {...methods}>
             <Grid container height='100%'>
               <Grid item size='s'>
-              {changeHistory.length <= 0?<></>:
                 <RightElementStack>
-                  <Stack>
-                    <Typography bold>変更予約情報</Typography>
-                    <WarningLabel text='変更予約あり' />
-                    <Select
-                      name='changeHistoryNumber'
-                      selectValues={changeHistory}
-                      blankOption
-                    />
-                    <PrimaryButton onClick={handleSwichDisplay}>
-                      表示切替
-                    </PrimaryButton>
-                  </Stack>
+                  {changeHistory.length <= 0 || isReadOnly[0] ? (
+                    <></>
+                  ) : (
+                    <Stack>
+                      <Typography bold>変更予約情報</Typography>
+                      <WarningLabel text='変更予約あり' />
+                      <Select
+                        name='changeHistoryNumber'
+                        selectValues={changeHistory}
+                        blankOption
+                      />
+                      <PrimaryButton onClick={handleSwichDisplay}>
+                        表示切替
+                      </PrimaryButton>
+                    </Stack>
+                  )}
                   <MarginBox mb={6}>
-                    <DatePicker label='変更予定日' name='changeHistoryDate' />
+                    <DatePicker label='変更予定日' name='changeExpectedDate' />
                   </MarginBox>
                 </RightElementStack>
-              }
               </Grid>
             </Grid>
           </FormProvider>
@@ -989,21 +1215,32 @@ const ScrMem0010BasicTab = () => {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={handleConfirm}>確定</ConfirmButton>
+            <ConfirmButton onClick={handleConfirm} disable={isReadOnly[0]}>
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
-      
+
       {/* 登録内容確認ポップアップ */}
       <ScrCom0032Popup
-        isOpen={isOpenPopup}
+        isOpen={scrCom00032PopupIsOpen}
         data={scrCom0032PopupData}
         handleConfirm={handlePopupConfirm}
         handleCancel={handlePopupCancel}
+      />
+
+      {/* 反映予定日整合性チェック */}
+      <ChangeHistoryDateCheckUtil
+        changeExpectedDate={getValues('changeExpectedDate')}
+        changeHistoryNumber={getValues('changeHistoryNumber')}
+        isChangeHistoryBtn={isChangeHistoryBtn}
+        changeHistory={changeHistory}
+        isOpen={changeHistoryDateCheckIsOpen}
+        handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
       />
     </>
   );
 };
 
 export default ScrMem0010BasicTab;
-
