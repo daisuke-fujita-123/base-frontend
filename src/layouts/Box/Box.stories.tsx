@@ -1,7 +1,13 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
 import React from 'react';
 
-import { Box, ContentsBox, ErrorBox, WarningBox } from './Box';
+import {
+  Box,
+  ContentsBox,
+  ContentsOutsideBox,
+  ErrorBox,
+  WarningBox,
+} from './Box';
 
 export default {
   component: Box,
@@ -45,6 +51,9 @@ export const Example = () => {
       <ErrorBox title='一覧検索' disable={true}>
         Disable
       </ErrorBox>
+      <ContentsOutsideBox title='一覧検索' disable={true}>
+        Disable
+      </ContentsOutsideBox>
     </>
   );
 };

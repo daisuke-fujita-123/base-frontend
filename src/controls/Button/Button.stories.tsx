@@ -10,7 +10,9 @@ import {
   AddIconButton,
   Button,
   CancelButton,
+  ConfirmButton,
   DeleteButton,
+  InfoButton,
   LogoutButton,
   PrimaryButton,
   SearchButton,
@@ -27,21 +29,9 @@ export default {
       description: 'ボタンの使用可否',
       defaultValue: { summary: 'false' },
     },
-    type: {
-      description: 'ボタンの種類',
-      defaultValue: { summary: 'button' },
-    },
     variant: {
       description: 'ボタンのCSSの種類',
       defaultValue: { summary: 'outlined' },
-    },
-    color: {
-      description: 'ボタンの表示名と境界線の色',
-      defaultValue: { summary: 'inherit' },
-    },
-    bgColor: {
-      description: 'ボタンの背景の色',
-      defaultValue: { summary: '' },
     },
     onClick: {
       description: 'ボタン押下時のイベント',
@@ -88,6 +78,7 @@ export const Example = () => {
       <CancelButton disable={false} onClick={onClickFunction}>
         キャンセル
       </CancelButton>
+      <ConfirmButton onClick={onClickFunction}>確定</ConfirmButton>
       <LogoutButton disable={false} onClick={onClickFunction}>
         ログアウト
       </LogoutButton>
@@ -95,6 +86,7 @@ export const Example = () => {
       <PrimaryButton onClick={onClickFunction} size='small'>
         small
       </PrimaryButton>
+      <InfoButton></InfoButton>
     </ThemeProvider>
   );
 };

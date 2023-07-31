@@ -5,7 +5,10 @@ import { theme } from 'controls/theme';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import { IconButton, styled } from '@mui/material';
 import { default as ButtonMui } from '@mui/material/Button';
@@ -26,6 +29,7 @@ interface ButtonProps {
   bgColor?: string;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   size?: 'small' | 'medium' | 'large';
+  onBlur?: (e: React.FocusEvent<HTMLButtonElement>) => void;
 }
 export const Button = (props: ButtonProps) => {
   const {
@@ -107,6 +111,15 @@ export const AddIconButton = (props: ButtonProps) => {
   );
 };
 
+export const RemoveIconButton = (props: ButtonProps) => {
+  const { children, onClick } = props;
+  return (
+    <StyledAddIconButton onClick={onClick}>
+      <RemoveCircleOutlineIcon>{children}</RemoveCircleOutlineIcon>
+    </StyledAddIconButton>
+  );
+};
+
 const StyledSearchButton = styled(ButtonMui)({
   ...theme.palette.secondaryButton,
   '&:hover': {
@@ -124,7 +137,7 @@ export const SearchButton = (props: ButtonProps) => {
       startIcon={<SearchIcon />}
       disabled={disable}
       onClick={onClick}
-      size='medium'
+      size='large'
     >
       {children}
     </StyledSearchButton>
@@ -236,6 +249,34 @@ export const AccordionButton = (props: AccordionButtonProps) => {
     <StyledAccordionButton disabled={disable} onClick={onClick}>
       {visible ? <StyledAccordionCloseIcon /> : <StyledAccordionOpenIcon />}
     </StyledAccordionButton>
+  );
+};
+
+const StyledIconButton = styled(IconButton)({
+  color: '#0075ff',
+  width: theme.spacing(6),
+  height: theme.spacing(6),
+  '& .MuiSvgIcon-root': {
+    width: theme.spacing(6),
+    height: theme.spacing(6),
+  },
+});
+
+export const InfoButton = (props: ButtonProps) => {
+  const { children, onClick, onBlur } = props;
+  return (
+    <StyledIconButton onClick={onClick} onBlur={onBlur}>
+      <InfoOutlinedIcon>{children}</InfoOutlinedIcon>
+    </StyledIconButton>
+  );
+};
+
+export const ClearButton = (props: ButtonProps) => {
+  const { children, onClick } = props;
+  return (
+    <StyledAddIconButton onClick={onClick}>
+      <ClearIcon>{children}</ClearIcon>
+    </StyledAddIconButton>
   );
 };
 

@@ -15,6 +15,12 @@ export default {
     titles: {
       description: '表示するtitleを配列化したもの。',
     },
+    isError: {
+      description: 'エラー表示の際に設定',
+    },
+    isWarning: {
+      description: 'ワーニング表示の際に設定',
+    },
   },
 } as ComponentMeta<typeof StackModalSection>;
 const ChildrenSample = [

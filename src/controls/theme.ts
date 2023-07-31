@@ -11,6 +11,7 @@ declare module '@mui/material/styles' {
     calender: Palette['primary'];
     table: Palette['primary'];
     tab: Palette['primary'];
+    tabNoSelect: Palette['primary'];
     contentsBox: Palette['primary'];
   }
 
@@ -24,6 +25,7 @@ declare module '@mui/material/styles' {
     calender: PaletteOptions['primary'];
     table: PaletteOptions['primary'];
     tab: PaletteOptions['primary'];
+    tabNoSelect: PaletteOptions['primary'];
     contentsBox: PaletteOptions['primary'];
   }
 
@@ -55,16 +57,6 @@ declare module '@mui/material/styles' {
     selected?: string;
     checked?: string;
     backgroundColor?: string;
-    tabSelected?: {
-      background?: string;
-      color?: string;
-      border?: string;
-    };
-    tabNotSelected?: {
-      background?: string;
-      color?: string;
-      border?: string;
-    };
   }
 
   interface SimplePaletteColorOptions {
@@ -91,16 +83,6 @@ declare module '@mui/material/styles' {
     selected?: string;
     checked?: string;
     backgroundColor?: string;
-    tabSelected?: {
-      background?: string;
-      color?: string;
-      border?: string;
-    };
-    tabNotSelected?: {
-      background?: string;
-      color?: string;
-      border?: string;
-    };
   }
 }
 
@@ -125,16 +107,16 @@ export const theme = createTheme({
           minWidth: 150,
           height: 40,
           fontSize: 18,
-          startIcon: {
-            marginRight: 15,
+          '& .MuiButton-startIcon': {
+            marginRight: 10,
           },
         },
         sizeMedium: {
           minWidth: 120,
           height: 30,
           fontSize: 13,
-          startIcon: {
-            marginRight: 10,
+          '& .MuiButton-startIcon': {
+            marginRight: 5,
           },
         },
         sizeSmall: {
@@ -166,6 +148,19 @@ export const theme = createTheme({
         },
         input: {
           padding: '0 0 0 8px',
+        },
+      },
+    },
+    MuiInput: {
+      styleOverrides: {
+        underline: {
+          borderBottomColor: '#ececec',
+          '&:after': {
+            borderBottomColor: '#f37246',
+          },
+          '&:before': {
+            borderBottomColor: '#ececec',
+          },
         },
       },
     },
@@ -223,9 +218,8 @@ export const theme = createTheme({
         root: {
           padding: 0,
           margin: 10,
-          color: '#bbbbbb',
           '&.Mui-checked': { color: '#0075ff', borderColor: '#bbbbbb' },
-          '&.Mui-disabled': { color: '#aaaaaa', borderColor: '#dbdbdb' },
+          '&.Mui-disabled': { color: '#aaaaaa' },
         },
       },
     },
@@ -274,8 +268,8 @@ export const theme = createTheme({
       background: '#A5DBC3',
       color: '#ffffff',
       selectDate: {
-        backgroundColor: '#fde8d4',
-        border: '1px solid #c86800',
+        backgroundColor: '#ffeae3',
+        border: '1px solid #ff7341',
       },
     },
     contentsBox: {
@@ -352,22 +346,28 @@ export const theme = createTheme({
       },
     },
     table: {
-      main: '#eeeeee',
+      main: '',
       header: '#cccccc',
+      background: '#eeeeee',
       selected: '#d6ebe5',
       checked: '#b9e7da',
     },
     tab: {
       main: '',
-      tabSelected: {
-        background: 'linear-gradient(to top,#ADDECA,#E0EEF0)',
-        color: '#4E8D66 !important',
-        border: '1px solid #9CC3B2',
+      background: 'linear-gradient(to top,#85dbc3,#e7f1f7)',
+      color: '#008c64 !important',
+      border: '#73baa7',
+      hover: {
+        opacity: 0.5,
       },
-      tabNotSelected: {
-        background: 'linear-gradient(to top,#787878,#969696)',
-        color: '#ffffff !important',
-        border: '1px solid #797979',
+    },
+    tabNoSelect: {
+      main: '',
+      background: 'linear-gradient(to top,#777777,#999999)',
+      color: '#ffffff !important',
+      border: '1px solid #777777',
+      hover: {
+        opacity: 0.5,
       },
     },
   },

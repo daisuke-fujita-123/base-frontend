@@ -1,6 +1,10 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
-import { Divider } from './Divider';
 import React from 'react';
+
+import { theme } from 'controls/theme';
+
+import { Divider, TableDivider, TableSpaceDivider } from './Divider';
+
 export default {
   component: Divider,
   parameters: { controls: { expanded: true } },
@@ -9,5 +13,12 @@ export default {
 export const Index: ComponentStoryObj<typeof Divider> = {};
 
 export const Example = () => {
-  return <Divider />;
+  return (
+    <div style={{ backgroundColor: theme.palette.background.disabled }}>
+      <Divider />
+      <TableDivider />
+      <TableSpaceDivider />
+    </div>
+  );
 };
+
