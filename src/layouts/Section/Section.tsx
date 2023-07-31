@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from 'react';
 
-import { ContentsBox, MarginBox, RightBox, SearchTextBox } from 'layouts/Box';
+import {
+  ContentsBox,
+  ContentsOutsideBox,
+  ErrorBox,
+  RightBox,
+  SearchTextBox,
+  WarningBox,
+} from 'layouts/Box';
 
-import { Button } from 'controls/Button';
 import { theme } from 'controls/theme';
 import { SubTitle } from 'controls/Typography';
 
@@ -28,6 +34,9 @@ interface SectionProps {
   isSearch?: boolean;
   isTransparent?: boolean;
   serchLabels?: React.ReactNode | React.ReactNode[];
+  isWarning?: boolean;
+  isError?: boolean;
+  openable?: boolean;
 }
 
 const StyledAccordion = styled(AccordionMui)({
@@ -45,6 +54,7 @@ export const Section = (props: SectionProps) => {
     isSearch = false,
     isTransparent = false,
     serchLabels,
+    openable = true,
   } = props;
 
   const [expanded, setExpanded] = useState<boolean>(open);
@@ -64,18 +74,9 @@ export const Section = (props: SectionProps) => {
   const flexColSx = { display: 'flex', flexDirection: 'column' };
   return (
     <>
-      {!expanded && isSearch && (
-        <RightBox>
-          <Button
-            onClick={() => {
-              onClick();
-            }}
-          >
-            ^
-          </Button>
-        </RightBox>
-      )}
-      <SubTitle onClick={onClick}>{name}</SubTitle>
+      <SubTitle onClick={onClick} openable={openable}>
+        {name}
+      </SubTitle>
       <ContentsBox transparent={isTransparent} disable={isSearch}>
         <StyledAccordion expanded={expanded}>
           {!expanded && (
@@ -87,21 +88,46 @@ export const Section = (props: SectionProps) => {
           <AccordionDetails sx={{ m: theme.spacing(4) }}>
             <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
           </AccordionDetails>
-          {isSearch && (
-            <RightBox>
-              <MarginBox mt={2} mb={2} ml={2} mr={2}>
-                <Button
-                  onClick={() => {
-                    onClick();
-                  }}
-                >
-                  ^
-                </Button>
-              </MarginBox>
-            </RightBox>
-          )}
         </StyledAccordion>
       </ContentsBox>
+    </>
+  );
+};
+
+export const PopSection = (props: SectionProps) => {
+  const { name, children, open = true, isWarning, isError } = props;
+
+  const [expanded, setExpanded] = useState<boolean>(open);
+
+  const onClick = () => {
+    setExpanded(!expanded);
+  };
+
+  useEffect(() => {
+    if (!open) setExpanded(false);
+  }, [open]);
+
+  if (!name) {
+    return <ContentsBox>{children}</ContentsBox>;
+  }
+
+  return (
+    <>
+      {isWarning && (
+        <WarningBox onClick={onClick} title={name}>
+          {children}
+        </WarningBox>
+      )}
+      {isError && (
+        <ErrorBox onClick={onClick} title={name}>
+          {children}
+        </ErrorBox>
+      )}
+      {!(isError || isWarning) && (
+        <ContentsOutsideBox onClick={onClick} title={name}>
+          {children}
+        </ContentsOutsideBox>
+      )}
     </>
   );
 };

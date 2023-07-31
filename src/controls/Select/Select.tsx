@@ -189,6 +189,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
       FieldPath<FieldValues>
     >);
   };
+  if (!watchValue) return <></>;
   return (
     <InputLayout
       label={label}
