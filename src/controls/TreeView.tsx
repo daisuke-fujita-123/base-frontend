@@ -12,7 +12,7 @@ import {
 
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
@@ -186,7 +186,7 @@ const StyledIcon = styled(Icon)({
  * TreeViewコンポーネント
  */
 const TreeView = (props: TreeViewProps) => {
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
   const { open } = props;
 
   // お気に入り登録情報検索
@@ -232,8 +232,8 @@ const TreeView = (props: TreeViewProps) => {
   }, [bookmarkList]);
 
   const getRequest: ScrCom0002GetFavoriteRequest = {
-    businessDate: '',
-    userId: appContext.user.id,
+    businessDate: user.taskDate,
+    userId: user.employeeId,
   };
 
   // 完了ボタン押下処理
@@ -251,8 +251,8 @@ const TreeView = (props: TreeViewProps) => {
         return { screenId: val.screenName };
       });
     const updateRequest: ScrCom0002UpdateFavoriteRequest = {
-      businessDate: '', // 業務日付に変更
-      employeeId: appContext.user.id,
+      businessDate: user.taskDate,
+      employeeId: user.employeeId,
       list: reqList,
     };
     const response = await ScrCom0002UpdateFavorite(updateRequest);

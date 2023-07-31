@@ -29,6 +29,7 @@ export interface RadioProps<T extends FieldValues> {
   labelPosition?: 'above' | 'side';
   required?: boolean;
   row?: boolean;
+  backgroundColor?: string;
 }
 
 export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
@@ -40,6 +41,7 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
     row = false,
     required = false,
     radioValues,
+    backgroundColor,
   } = props;
 
   const { formState, control } = useFormContext();
@@ -57,6 +59,13 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
         <RadioGroup row={row} {...field}>
           {radioValues.map((value, index) => (
             <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root .MuiFormControlLabel-label': {
+                  backgroundColor: backgroundColor
+                    ? { backgroundColor }
+                    : 'transparent',
+                },
+              }}
               key={index}
               value={value.value}
               label={value.displayValue}
