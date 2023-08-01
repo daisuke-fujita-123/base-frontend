@@ -15,6 +15,8 @@ import { AddIconButton } from 'controls/Button';
 import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
+import Pulldown from 'icons/pulldown_arrow.png';
+
 import {
   Box,
   Chip,
@@ -71,6 +73,10 @@ export const StyledMenuItem = styled(MenuItem)({
   },
 });
 
+const PulldownIcon = () => {
+  return <img style={{ marginRight: 10 }} src={Pulldown}></img>;
+};
+
 export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
   const {
     label,
@@ -100,7 +106,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
       required={required}
       size={size}
     >
-      <Box sx={{ minWidth: minWidth, height: 30 }}>
+      <Box sx={{ minWidth: minWidth, minHeight: 30 }}>
         {/* 選択肢が10個未満の場合が上段、選択肢が10個以上の場合が下段。10個以上の場合は、選択肢を検索することができる。 */}
         {selectValues.length < 10 ? (
           <StyledFormControl fullWidth error={!!formState.errors[name]}>
@@ -113,6 +119,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
               inputProps={{
                 readOnly: isReadOnly,
               }}
+              IconComponent={PulldownIcon}
             >
               {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
               {selectValues.map((option, index) => (
@@ -189,6 +196,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
       FieldPath<FieldValues>
     >);
   };
+  if (!watchValue) return <></>;
   return (
     <InputLayout
       label={label}
@@ -201,7 +209,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
           {watchValue?.map((val: string, index: number) => {
             return (
               <Box key={index} mb={2}>
-                <Box sx={{ minWidth: minWidth, height: 30 }}>
+                <Box sx={{ minWidth: minWidth, minHeight: 30 }}>
                   <StyledFormControl fullWidth error={!!formState.errors[name]}>
                     <SelectMui
                       disabled={disabled}
@@ -222,6 +230,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
                       inputProps={{
                         readOnly: isReadOnly,
                       }}
+                      IconComponent={PulldownIcon}
                     >
                       {blankOption && <MenuItem value=''>{'　'}</MenuItem>}
                       {selectValues.map((option, index) => (

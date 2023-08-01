@@ -1,4 +1,4 @@
-export const messages = [
+export const MESSAGES = [
   {
     id: 'MSG-0001',
     message: 'Loading....',

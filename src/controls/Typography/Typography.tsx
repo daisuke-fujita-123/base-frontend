@@ -1,10 +1,14 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import { theme } from 'controls/theme';
 
-import WarningIcon from '@mui/icons-material/Warning';
+import Error from 'icons/error_headline.png';
+import Pulldown from 'icons/pulldown_arrow.png';
+import Warning from 'icons/warning_headline.png';
+
 import {
   Divider as DividerMui,
+  IconButton,
   styled,
   Typography as TypographyMui,
 } from '@mui/material';
@@ -20,6 +24,7 @@ interface TypographyProps {
   fontSize?: number;
   textDecorationThickness?: number;
   bold?: boolean;
+  openable?: boolean;
 }
 export const Typography = (props: TypographyProps) => {
   const {
@@ -69,10 +74,29 @@ const StyledDivider = styled(DividerMui)({
 });
 
 export const SubTitle = (props: TypographyProps) => {
-  const { children, onClick } = props;
+  const { children, onClick, openable = false } = props;
+  const [flip, setFlip] = useState<boolean>(false);
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <StyledSubTitle onClick={onClick}>{children}</StyledSubTitle>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <StyledSubTitle>{children}</StyledSubTitle>
+        {openable && (
+          <IconButton
+            onClick={(e) => {
+              onClick && onClick(e);
+              setFlip(!flip);
+            }}
+            style={{
+              transform: flip ? 'rotate(0)' : 'rotate(180deg)',
+              padding: 0,
+              paddingTop: 10,
+              paddingBottom: 10,
+            }}
+          >
+            <img src={Pulldown}></img>
+          </IconButton>
+        )}
+      </div>
       <StyledDivider />
     </div>
   );
@@ -98,7 +122,7 @@ export const WarningSubTitle = (props: TypographyProps) => {
   return (
     <>
       <StyledWarningSubTitle onClick={onClick}>
-        <WarningIcon />
+        <img src={Warning}></img>
         {children}
       </StyledWarningSubTitle>
       <StyledWarningDivider />
@@ -126,7 +150,7 @@ export const ErrorSubTitle = (props: TypographyProps) => {
   return (
     <>
       <StyledErrorSubTitle onClick={onClick}>
-        <WarningIcon />
+        <img src={Error}></img>
         {children}
       </StyledErrorSubTitle>
       <StyledErrorDivider />
