@@ -15,6 +15,9 @@ import { convertFromSizeToWidth } from 'controls/Datagrid/DataGridUtil';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
 
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
+
 import { Box, styled, Tooltip } from '@mui/material';
 import {
   DataGridPro as MuiDataGridPro,
@@ -27,9 +30,6 @@ import {
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 import saveAs from 'file-saver';
 import Papa from 'papaparse';
-
-// import SortAsc from '../../icon/content_sort_ascend.png';
-// import SortDesc from '../../icon/content_sort_descend.png';
 
 const StyledDataGrid = styled(MuiDataGridPro)({
   fontSize: 13,
@@ -470,20 +470,20 @@ export const DataGrid = (props: DataGridProps) => {
     ? width
     : muiColumns.reduce((acc, val) => acc + (val.width ? val.width : 0), 4);
 
-  // const SortedAscIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={SortAsc}></img>
-  //     </div>
-  //   );
-  // };
-  // const SortedDescIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={SortDesc}></img>
-  //     </div>
-  //   );
-  // };
+  const SortedAscIcon = () => {
+    return (
+      <div>
+        <img src={SortAsc}></img>
+      </div>
+    );
+  };
+  const SortedDescIcon = () => {
+    return (
+      <div>
+        <img src={SortDesc}></img>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -531,8 +531,8 @@ export const DataGrid = (props: DataGridProps) => {
           processRowUpdate={handleProcessRowUpdate}
           slots={{
             toolbar: GridToolbar,
-            // columnSortedAscendingIcon: SortedAscIcon,
-            // columnSortedDescendingIcon: SortedDescIcon,
+            columnSortedAscendingIcon: SortedAscIcon,
+            columnSortedDescendingIcon: SortedDescIcon,
           }}
           slotProps={{
             toolbar: {
