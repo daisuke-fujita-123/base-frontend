@@ -8,47 +8,6 @@ const locale = {
     max: '${max}桁以内で入力してください。',
     email: '${path}はメールアドレス形式である必要があります',
   },
-  /*
-  mixed: {
-    default: '${path}は無効です',
-    required: '${path}は必須フィールドです',
-    oneOf: '${path}は次の値のいずれかでなければなりません:${values}',
-    notOneOf: '${path}は次の値のいずれかであってはなりません:${values}',
-    notType: '形式が違います',
-  },
-  string: {
-    length: '${path}は正確に${length}文字でなければなりません',
-    min: '${path}は少なくとも${min}文字でなければなりません',
-    max: '${path}は最大${max}文字でなければなりません',
-    matches: '${path}は次と一致する必要があります: "${regex}"',
-    email: '${path}はメールアドレス形式である必要があります',
-    url: '${path}は有効なURLでなければなりません',
-    trim: '${path}はトリミングされた文字列でなければなりません',
-    lowercase: '${path}は小文字の文字列でなければなりません',
-    uppercase: '${path}は大文字の文字列でなければなりません',
-  },
-  number: {
-    min: '${path}は${min}以上である必要があります',
-    max: '${path}は${max}以下でなければなりません',
-    lessThan: '${path}は${less}より小さくなければなりません',
-    moreThan: '${path}は${more}より大きくなければなりません',
-    notEqual: '${path}は${notEqual}と等しくない必要があります',
-    positive: '${path}は正の数でなければなりません',
-    negative: '${path}は負の数でなければなりません',
-    integer: '${path}は整数でなければなりません',
-  },
-  date: {
-    min: '${path}フィールドは${min}より後でなければなりません',
-    max: '${path}フィールドは${max}より前でなければなりません',
-  },
-  object: {
-    noUnknown: '${path}フィールドには,オブジェクトシェイプで指定されていないキーを含めることはできません',
-  },
-  array: {
-    min: '${path}フィールドには少なくとも${min}の項目が必要です',
-    max: '${path}フィールドには${max}以下の項目が必要です',
-  },
-*/
 };
 
 declare module 'yup' {
@@ -59,14 +18,12 @@ declare module 'yup' {
     halfWidthOnly(this: StringSchema): StringSchema;
     // 半角数字のみ
     numberOnly(this: StringSchema): StringSchema;
-    // 金額形式のみ
-    formatMoney(this: StringSchema): StringSchema;
+    // 金額フォーマット
+    formatPrice(this: StringSchema): StringSchema;
     // 電話番号フォーマット
     formatTel(this: StringSchema): StringSchema;
     // 日付フォーマット：YYYY/MM/DD形式
     formatYmd(this: StringSchema): StringSchema;
-    // アドレス
-    formatAddress(this: StringSchema): StringSchema
   }
 }
 
@@ -84,9 +41,10 @@ yup.addMethod(yup.StringSchema, 'numberOnly', function () {
     message: '数字で入力してください。',
   });
 });
-yup.addMethod(yup.StringSchema, 'formatMoney', function () {
-  return this.matches(/^((([1-9]\d*)(,\d{3})*)|0)$/, {
-    message: '数字で入力してください。',
+yup.addMethod(yup.StringSchema, 'formatPrice', function () {
+  // TODO 電話番号フォーマット要確認
+  return this.matches(/^[0-9,]*$/, {
+    message: '半角数字・カンマのみで入力してください。',
   });
 });
 yup.addMethod(yup.StringSchema, 'formatTel', function () {
@@ -114,20 +72,12 @@ yup.addMethod(yup.ArraySchema, 'required', function () {
     return values.length > 0;
   });
 });
-yup.addMethod(yup.StringSchema, 'formatAddress', function () {
-  return this.matches(/^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/, {
-    message: 'メールアドレス形式で入力してください。',
-  });
-});
 yup.setLocale(locale);
 
 export interface Definition {
   [prop: string]: any;
 }
 
-
-export const fieldValidationDefinition: Definition = {
-  applicationComment: yup.string().label('申請コメント').max(250).fullAndHalfWidth(),
-};
+export const fieldValidationDefinition: Definition = {};
 
 export default yup;
