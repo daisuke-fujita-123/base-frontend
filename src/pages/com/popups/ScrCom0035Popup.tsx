@@ -51,7 +51,7 @@ export interface ScrCom0035PopupProps {
   // 取込対象選択（一括登録定義）
   allRegistrationDefinitions: ScrCom0035PopupAllRegistrationDefinitionModel[];
   // 画面ID
-  screanId: string;
+  screenId: string;
   // タブID
   tabId?: number;
   // ポップアップ表示フラグ制御
@@ -104,7 +104,7 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
     // ページ遷移：一括登録確認画面
     const form: ScrCom0035PopupFormModel = getValues();
     const scrCom0034PageParams: ScrCom0034PageParamModel = {
-      screanId: popupParams.screanId,
+      screenId: popupParams.screenId,
       tabId: popupParams.tabId,
       ...form,
     };

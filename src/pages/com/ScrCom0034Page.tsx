@@ -10,7 +10,7 @@ import { MainLayout } from 'layouts/MainLayout/MainLayout';
  */
 export interface ScrCom0034PageParamModel {
   // 画面ID
-  screanId?: string;
+  screenId?: string;
   // タブID
   tabId?: number;
   // 一括登録ID
@@ -36,7 +36,7 @@ const ScrCom0034Page = () => {
         <MainLayout main>
           <h1>SCR-COM-0034 一括登録確認画面（</h1>
           <Typography>一括登録ID：{pageParams.allRegistrationId}</Typography>
-          <Typography>画面ID：{pageParams.screanId}</Typography>
+          <Typography>画面ID：{pageParams.screenId}</Typography>
           <Typography>タブID：{pageParams.tabId}</Typography>
           <Typography>ファイル(size)：{pageParams.importFile?.size}</Typography>
           <Typography>

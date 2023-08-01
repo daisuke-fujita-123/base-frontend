@@ -15,7 +15,7 @@ import ScrCom0035Popup from 'pages/com/popups/ScrCom0035Popup';
 const ScrCom0035PopupTester = () => {
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   // 画面ID・タブID
-  const screanId = 'SCR-MEM-0001';
+  const screenId = 'SCR-MEM-0001';
   const tabId = undefined;
   // 取込対象選択（一括登録定義）
   const allRegistrationDefinitions = [
@@ -91,7 +91,7 @@ const ScrCom0035PopupTester = () => {
         {/* main */}
         <MainLayout main>
           <h1>SCR-COM-0035 CSV読込ポップアップ動確用クッションページ</h1>
-          <Typography>画面ID：{screanId}</Typography>
+          <Typography>画面ID：{screenId}</Typography>
           <Typography>タブID：{tabId}</Typography>
           <div style={{ whiteSpace: 'break-spaces' }}>
             <Typography>
@@ -111,7 +111,7 @@ const ScrCom0035PopupTester = () => {
       {/* 登録内容確認ポップアップ */}
       <ScrCom0035Popup
         allRegistrationDefinitions={allRegistrationDefinitions}
-        screanId={screanId}
+        screenId={screenId}
         tabId={tabId}
         isOpen={isOpenPopup}
         setIsOpen={setIsOpenPopup}
