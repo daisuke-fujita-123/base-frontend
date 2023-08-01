@@ -1,6 +1,14 @@
-import React, { forwardRef, memo, useCallback, useState } from 'react';
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useContext,
+  useState,
+} from 'react';
 
 import { Typography } from 'controls/Typography';
+
+import { AppContext } from 'providers/AppContextProvider';
 
 import { useGridApiContext } from '@mui/x-data-grid';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers-pro';
@@ -17,6 +25,7 @@ interface GridInputCellProps {
   field: string | any[];
   helperText?: string;
   disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
 }
 
 /**
@@ -25,8 +34,16 @@ interface GridInputCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridInputCell = memo((props: GridInputCellProps) => {
-  const { id, value, field, helperText, disabled = false } = props;
+  const {
+    id,
+    value,
+    field,
+    helperText,
+    disabled = false,
+    onRowValueChange,
+  } = props;
 
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
 
   const handleValueChange = useCallback(
@@ -37,6 +54,10 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
         row[field[0]][field[1]] = newValue;
       } else {
         row[field] = newValue;
+      }
+      setNeedsConfirmNavigate(true);
+      if (onRowValueChange !== undefined) {
+        onRowValueChange(row);
       }
     },
     [apiRef, field, id]
@@ -65,6 +86,7 @@ interface GridSelectCellProps {
   field: string | any[];
   selectValues: any[];
   disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
 }
 
 /**
@@ -73,8 +95,16 @@ interface GridSelectCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridSelectCell = memo((props: GridSelectCellProps) => {
-  const { id, value, field, selectValues, disabled = false } = props;
+  const {
+    id,
+    value,
+    field,
+    selectValues,
+    disabled = false,
+    onRowValueChange,
+  } = props;
 
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
 
   const [selection, setSelection] = useState(value);
@@ -91,6 +121,10 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
         row[field] = newSelection;
       }
       setSelection(newSelection);
+      setNeedsConfirmNavigate(true);
+      if (onRowValueChange !== undefined) {
+        onRowValueChange(row);
+      }
     },
     [apiRef, field, id]
   );
@@ -120,6 +154,7 @@ interface GridRadioCellProps {
   radioValues: any[];
   field: string;
   disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
 }
 
 /**
@@ -128,8 +163,16 @@ interface GridRadioCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridRadioCell = memo((props: GridRadioCellProps) => {
-  const { id, value, radioValues, field, disabled = false } = props;
+  const {
+    id,
+    value,
+    radioValues,
+    field,
+    disabled = false,
+    onRowValueChange,
+  } = props;
 
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
 
   const [selection, setSelection] = useState(value);
@@ -142,6 +185,10 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
       const row = apiRef.current.getRow(id);
       row[field] = newSelection;
       setSelection(newSelection);
+      setNeedsConfirmNavigate(true);
+      if (onRowValueChange !== undefined) {
+        onRowValueChange(row);
+      }
     },
     [apiRef, field, id]
   );
@@ -174,6 +221,7 @@ interface GridCustomizableRadioCellProps {
   radioValues: any[];
   field: string;
   disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
 }
 
 /**
@@ -183,8 +231,16 @@ interface GridCustomizableRadioCellProps {
 // eslint-disable-next-line react/display-name
 export const GridCustomizableRadiioCell = memo(
   (props: GridCustomizableRadioCellProps) => {
-    const { id, value, radioValues, field, disabled = false } = props;
+    const {
+      id,
+      value,
+      radioValues,
+      field,
+      disabled = false,
+      onRowValueChange,
+    } = props;
 
+    const { setNeedsConfirmNavigate } = useContext(AppContext);
     const apiRef = useGridApiContext();
 
     const [selection, setSelection] = useState(value.selection);
@@ -194,6 +250,10 @@ export const GridCustomizableRadiioCell = memo(
         const row = apiRef.current.getRow(id);
         row[field].selection = index;
         setSelection(index);
+        setNeedsConfirmNavigate(true);
+        if (onRowValueChange !== undefined) {
+          onRowValueChange(row);
+        }
       },
       [apiRef, field, id]
     );
@@ -203,6 +263,10 @@ export const GridCustomizableRadiioCell = memo(
         const newValue = event.target.value;
         const row = apiRef.current.getRow(id);
         row[field].values[index] = newValue;
+        setNeedsConfirmNavigate(true);
+        if (onRowValueChange !== undefined) {
+          onRowValueChange(row);
+        }
       },
       [apiRef, field, id]
     );
@@ -215,6 +279,10 @@ export const GridCustomizableRadiioCell = memo(
         ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         const row = apiRef.current.getRow(id);
         row[field].values[index][fromto] = formattedValue;
+        setNeedsConfirmNavigate(true);
+        if (onRowValueChange !== undefined) {
+          onRowValueChange(row);
+        }
       },
       [apiRef, field, id]
     );
@@ -273,6 +341,7 @@ interface GridCheckboxCellProps {
   value: boolean | undefined;
   field: string;
   disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
 }
 
 /**
@@ -281,8 +350,9 @@ interface GridCheckboxCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
-  const { id, value, field, disabled = false } = props;
+  const { id, value, field, disabled = false, onRowValueChange } = props;
 
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
 
   const [selection, setSelection] = useState(value);
@@ -293,6 +363,10 @@ export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
       const newSelection = !row[field];
       row[field] = newSelection;
       setSelection(newSelection);
+      setNeedsConfirmNavigate(true);
+      if (onRowValueChange !== undefined) {
+        onRowValueChange(row);
+      }
     },
     [apiRef, field, id]
   );
@@ -316,6 +390,7 @@ interface GridDatepickerCellProps {
   value: string;
   field: string;
   disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
 }
 
 /**
@@ -324,8 +399,9 @@ interface GridDatepickerCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
-  const { id, value, field, disabled = false } = props;
+  const { id, value, field, disabled = false, onRowValueChange } = props;
 
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
 
   const handleValueChange = useCallback(
@@ -338,6 +414,10 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
       // const newValue = event.target.value;
       const row = apiRef.current.getRow(id);
       row[field] = formattedValue;
+      setNeedsConfirmNavigate(true);
+      if (onRowValueChange !== undefined) {
+        onRowValueChange(row);
+      }
     },
     [apiRef, field, id]
   );
