@@ -2,8 +2,10 @@ import React, { ReactNode, useState } from 'react';
 
 import { theme } from 'controls/theme';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import WarningIcon from '@mui/icons-material/Warning';
+import Error from 'icons/error_headline.png';
+import Pulldown from 'icons/pulldown_arrow.png';
+import Warning from 'icons/warning_headline.png';
+
 import {
   Divider as DividerMui,
   IconButton,
@@ -91,7 +93,7 @@ export const SubTitle = (props: TypographyProps) => {
               paddingBottom: 10,
             }}
           >
-            <ExpandMoreIcon />
+            <img src={Pulldown}></img>
           </IconButton>
         )}
       </div>
@@ -120,7 +122,7 @@ export const WarningSubTitle = (props: TypographyProps) => {
   return (
     <>
       <StyledWarningSubTitle onClick={onClick}>
-        <WarningIcon />
+        <img src={Warning}></img>
         {children}
       </StyledWarningSubTitle>
       <StyledWarningDivider />
@@ -148,7 +150,7 @@ export const ErrorSubTitle = (props: TypographyProps) => {
   return (
     <>
       <StyledErrorSubTitle onClick={onClick}>
-        <WarningIcon />
+        <img src={Error}></img>
         {children}
       </StyledErrorSubTitle>
       <StyledErrorDivider />

@@ -2,6 +2,11 @@ import React from 'react';
 
 import { theme } from 'controls/theme';
 
+import PagingAfter from 'icons/paging_after.png';
+import PagingBefore from 'icons/paging_befor.png';
+import PagingHead from 'icons/paging_head.png';
+import PagingLast from 'icons/paging_last.png';
+
 import {
   Pagination as MuiPagination,
   PaginationItem as MuiPaginationItem,
@@ -18,12 +23,6 @@ import {
   useGridSelector,
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
-import { ArrowLeftIcon, ArrowRightIcon } from '@mui/x-date-pickers-pro';
-
-// import PagingAfter from '../../icon/paging_after.png';
-// import PagingBefore from '../../icon/paging_befor.png';
-// import PagingHead from '../../icon/paging_head.png';
-// import PagingLast from '../../icon/paging_last.png';
 
 const StyledDataGrid = styled(MuiDataGridPro)({
   fontSize: 13,
@@ -98,35 +97,35 @@ const GridPagination = () => {
     apiRef.current.setPage(page - 1);
   };
 
-  // const PagingAfterIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={PagingAfter}></img>
-  //     </div>
-  //   );
-  // };
-  // const PagingBeforeIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={PagingBefore}></img>
-  //     </div>
-  //   );
-  // };
+  const PagingAfterIcon = () => {
+    return (
+      <div>
+        <img src={PagingAfter}></img>
+      </div>
+    );
+  };
+  const PagingBeforeIcon = () => {
+    return (
+      <div>
+        <img src={PagingBefore}></img>
+      </div>
+    );
+  };
 
-  // const PagingHeadIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={PagingHead}></img>
-  //     </div>
-  //   );
-  // };
-  // const PagingLastIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={PagingLast}></img>
-  //     </div>
-  //   );
-  // };
+  const PagingHeadIcon = () => {
+    return (
+      <div>
+        <img src={PagingHead}></img>
+      </div>
+    );
+  };
+  const PagingLastIcon = () => {
+    return (
+      <div>
+        <img src={PagingLast}></img>
+      </div>
+    );
+  };
 
   return (
     <Stack
@@ -142,11 +141,15 @@ const GridPagination = () => {
         count={pageCount}
         page={paginationModel.page + 1}
         onChange={handlePageChange}
+        showFirstButton
+        showLastButton
         renderItem={(item) => (
           <MuiPaginationItem
             slots={{
-              previous: ArrowLeftIcon,
-              next: ArrowRightIcon,
+              previous: PagingBeforeIcon,
+              next: PagingAfterIcon,
+              first: PagingHeadIcon,
+              last: PagingLastIcon,
             }}
             {...item}
           />
