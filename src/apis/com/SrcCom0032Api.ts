@@ -5,7 +5,7 @@ export interface ScrCom0032GetApprovalRequest {
   /** 画面ID */
   screenId: string;
   /** タブID */
-  tabId: string;
+  tabId: number;
 }
 
 //  API-COM-0032-0001：承認要否取得API レスポンス
