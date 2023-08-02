@@ -30,6 +30,8 @@ import { MessageContext } from 'providers/MessageProvider';
 import { Format } from 'utils/FormatUtil';
 import yup from 'utils/ValidationDefinition';
 
+import { SCREEN_ID } from 'definitions/screenId';
+
 /**
  * 登録内容申請ポップアップデータモデル
  */
@@ -60,11 +62,11 @@ export interface ScrCom0033PopupModel {
 interface ScrCom0033PopupProps {
   isOpen: boolean;
   data: ScrCom0033PopupModel;
-  // TODO: キャンセルが登録内容ポップアップからか一括登録確認画面からかで処理変更する
-  handleCancel: () => void;
-  // 確定ボタン押下時に渡すパラメータ
-  handlePopupConfirm: (
+  // 確定ボタン・キャンセルボタン押下時に渡すパラメータ
+  handleConfirmOrCancel: (
+    // 第一～第四承認者のリストボックス
     selectValues: SelectValuesModel,
+    // 申請コメント
     applicationComment: string
   ) => void;
 }
@@ -101,9 +103,11 @@ const selectValuesInitialValues: SelectValuesModel = {
  * バリデーションスキーマ
  */
 const validationSchema = {
-  applicationComment: yup.string().label('申請コメント'),
-  //   .max(250)
-  //   .fullAndHalfWidth(),
+  applicationComment: yup
+    .string()
+    .label('申請コメント')
+    .max(250)
+    .fullAndHalfWidth(),
 };
 
 /**
@@ -122,46 +126,44 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   });
   const { getValues } = methods;
 
-  // ポップアップ確定ボタン押下時の処理(ダイアログを呼び出す)
+  // 登録申請ポップアップ確定ボタン押下時の処理(ダイアログを呼び出す)
   const handlePopupConfirm = () => {
     // ダイアログを表示
     const dialogMessege = Format(getMessage('MSG-FR-INF-00009'), [
-      '代行請求履歴',
-      response.acquisitionCount.toString(),
-      response.responseCount.toString(),
+      'ダイアログ1',
     ]);
     setTitle(dialogMessege);
     setHandleDialog(true);
   };
 
-  // ポップアップキャンセルボタン押下時の処理
+  // 登録内容申請ポップアップキャンセルボタン押下時の処理
   const handleCancel = () => {
-    // 画面ID => 登録内容確認ポップアップ空の遷移
-    if (data.screenId === 'SCR-COM-0032') {
-      // TODO: 取引会計管理かそれ以外かで判定する 判定方法不明
+    // 画面ID => 登録内容確認ポップアップからの遷移
+    if (data.screenId === SCREEN_ID[0].screenId) {
+      // 取引会計管理かそれ以外かで判定
       if (isTra) {
         const traMessege = Format(getMessage('MSG-FR-INF-00007'), [
-          '代行請求履歴',
-          response.acquisitionCount.toString(),
-          response.responseCount.toString(),
+          'ダイアログ2',
         ]);
         setTitle(traMessege);
       } else {
         const notTraMessege = Format(getMessage('MSG-FR-INF-00008'), [
-          '代行請求履歴',
-          response.acquisitionCount.toString(),
-          response.responseCount.toString(),
+          'ダイアログ3',
         ]);
         setTitle(notTraMessege);
       }
       // 画面ID => 一括登録確認画面からの遷移
-    } else if (data.screenId === '') {
+    } else if (data.screenId === SCREEN_ID[1].screenId) {
       const bulkRegistrationMessege = Format(getMessage('MSG-FR-INF-00009'), [
-        '代行請求履歴',
-        response.acquisitionCount.toString(),
-        response.responseCount.toString(),
+        'ダイアログ4',
       ]);
       setTitle(bulkRegistrationMessege);
+      // 画面ID => それ以外
+    } else {
+      const notTraMessege = Format(getMessage('MSG-FR-INF-00008'), [
+        'ダイアログ3',
+      ]);
+      setTitle(notTraMessege);
     }
     // ダイアログを表示
     setHandleDialog(true);
@@ -171,11 +173,29 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   const handleDialogConfirm = () => {
     // 取引会計管理の処理の場合登録を行う
     if (isTra) {
-      props.handlePopupConfirm(
+      props.handleConfirmOrCancel(
         // 第１～第４承認者
         selectValues,
         // 申請コメント
         getValues('applicationComment')
+      );
+
+      // ローカルストレージに第１～第４承認者を保存
+      localStorage.setItem(
+        'lastApprover1',
+        String(selectValues?.approvalUser1)
+      );
+      localStorage.setItem(
+        'lastApprover2',
+        String(selectValues?.approvalUser2)
+      );
+      localStorage.setItem(
+        'lastApprover3',
+        String(selectValues?.approvalUser3)
+      );
+      localStorage.setItem(
+        'lastApprover4',
+        String(selectValues?.approvalUser4)
       );
     }
     setHandleDialog(false);
@@ -205,9 +225,13 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   // 登録内容申請ポップアップ表示時の処理
   useEffect(() => {
     const initialize = async () => {
-      // TODO:ダイアログキャンセル処理用にTRAかどうかを判断して設定する
-      //  ⇒ 登録内容確認ポップアップのキャンセル時に取引会計かそれ以外かを判定
-      setIsTra(false);
+      // ダイアログキャンセル処理用に画面IDがSCR-TRAなら取引会計管理と判断する
+      const regex = /^SCR-TRA.+/;
+      if (regex.test(data.screenId)) {
+        setIsTra(true);
+      } else {
+        setIsTra(false);
+      }
 
       // API-COM-0033-0001：承認者情報取得API（登録内容申請ポップアップ）
       const request: ScrCom0033GetApproverRequest = {
@@ -242,12 +266,7 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
       });
     };
 
-    // ポップアップ起動時にのみ処理を実行する
-    // if (isFirstRender.current) {
-    //   isFirstRender.current = false;
-    // } else {
     initialize();
-    // }
   }, []);
 
   /**
@@ -389,10 +408,8 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
                   )}
                   <Typography variant='h6'>申請コメント</Typography>
                   <ControlsStackItem size='m'>
-                    {/* TODO: テキストエリア内に縦スクロールバー表示する必要あり */}
                     <Textarea
                       name='applicationComment'
-                      minRows={10}
                       maxRows={30}
                       size='l'
                     ></Textarea>
@@ -401,21 +418,7 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
               </Popup>
               <Popup bottom>
                 <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-                <ConfirmButton
-                  onClick={handlePopupConfirm}
-                  // 条件１：エラーが1件以上存在する場合 -> 非活性
-                  // 条件２：ワーニングが0件の場合 -> 活性
-                  // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
-                  disable={
-                    data.errorList.length >= 1
-                      ? true
-                      : isWarningChecked
-                      ? false
-                      : true
-                  }
-                >
-                  確定
-                </ConfirmButton>
+                <ConfirmButton onClick={handlePopupConfirm}>確定</ConfirmButton>
               </Popup>
             </Popup>
           </FormProvider>
@@ -423,7 +426,6 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
       </MainLayout>
       {/* ダイアログ */}
       <Dialog open={handleDialog} title={title} buttons={dialogButtons} />
-      {/* <Dialog open={handleDialog} title={title} /> */}
     </>
   );
 };
