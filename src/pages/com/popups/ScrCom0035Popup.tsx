@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FormProvider } from 'react-hook-form';
+
 import { yupResolver } from '@hookform/resolvers/yup';
-// Controls
-import { FileSelect } from 'controls/FileSelect';
-import { Select, SelectValue } from 'controls/Select';
-import { CancelButton, ConfirmButton } from 'controls/Button';
-// Layouts
+import yup from 'utils/yup';
+
+import { ScrCom0034PageParamModel } from 'pages/com/ScrCom0034Page';
+
 import { Box } from 'layouts/Box';
 import { Popup } from 'layouts/Popup';
 import { Stack } from 'layouts/Stack';
 import { StackSection } from 'layouts/StackSection';
-// Hooks
+
+import { CancelButton, ConfirmButton } from 'controls/Button';
+import { FileSelect } from 'controls/FileSelect';
+import { Select, SelectValue } from 'controls/Select';
+
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
-// Utils
-import yup from 'utils/yup';
-// Pages
-import { ScrCom0034PageParamModel } from 'pages/com/ScrCom0034Page';
 
 /**
  * 取込対象選択（一括登録定義）モデル
@@ -73,8 +73,6 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
   allRegistrationDefinitions.forEach((e) => {
     importTargets.push({ value: e.id, displayValue: e.label });
   });
-  // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
 
   // form
   const methods = useForm<ScrCom0035PopupFormModel>({
@@ -84,7 +82,6 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
         importTargets.length > 1 ? '' : importTargets[0].value.toString(),
     },
     resolver: yupResolver(ScrCom0035PopupValidationSchama),
-    context: isReadOnly,
   });
   const { getValues } = methods;
 
@@ -124,18 +121,12 @@ const ScrCom0035Popup = (props: ScrCom0035PopupProps) => {
                   <Select
                     label='取込対象選択'
                     name='allRegistrationId'
-                    labelPosition='above'
                     selectValues={importTargets}
                     minWidth={350}
                     multiple={false}
                     required={true}
                   />
-                  <FileSelect
-                    label='ファイルパス'
-                    name='importFile'
-                    labelPosition='above'
-                    size='l'
-                  />
+                  <FileSelect label='ファイルパス' name='importFile' size='l' />
                 </Stack>
               </FormProvider>
             </Box>
