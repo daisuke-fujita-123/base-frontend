@@ -1,5 +1,10 @@
-import React, { ReactNode } from 'react';
-import { FieldValues, Path, useFormContext } from 'react-hook-form';
+import React from 'react';
+import {
+  FieldValues,
+  Path,
+  useController,
+  useFormContext,
+} from 'react-hook-form';
 
 import { MarginBox } from 'layouts/Box';
 import { InputLayout } from 'layouts/InputLayout';
@@ -17,11 +22,10 @@ import {
 export interface CheckBoxProps<T extends FieldValues> {
   name: Path<T>;
   label?: string;
-  required?: boolean;
-  children?: ReactNode;
-  blank?: boolean;
+  helperText?: string;
   size?: 's' | 'm' | 'l' | 'xl';
-  disable?: boolean;
+  required?: boolean;
+  disabled?: boolean;
 }
 
 const StyledFormControl = styled(FormControl)({
@@ -49,34 +53,33 @@ export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
   const {
     name,
     label,
-    required,
-    children,
-    blank = false,
+    helperText,
     size = 's',
-    disable,
+    required = false,
+    disabled = false,
   } = props;
 
-  const { register, formState, control } = useFormContext();
-  const defaultChecked = formState.defaultValues?.[name];
-
+  // form
+  const { formState, control } = useFormContext();
+  const { field } = useController({ name, control });
   const isReadOnly = control?._options?.context[0];
 
-  const isBlank = blank ? '　' : '';
   return (
-    <InputLayout label={isBlank} size={size}>
+    <InputLayout label={''} size={size}>
       <StyledFormControl error={!!formState.errors[name]}>
         <StyledFormControlLabel
+          control={<StyledCheckbox checked={field.value} />}
           label={label}
-          id={name}
           required={required}
-          control={<StyledCheckbox defaultChecked={defaultChecked} />}
-          disabled={disable || isReadOnly}
-          {...register(name)}
+          disabled={disabled || isReadOnly}
+          {...field}
         />
       </StyledFormControl>
-      <MarginBox justifyContent='flex-start' ml={3.6}>
-        <Typography>{children}</Typography>
-      </MarginBox>
+      {helperText && (
+        <MarginBox justifyContent='flex-start' ml={3.6}>
+          <Typography>{helperText}</Typography>
+        </MarginBox>
+      )}
     </InputLayout>
   );
 };
