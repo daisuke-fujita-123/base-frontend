@@ -137,7 +137,7 @@ const validationSchema = {
 /**
  * 登録内容確認ポップアップ
  */
-const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
+const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   // props
   const { isOpen, handleCancel, handleRegistConfirm, data } = props;
 
@@ -507,4 +507,4 @@ const ScrCom00032Popup = (props: ScrCom0032PopupProps) => {
   );
 };
 
-export default ScrCom00032Popup;
+export default ScrCom0032Popup;
