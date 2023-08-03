@@ -8,7 +8,7 @@ import { CenterBox, MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { ColStack, RowStack} from 'layouts/Stack';
+import { ColStack, RowStack } from 'layouts/Stack';
 
 import { AddButton, SearchButton } from 'controls/Button';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
@@ -16,29 +16,26 @@ import { DatePicker } from 'controls/DatePicker';
 import { Dialog } from 'controls/Dialog';
 import { Select, SelectValue } from 'controls/Select';
 import { SerchLabelText } from 'controls/Typography';
-import { GridRowSelectionModel } from '@mui/x-data-grid-pro';
+
+import {
+    GetReportOutput, ScrCom0009GetReportList, ScrCom0009GetReportListRequest,
+    ScrCom0009GetReportListResponse, ScrCom0009GetReportOutput
+} from 'apis/com/ScrCom0009Api';
+import {
+    ScrCom9999GetCodeManagementMaster, ScrCom9999GetReportmaster
+} from 'apis/com/ScrCom9999Api';
+import {
+    ScrMem9999SearchconditionRefine, ScrMem9999SearchconditionRefineRequest
+} from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
-import { MessageContext } from 'providers/MessageProvider';
+
 import { AppContext } from 'providers/AppContextProvider';
+import { MessageContext } from 'providers/MessageProvider';
+
 import { Format } from 'utils/FormatUtil';
-import{
-  ScrCom0009GetReportListRequest,
-  ScrCom0009GetReportListResponse,
-  ScrCom0009GetReportList,
-  GetReportOutput,
-  ScrCom0009GetReportOutput,
-}from 'apis/com/ScrCom0009Api';
 
-import{
-  ScrCom9999GetReportMaster,
-  ScrCom9999GetCodeManagementMaster,
-}from 'apis/com/ScrCom9999Api';
-
-import{
-  ScrMem9999SearchConditionRefineRequest,
-  ScrMem9999SearchConditionRefine,
-}from 'apis/mem/ScrMem9999Api';
+import { GridRowSelectionModel } from '@mui/x-data-grid-pro';
 
 interface ReportOutput {
   // 帳票履歴番号
@@ -54,13 +51,13 @@ interface ReportOutput {
 /**
  * 検索条件データモデル
  */
-interface SearchConditionModel{
+interface SearchConditionModel {
   contractId: string;
   corporationId: string;
   corporationIdAndName: string;
   billingId: string;
   systemKindName: string;
-  systemKind:string;
+  systemKind: string;
   reportCreateDateFrom: string;
   reportCreateDateTo: string;
   reportName: string;
@@ -70,7 +67,7 @@ interface SearchConditionModel{
 /**
  * プルダウンデータモデル
  */
-interface SelectValuesModel{
+interface SelectValuesModel {
   contractIdSelectValues: SelectValue[];
   corporationIdAndNameSelectValues: SelectValue[];
   billingIdSelectValues: SelectValue[];
@@ -92,7 +89,7 @@ const initialValues: SearchConditionModel = {
   reportCreateDateTo: '',
   reportName: '',
   reportId: '',
-}
+};
 
 /**
  * プルダウン初期データ
@@ -103,7 +100,7 @@ const selectValuesInitialValues: SelectValuesModel = {
   billingIdSelectValues: [],
   systemKindSelectValues: [],
   reportNameSelectValues: [],
-}
+};
 
 /**
  * バリデーションスキーマ
@@ -116,7 +113,7 @@ const reportBasicSchama = {
   reportCreateDateFrom: yup.string().label('帳票作成日（FROM）').max(10),
   reportCreateDateTo: yup.string().label('帳票作成日（TO）').max(10),
   reportName: yup.string().label('帳票名'),
-}
+};
 /**
  * 検索結果列定義
  */
@@ -184,13 +181,13 @@ interface SearchResultRowModel {
  */
 const convertToSearchConditionRefine = (
   searchCondition: SearchConditionModel
-): ScrMem9999SearchConditionRefineRequest => {
+): ScrMem9999SearchconditionRefineRequest => {
   return {
     contractId: searchCondition.contractId,
     corporationId: searchCondition.corporationId,
     billingId: searchCondition.billingId,
-  }
-}
+  };
+};
 
 /**
  * 検索条件モデルから帳票一覧取得APIリクエストへの変換
@@ -207,8 +204,8 @@ const convertFromSearchConditionModel = (
     reportCreateDateTo: searchCondition.reportCreateDateTo,
     reportId: searchCondition.reportId,
     limitCount: 15000,
-  }
-}
+  };
+};
 
 /**
  * 帳票一覧取得APIレスポンスから検索結果行データモデルへの変換
@@ -217,7 +214,7 @@ const convertToSearchResultRowModel = (
   response: ScrCom0009GetReportListResponse
 ): SearchResultRowModel[] => {
   return response.reportList.map((x) => {
-    return{
+    return {
       id: x.corporationId,
       corporationId: x.corporationId,
       corporationName: x.corporationName,
@@ -237,26 +234,26 @@ const convertToSearchResultRowModel = (
  */
 const convertToCreateReportFileParameterInfo = (
   searchResult: SearchResultRowModel[]
-   ): GetReportOutput[] => {
-     return searchResult.map((x) => {
-      return{
-        reportHistoryNumber: x.reportHistoryNumber,
-        fileName: x.reportFileName,
-        reportHouseBucketName: x.reportHouseBucketName,
-        reportHouseFilePrefix: x.reportHouseFilePrefix,
-     };
-    });
-  };
+): GetReportOutput[] => {
+  return searchResult.map((x) => {
+    return {
+      reportHistoryNumber: x.reportHistoryNumber,
+      fileName: x.reportFileName,
+      reportHouseBucketName: x.reportHouseBucketName,
+      reportHouseFilePrefix: x.reportHouseFilePrefix,
+    };
+  });
+};
 
 type key = keyof SearchConditionModel;
 const serchData: { label: string; name: key }[] = [
-  {label: '契約ID', name: 'contractId'},
-  {label: '法人ID/法人名', name: 'corporationIdAndName'},
-  {label: '請求先ID', name: 'billingId'},
-  {label: 'システム種別', name: 'systemKind'},
-  {label: '帳票作成日（FROM）', name: 'reportCreateDateFrom'},
-  {label: '帳票作成日（TO）', name: 'reportCreateDateTo'},
-  {label: '帳票名', name: 'reportName'},
+  { label: '契約ID', name: 'contractId' },
+  { label: '法人ID/法人名', name: 'corporationIdAndName' },
+  { label: '請求先ID', name: 'billingId' },
+  { label: 'システム種別', name: 'systemKind' },
+  { label: '帳票作成日（FROM）', name: 'reportCreateDateFrom' },
+  { label: '帳票作成日（TO）', name: 'reportCreateDateTo' },
+  { label: '帳票名', name: 'reportName' },
 ];
 
 /**
@@ -282,109 +279,119 @@ const ScrCom0009Page = () => {
     defaultValues: prevValues === undefined ? initialValues : prevValues,
     resolver: yupResolver(yup.object(reportBasicSchama)),
     context: false,
-    });
-    const { 
-      watch,
-      getValues,
-     } = methods;
+  });
+  const { watch, getValues } = methods;
 
   // user情報
   const { getMessage } = useContext(MessageContext);
 
- // 初期表示
- useEffect(() => {
-  const initialize = async () => {
-    const selectValues: SelectValuesModel = selectValuesInitialValues;
+  // 初期表示
+  useEffect(() => {
+    const initialize = async () => {
+      const selectValues: SelectValuesModel = selectValuesInitialValues;
 
-    // 検索条件絞込API
-    const conditionRefineRequest = convertToSearchConditionRefine(getValues());
-    const conditionRefineResponse = await ScrMem9999SearchConditionRefine(conditionRefineRequest);
-    conditionRefineResponse.contractId.map((x) => {
-      selectValues.contractIdSelectValues.push({
-        value: x, 
-        displayValue: x
+      // 検索条件絞込API
+      const conditionRefineRequest = convertToSearchConditionRefine(
+        getValues()
+      );
+      const conditionRefineResponse = await ScrMem9999SearchconditionRefine(
+        conditionRefineRequest
+      );
+      conditionRefineResponse.contractId.map((x) => {
+        selectValues.contractIdSelectValues.push({
+          value: x,
+          displayValue: x,
+        });
       });
-    });  
-    conditionRefineResponse.corporationList.map((x) => {
-      selectValues.corporationIdAndNameSelectValues.push({
-        value: x.corporationId,
-        displayValue: x.corporationName,
+      conditionRefineResponse.corporationList.map((x) => {
+        selectValues.corporationIdAndNameSelectValues.push({
+          value: x.corporationId,
+          displayValue: x.corporationName,
+        });
       });
-    });  
-    conditionRefineResponse.billingId.map((x) => {
-      selectValues.billingIdSelectValues.push({
-        value: x,
-        displayValue: x,
+      conditionRefineResponse.billingId.map((x) => {
+        selectValues.billingIdSelectValues.push({
+          value: x,
+          displayValue: x,
+        });
       });
-    });  
 
-    // 帳票マスタ取得API
-    const ScrCom9999GetReportMasterResponse = await ScrCom9999GetReportMaster(null);
-    ScrCom9999GetReportMasterResponse.getReportMaster.map((x) => {
-      selectValues.reportNameSelectValues.push({
-        value: x.reportId,
-        displayValue: x.reportName,
+      // 帳票マスタ取得API
+      const ScrCom9999GetReportMasterResponse =
+        await ScrCom9999GetReportmaster();
+      ScrCom9999GetReportMasterResponse.reportMasterInfo.map((x) => {
+        selectValues.reportNameSelectValues.push({
+          value: x.reportId,
+          displayValue: x.reportName,
+        });
       });
-    });  
 
-    // コード管理マスタ情報取得API
-    const CodeManagementMasterRequest = {
-      codeId: 'CDE-COM-0130',
+      // コード管理マスタ情報取得API
+      const CodeManagementMasterRequest = {
+        codeId: 'CDE-COM-0130',
+      };
+      const CodeManagementMasterResponse =
+        await ScrCom9999GetCodeManagementMaster(CodeManagementMasterRequest);
+      CodeManagementMasterResponse.searchGetCodeManagementMasterListbox.map(
+        (x) => {
+          selectValues.systemKindSelectValues.push({
+            value: x.codeValue,
+            displayValue: x.codeName,
+          });
+        }
+      );
+
+      setSelectValues({
+        contractIdSelectValues: selectValues.contractIdSelectValues,
+        corporationIdAndNameSelectValues:
+          selectValues.corporationIdAndNameSelectValues,
+        billingIdSelectValues: selectValues.billingIdSelectValues,
+        reportNameSelectValues: selectValues.reportNameSelectValues,
+        systemKindSelectValues: selectValues.systemKindSelectValues,
+      });
     };
-    const CodeManagementMasterResponse = await ScrCom9999GetCodeManagementMaster(CodeManagementMasterRequest);
-    CodeManagementMasterResponse.searchGetCodeManagementMaster.map((x) => {
-      selectValues.systemKindSelectValues.push({
-        value: x.codeValue, 
-        displayValue: x.codeName,
-      });
-    });
-
-    setSelectValues({
-      contractIdSelectValues: selectValues.contractIdSelectValues,
-      corporationIdAndNameSelectValues: selectValues.corporationIdAndNameSelectValues,
-      billingIdSelectValues: selectValues.billingIdSelectValues,
-      reportNameSelectValues: selectValues.reportNameSelectValues,
-      systemKindSelectValues: selectValues.systemKindSelectValues,
-    });
-  };
-  initialize();
-}, []);
+    initialize();
+  }, []);
 
   /**
    * 検索クリック時のイベントハンドラ
    */
   const handleSearchClick = async () => {
+    // TODO 確認後削除
     console.log(getValues());
-    
-    // 帳票作成日チェック（FROM＞TOでないこと）
-    if(getValues('reportCreateDateFrom') !== '' || getValues('reportCreateDateTo') !== ''){
-    if(getValues('reportCreateDateFrom') > getValues('reportCreateDateTo')){
-      const messege = getMessage('MSG-FR-INF-00062');
-      // ダイアログを表示
-      setTitle(messege);
-      setHandleDialog(true);
-      return;
-    }
-  }
-    // 関連チェック（帳票IDのシステム種別とシステム種別が一致しているか）
-    if((getValues('systemKind') !== '' && getValues('reportName') !== '' )){
-    if(getValues('systemKind') !== getValues('reportName').slice(4, 7)){
-      // TODO メッセージを確認
-      const messege = getMessage('MSG-FR-INF-00063');
-      // ダイアログを表示
-      setTitle(messege);
-      setHandleDialog(true);
-      return;
-    }
-   }
-   
-  // 検索API
-  const request = convertFromSearchConditionModel(getValues());
-  const response = await ScrCom0009GetReportList(request);
-  const searchResult = convertToSearchResultRowModel(response);
 
-  // 制限件数 <  取得件数の場合
- if (response.count < response.acquisitionCount) {
+    // 帳票作成日チェック（FROM＞TOでないこと）
+    if (
+      getValues('reportCreateDateFrom') !== '' ||
+      getValues('reportCreateDateTo') !== ''
+    ) {
+      if (getValues('reportCreateDateFrom') > getValues('reportCreateDateTo')) {
+        const messege = getMessage('MSG-FR-INF-00062');
+        // ダイアログを表示
+        setTitle(messege);
+        setHandleDialog(true);
+        return;
+      }
+    }
+    // 関連チェック（帳票IDのシステム種別とシステム種別が一致しているか）
+    if (getValues('systemKind') !== '' && getValues('reportName') !== '') {
+      if (getValues('systemKind') !== getValues('reportName').slice(4, 7)) {
+        // TODO メッセージを確認
+        const messege = getMessage('MSG-FR-INF-00063');
+        // ダイアログを表示
+        setTitle(messege);
+        setHandleDialog(true);
+        return;
+      }
+    }
+
+    // 検索API
+    const request = convertFromSearchConditionModel(getValues());
+    const response = await ScrCom0009GetReportList(request);
+    const searchResult = convertToSearchResultRowModel(response);
+
+    // 制限件数 <  取得件数の場合
+    if (response.count < response.acquisitionCount) {
       // メッセージ取得機能へ引数を渡しメッセージを取得する
       const messege = Format(getMessage('MSG-FR-INF-00004'), [
         response.acquisitionCount.toString(),
@@ -394,22 +401,22 @@ const ScrCom0009Page = () => {
       setTitle(messege);
       setHandleDialog(true);
     }
-     // データグリッドにデータを設定
+    // データグリッドにデータを設定
     setSearchResult(searchResult);
     setOpenSection(false);
   };
 
-    /**
+  /**
    * ファイル出力ボタン押下時のイベントハンドラ
    */
-    const handleConfirm = async () => {
-      // チェックボックスで選択したレコードを引数に型変換
-      const createReportFile = convertToCreateReportFileParameterInfo(checkList);
-      const request = {
-        getReportList: createReportFile
-      }
-      await ScrCom0009GetReportOutput(request);
-    }
+  const handleConfirm = async () => {
+    // チェックボックスで選択したレコードを引数に型変換
+    const createReportFile = convertToCreateReportFileParameterInfo(checkList);
+    const request = {
+      getReportList: createReportFile,
+    };
+    await ScrCom0009GetReportOutput(request);
+  };
 
   /**
    * Sectionを閉じた際のラベル作成
@@ -417,7 +424,7 @@ const ScrCom0009Page = () => {
   // TODO 検索ボタン押下前のラベル表示の修正
   const serchLabels = serchData.map((val, index) => {
     let nameVal = getValues(val.name);
-    if(val.name === 'corporationIdAndName'){
+    if (val.name === 'corporationIdAndName') {
       const filter = selectValues.corporationIdAndNameSelectValues.filter(
         (x) => {
           return nameVal === x.value;
@@ -427,22 +434,18 @@ const ScrCom0009Page = () => {
         nameVal = x.displayValue;
       });
     }
-    if(val.name === 'systemKind'){
-      const filter = selectValues.systemKindSelectValues.filter(
-        (x) => {
-          return nameVal === x.value;
-        }
-      );
+    if (val.name === 'systemKind') {
+      const filter = selectValues.systemKindSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
       filter.map((x) => {
         nameVal = x.displayValue;
       });
     }
-    if(val.name === 'reportName'){
-      const filter = selectValues.reportNameSelectValues.filter(
-        (x) => {
-          return nameVal === x.value;
-        }
-      );
+    if (val.name === 'reportName') {
+      const filter = selectValues.reportNameSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
       filter.map((x) => {
         nameVal = x.displayValue;
       });
@@ -457,150 +460,150 @@ const ScrCom0009Page = () => {
    */
   useEffect(() => {
     const subscription = watch(async (value, { name, type }) => {
-      if (name === 'contractId' || name === 'corporationIdAndName' || name === 'billingId' ) {
-        const conditionRefineRequest = convertToSearchConditionRefine(getValues());
-        const conditionRefineResponse = await ScrMem9999SearchConditionRefine(conditionRefineRequest);
+      if (
+        name === 'contractId' ||
+        name === 'corporationIdAndName' ||
+        name === 'billingId'
+      ) {
+        const conditionRefineRequest = convertToSearchConditionRefine(
+          getValues()
+        );
+        const conditionRefineResponse = await ScrMem9999SearchconditionRefine(
+          conditionRefineRequest
+        );
         selectValues.contractIdSelectValues = [];
         selectValues.corporationIdAndNameSelectValues = [];
         selectValues.billingIdSelectValues = [];
         conditionRefineResponse.contractId.map((x) => {
           selectValues.contractIdSelectValues.push({
-            value: x, 
-            displayValue: x
+            value: x,
+            displayValue: x,
           });
-        });  
+        });
         conditionRefineResponse.corporationList.map((x) => {
           selectValues.corporationIdAndNameSelectValues.push({
             value: x.corporationId,
             displayValue: x.corporationName,
           });
-        });  
+        });
         conditionRefineResponse.billingId.map((x) => {
           selectValues.billingIdSelectValues.push({
             value: x,
             displayValue: x,
           });
-        }); 
-      };
-      });
-        return () => subscription.unsubscribe();
-      }, [watch]);
+        });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   /**
    * チェックボックスで選択した値の設定
    */
   const handRowSelectionModelChange = (
-    rowSelectionModel: GridRowSelectionModel,
+    rowSelectionModel: GridRowSelectionModel
   ) => {
     const RowSelections: SearchResultRowModel[] = [];
     rowSelectionModel.map((X) => {
       const a = searchResult.find((e) => e.id === X);
-      if(a !== undefined){
+      if (a !== undefined) {
         RowSelections.push(a);
       }
     });
     setCheckList(RowSelections);
   };
 
-
   return (
-  <>
-  <MainLayout>
-    {/* main */}
-    <MainLayout main>
-    <FormProvider {...methods}>
-       {/* 検索条件セクション */}
-       <Section
-          name='検索条件'
-          isSearch
-          serchLabels={serchLabels}
-          open={openSection}
-        >
-          <RowStack>
-          <ColStack>
-          <Select
-            label='契約ID'
-            name='contractId'
-            selectValues={selectValues.contractIdSelectValues}
-            blankOption
-            />
-          <Select
-              label='法人ID/法人名'
-              name='corporationIdAndName'
-              selectValues={
-                selectValues.corporationIdAndNameSelectValues
-              }
-              blankOption
-              />
-            <Select
-              label='請求先ID'
-              name='billingId'
-              selectValues={
-                selectValues.billingIdSelectValues
-              }
-              blankOption
-              />
-            </ColStack>
-            <ColStack>
-            <Select
-              label='システム種別'
-              name='systemKind'
-              selectValues={
-                selectValues.systemKindSelectValues
-              }
-              blankOption
-              />
-            <FromTo label='帳票作成日'>
-                <DatePicker name='reportCreateDateFrom' />
-                <DatePicker name='reportCreateDateTo' />
-            </FromTo>
-            </ColStack>
-              <Select
-                label='帳票名'
-                name='reportName'
-                selectValues={
-                  selectValues.reportNameSelectValues
-                }
-              />         
-           </RowStack>
+    <>
+      <MainLayout>
+        {/* main */}
+        <MainLayout main>
+          <FormProvider {...methods}>
+            {/* 検索条件セクション */}
+            <Section
+              name='検索条件'
+              isSearch
+              serchLabels={serchLabels}
+              open={openSection}
+            >
+              <RowStack>
+                <ColStack>
+                  <Select
+                    label='契約ID'
+                    name='contractId'
+                    selectValues={selectValues.contractIdSelectValues}
+                    blankOption
+                  />
+                  <Select
+                    label='法人ID/法人名'
+                    name='corporationIdAndName'
+                    selectValues={selectValues.corporationIdAndNameSelectValues}
+                    blankOption
+                  />
+                  <Select
+                    label='請求先ID'
+                    name='billingId'
+                    selectValues={selectValues.billingIdSelectValues}
+                    blankOption
+                  />
+                </ColStack>
+                <ColStack>
+                  <Select
+                    label='システム種別'
+                    name='systemKind'
+                    selectValues={selectValues.systemKindSelectValues}
+                    blankOption
+                  />
+                  <FromTo label='帳票作成日'>
+                    <DatePicker name='reportCreateDateFrom' />
+                    <DatePicker name='reportCreateDateTo' />
+                  </FromTo>
+                </ColStack>
+                <Select
+                  label='帳票名'
+                  name='reportName'
+                  selectValues={selectValues.reportNameSelectValues}
+                  blankOption
+                />
+              </RowStack>
               <CenterBox>
-              <SearchButton
-              onClick={() => {
-              handleSearchClick();
-               }}
-              >
-              検索
-              </SearchButton>
+                <SearchButton
+                  onClick={() => {
+                    handleSearchClick();
+                  }}
+                >
+                  検索
+                </SearchButton>
               </CenterBox>
-            </Section> 
+            </Section>
             {/* 再出力対象選択セクション */}
             <Section
-              name='再出力対象選択'  
+              name='再出力対象選択'
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleConfirm}>ファイル出力</AddButton>
-              </MarginBox>
-                }
-              >   
+                  <AddButton onClick={handleConfirm}>ファイル出力</AddButton>
+                </MarginBox>
+              }
+            >
               <DataGrid
                 columns={searchResultColumns}
                 rows={searchResult}
                 pagination
                 checkboxSelection
-                onRowSelectionModelChange = {handRowSelectionModelChange}
-              />  
-              </Section>
-        </FormProvider>
-    </MainLayout>
-  </MainLayout>
-  {/* ダイアログ */}
-  <Dialog
-    open={handleDialog}
-    title={title}
-    buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
-  />
-  </>
-  )
+                onRowSelectionModelChange={handRowSelectionModelChange}
+              />
+            </Section>
+          </FormProvider>
+        </MainLayout>
+      </MainLayout>
+      {/* ダイアログ */}
+      <Dialog
+        open={handleDialog}
+        title={title}
+        buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
+      />
+    </>
+  );
 };
 
 export default ScrCom0009Page;
