@@ -1,4 +1,4 @@
-import { ScrCom0032PopupModel } from 'pages/com/popups/SrcCom0032';
+import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032Popup';
 
 import { comApiClient } from 'providers/ApiClient';
 
@@ -40,6 +40,8 @@ export interface ScrCom0008RegistUpdateReportCommentRequest {
   registrationChangeMemo: string;
   /** 変更予定日 */
   changeExpectDate: string;
+  /** 画面ID */
+  screenId: string;
 }
 
 /** SCR-COM-0008-0001: 帳票コメント情報取得API */
