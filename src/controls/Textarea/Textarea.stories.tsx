@@ -5,7 +5,9 @@ import { FormProvider, SubmitHandler, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
-import { Button } from '@mui/material';
+import { theme } from 'controls/theme';
+
+import { Button, ThemeProvider } from '@mui/material';
 import { Textarea, TextareaProps } from './Textarea';
 
 export default {
@@ -57,7 +59,6 @@ index.args = {
   name: 'sampleName',
   disabled: false,
   maxRows: 10,
-  minRows: 5,
 };
 
 interface TextareaInput {
@@ -79,12 +80,14 @@ export const Example = () => {
   };
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
-        <Textarea name='name' disabled={false} minRows={3} />
-        <Button type='submit' variant='outlined'>
-          submit
-        </Button>
-      </form>
+      <ThemeProvider theme={theme}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <Textarea name='name' disabled={false} />
+          <Button type='submit' variant='outlined'>
+            submit
+          </Button>
+        </form>
+      </ThemeProvider>
     </FormProvider>
   );
 };

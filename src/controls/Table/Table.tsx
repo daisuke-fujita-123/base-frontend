@@ -59,6 +59,7 @@ const StyledColmun = styled('div')({
 
 // テーブルのヘッダー情報の格納
 export interface TableColDef {
+  field: string;
   headerName: string;
   width: number;
 }
@@ -131,9 +132,7 @@ export const Table = (props: TableProps) => {
               <TableRow key={indexRow}>
                 {columns.map((column, indexColumn) => {
                   return (
-                    <TableCell key={indexColumn}>
-                      {row[column.headerName]}
-                    </TableCell>
+                    <TableCell key={indexColumn}>{row[column.field]}</TableCell>
                   );
                 })}
               </TableRow>
