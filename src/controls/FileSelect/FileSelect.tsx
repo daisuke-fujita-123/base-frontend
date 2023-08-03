@@ -1,43 +1,53 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FieldValues, Path, PathValue, UseFormSetValue } from 'react-hook-form';
+import { FieldValues, Path, useFormContext } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
 
-import { Box, Stack, Typography } from '@mui/material';
-import Button from '@mui/material/Button';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormHelperText,
+  Stack,
+  Typography,
+} from '@mui/material';
 
 export interface FileSelectProps<T extends FieldValues> {
   name: Path<T>;
-  setValue: UseFormSetValue<T>;
   label?: string;
   labelPosition?: 'above' | 'side';
   size?: 's' | 'm' | 'l' | 'xl';
 }
+
 export const FileSelect = <T extends FieldValues>(
   props: FileSelectProps<T>
 ) => {
-  const { name, setValue, label, labelPosition, size = 's' } = props;
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const settedValue = acceptedFiles[0] as PathValue<T, Path<T>>;
-    setValue(name, settedValue);
-  }, []);
+  const { name, label, labelPosition, size = 's' } = props;
+
+  // form
+  const { formState, setValue, trigger } = useFormContext();
+
+  const handleFileAccepted = (acceptedFiles: File[]) => {
+    setValue(name, acceptedFiles[0] as any);
+    trigger(name);
+  };
 
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: {
       'text/csv': ['.csv'],
     },
     multiple: false,
-    onDrop,
+    onDrop: handleFileAccepted,
   });
 
   return (
     <InputLayout label={label} labelPosition={labelPosition} size={size}>
-      <Box>
+      <FormControl error={!!formState.errors[name]}>
         <Stack direction='row' spacing={3} alignItems='center' marginBottom={2}>
           <Button variant='outlined' color='inherit' component='label'>
             ファイル選択
-            <input type='file' hidden accept='.csv' {...getInputProps()} />
+            <input {...getInputProps()} />
           </Button>
           <Typography>
             {acceptedFiles.length > 0 ? acceptedFiles[0].name : '未選択'}
@@ -52,10 +62,15 @@ export const FileSelect = <T extends FieldValues>(
           }}
           {...getRootProps()}
         >
-          <input accept='.csv' {...getInputProps()} />
+          <input {...getInputProps()} />
           <p>ファイルをドラッグアンドドロップ</p>
         </Box>
-      </Box>
+        {formState.errors[name]?.message && (
+          <FormHelperText>
+            {String(formState.errors[name]?.message)}
+          </FormHelperText>
+        )}
+      </FormControl>
     </InputLayout>
   );
 };

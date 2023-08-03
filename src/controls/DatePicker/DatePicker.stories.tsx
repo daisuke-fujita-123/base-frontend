@@ -43,11 +43,12 @@ export default {
 
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface SampleInput {
-  name: Date;
+  date: string;
 }
 
 const schema = yup.object({
-  name: yup.string().required('入力してください'),
+  // date: yup.string().required('入力してください'),
+  date: yup.string().max(2),
 });
 
 // TDOO クラッシュ原因の特定
@@ -78,25 +79,18 @@ export const Example = () => {
   const methods = useForm<SampleInput>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
+    defaultValues: {
+      date: '2020-01-01',
+    },
     resolver: yupResolver(schema),
     context: isReadOnly,
   });
+
   return (
     <FormProvider {...methods}>
       <ThemeProvider theme={theme}>
-        <DatePicker
-          label='サンプル日程（和暦あり）'
-          required={true}
-          name='name'
-          disabled={false}
-          wareki={true}
-        />
-        <DatePicker
-          label='サンプル日程（和暦なし）'
-          required={true}
-          name='name'
-          disabled={false}
-        />
+        <DatePicker label='DatePicker' name='date' />
+        <DatePicker label='DatePicker（和暦付き）' name='date' withWareki />
       </ThemeProvider>
     </FormProvider>
   );
