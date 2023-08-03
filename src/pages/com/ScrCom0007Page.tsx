@@ -1,14 +1,15 @@
-import { TabDef, Tabs } from 'layouts/Tabs';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import ScrCom0007ChangeHistoryTab from './tabs/ScrCom0007ChangeHistoryTab';
+
+import { TabDef, Tabs } from 'layouts/Tabs';
+
 import ScrCom0007BasicTab from './tabs/ScrCom0007BasicTab';
+import ScrCom0007ChangeHistoryTab from './tabs/ScrCom0007ChangeHistoryTab';
 
 /**
  * SCR-COM-0007 帳票管理画面
  */
 const ScrCom0007Page = () => {
-
   // router
   const location = useLocation();
 

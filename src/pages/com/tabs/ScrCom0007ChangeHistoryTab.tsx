@@ -5,12 +5,34 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import {
+  DataGrid,
+  GridColDef,
+  GridHrefsModel,
+  GridTooltipsModel,
+} from 'controls/Datagrid';
 
-import { getChangeHistory, ScrCom0007GetChangeHistoryResponse } from 'apis/com/ScrCom0007Api';
+import {
+  getChangeHistory,
+  ScrCom0007GetChangeHistoryResponse,
+} from 'apis/com/ScrCom0007Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
+// TODO: ./datasetが存在しない為要確認
+// import { CELL_TYPE_DATASET } from './dataset';
+
+/**
+ * セルタイプ行データモデル
+ */
+interface CellTypeRowModel {
+  id: number;
+  input: string;
+  select: string;
+  radio: string;
+  checkbox: boolean;
+  datepicker: string;
+}
 /**
  * 検索条件列定義
  */
@@ -50,9 +72,9 @@ const changeHistoryColumns: GridColDef[] = [
     field: 'registUpdateMemoExistence',
     headerName: '登録・変更メモ',
     size: 'm',
+    tooltip: true,
   },
 ];
-
 
 /**
  * 検索結果行データモデル
@@ -109,34 +131,58 @@ const convertToSearchResultRowModel = (
 const ScrCom0007ChangeHistoryTab = () => {
   // state
   const [searchResult, setSearchResult] = useState<changeHistoryRowModel[]>([]);
-  const [hrefs, setHrefs] = useState<any[]>([]);
+  const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
+  const [changeHistoryTooltips, setChangeHistoryTooltips] = useState<
+    GridTooltipsModel[]
+  >([]);
+
+  // const [cellTypeRows] = useState<CellTypeRowModel[]>(CELL_TYPE_DATASET);
 
   // router
   const navigate = useNavigate();
 
   /**
- * 初期表示
- */
+   * 初期表示
+   */
   useEffect(() => {
     const initialize = async () => {
       const response = await getChangeHistory();
       const searchResult = convertToSearchResultRowModel(response);
+      setSearchResult(searchResult);
+
+      // refs設定
       const hrefs = searchResult.map((x) => {
         return {
-          field: 'applicationId',
-          id: x.applicationId,
+          id: x.id,
           href: '/com/reports/' + x.applicationId,
         };
       });
-      setSearchResult(searchResult);
-      setHrefs(hrefs);
+      setHrefs([
+        {
+          field: 'applicationId',
+          hrefs: hrefs,
+        },
+      ]);
     };
+
+    // ツールチップ設定
+    setChangeHistoryTooltips([
+      {
+        field: 'registUpdateMemoExistence',
+        tooltips: searchResult.map((x) => {
+          return {
+            id: x.applicationId,
+            value: 'あり',
+            text: x.registUpdateMemo,
+          };
+        }),
+      },
+    ]);
+
     initialize();
   }, []);
 
-
   /**
-   * 
    * @param url 申請IDリンク押下時のイベントハンドラ
    */
   const handleLinkClick = (url: string) => {
@@ -144,11 +190,10 @@ const ScrCom0007ChangeHistoryTab = () => {
   };
 
   /**
-* CSV出力アイコンクリック時のイベントハンドラ
-*/
-  const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果結果からCSVを出力する。');
+   * CSV出力アイコンクリック時のイベントハンドラ
+   */
+  const handleExportCsvClick = () => {
+    // exportCsv(cellTypeRows, 'filename.csv');
   };
 
   return (
@@ -158,19 +203,16 @@ const ScrCom0007ChangeHistoryTab = () => {
           name='変更履歴一覧'
           decoration={
             <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-              {/* TODO：エクスポートアイコンに将来的に変更 */}
-              <AddButton onClick={handleIconOutputCsvClick}>
-                CSV出力
-              </AddButton>
+              <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
             </MarginBox>
           }
         >
-          {/* TODO: ツールチップで登録・変更メモを表示する */}
           <DataGrid
             columns={changeHistoryColumns}
             rows={searchResult}
             hrefs={hrefs}
             onLinkClick={handleLinkClick}
+            tooltips={changeHistoryTooltips}
           />
         </Section>
       </MainLayout>
