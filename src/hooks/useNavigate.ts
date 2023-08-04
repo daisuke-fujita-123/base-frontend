@@ -1,4 +1,5 @@
 import { useContext } from 'react';
+import { NavigateOptions } from 'react-router-dom';
 
 import { AppContext } from 'providers/AppContextProvider';
 
@@ -7,14 +8,17 @@ import { AppContext } from 'providers/AppContextProvider';
  */
 export const useNavigate = () => {
   // context
-  const { navigateTo } = useContext(AppContext);
+  const { navigate: navigateContext } = useContext(AppContext);
 
-  // eslint-disable-next-line @typescript-eslint/no-inferrable-types
-  const navigate = (to: string, newTab: boolean = false) => {
-    if (newTab) {
+  const navigate = (
+    to: string | number,
+    newTab = false,
+    options?: NavigateOptions
+  ) => {
+    if (newTab && to === 'string') {
       window.open(to, '_blank');
     } else {
-      navigateTo(to);
+      navigateContext(to, options);
     }
   };
 

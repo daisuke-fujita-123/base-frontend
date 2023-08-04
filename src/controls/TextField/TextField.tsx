@@ -5,6 +5,7 @@ import {
   FieldValues,
   Path,
   useFormContext,
+  useWatch,
 } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
@@ -12,6 +13,7 @@ import { InputLayout } from 'layouts/InputLayout';
 import { theme } from 'controls/theme';
 
 import ClearIcon from '@mui/icons-material/Clear';
+
 import {
   IconButton,
   InputAdornment,
@@ -29,6 +31,8 @@ export interface TextFieldProps<T extends FieldValues> {
   disabled?: boolean;
   fullWidth?: boolean;
   readonly?: boolean;
+  size?: 's' | 'm' | 'l' | 'xl';
+  onBlur?: (name: string) => void;
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -38,11 +42,6 @@ export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
     }),
   },
   '& .MuiOutlinedInput-root': {
-    '&.Mui-focused fieldset': {
-      borderColor: '#f37246',
-    },
-  },
-  '& .MuiInput-root': {
     '&.Mui-focused fieldset': {
       borderColor: '#f37246',
     },
@@ -60,9 +59,14 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     disabled = false,
     fullWidth = true,
     readonly = false,
+    size = 's',
+    onBlur,
   } = props;
 
-  const { register, formState, setValue, watch, control } = useFormContext();
+  const { register, formState, setValue, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
@@ -70,13 +74,12 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     }
   };
 
-  const isReadOnly = control?._options?.context[0];
-
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <StyledTextFiled
         id={name}
@@ -89,19 +92,25 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && !readonly && (
+              {watchValue && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
               )}
             </InputAdornment>
           ),
-          readOnly: isReadOnly,
+          readOnly: isReadOnly || readonly,
         }}
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
+          onBlur && onBlur(name);
+        }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );
@@ -120,10 +129,14 @@ export const PriceTextField = <T extends FieldValues>(
     disabled = false,
     fullWidth = true,
     readonly = false,
+    size = 's',
+    onBlur,
   } = props;
-  const { register, formState, setValue, watch, trigger, control } =
-    useFormContext();
-  const currentValue = watch(name);
+
+  const { register, formState, setValue, trigger, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
@@ -132,15 +145,15 @@ export const PriceTextField = <T extends FieldValues>(
   };
 
   const onFocusHandle = () => {
-    if (currentValue && typeof currentValue === 'string') {
-      const noConnmaString = currentValue.replace(/,/g, '');
+    if (watchValue && typeof watchValue === 'string') {
+      const noConnmaString = watchValue.replace(/,/g, '');
       setValue(name, noConnmaString);
     }
   };
 
   const onBlurHandle = () => {
-    if (currentValue && typeof currentValue === 'string') {
-      const hannkakuString = fullWidth2HalfWidth(currentValue);
+    if (watchValue && typeof watchValue === 'string') {
+      const hannkakuString = fullWidth2HalfWidth(watchValue);
       const noConnmaString = hannkakuString.replace(/,/g, '');
       // 数値に変換できない場合はそのままの値を返却する
       if (!isNaN(Number(noConnmaString)) && noConnmaString.trim() !== '') {
@@ -152,7 +165,7 @@ export const PriceTextField = <T extends FieldValues>(
         >;
         setValue(name, noConnmaPrice);
       } else {
-        setValue(name, currentValue);
+        setValue(name, watchValue);
       }
     }
     // バリデーションチェックを行う
@@ -166,13 +179,12 @@ export const PriceTextField = <T extends FieldValues>(
     });
   };
 
-  const isReadOnly = control?._options?.context[0];
-
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <StyledTextFiled
         id={name}
@@ -185,11 +197,10 @@ export const PriceTextField = <T extends FieldValues>(
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && !readonly && (
+              {watchValue && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
@@ -198,18 +209,22 @@ export const PriceTextField = <T extends FieldValues>(
           ),
           readOnly: isReadOnly,
         }}
-        onBlur={onBlurHandle}
-        onFocus={onFocusHandle}
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
+          onBlurHandle();
+          onBlur && onBlur(name);
+        }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );
 };
 
-interface PostalTextFieldProps extends TextFieldProps<FieldValues> {
-  onBlur: () => void;
-}
-
-export const PostalTextField = (props: PostalTextFieldProps) => {
+export const PostalTextField = <T extends FieldValues>(
+  props: TextFieldProps<T>
+) => {
   const {
     label,
     labelPosition = 'above',
@@ -220,23 +235,26 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
     disabled = false,
     fullWidth = true,
     readonly = false,
+    size = 's',
     onBlur,
   } = props;
 
-  const { register, formState, setValue, watch, trigger, control } =
-    useFormContext();
-  const currentValue = watch(name);
+  const { register, formState, setValue, trigger, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
     }
   };
+
   const onBlurHandle = () => {
     // 郵便番号形式に変換 ※文字列が7桁以外の場合はハイフンは入れない。
-    if (currentValue.length === 7 && currentValue.indexOf('-') === -1) {
-      const firstPart = currentValue.substring(0, 3);
-      const secondPart = currentValue.substring(3, 7);
+    if (watchValue.length === 7 && watchValue.indexOf('-') === -1) {
+      const firstPart = watchValue.substring(0, 3);
+      const secondPart = watchValue.substring(3, 7);
       const formattedValue = `${firstPart}-${secondPart}` as FieldPathValue<
         FieldValues,
         FieldPath<FieldValues>
@@ -244,19 +262,18 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
       setValue(name, formattedValue);
     } else {
       // デフォルト値をセット
-      setValue(name, currentValue);
+      setValue(name, watchValue);
     }
     // バリデーションチェックを行う
     trigger(name);
   };
-
-  const isReadOnly = control?._options?.context[0];
 
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <StyledTextFiled
         id={name}
@@ -269,11 +286,10 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && !readonly && (
+              {watchValue && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
@@ -282,10 +298,14 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
           ),
           readOnly: isReadOnly,
         }}
-        onBlur={() => {
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
           onBlurHandle();
-          onBlur();
+          onBlur && onBlur(name);
         }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );

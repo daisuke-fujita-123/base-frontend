@@ -54,28 +54,41 @@ interface TabLayoutProps {
 // フッターは、タブ内の前ページに聞かせる場合は、ハンドリング方法を考える必要あり。
 
 const StyledTab = styled(Tab)({
-  ...theme.palette.tab.tabSelected,
+  ...theme.palette.tab,
   fontWeight: 'bold',
-  borderTopLeftRadius: '25%',
-  borderTopRightRadius: '25%',
+  borderRadius: '10px 10px 0 0',
   fontSize: theme.spacing(4),
-  height: theme.spacing(6),
-  width: theme.spacing(30),
+  height: 40,
+  minHeight: 40,
+  minWidth: 136,
+  whiteSpace: 'nowrap',
+  border: `1px solid  ${theme.palette.tab?.border}`,
   marginRight: theme.spacing(1),
-  '&:not(.Mui-selected)': { ...theme.palette.tab.tabNotSelected },
+  '&:hover': {
+    ...theme.palette.tab.hover,
+  },
+  '&:active': {
+    ...theme.palette.tab.hover,
+  },
+  '&:not(.Mui-selected)': {
+    ...theme.palette.tabNoSelect,
+    marginTop: theme.spacing(1),
+    height: 35,
+    minHeight: 35,
+  },
 });
 
 const StyledBox = styled(Box)({
-  borderBottom: `1px solid  ${theme.palette.tab.tabSelected?.color}`,
+  borderBottom: `2px solid  ${theme.palette.tab?.border}`,
   marginLeft: theme.spacing(3),
-  marginBottom: theme.spacing(-10),
+  marginBottom: theme.spacing(-8),
 });
 
 /**
  * Tabsコンポーネント
  */
 export const Tabs = (props: TabLayoutProps) => {
-  const { children, tabDef: tabValues, defaultValue } = props;
+  const { children, tabDef: tabValues } = props;
 
   // router
   const location = useLocation();
@@ -100,6 +113,7 @@ export const Tabs = (props: TabLayoutProps) => {
         <TabsMui
           value={value}
           onChange={onChange}
+          sx={{ height: 40, minHeight: 40 }}
           TabIndicatorProps={{
             hidden: true,
           }}
