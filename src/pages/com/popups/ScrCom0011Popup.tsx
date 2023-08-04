@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -109,6 +109,9 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
   // trueの場合  => "最大行数"と"1行最大文字数"が共にNull
   const [isNull, setIsNull] = useState<boolean>();
 
+  // 初回レンダリング判定フラグ
+  const renderFlgRef = useRef(false);
+
   const validationSchema = {
     // TODO: 行数も文字数も動的にバリデーションをかける
     // => 行数の可変の制御方法不明
@@ -145,7 +148,13 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
         ),
       });
     };
-    initialize();
+    // 遷移元画面遷移時には処理を実行しない
+    if (renderFlgRef.current) {
+      // 初期表示処理
+      initialize();
+    } else {
+      renderFlgRef.current = true;
+    }
   }, []);
 
   // プルダウン選択時の処理
