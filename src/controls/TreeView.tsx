@@ -12,46 +12,51 @@ import {
 
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import StarIcon from '@mui/icons-material/Star';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
-import TableViewOutlinedIcon from '@mui/icons-material/TableViewOutlined';
+import sidemenu01 from 'icons/sidemenu_01.png';
+import sidemenu02 from 'icons/sidemenu_02.png';
+import sidemenu03 from 'icons/sidemenu_03.png';
+import sidemenu04 from 'icons/sidemenu_04.png';
+import sidemenu05 from 'icons/sidemenu_05.png';
+import sidemenuAccordionOpen from 'icons/sidemenu_accordion_arrowOpen.png';
+import sidemenuAdd from 'icons/sidemenu_add.png';
+import secondfavoOff from 'icons/sidemenu_secondfavo_off.png';
+import secondfavoOn from 'icons/sidemenu_secondFavo_on.png';
+
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Icon,
   IconButton,
   styled,
 } from '@mui/material';
 import { getRoute, Rootes } from 'definitions/routes';
 import { AccordionContentText, AccordionSubTitle } from './Typography';
 
+const MenuIcon = (icon: string) => {
+  return <img src={icon}></img>;
+};
+
 const menuDef = [
   {
     title: 'お気に入り',
-    icon: <StarBorderIcon />,
+    icon: MenuIcon(sidemenu01),
     children: [],
   },
   {
     title: '会員管理',
-    icon: <PersonOutlineIcon />,
+    icon: MenuIcon(sidemenu02),
     children: ['SCR-MEM-0001'],
   },
   {
     title: '書類管理',
-    icon: <DescriptionOutlinedIcon />,
+    icon: MenuIcon(sidemenu03),
     children: ['SCR-DOC-0001', 'SCR-DOC-0010'],
   },
   {
     title: '取引・会計管理',
-    icon: <TableViewOutlinedIcon />,
+    icon: MenuIcon(sidemenu04),
     children: [
       'SCR-TRA-0001',
       'SCR-TRA-0005',
@@ -71,7 +76,7 @@ const menuDef = [
   },
   {
     title: '共通管理',
-    icon: <SettingsOutlinedIcon />,
+    icon: MenuIcon(sidemenu05),
     children: [
       'SCR-COM-0019',
       'SCR-COM-0003',
@@ -151,7 +156,7 @@ const StyledAccordionDetails = styled(AccordionDetails)({
   marginLeft: theme.spacing(9),
 });
 
-const StyledExpandMoreIcon = styled(ExpandMoreIcon)({
+const StyledExpandMoreIcon = styled('image')({
   margin: theme.spacing(3),
 });
 
@@ -169,24 +174,17 @@ const StarIconButton = styled(IconButton)({
   color: theme.palette.accordion.color,
 });
 
-const StyledIcon = styled(Icon)({
+const StyledIcon = styled('image')({
   marginRight: theme.spacing(1),
-  marginTop: theme.spacing(0.4),
-  width: 15,
-  height: 15,
-  fontSize: 15,
-  '& .MuiSvgIcon-root': {
-    width: 'inherit',
-    height: 'inherit',
-    fontSize: 'inherit',
-  },
+  marginTop: theme.spacing(0.6),
+  height: 16,
 });
 
 /**
  * TreeViewコンポーネント
  */
 const TreeView = (props: TreeViewProps) => {
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
   const { open } = props;
 
   // お気に入り登録情報検索
@@ -232,8 +230,8 @@ const TreeView = (props: TreeViewProps) => {
   }, [bookmarkList]);
 
   const getRequest: ScrCom0002GetFavoriteRequest = {
-    businessDate: '',
-    userId: appContext.user.id,
+    businessDate: user.taskDate,
+    userId: user.employeeId,
   };
 
   // 完了ボタン押下処理
@@ -251,8 +249,8 @@ const TreeView = (props: TreeViewProps) => {
         return { screenId: val.screenName };
       });
     const updateRequest: ScrCom0002UpdateFavoriteRequest = {
-      businessDate: '', // 業務日付に変更
-      employeeId: appContext.user.id,
+      businessDate: user.taskDate,
+      employeeId: user.employeeId,
       list: reqList,
     };
     const response = await ScrCom0002UpdateFavorite(updateRequest);
@@ -342,23 +340,25 @@ const TreeView = (props: TreeViewProps) => {
             expanded={isOpenAccordion(index)}
             onChange={handleChange(`panel${index}`)}
           >
-            <StyledAccordionSummary expandIcon={<StyledExpandMoreIcon />}>
-              {index === 0 || index === 1 || index === 4 ? (
-                <StyledIcon>{item.icon}</StyledIcon>
-              ) : (
-                <StyledIcon sx={{ width: 13 }}>{item.icon}</StyledIcon>
-              )}
+            <StyledAccordionSummary
+              expandIcon={
+                <StyledExpandMoreIcon>
+                  {MenuIcon(sidemenuAccordionOpen)}
+                </StyledExpandMoreIcon>
+              }
+            >
+              <StyledIcon>{item.icon}</StyledIcon>
               <AccordionSubTitle>{item.title}</AccordionSubTitle>
               {index === 0 &&
                 // 登録時
                 (isRegister ? (
                   <StyledIconButton onClick={handleRegister}>
-                    <AddCircleOutlineIcon />
+                    {MenuIcon(sidemenuAdd)}
                     完了
                   </StyledIconButton>
                 ) : (
                   <StyledIconButton onClick={handleClickAdd}>
-                    <AddCircleOutlineIcon />
+                    {MenuIcon(sidemenuAdd)}
                     追加
                   </StyledIconButton>
                 ))}
@@ -380,7 +380,7 @@ const TreeView = (props: TreeViewProps) => {
                           handleClickFavorite(e, route.id, route.path ?? '-')
                         }
                       >
-                        <StarIcon />
+                        {MenuIcon(secondfavoOn)}
                       </StarIconButton>
                     ) : (
                       <StarIconButton
@@ -388,7 +388,7 @@ const TreeView = (props: TreeViewProps) => {
                           handleClickFavorite(e, route.id, route.path ?? '-')
                         }
                       >
-                        <StarBorderIcon />
+                        {MenuIcon(secondfavoOff)}
                       </StarIconButton>
                     ))}
                   {route.name}
