@@ -18,14 +18,19 @@ import { Select, SelectValue } from 'controls/Select';
 import { SerchLabelText } from 'controls/Typography';
 
 import {
-    GetReportOutput, ScrCom0009GetReportList, ScrCom0009GetReportListRequest,
-    ScrCom0009GetReportListResponse, ScrCom0009GetReportOutput
+  GetReportOutput,
+  ScrCom0009GetReportList,
+  ScrCom0009GetReportListRequest,
+  ScrCom0009GetReportListResponse,
+  ScrCom0009GetReportOutput,
 } from 'apis/com/ScrCom0009Api';
 import {
-    ScrCom9999GetCodeManagementMaster, ScrCom9999GetReportmaster
+  ScrCom9999GetCodeManagementMaster,
+  ScrCom9999GetReportmaster,
 } from 'apis/com/ScrCom9999Api';
 import {
-    ScrMem9999SearchconditionRefine, ScrMem9999SearchconditionRefineRequest
+  ScrMem9999SearchconditionRefine,
+  ScrMem9999SearchconditionRefineRequest,
 } from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
@@ -36,17 +41,6 @@ import { MessageContext } from 'providers/MessageProvider';
 import { Format } from 'utils/FormatUtil';
 
 import { GridRowSelectionModel } from '@mui/x-data-grid-pro';
-
-interface ReportOutput {
-  // 帳票履歴番号
-  reportHistoryNumber: string;
-  // ファイル名
-  fileName: string;
-  // 帳票格納バケット名
-  reportHouseBucketName: string;
-  // 帳票格納ファイルプレフィックス
-  reportHouseFilePrefix: string;
-}
 
 /**
  * 検索条件データモデル
@@ -121,12 +115,12 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'corporationId',
     headerName: '法人ID',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'corporationName',
     headerName: '法人名',
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'systemKind',
@@ -136,12 +130,12 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'reportName',
     headerName: '帳票名',
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'reportCreateTime',
     headerName: '帳票作成日時',
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'reportFileName',
@@ -261,7 +255,7 @@ const serchData: { label: string; name: key }[] = [
  */
 const ScrCom0009Page = () => {
   // context
-  const { saveState, loadState } = useContext(AppContext);
+  const { loadState } = useContext(AppContext);
   const prevValues = loadState();
 
   // state
@@ -351,6 +345,7 @@ const ScrCom0009Page = () => {
       });
     };
     initialize();
+    // TODO warningの解消が必要
   }, []);
 
   /**
@@ -459,7 +454,7 @@ const ScrCom0009Page = () => {
    * 入力項目フォーカスアウト
    */
   useEffect(() => {
-    const subscription = watch(async (value, { name, type }) => {
+    const subscription = watch(async (value, { name }) => {
       if (
         name === 'contractId' ||
         name === 'corporationIdAndName' ||
@@ -495,6 +490,7 @@ const ScrCom0009Page = () => {
       }
     });
     return () => subscription.unsubscribe();
+    // TODO warningの解消が必要
   }, [watch]);
 
   /**
