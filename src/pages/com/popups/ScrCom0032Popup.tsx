@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -175,10 +175,12 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   // ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
   const [isWarningChecked, setIsWarningChecked] = useState<boolean>();
 
-  //
   const [isSectionName, setIsSectionName] = useState(false);
   const [isColumnName, setIsColumnName] = useState(false);
   const [isExistColumns, setisExistColumns] = useState(false);
+
+  // 初回レンダリング判定フラグ
+  const renderFlgRef = useRef(false);
 
   // form
   const methods = useForm<formModel>({
@@ -283,37 +285,42 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       setApprovalFlag(approvalResponse.approval);
     };
 
-    // 初期表示処理
-    initialize();
+    // 遷移元画面遷移時には処理を実行しない
+    if (renderFlgRef.current) {
+      // 初期表示処理
+      initialize();
 
-    // 登録・変更内容テーブル表示用のモデルに変換する
-    convertToSearchResultRowModel(initialValues);
+      // 登録・変更内容テーブル表示用のモデルに変換する
+      convertToSearchResultRowModel(initialValues);
 
-    // テーブルに設定した一時配列の内、該当する条件の項目名をカウント
-    let blankCount = 0;
-    tempList.forEach((e) => {
-      if (e.columnName === '' || e.columnName === null) {
-        blankCount++;
+      // テーブルに設定した一時配列の内、該当する条件の項目名をカウント
+      let blankCount = 0;
+      tempList.forEach((e) => {
+        if (e.columnName === '' || e.columnName === null) {
+          blankCount++;
+        }
+      });
+
+      // 項目名が呼び出し画面から一つもない場合(false)エラーメッセージを出力するフラグを設定
+      if (tempList.length === 0 || blankCount === tempList.length) {
+        setHasColumnNameParamFlag(false);
+      } else {
+        setHasColumnNameParamFlag(true);
       }
-    });
 
-    // 項目名が呼び出し画面から一つもない場合(false)エラーメッセージを出力するフラグを設定
-    if (tempList.length === 0 || blankCount === tempList.length) {
-      setHasColumnNameParamFlag(false);
+      // 画面名、タブ名、セクション名、項目名のいずれも設定されていないかどうかを判定する処理
+      if (
+        data.registrationChangeList[0].screenName === '' &&
+        data.registrationChangeList[0].tabName === '' &&
+        isSectionName === false &&
+        isColumnName === false
+      ) {
+        setisExistColumns(false);
+      } else {
+        setisExistColumns(true);
+      }
     } else {
-      setHasColumnNameParamFlag(true);
-    }
-
-    // 画面名、タブ名、セクション名、項目名のいずれも設定されていないかどうかを判定する処理
-    if (
-      data.registrationChangeList[0].screenName === '' &&
-      data.registrationChangeList[0].tabName === '' &&
-      isSectionName === false &&
-      isColumnName === false
-    ) {
-      setisExistColumns(false);
-    } else {
-      setisExistColumns(true);
+      renderFlgRef.current = true;
     }
   }, []);
 
