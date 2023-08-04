@@ -66,7 +66,7 @@ declare module 'yup' {
     // 日付フォーマット：YYYY/MM/DD形式
     formatYmd(this: StringSchema): StringSchema;
     // アドレス
-    formatAddress(this: StringSchema): StringSchema
+    formatAddress(this: StringSchema): StringSchema;
   }
 }
 
@@ -114,9 +114,12 @@ yup.addMethod(yup.ArraySchema, 'required', function () {
   });
 });
 yup.addMethod(yup.StringSchema, 'formatAddress', function () {
-  return this.matches(/^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/, {
-    message: 'メールアドレス形式で入力してください。',
-  });
+  return this.matches(
+    /^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/,
+    {
+      message: 'メールアドレス形式で入力してください。',
+    }
+  );
 });
 yup.setLocale(locale);
 
@@ -124,10 +127,13 @@ export interface Definition {
   [prop: string]: any;
 }
 
-
 export const fieldValidationDefinition: Definition = {
   // TODO: 可変でバリデーションの値を変更できるか要確認
-  registrationChangeMemo: yup.string().label('登録・変更メモ').max(250).fullAndHalfWidth(),
+  registrationChangeMemo: yup
+    .string()
+    .label('登録・変更メモ')
+    .max(250)
+    .fullAndHalfWidth(),
 };
 
 export default yup;
