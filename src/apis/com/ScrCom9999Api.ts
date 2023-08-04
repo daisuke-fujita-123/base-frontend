@@ -220,6 +220,51 @@ export const ScrCom9999GetCodeManagementMaster = async (
   return response.data;
 };
 
+/** API-COM-9999-0011: コード管理マスタ情報取得API リクエスト */
+export interface ScrCom9999getCodeManagementMasterMultipleRequest {
+  /** 手数料ID */
+  codeIdList: CodeIdList[];
+}
+
+/** API-COM-9999-0011: コード管理マスタ情報取得API リクエスト (リスト行) */
+export interface CodeIdList {
+  /** コードID */
+  codeId: string;
+}
+
+/** API-COM-9999-0011: コード管理マスタ情報取得API レスポンス */
+export interface ScrCom9999getCodeManagementMasterMultipleResponse {
+  /** 結果 リスト */
+  resultList: ResultList[];
+}
+
+/** API-COM-9999-0011: コード管理マスタ情報取得API レスポンス (リスト行) */
+export interface ResultList {
+  /** コードID */
+  codeId: string;
+  /** 計算書種別名称 */
+  codeValueList: CodeValueList[];
+}
+
+/** API-COM-9999-0011: コード管理マスタ情報取得API レスポンス (リストネスト行) */
+export interface CodeValueList {
+  /** コード値 */
+  codeValue: string;
+  /** コード名称 */
+  codeName: string;
+}
+
+/** API-COM-9999-0011: コード管理マスタ情報取得API レスポンス (リストネスト行) */
+export const ScrCom9999getCodeManagementMasterMultiple = async (
+  request?: ScrCom9999getCodeManagementMasterMultipleRequest
+): Promise<ScrCom9999getCodeManagementMasterMultipleResponse> => {
+  const response = await comApiClient.post(
+    '/scr-com-9999/get-code-management-master-multiple',
+    request
+  );
+  return response.data;
+};
+
 /** API-COM-9999-0012: 計算書種別情報取得API リクエスト */
 export interface ScrCom9999GetStatementKindRequest {
   /** 手数料ID */
@@ -301,48 +346,17 @@ export interface ScrCom9999GetPlaceMasterResponse {
 /** API-COM-9999-0016: 会場マスタリストボックス情報取得API レスポンス(リスト行) */
 export interface SearchGetPlaceMasterListbox {
   // 会場コード
-  value: string;
+  placeCode: string;
   // 会場名
-  displayValue: string;
+  placeName: string;
 }
 
 /** API-COM-9999-0016: 会場マスタリストボックス情報取得API */
 export const ScrCom9999GetPlaceMaster = async (
-  request: ScrCom9999GetPlaceMasterRequest
+  request?: ScrCom9999GetPlaceMasterRequest
 ): Promise<ScrCom9999GetPlaceMasterResponse> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-9999/get-place-master',
-    request
-  );
-  return response.data;
-};
-
-/** API-COM-9999-0017: 銀行名リストボックス リクエスト */
-export interface ScrCom9999GetBankMasterRequest {
-  /** 業務日付 */
-  businessDate: string;
-}
-
-/** API-COM-9999-0017: 銀行名リストボックス レスポンス */
-export interface ScrCom9999GetBankMasterResponse {
-  // リスト
-  searchGetBankMasterListbox: SearchGetBankMasterListbox[];
-}
-
-/** API-COM-9999-0017: 銀行名リストボックス レスポンス(リスト行) */
-export interface SearchGetBankMasterListbox {
-  // 銀行コード
-  value: string;
-  // 銀行名
-  displayValue: string;
-}
-
-/** API-COM-9999-0017: 銀行名リストボックス情報取得API */
-export const ScrCom9999GetBankMaster = async (
-  request: ScrCom9999GetBankMasterRequest
-): Promise<ScrCom9999GetBankMasterResponse> => {
-  const response = await comApiClient.post(
-    '/api/com/scr-com-9999/get-bank-master',
     request
   );
   return response.data;
@@ -365,9 +379,9 @@ export interface ScrCom9999GetBranchMasterResponse {
 /** API-COM-9999-0018: 支店名リストボックス情報取得API レスポンス(リスト行) */
 export interface searchGetBranchMaster {
   // 支店コード
-  value: string;
+  branchCode: string;
   // 支店名
-  displayValue: string;
+  branchHame: string;
 }
 
 /** API-COM-9999-0018: 支店名リストボックス情報取得API */
@@ -552,18 +566,19 @@ export const ScrCom9999GetChangeDatebox = async (
 };
 
 /** API-COM-9999-0031: コード値取得API（コード管理マスタ以外） リクエスト */
-export interface ScrCom9999GetCodeValueListRequest {
+export interface ScrCom9999GetCodeValueRequest {
   // リスト
   entityList: EntityList[];
 }
 
+/** API-COM-9999-0031: コード値取得API（コード管理マスタ以外） リクエスト(リスト行) */
 export interface EntityList {
   // エンティティ名
   entityName: string;
 }
 
 /** API-COM-9999-0031: コード値取得API（コード管理マスタ以外） レスポンス */
-export interface ScrCom9999GetCodeValueListResponse {
+export interface ScrCom9999GetCodeValueResponse {
   // リスト
   resultList: ResultList[];
 }
@@ -587,12 +602,164 @@ export interface CodeValueList {
 }
 
 /** API-COM-9999-0031: コード値取得API（コード管理マスタ以外） */
-export const ScrCom9999GetCodeValueListbox = async (
-  request: ScrCom9999GetCodeValueListRequest
-): Promise<ScrCom9999GetCodeValueListResponse> => {
+export const ScrCom9999GetCodeValue = async (
+  request: ScrCom9999GetCodeValueRequest
+): Promise<ScrCom9999GetCodeValueResponse> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-9999/get-code-value',
     request
   );
   return response.data;
 };
+
+/** API-COM-9999-0032: 帳票マスタ取得API レスポンス */
+export interface ScrCom9999GetReportmasterResponse {
+  // 帳票リスト
+  reportMasterInfo: ReportMasterInfo[];
+}
+
+export interface ReportMasterInfo {
+  // 帳票ID
+  reportId: string;
+  // 帳票名
+  reportName: string;
+}
+
+/** API-COM-9999-0032: 帳票マスタ取得API） */
+export const ScrCom9999GetReportmaster =
+  async (): Promise<ScrCom9999GetReportmasterResponse> => {
+    const response = await comApiClient.post(
+      '/api/com/scr-com-9999/get-reportmaster'
+    );
+    return response.data;
+  };
+
+/** API-COM-9999-0034: 手数料値引値増情報取得API レスポンス */
+export interface ScrCom9999GetCourseServiceDiscountInfoResponse {
+  // 会員個別設定・四輪
+  memberTypeSettingTvaa: MemberTypeSettingTvaa[];
+  // 会員個別設定・二輪
+  memberTypeSettingBike: MemberTypeSettingBike[];
+  // 会員個別設定・おまとめ
+  memberTypeSettingOmatome: MemberTypeSettingOmatome[];
+}
+
+/** API-COM-9999-0034: 手数料値引値増情報取得API レスポンス(会員個別設定・四輪) */
+export interface MemberTypeSettingTvaa {
+  // 手数料値引値増パックID
+  commissionDiscountPackId: string;
+  // パック名
+  packName: string;
+  // 有効期間開始日
+  validityPeriodStartDate: string;
+  // 有効期間終了日
+  validityPeriodEndDate: string;
+}
+
+/** API-COM-9999-0034: 手数料値引値増情報取得API レスポンス(会員個別設定・二輪) */
+export interface MemberTypeSettingBike {
+  // 手数料値引値増パックID
+  commissionDiscountPackId: string;
+  // パック名
+  packName: string;
+  // 有効期間開始日
+  validityPeriodStartDate: string;
+  // 有効期間終了日
+  validityPeriodEndDate: string;
+}
+
+/** API-COM-9999-0034: 手数料値引値増情報取得API レスポンス(会員個別設定・おまとめ) */
+export interface MemberTypeSettingOmatome {
+  // 手数料値引値増パックID
+  commissionDiscountPackId: string;
+  // パック名
+  packName: string;
+  // 有効期間開始日
+  validityPeriodStartDate: string;
+  // 有効期間終了日
+  validityPeriodEndDate: string;
+}
+
+/** API-COM-9999-0034: 手数料値引値増情報取得API */
+export const ScrCom9999GetCourseServiceDiscountInfo =
+  async (): Promise<ScrCom9999GetCourseServiceDiscountInfoResponse> => {
+    const response = await comApiClient.post(
+      '/scr/get-course-service-discount-info'
+    );
+    return response.data;
+  };
+
+/** API-COM-9999-0036: キャンペーン情報取得API レスポンス */
+export interface ScrCom9999SearchCampaignInfoResponse {
+  // 基本値引値増リスト
+  basicDiscountIncreaseList: BasicDiscountIncreaseList[];
+  // オプション値引値増リスト
+  optionDiscountIncreaseList: OptionDiscountIncreaseList[];
+}
+
+/** API-COM-9999-0036: キャンペーン情報取得API レスポンス(基本値引値増リスト) */
+export interface BasicDiscountIncreaseList {
+  // キャンペーンコード
+  campaignCode: string;
+  // キャンペーン名
+  campaignName: string;
+  // 会費種別
+  feeKind: string;
+  // 値引値増金額区分
+  discountPriceKind: string;
+  // 値引値増金額
+  discountPrice: string;
+  // セット対象コースID
+  setTargetCourseId: string;
+  // コース名
+  courseName: string;
+  // 1本目除外フラグ
+  oneCountExclusionFlag: boolean;
+  // 契約数量上限
+  contractCountMin: number;
+  // 契約数量下限
+  contractCountMax: number;
+  // 期限開始日
+  periodStartDate: string;
+  // 期限終了日
+  periodEndDate: string;
+  // 契約後月数
+  contractMonths: number;
+}
+
+/** API-COM-9999-0036: キャンペーン情報取得API レスポンス(オプション値引値増リスト) */
+export interface OptionDiscountIncreaseList {
+  // キャンペーンコード
+  campaignCode: string;
+  // キャンペーン名
+  campaignName: string;
+  // 会費種別
+  feeKind: string;
+  // 値引値増金額区分
+  discountPriceKind: string;
+  // 値引値増金額
+  discountPrice: string;
+  // サービスID
+  serviceId: string;
+  // サービス名
+  serviceName: string;
+  // 1本目除外フラグ
+  oneCountExclusionFlag: boolean;
+  // 契約数量上限
+  contractCountMin: number;
+  // 契約数量下限
+  contractCountMax: number;
+  // 期限開始日
+  periodStartDate: string;
+  // 期限終了日
+  periodEndDate: string;
+  // 契約後月数
+  contractMonths: number;
+}
+
+/** API-COM-9999-0036: キャンペーン情報取得API */
+export const ScrCom9999SearchCampaignInfo =
+  async (): Promise<ScrCom9999SearchCampaignInfoResponse> => {
+    const response = await comApiClient.post('/scr/search-campaign-info');
+    return response.data;
+  };

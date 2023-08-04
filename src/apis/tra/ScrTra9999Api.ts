@@ -1,12 +1,12 @@
 import { traApiClient } from 'providers/ApiClient';
 
-/** API-TRA-COM-9999-0001: コードマスタ(取引会計)情報取得API リクエスト */
+/** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API リクエスト */
 export interface ScrTra9999GetCodeValueRequest {
   /** コードIDリスト */
   codes: codesRequest[];
 }
 
-/** API-TRA-COM-9999-0001: コードマスタ(取引会計)情報取得API リクエスト(リスト行) */
+/** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API リクエスト(リスト行) */
 export interface codesRequest {
   /** コードID */
   codeId: string;
@@ -14,13 +14,13 @@ export interface codesRequest {
   validityStartDate?: string;
 }
 
-/** API-TRA-COM-9999-0001: コードマスタ(取引会計)情報取得API レスポンス */
+/** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API レスポンス */
 export interface ScrTra9999GetCodeValueResponse {
   /** 変更予定日情報 リスト */
   codes: codes[];
 }
 
-/** API-TRA-COM-9999-0001: コードマスタ(取引会計)情報取得API レスポンス (リスト行) */
+/** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API レスポンス (リスト行) */
 export interface codes {
   /** コードID */
   value: string;
@@ -28,7 +28,7 @@ export interface codes {
   codeList: codeList[];
 }
 
-/** API-TRA-COM-9999-0001: コードマスタ(取引会計)情報取得API レスポンス (リストネスト行) */
+/** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API レスポンス (リストネスト行) */
 export interface codeList {
   /** コード値 */
   code: string;
@@ -38,7 +38,7 @@ export interface codeList {
   codeName: string;
 }
 
-/** API-TRA-COM-9999-0001: コードマスタ(取引会計)情報取得API */
+/** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API */
 export const ScrTra9999GetCodeValue = async (
   request: ScrTra9999GetCodeValueRequest
 ): Promise<ScrTra9999GetCodeValueResponse> => {
@@ -47,4 +47,27 @@ export const ScrTra9999GetCodeValue = async (
     request
   );
   return response.data;
+};
+
+/** API-TRA-9999-0002: イメージ帳票作成API（取引会計管理） リクエスト */
+export interface ScrTra9999CreateReportImageTraRequest {
+  /** 呼出元機能ID */
+  functionId: string;
+  /** 帳票ID */
+  reportId: string;
+  /** 帳票タイトル	 */
+  reportTitle: string;
+  /** オペレータID */
+  operatorId: string;
+  /** オペレータ名 */
+  operatorName: string;
+  /** コメント */
+  comment: string;
+}
+
+/** API-TRA-9999-0002: イメージ帳票作成API（取引会計管理） */
+export const ScrTra9999CreateReportImageTra = async (
+  request: ScrTra9999CreateReportImageTraRequest
+): Promise<void> => {
+  await traApiClient.post('/scr-tra-9999/create-report-image-tra', request);
 };
