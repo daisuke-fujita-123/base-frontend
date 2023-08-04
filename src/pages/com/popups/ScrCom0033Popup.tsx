@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -222,6 +222,9 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
 
   const { getMessage } = useContext(MessageContext);
 
+  // 初回レンダリング判定フラグ
+  const renderFlgRef = useRef(false);
+
   // 登録内容申請ポップアップ表示時の処理
   useEffect(() => {
     const initialize = async () => {
@@ -266,7 +269,13 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
       });
     };
 
-    initialize();
+    // 遷移元画面遷移時には処理を実行しない
+    if (renderFlgRef.current) {
+      // 初期表示処理
+      initialize();
+    } else {
+      renderFlgRef.current = true;
+    }
   }, []);
 
   /**
