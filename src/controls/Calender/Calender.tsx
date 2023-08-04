@@ -17,38 +17,41 @@ import { getWeeksInMonth } from 'date-fns';
 export interface CalenderItemDef {
   name: string;
   field: string;
-  type: 'input' | 'select';
+  type: 'input' | 'select' | any[];
   selectValues?: any[];
 }
-
-export interface CalenderModel {
-  date: Date;
-}
-[];
 
 export interface CalenderProps {
   yearmonth: Date;
   itemDef: CalenderItemDef[];
   dataset: any[];
+  onItemValueChange?: (
+    value: string | number,
+    date: Date,
+    field: string,
+    index: number | undefined
+  ) => void;
 }
 
 const dayofweeks = [' ', '日', '月', '火', '水', '木', '金', '土'];
 
 export const Calender = (props: CalenderProps) => {
-  const { itemDef, dataset } = props;
+  const { yearmonth, itemDef, dataset, onItemValueChange } = props;
 
-  const weeksInMonth = getWeeksInMonth(new Date(2023, 7 - 1, 1));
+  const weeksInMonth = getWeeksInMonth(yearmonth);
+
+  const cloned = [...dataset];
 
   // 一週間単位のデータに変換する
   const dataPerWeeks = [...Array(weeksInMonth)].map((_, i) => {
     // 何曜日はじまりか
-    const headDayOfWeek = dataset[0].date.getDay();
+    const headDayOfWeek = cloned[0].date.getDay();
     // 先頭を空データで埋める
     const headEmpty = [...Array(headDayOfWeek)].fill({ input: '', select: '' });
     const dataPerWeek = [...headEmpty];
 
     // その週のデータを移動
-    const elements = dataset.splice(0, 7 - headDayOfWeek);
+    const elements = cloned.splice(0, 7 - headDayOfWeek);
     dataPerWeek.push(...elements);
 
     // 何曜日おわりか
@@ -62,6 +65,16 @@ export const Calender = (props: CalenderProps) => {
 
     return dataPerWeek;
   });
+
+  const handleitemValueChange = (
+    event: any,
+    date: Date,
+    field: string,
+    index: number | undefined
+  ) => {
+    onItemValueChange &&
+      onItemValueChange(event.target.value, date, field, index);
+  };
 
   return (
     <>
@@ -92,20 +105,65 @@ export const Calender = (props: CalenderProps) => {
               {itemDef.map((def) => (
                 <TableRow key={def.name}>
                   <TableCell>{def.name}</TableCell>
-                  {dataPerWeek.map((data, i) => (
+                  {dataPerWeek.map((data: any, i: number) => (
                     <TableCell key={i}>
                       {'date' in data && def.type === 'input' && (
-                        <Input defaultValue={data[def.field]} />
+                        <Input
+                          value={data[def.field]}
+                          size='small'
+                          onChange={(event) =>
+                            handleitemValueChange(
+                              event,
+                              data.date,
+                              def.field,
+                              undefined
+                            )
+                          }
+                        />
                       )}
                       {'date' in data && def.type === 'select' && (
-                        <Select defaultValue={data[def.field]}>
-                          {def.selectValues?.map((x, i) => (
+                        <Select
+                          value={data[def.field]}
+                          size='small'
+                          onChange={(event) =>
+                            handleitemValueChange(
+                              event,
+                              data.date,
+                              def.field,
+                              undefined
+                            )
+                          }
+                        >
+                          {def.selectValues?.map((x: any, i: number) => (
                             <MenuItem key={i} value={x.value}>
                               {x.displayValue}
                             </MenuItem>
                           ))}
                         </Select>
                       )}
+                      {'date' in data &&
+                        Array.isArray(def.type) &&
+                        def.type.map((x: any, i: number) => (
+                          <Select
+                            key={i}
+                            value={data[def.field][i]}
+                            size='small'
+                            onChange={(event) =>
+                              handleitemValueChange(
+                                event,
+                                data.date,
+                                def.field,
+                                i
+                              )
+                            }
+                          >
+                            {x.selectValues?.map((x: any, i: number) => (
+                              <MenuItem key={i} value={x.value}>
+                                {x.displayValue}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        ))}
                     </TableCell>
                   ))}
                 </TableRow>
