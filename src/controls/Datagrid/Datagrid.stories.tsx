@@ -1,6 +1,9 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
+import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
+
 import { Button } from 'controls/Button';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
 
@@ -107,12 +110,19 @@ export const Example = () => {
       size: 'm',
     },
     {
-      field: 'input',
+      field: 'input1',
       cellType: 'input',
+      headerName: 'Input 1',
+    },
+    {
+      field: 'input2',
+      cellType: 'input',
+      headerName: 'Input 2',
     },
     {
       field: 'select',
       cellType: 'select',
+      headerName: 'Select',
       selectValues: [
         { value: '1', displayValue: 'one' },
         { value: '2', displayValue: 'two' },
@@ -122,6 +132,7 @@ export const Example = () => {
     {
       field: 'radio',
       cellType: 'radio',
+      headerName: 'Radio',
       radioValues: [
         { value: '1', displayValue: 'one' },
         { value: '2', displayValue: 'two' },
@@ -132,10 +143,12 @@ export const Example = () => {
     {
       field: 'checkbox',
       cellType: 'checkbox',
+      headerName: 'Checkbox',
     },
     {
       field: 'datepicker',
       cellType: 'datepicker',
+      headerName: 'DatePicker',
       size: 'l',
     },
   ];
@@ -147,6 +160,12 @@ export const Example = () => {
       corporationName: '法人1',
       corporationGroupName: '法人グループ1',
       representativeName: '代表者1',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
     },
     {
       id: '0002',
@@ -154,6 +173,12 @@ export const Example = () => {
       corporationName: '法人2',
       corporationGroupName: '法人グループ2',
       representativeName: '代表者2',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
     },
     {
       id: '0003',
@@ -161,6 +186,12 @@ export const Example = () => {
       corporationName: '法人3',
       corporationGroupName: '法人グループ3',
       representativeName: '代表者3',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
     },
     {
       id: '0004',
@@ -168,6 +199,12 @@ export const Example = () => {
       corporationName: '法人4',
       corporationGroupName: '法人グループ4',
       representativeName: '代表者4',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
     },
     {
       id: '0005',
@@ -175,12 +212,23 @@ export const Example = () => {
       corporationName: '法人5',
       corporationGroupName: '法人グループ5',
       representativeName: '代表者5',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
     },
   ];
 
+  const validationSchema: ObjectSchema<any> = yup.object({
+    input1: yup.string().required().max(10).label('Input 1'),
+    input2: yup.string().required().max(10).label('Input 2'),
+  });
+
   return (
     <>
-      <DataGrid columns={columns} rows={rows} disabled />
+      <DataGrid columns={columns} rows={rows} resolver={validationSchema} />
     </>
   );
 };
@@ -322,7 +370,7 @@ export const UpdatableHeaderRow = () => {
     },
   ];
 
-  const headerRow = {
+  const defaultHeaderRow = {
     soshikiIdOrMeisyo: 0,
     yakushokuIdOrMeisyo: 0,
     teiyoKaishiBi: '',
@@ -331,13 +379,6 @@ export const UpdatableHeaderRow = () => {
 
   const handleIkkatsuHaneiClick = () => {
     const headerRow = headerApiRef.current.getRow(-1);
-    // const rowIds = apiRef.current.getAllRowIds();
-    // rowIds.forEach((x) => {
-    //   const row = apiRef.current.getRow(x);
-    //   console.log(row);
-    //   row.soshikiIdOrMeisyo = '1';
-    //   row.yakushokuIdOrMeisyo = '1';
-    // });
     const newRows = rows.map((x) => {
       return {
         ...x,
@@ -348,15 +389,18 @@ export const UpdatableHeaderRow = () => {
       };
     });
     setRows(newRows);
+    setHeaderRow(headerRow);
   };
 
   const [rows, setRows] = useState(defaultRows);
+  const [headerRow, setHeaderRow] = useState(defaultHeaderRow);
 
   return (
     <>
       <DataGrid
         columns={columns}
         rows={rows}
+        controlled={false}
         showHeaderRow
         headerRow={headerRow}
         apiRef={apiRef}
