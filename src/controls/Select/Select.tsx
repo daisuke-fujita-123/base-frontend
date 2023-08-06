@@ -93,7 +93,6 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
 
   const { register, formState, control, setValue } = useFormContext();
   const watchValue = useWatch({ name, control });
-  console.log('watchValue:', watchValue);
 
   // 複数選択された場合、先頭行の空白は削除する
   const omitBlankValue = (val: string[]) => {
