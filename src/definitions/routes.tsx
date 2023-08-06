@@ -296,7 +296,7 @@ const _ROUTES = [
     // SCR-TRA-0001 取引管理マスタ一覧
     id: 'SCR-TRA-0001',
     name: '取引管理マスタ一覧',
-    path: '/tra/deel-masters',
+    path: '/tra/deal-masters',
     element: <ScrTra0001Page />,
   },
   {
