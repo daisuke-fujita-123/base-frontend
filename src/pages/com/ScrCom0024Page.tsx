@@ -9,9 +9,10 @@ import ScrCom0032Popup, {
   ScrCom0032PopupModel,
 } from 'pages/com/popups/ScrCom0032Popup';
 
+import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { ColStack, ControlsStackItem, RowStack, Stack } from 'layouts/Stack';
+import { ColStack, RowStack, Stack } from 'layouts/Stack';
 
 import { CancelButton, ConfirmButton } from 'controls/Button';
 import { DatePicker } from 'controls/DatePicker/DatePicker';
@@ -41,6 +42,7 @@ import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
 import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import { CODE_ID } from 'definitions/codeId';
 
@@ -86,6 +88,8 @@ interface PlaceBasicModel {
   livePlaceGroupCode: string;
   // 書類発送指示フラグ
   documentShippingInstructionFlag: boolean;
+  // 指示対象
+  referent: string;
   // 書類発送会場直送フラグ
   documentShippingPlaceDirectDeliveryFlag: boolean;
   // 書類発送担当者
@@ -153,6 +157,7 @@ const initialValues: PlaceBasicModel = {
   guaranteeDeposit: '',
   livePlaceGroupCode: '',
   documentShippingInstructionFlag: false,
+  referent: '',
   documentShippingPlaceDirectDeliveryFlag: false,
   documentShippingStaff: '',
   documentShippingMailAddress: '',
@@ -225,77 +230,55 @@ const selectValuesInitialValues: SelectValuesModel = {
 };
 
 /**
- * TODO: エラーになる バリデーションスキーマ
+ * バリデーションスキーマ
  */
 const validationSchema = {
-  // placeCd: yup.string().label('会場コード').max(2).halfWidthOnly(),
-  placeName: yup.string().label('会場名').max(15).fullAndHalfWidth(),
-  statementDisplayPlaceName: yup
-    .string()
-    .label('計算書表示会場名')
-    .max(8)
-    .fullAndHalfWidth(),
-  partnerStartDate: yup.string().label('提携開始日（FROM）').formatYmd(),
+  placeCd: yup.string().label('会場コード').max(2).half(),
+  placeName: yup.string().label('会場名').max(15),
+  statementDisplayPlaceName: yup.string().label('計算書表示会場名').max(8),
+  partnerStartDate: yup.string().label('提携開始日（FROM）').date(),
   sessionWeekKind: yup.array().label('開催曜日'),
-  contractId: yup.string().label('契約ID').max(7).halfWidthOnly(),
-  corporationId: yup.string().label('法人ID').max(8).halfWidthOnly(),
-  corporationName: yup.string().label('法人名').max(30).fullAndHalfWidth(),
-  billingId: yup.string().label('請求先ID').max(4).halfWidthOnly(),
-  telephoneNumber: yup
-    .string()
-    .label('TEL')
-    .max(13)
-    .halfWidthOnly()
-    .formatTel(),
+  contractId: yup.string().label('契約ID').max(7).half(),
+  corporationId: yup.string().label('法人ID').max(8).half(),
+  corporationName: yup.string().label('法人名').max(30),
+  billingId: yup.string().label('請求先ID').max(4).half(),
+  telephoneNumber: yup.string().label('TEL').max(13).half().phone(),
   placeGroupCode: yup.array().label('会場グループ'),
   paymentDestinationPlaceName: yup.array().label('支払先会場名'),
   posPutTogetherPlaceCode: yup.array().label('POSまとめ会場'),
-  guaranteeDeposit: yup.string().label('保証金').max(6).numberOnly(),
-  documentShippingStaff: yup
-    .string()
-    .label('担当者')
-    .max(30)
-    .fullAndHalfWidth(),
+  guaranteeDeposit: yup.string().label('保証金').max(6).number(),
+  documentShippingStaff: yup.string().label('担当者').max(30),
   documentShippingMailAddress: yup
     .string()
     .label('メールアドレス')
     .max(254)
-    .halfWidthOnly()
-    .formatAddress(),
-  documentShippingFaxNumber: yup.string().label('FAX').max(13).halfWidthOnly(),
-  paymentDueDate: yup.string().label('出金期日').max(2).numberOnly(),
-  bankName: yup.string().label('銀行名').max(30).fullAndHalfWidth(),
-  branchName: yup.string().label('支店名').max(30).fullAndHalfWidth(),
-  accountKind: yup.string().label('種別').max(2).fullAndHalfWidth(),
-  accountNumber: yup.string().label('口座番号').max(7).halfWidthOnly(),
-  accountNameKana: yup.string().label('口座名義').max(40).fullAndHalfWidth(),
+    .half()
+    .address(),
+  documentShippingFaxNumber: yup.string().label('FAX').max(13).half().phone(),
+  paymentDueDate: yup.string().label('出金期日').max(2).number(),
+  bankName: yup.string().label('銀行名').max(30),
+  branchName: yup.string().label('支店名').max(30),
+  accountKind: yup.string().label('種別').max(2),
+  accountNumber: yup.string().label('口座番号').max(7).half(),
+  accountNameKana: yup.string().label('口座名義').max(40),
   virtualAccountGiveRuleCode: yup.array().label('バーチャル口座付与ルール'),
-  paymentNoticeStaff: yup.string().label('担当者').max(30).fullAndHalfWidth(),
+  paymentNoticeStaff: yup.string().label('担当者').max(30),
   paymentNoticeMailAddress: yup
     .string()
     .label('メールアドレス')
     .max(254)
-    .halfWidthOnly()
-    .formatAddress(),
-  paymentNoticeFaxNumber: yup
-    .string()
-    .label('FAX')
-    .max(13)
-    .halfWidthOnly()
-    .formatTel(),
+    .half()
+    .address(),
+  paymentNoticeFaxNumber: yup.string().label('FAX').max(13).half().phone(),
   receiptSourceBankName: yup.array().label('銀行名'),
   receiptSourceBranchName: yup.array().label('支店名'),
-  receiptSourceAccountNameKana: yup
-    .string()
-    .label('口座名義')
-    .max(40)
-    .fullAndHalfWidth(),
+  receiptSourceAccountNameKana: yup.string().label('口座名義').max(40),
   placeMemberManagementStaffMailAddress: yup
     .string()
     .label('会場会員管理担当メールアドレス')
     .max(254)
-    .halfWidthOnly()
-    .formatAddress(),
+    .half()
+    .address(),
   omatomePlaceContactImpossibleTargetedKind: yup
     .array()
     .label('おまとめ会場連絡不可対象'),
@@ -319,8 +302,17 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
  * SCR-COM-0024 会場詳細画面
  */
 const ScrCom0024Page = () => {
+  // state
+  const [selectValues, setSelectValues] = useState<SelectValuesModel>(
+    selectValuesInitialValues
+  );
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
+  // おまとめ会場 対象・対象外
+  const [omatomePlaceFlag, setOmatomePlaceFlag] = useState<boolean>();
+  // 書類発送指示対象 対象・対象外
+  const [documentShippingInstructionFlag, setDocumentShippingInstructionFlag] =
+    useState<boolean>();
 
   // form
   const methods = useForm<PlaceBasicModel>({
@@ -333,19 +325,16 @@ const ScrCom0024Page = () => {
     setValue,
     getValues,
     reset,
+    watch,
   } = methods;
 
   // router
   const { placeCode } = useParams();
   const navigate = useNavigate();
 
-  // state
-  const [selectValues, setSelectValues] = useState<SelectValuesModel>(
-    selectValuesInitialValues
-  );
-
   // user情報
   const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   // popup
   const [isOpenPopup, setIsOpenPopup] = useState(false);
@@ -446,6 +435,12 @@ const ScrCom0024Page = () => {
           omatomePlaceContactImpossibleTargetedKindRequest
         );
 
+      // 判定用データを設定
+      setOmatomePlaceFlag(placeBasic.omatomePlaceFlag);
+      setDocumentShippingInstructionFlag(
+        placeBasic.documentShippingInstructionFlag
+      );
+
       // 画面にデータを設定
       // 会場基本情報セクション
       setValue('placeCd', placeBasic.placeCd);
@@ -467,6 +462,7 @@ const ScrCom0024Page = () => {
       );
       setValue('hondaGroupFlag', placeBasic.hondaGroupFlag);
       setValue('guaranteeDeposit', placeBasic.guaranteeDeposit);
+      setValue('contractId', placeBasic.contractId);
       // 書類発送指示セクション
       setValue(
         'documentShippingInstructionFlag',
@@ -666,6 +662,28 @@ const ScrCom0024Page = () => {
     }
   }, []);
 
+  // ラジオボタン処理
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      // textの変更も監視対象のため、setValueでtextを変更した場合を無視しないと無弁ループする
+      if (name !== 'omatomePlaceFlag') return;
+      const omatomePlaceValue = String(value.omatomePlaceFlag);
+      if (omatomePlaceValue === undefined) return;
+
+      console.log(omatomePlaceValue);
+
+      if (omatomePlaceValue === 'target') {
+        setOmatomePlaceFlag(true);
+        setValue('referent', '');
+      } else {
+        // おまとめ会場が対象外の場合、"AUC宛のみ"固定とする
+        setOmatomePlaceFlag(false);
+        setValue('referent', 'onlyAuc');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [setValue, watch]);
+
   /**
    * ライブ会場データ報取得APIレスポンスから会場基本情報データモデルへの変換
    */
@@ -691,6 +709,7 @@ const ScrCom0024Page = () => {
       hondaGroupFlag: response.hondaGroupFlag,
       guaranteeDeposit: response.guaranteeDeposit,
       livePlaceGroupCode: response.livePlaceGroupCode,
+      referent: '',
       documentShippingInstructionFlag: response.documentShippingInstructionFlag,
       documentShippingPlaceDirectDeliveryFlag:
         response.documentShippingPlaceDirectDeliveryFlag,
@@ -913,47 +932,44 @@ const ScrCom0024Page = () => {
           <FormProvider {...methods}>
             {/* 会場基本情報セクション */}
             <Section name='会場基本情報'>
-              {/* 1列目 */}
               <RowStack>
-                <ControlsStackItem>
-                  <TextField label='会場コード' name='placeCd' required />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <TextField label='法人ID' name='corporationId' />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <Radio
-                    label='ホンダグループ'
-                    name='hondaGroupFlag'
-                    required
-                    radioValues={[
-                      {
-                        value: 'hondaTarget',
-                        displayValue: '対象',
-                      },
-                      {
-                        value: 'hondaUnTarget',
-                        displayValue: '対象外',
-                      },
-                    ]}
+                {/* 縦 1列目 */}
+                <ColStack>
+                  <TextField
+                    label='会場コード'
+                    name='placeCd'
+                    // 新規登録時の場合必須 新規登録時以外は非活性
+                    required={
+                      placeCode === undefined || placeCode === 'new'
+                        ? true
+                        : false
+                    }
+                    disabled={
+                      placeCode === undefined || placeCode === 'new'
+                        ? false
+                        : true
+                    }
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 2列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <TextField label='会場名' name='placeName' required />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <TextField label='法人名' name='corporationName' />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <TextField label='保証金' name='guaranteeDeposit' />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 3列目 */}
-              <RowStack>
-                <ControlsStackItem>
+                  <MarginBox mb={5}>
+                    <TextField
+                      label='会場名'
+                      name='placeName'
+                      size='m'
+                      // 新規登録時・または編集権限ありの場合 活性
+                      required={
+                        placeCode === undefined ||
+                        placeCode === 'new' ||
+                        user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                          ? true
+                          : false
+                      }
+                      disabled={
+                        !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                          ? true
+                          : false
+                      }
+                    />
+                  </MarginBox>
                   <Radio
                     label='おまとめ会場'
                     name='omatomePlaceFlag'
@@ -962,36 +978,40 @@ const ScrCom0024Page = () => {
                       {
                         value: 'target',
                         displayValue: '対象',
-                        disabled: false,
+                        // 編集権限なしの場合 非活性
+                        disabled: !user.editPossibleScreenIdList.includes(
+                          'SCR-COM-0024'
+                        )
+                          ? true
+                          : false,
                       },
                       {
                         value: 'unTarget',
                         displayValue: '対象外',
-                        disabled: false,
+                        // 編集権限なしの場合 非活性
+                        disabled: !user.editPossibleScreenIdList.includes(
+                          'SCR-COM-0024'
+                        )
+                          ? true
+                          : false,
                       },
                     ]}
                   />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <TextField label='請求先ID' name='billingId' />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 4列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <TextField
-                    label='計算書表示会場名'
-                    name='statementDisplayPlaceName'
-                    required
-                  />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <TextField label='TEL' name='telephoneNumber' />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 5列目 */}
-              <RowStack>
-                <ControlsStackItem>
+                  <MarginBox mt={4} mb={5}>
+                    <TextField
+                      label='計算書表示会場名'
+                      name='statementDisplayPlaceName'
+                      size='m'
+                      // おまとめ会場が対象の場合必須
+                      required={omatomePlaceFlag ? true : false}
+                      // 編集権限なしの場合 非活性
+                      disabled={
+                        !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                          ? true
+                          : false
+                      }
+                    />
+                  </MarginBox>
                   <Radio
                     label='利用フラグ'
                     name='useFlag'
@@ -1000,87 +1020,168 @@ const ScrCom0024Page = () => {
                       {
                         value: 'yes',
                         displayValue: '可',
-                        disabled: false,
+                        // 編集権限なしの場合 非活性
+                        disabled: !user.editPossibleScreenIdList.includes(
+                          'SCR-COM-0024'
+                        )
+                          ? true
+                          : false,
                       },
                       {
                         value: 'no',
                         displayValue: '不可',
-                        disabled: false,
+                        // 編集権限なしの場合 非活性
+                        disabled: !user.editPossibleScreenIdList.includes(
+                          'SCR-COM-0024'
+                        )
+                          ? true
+                          : false,
                       },
                     ]}
                   />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <Select
-                    label='会場グループ'
-                    name='placeGroupCode'
-                    selectValues={selectValues.placeGroupCodeSelectValues}
-                    blankOption
-                  />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 6列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <DatePicker
-                    label='提供開始日'
-                    name='partnerStartDate'
-                    // wareki
-                    required
-                  />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <Select
-                    label='支払先会場名'
-                    name='paymentDestinationPlaceName'
-                    selectValues={
-                      selectValues.paymentDestinationPlaceNameSelectValues
-                    }
-                    blankOption
-                    required
-                  />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 7列目 */}
-              <RowStack>
-                <ControlsStackItem>
+                  <MarginBox mt={4}>
+                    <DatePicker
+                      label='提供開始日'
+                      name='partnerStartDate'
+                      required
+                      // 編集権限なしの場合 非活性
+                      disabled={
+                        !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                          ? true
+                          : false
+                      }
+                    />
+                  </MarginBox>
                   <Select
                     label='開催曜日'
                     name='sessionWeekKind'
                     selectValues={selectValues.sessionWeekKindSelectValues}
                     blankOption
                     required
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                   />
-                </ControlsStackItem>
-                <ControlsStackItem>
+                  <TextField
+                    label='契約ID'
+                    name='contractId'
+                    // value={contractId}
+                    required
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                </ColStack>
+                {/* 縦 2列目 */}
+                <ColStack>
+                  <TextField label='法人ID' name='corporationId' />
+                  <TextField label='法人名' name='corporationName' size='l' />
+                  <TextField label='請求先ID' name='billingId' />
+                  <TextField label='TEL' name='telephoneNumber' />
+                  <Select
+                    label='会場グループ'
+                    name='placeGroupCode'
+                    size='m'
+                    selectValues={selectValues.placeGroupCodeSelectValues}
+                    blankOption
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                  <Select
+                    label='支払先会場名'
+                    name='paymentDestinationPlaceName'
+                    size='m'
+                    selectValues={
+                      selectValues.paymentDestinationPlaceNameSelectValues
+                    }
+                    blankOption
+                    // おまとめ会場が対象の場合必須
+                    required={omatomePlaceFlag ? true : false}
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
                   <Select
                     label='POSまとめ会場'
                     name='posPutTogetherPlaceCode'
+                    size='m'
                     selectValues={
                       selectValues.posPutTogetherPlaceCodeSelectValues
                     }
                     blankOption
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 8列目 */}
-              <RowStack>
-                <ControlsStackItem>
                   <Select
                     label='ライブ会場グループコード'
                     name='livePlaceGroupCode'
+                    size='m'
                     selectValues={selectValues.livePlaceGroupCodeSelectValues}
                     blankOption
                   />
-                </ControlsStackItem>
+                </ColStack>
+                <ColStack>
+                  <Radio
+                    label='ホンダグループ'
+                    name='hondaGroupFlag'
+                    // おまとめ会場が対象の場合必須
+                    required={omatomePlaceFlag ? true : false}
+                    radioValues={[
+                      {
+                        value: 'hondaTarget',
+                        displayValue: '対象',
+                        // 編集権限なしの場合 非活性
+                        disabled: !user.editPossibleScreenIdList.includes(
+                          'SCR-COM-0024'
+                        )
+                          ? true
+                          : false,
+                      },
+                      {
+                        value: 'hondaUnTarget',
+                        displayValue: '対象外',
+                      },
+                    ]}
+                  />
+                  <MarginBox mt={9}>
+                    <TextField
+                      label='保証金'
+                      name='guaranteeDeposit'
+                      // 編集権限なしの場合、またはおまとめ会場が対象外の場合 非活性
+                      disabled={
+                        !user.editPossibleScreenIdList.includes(
+                          'SCR-COM-0024'
+                        ) || omatomePlaceFlag === false
+                          ? true
+                          : false
+                      }
+                    />
+                  </MarginBox>
+                </ColStack>
               </RowStack>
             </Section>
-
             {/* 書類発送指示セクション */}
             <Section name='書類発送指示'>
-              {/* 1列目 */}
               <RowStack>
-                <ControlsStackItem>
+                {/* 縦 1列目 */}
+                <ColStack>
                   <Radio
                     label='書類発送指示'
                     name='instructionsForSendingDocuments'
@@ -1088,77 +1189,128 @@ const ScrCom0024Page = () => {
                       {
                         value: 'sendingDocumentsTarget',
                         displayValue: '対象',
-                        disabled: false,
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || omatomePlaceFlag === false
+                            ? true
+                            : false,
                       },
                       {
                         value: 'sendingDocumentsUnTarget',
                         displayValue: '対象外',
-                        disabled: false,
+                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || omatomePlaceFlag === false
+                            ? true
+                            : false,
                       },
                     ]}
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 2列目 */}
-
-              <RowStack>
-                <ControlsStackItem>
                   <Radio
                     label='指示対象'
                     name='referent'
+                    // 書類発送指示が対象の場合必須
+                    required={
+                      documentShippingInstructionFlag === true ? true : false
+                    }
                     radioValues={[
                       {
                         value: 'meberDirectDelivery',
                         displayValue: '会員直送&AUC宛',
-                        disabled: false,
+                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || !omatomePlaceFlag
+                            ? true
+                            : false,
                       },
                       {
                         value: 'onlyAuc',
                         displayValue: 'AUC宛のみ',
-                        disabled: false,
+                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || !omatomePlaceFlag
+                            ? true
+                            : false,
                       },
                     ]}
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 3列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <TextField label='担当者' name='documentShippingStaff' />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 4列目 */}
-              <RowStack>
-                <ControlsStackItem>
+                  <TextField
+                    label='担当者'
+                    name='documentShippingStaff'
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
+                  />
                   <TextField
                     label='メールアドレス'
                     name='documentShippingMailAddress'
+                    size='l'
+                    // 書類発送指示が対象の場合 かつFAXが入力されていない場合必須
+                    required={
+                      documentShippingInstructionFlag === true &&
+                      getValues('documentShippingFaxNumber') === ''
+                        ? true
+                        : false
+                    }
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 5列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <TextField label='FAX' name='documentShippingFaxNumber' />
-                </ControlsStackItem>
+                  <TextField
+                    label='FAX'
+                    name='documentShippingFaxNumber'
+                    // 書類発送指示が対象の場合 かつメールアドレスが入力されていない場合必須
+                    required={
+                      documentShippingInstructionFlag === true &&
+                      getValues('paymentNoticeMailAddress') === ''
+                        ? true
+                        : false
+                    }
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
+                  />
+                </ColStack>
               </RowStack>
             </Section>
 
             {/* 出金設定セクション */}
             <Section name='出金設定'>
-              {/* 1列目 */}
               <RowStack>
+                {/* 縦 1列目 */}
                 <ColStack>
-                  <ControlsStackItem>
-                    <TextField name='paymentDueDate' label='出金期日' />
-                    {/* TODO: テキストボックスの後ろに[日]の文字列を配置する */}
-                    {/* <Typography variant='body2'>{'日'}</Typography> */}
-                  </ControlsStackItem>
-                </ColStack>
-              </RowStack>
-              {/* 2列目 */}
-              <RowStack>
-                <ControlsStackItem>
+                  <TextField
+                    name='paymentDueDate'
+                    label='出金期日'
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
+                  />
                   <Radio
                     label='出金設定'
                     name='paymentConfig'
@@ -1166,60 +1318,66 @@ const ScrCom0024Page = () => {
                       {
                         value: 'bulk',
                         displayValue: '一括',
-                        disabled: false,
+                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || omatomePlaceFlag === false
+                            ? true
+                            : false,
                       },
                       {
                         value: 'eachTime',
                         displayValue: '都度',
-                        disabled: false,
+                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || omatomePlaceFlag === false
+                            ? true
+                            : false,
                       },
                     ]}
                   />
-                </ControlsStackItem>
+                  {/* TODO: テキストボックスの後ろに[日]の文字列を配置する */}
+                  {/* <Typography variant='body2'>{'日'}</Typography> */}
+                </ColStack>
               </RowStack>
             </Section>
-
             {/* 振込口座情報セクション */}
             <Section name='振込口座情報'>
-              {/* 1列目 */}
               <RowStack>
-                <ControlsStackItem>
-                  <TextField label='銀行名' name='bankName' />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <TextField label='口座番号' name='accountNumber' />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 2列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <TextField label='支店名' name='branchName' />
-                </ControlsStackItem>
-                <ControlsStackItem>
-                  <TextField label='口座名義' name='accountNameKana' />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 3列目 */}
-              <RowStack>
-                <ControlsStackItem>
+                {/* 縦 1列目 */}
+                <ColStack>
+                  <TextField label='銀行名' name='bankName' size='l' />
+                  <TextField label='支店名' name='branchName' size='l' />
                   <TextField label='種別' name='accountKind' />
-                </ControlsStackItem>
-                <ControlsStackItem>
+                </ColStack>
+                {/* 縦 2列目 */}
+                <ColStack>
+                  <TextField label='口座番号' name='accountNumber' />
+                  <TextField label='口座名義' name='accountNameKana' size='m' />
                   <Select
                     label='バーチャル口座付与ルール'
                     name='virtualAccountGiveRuleCode'
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                     selectValues={selectValues.livePlaceGroupCodeSelectValues}
                     blankOption
                   />
-                </ControlsStackItem>
+                </ColStack>
               </RowStack>
             </Section>
-
             {/* 支払通知送付先指定セクション */}
             <Section name='支払通知送付先指定'>
-              {/* 1列目 */}
               <RowStack>
-                <ControlsStackItem>
+                {/* 縦 1列目 */}
+                <ColStack>
                   <Radio
                     label='支払通知'
                     name='paymentNotice'
@@ -1227,89 +1385,124 @@ const ScrCom0024Page = () => {
                       {
                         value: 'paymentNoticeTarget',
                         displayValue: '対象',
-                        disabled: false,
+                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || omatomePlaceFlag === false
+                            ? true
+                            : false,
                       },
                       {
                         value: 'paymentNoticeUnTarget',
                         displayValue: '対象外',
-                        disabled: false,
+                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        disabled:
+                          !user.editPossibleScreenIdList.includes(
+                            'SCR-COM-0024'
+                          ) || omatomePlaceFlag === false
+                            ? true
+                            : false,
                       },
                     ]}
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 2列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <TextField label='担当者' name='paymentNoticeStaff' />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 3列目 */}
-              <RowStack>
-                <ControlsStackItem>
+                  <TextField
+                    label='担当者'
+                    name='paymentNoticeStaff'
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
+                  />
                   <TextField
                     label='メールアドレス'
                     name='paymentNoticeMailAddress'
+                    size='l'
+                    // FAXが入力されていない場合 必須
+                    required={
+                      getValues('paymentNoticeFaxNumber') === '' ? true : false
+                    }
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 4列目 */}
-              <RowStack>
-                <ControlsStackItem>
-                  <TextField label='FAX' name='paymentNoticeFaxNumber' />
-                </ControlsStackItem>
+                  <TextField
+                    label='FAX'
+                    name='paymentNoticeFaxNumber'
+                    // メールアドレスが入力されていない場合 必須
+                    required={
+                      getValues('paymentNoticeMailAddress') === ''
+                        ? true
+                        : false
+                    }
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
+                  />
+                </ColStack>
               </RowStack>
             </Section>
-
             {/* 入金元口座情報セクション */}
             <Section name='入金元口座情報'>
-              {/* 1列目 */}
               <RowStack>
-                <ControlsStackItem>
+                {/* 縦 1列目 */}
+                <ColStack>
                   <Select
                     label='銀行名'
                     name='receiptSourceBankName'
+                    size='l'
                     selectValues={selectValues.bankNameSelectValues}
                     blankOption
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 2列目 */}
-              <RowStack>
-                <ControlsStackItem>
                   <Select
                     label='支店名'
                     name='receiptSourceBranchName'
+                    size='l'
                     selectValues={selectValues.branchNameSelectValues}
                     blankOption
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 3列目 */}
-              <RowStack>
-                <ControlsStackItem>
                   <TextField
                     label='口座名義'
                     name='receiptSourceAccountNameKana'
+                    size='m'
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                   />
-                </ControlsStackItem>
-              </RowStack>
-            </Section>
-
-            {/* 会場連絡(会員管理)セクション */}
-            <Section name='会場連絡(会員管理)'>
-              {/* 1列目 */}
-              <RowStack>
-                <ControlsStackItem>
                   <TextField
                     label='会場会員管理担当メールアドレス'
                     name='placeMemberManagementStaffMailAddress'
+                    size='l'
                   />
-                </ControlsStackItem>
-              </RowStack>
-              {/* 2列目 */}
-              <RowStack>
-                <ControlsStackItem>
                   <Select
                     label='おまとめ会場連絡不可対象'
                     name='omatomePlaceContactImpossibleTargetedKind'
@@ -1318,7 +1511,7 @@ const ScrCom0024Page = () => {
                     }
                     blankOption
                   />
-                </ControlsStackItem>
+                </ColStack>
               </RowStack>
             </Section>
           </FormProvider>
@@ -1327,11 +1520,19 @@ const ScrCom0024Page = () => {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={handleConfirm}>確定</ConfirmButton>
+            <ConfirmButton
+              onClick={handleConfirm}
+              disable={
+                !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                  ? true
+                  : false
+              }
+            >
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
-
       {/* 登録内容確認ポップアップ */}
       <ScrCom0032Popup
         isOpen={isOpenPopup}

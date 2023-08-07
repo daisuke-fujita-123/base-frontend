@@ -42,6 +42,8 @@ declare module 'yup' {
     notZero(this: StringSchema): StringSchema;
     // 電話番号、FAX
     phone(this: StringSchema): StringSchema;
+    // アドレス
+    address(this: StringSchema): StringSchema;
   }
   interface NumberSchema {
     // 千円単位表示
@@ -146,6 +148,15 @@ yup.addMethod(yup.NumberSchema, 'notZero', function () {
     (value) => {
       if (!value) return false;
       return value !== 0;
+    }
+  );
+});
+
+yup.addMethod(yup.StringSchema, 'address', function () {
+  return this.matches(
+    /^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/,
+    {
+      message: 'メールアドレス形式で入力してください。',
     }
   );
 });
