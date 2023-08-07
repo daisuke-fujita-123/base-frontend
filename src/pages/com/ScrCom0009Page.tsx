@@ -120,7 +120,7 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'corporationName',
     headerName: '法人名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'systemKind',
@@ -130,7 +130,7 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'reportName',
     headerName: '帳票名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'reportCreateTime',
@@ -535,6 +535,7 @@ const ScrCom0009Page = () => {
                     name='corporationIdAndName'
                     selectValues={selectValues.corporationIdAndNameSelectValues}
                     blankOption
+                    size='l'
                   />
                   <Select
                     label='請求先ID'
