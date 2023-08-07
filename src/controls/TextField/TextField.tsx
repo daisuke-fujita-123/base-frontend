@@ -13,6 +13,7 @@ import { InputLayout } from 'layouts/InputLayout';
 import { theme } from 'controls/theme';
 
 import ClearIcon from '@mui/icons-material/Clear';
+
 import {
   IconButton,
   InputAdornment,
@@ -31,6 +32,7 @@ export interface TextFieldProps<T extends FieldValues> {
   fullWidth?: boolean;
   readonly?: boolean;
   size?: 's' | 'm' | 'l' | 'xl';
+  onBlur?: (name: string) => void;
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -58,18 +60,19 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     fullWidth = true,
     readonly = false,
     size = 's',
+    onBlur,
   } = props;
 
   const { register, formState, setValue, control } = useFormContext();
   const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
     }
   };
-
-  const isReadOnly = control?._options?.context[0];
 
   return (
     <InputLayout
@@ -89,7 +92,6 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
@@ -102,6 +104,13 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
           ),
           readOnly: isReadOnly || readonly,
         }}
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
+          onBlur && onBlur(name);
+        }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );
@@ -121,9 +130,13 @@ export const PriceTextField = <T extends FieldValues>(
     fullWidth = true,
     readonly = false,
     size = 's',
+    onBlur,
   } = props;
+
   const { register, formState, setValue, trigger, control } = useFormContext();
   const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
@@ -166,8 +179,6 @@ export const PriceTextField = <T extends FieldValues>(
     });
   };
 
-  const isReadOnly = control?._options?.context[0];
-
   return (
     <InputLayout
       label={label}
@@ -186,7 +197,6 @@ export const PriceTextField = <T extends FieldValues>(
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
@@ -199,18 +209,22 @@ export const PriceTextField = <T extends FieldValues>(
           ),
           readOnly: isReadOnly,
         }}
-        onBlur={onBlurHandle}
-        onFocus={onFocusHandle}
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
+          onBlurHandle();
+          onBlur && onBlur(name);
+        }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );
 };
 
-interface PostalTextFieldProps extends TextFieldProps<FieldValues> {
-  onBlur: () => void;
-}
-
-export const PostalTextField = (props: PostalTextFieldProps) => {
+export const PostalTextField = <T extends FieldValues>(
+  props: TextFieldProps<T>
+) => {
   const {
     label,
     labelPosition = 'above',
@@ -227,12 +241,15 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
 
   const { register, formState, setValue, trigger, control } = useFormContext();
   const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
     }
   };
+
   const onBlurHandle = () => {
     // 郵便番号形式に変換 ※文字列が7桁以外の場合はハイフンは入れない。
     if (watchValue.length === 7 && watchValue.indexOf('-') === -1) {
@@ -251,8 +268,6 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
     trigger(name);
   };
 
-  const isReadOnly = control?._options?.context[0];
-
   return (
     <InputLayout
       label={label}
@@ -271,7 +286,6 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
@@ -284,10 +298,14 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
           ),
           readOnly: isReadOnly,
         }}
-        onBlur={() => {
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
           onBlurHandle();
-          onBlur();
+          onBlur && onBlur(name);
         }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );

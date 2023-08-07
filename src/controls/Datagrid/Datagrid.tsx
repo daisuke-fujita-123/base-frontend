@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+import { ObjectSchema, ValidationError } from 'yup';
 
 import { InfoButton } from 'controls/Button';
 import {
@@ -11,9 +13,20 @@ import {
   GridSelectCell,
 } from 'controls/Datagrid/DataGridCell';
 import { GridToolbar } from 'controls/Datagrid/DataGridToolbar';
-import { convertFromSizeToWidth } from 'controls/Datagrid/DataGridUtil';
+import {
+  appendErrorToInvalids,
+  convertFromInvalidToMessage,
+  convertFromResolverToInvalids,
+  convertFromSizeToWidth,
+  InvalidModel,
+  removeIdFromInvalids,
+  resolveGridWidth,
+} from 'controls/Datagrid/DataGridUtil';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
+
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
 
 import { Box, styled, Tooltip } from '@mui/material';
 import {
@@ -27,9 +40,6 @@ import {
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 import saveAs from 'file-saver';
 import Papa from 'papaparse';
-
-// import SortAsc from '../../icon/content_sort_ascend.png';
-// import SortDesc from '../../icon/content_sort_descend.png';
 
 const StyledDataGrid = styled(MuiDataGridPro)({
   fontSize: 13,
@@ -99,6 +109,10 @@ export type GridColDef = MuiGridColDef & {
    */
   tooltip?: boolean;
   /**
+   * tooltip
+   */
+  validator?: any;
+  /**
    * selectValues
    */
   selectValues?: any[]; // cellType = 'select'
@@ -106,11 +120,17 @@ export type GridColDef = MuiGridColDef & {
    * radioValues
    */
   radioValues?: any[]; // cellType = 'radio'
-
+  /**
+   * radioInputTypes
+   */
   radioInputTypes?: string[];
-
+  /**
+   * cellHelperText
+   */
   cellHelperText?: string; // cellType = 'input'
-
+  /**
+   * cellHelperButton
+   */
   cellHelperButton?: 'info';
 };
 
@@ -127,6 +147,17 @@ export interface DataGridProps extends DataGridProProps {
    * 行データ
    */
   rows: GridRowsProp;
+  /**
+   * resolver
+   */
+  resolver?: ObjectSchema<any>;
+  /**
+   * controlled
+   */
+  controlled?: boolean;
+  /**
+   * disabled
+   */
   disabled?: boolean;
   /**
    * height
@@ -144,11 +175,17 @@ export interface DataGridProps extends DataGridProProps {
    * ツールチップ
    */
   tooltips?: GridTooltipsModel[]; // add, tooltip = 'true'
+  /**
+   * showHeaderRow
+   */
   showHeaderRow?: boolean;
   /**
    * headerRow
    */
   headerRow?: GridValidRowModel;
+  /**
+   * headerApiRef
+   */
   headerApiRef?: React.MutableRefObject<GridApiPro>;
   /**
    * onRowChange
@@ -198,6 +235,8 @@ export const DataGrid = (props: DataGridProps) => {
   const {
     columns,
     rows,
+    controlled = true,
+    resolver,
     disabled = false,
     tooltips,
     hrefs,
@@ -223,25 +262,40 @@ export const DataGrid = (props: DataGridProps) => {
     apiRef,
   } = props;
 
-  // ref
-  // const apiRef = useGridApiRef();
+  const defaultInvalids: InvalidModel[] =
+    resolver === undefined ? [] : convertFromResolverToInvalids(resolver);
+
+  // state
+  const [invalids, setInvalids] = useState<InvalidModel[]>(defaultInvalids);
 
   // handler
-  const handleRowValueChange = (row: any) => {
-    if (onRowValueChange === undefined) return;
-    onRowValueChange(row);
+  const handleRowValueChange = async (row: any) => {
+    if (resolver !== undefined) {
+      // 一旦、変更行のバリデーションエラーを解除
+      removeIdFromInvalids(invalids, row.id);
+      try {
+        await resolver.validate(row, { abortEarly: false });
+      } catch (err) {
+        if (err instanceof ValidationError) {
+          // ハリデーションエラーがない場合は列のIDを追加
+          appendErrorToInvalids(invalids, err.inner, row.id);
+        }
+      }
+      console.log(invalids);
+      setInvalids([...invalids]);
+    }
+
+    onRowValueChange && onRowValueChange(row);
   };
 
   // handler
   const handleLinkClick = (url: string) => {
-    if (onLinkClick === undefined) return;
-    onLinkClick(url);
+    onLinkClick && onLinkClick(url);
   };
 
   // heander
   const handleClick = (params: any) => {
-    if (onCellHelperButtonClick === undefined) return;
-    onCellHelperButtonClick(params.field, params.id);
+    onCellHelperButtonClick && onCellHelperButtonClick(params.field, params.id);
   };
 
   const handleProcessRowUpdate = (newRow: any, oldRow: any) => {
@@ -278,6 +332,7 @@ export const DataGrid = (props: DataGridProps) => {
           value={params.value}
           field={params.field}
           selectValues={params.colDef.selectValues}
+          controlled={controlled}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
         />
@@ -298,6 +353,7 @@ export const DataGrid = (props: DataGridProps) => {
           value={params.value}
           field={params.field}
           radioValues={params.colDef.radioValues}
+          controlled={controlled}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
         />
@@ -337,6 +393,7 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
+          controlled={controlled}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
         />
@@ -389,11 +446,12 @@ export const DataGrid = (props: DataGridProps) => {
                 value={params.value[i]}
                 field={[params.field, i]}
                 selectValues={x.selectValues}
+                controlled={controlled}
                 onRowValueChange={handleRowValueChange}
               />
             );
           }
-          return <>cellType error</>;
+          return <>invalid cellType</>;
         })}
       </>
     );
@@ -465,32 +523,27 @@ export const DataGrid = (props: DataGridProps) => {
     };
   });
 
-  const gridHeight = height ? height : '100%';
-  const gridWidth = width
-    ? width
-    : muiColumns.reduce((acc, val) => acc + (val.width ? val.width : 0), 4);
-
-  // const SortedAscIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={SortAsc}></img>
-  //     </div>
-  //   );
-  // };
-  // const SortedDescIcon = () => {
-  //   return (
-  //     <div>
-  //       <img src={SortDesc}></img>
-  //     </div>
-  //   );
-  // };
+  const SortedAscIcon = () => {
+    return (
+      <div>
+        <img src={SortAsc}></img>
+      </div>
+    );
+  };
+  const SortedDescIcon = () => {
+    return (
+      <div>
+        <img src={SortDesc}></img>
+      </div>
+    );
+  };
 
   return (
     <>
       <Box
         sx={{
-          height: gridHeight,
-          width: gridWidth,
+          height: height ? height : '100%',
+          width: width ? width : resolveGridWidth(muiColumns),
           '& .cold': {
             backgroundColor: '#b9d5ff91',
           },
@@ -531,12 +584,13 @@ export const DataGrid = (props: DataGridProps) => {
           processRowUpdate={handleProcessRowUpdate}
           slots={{
             toolbar: GridToolbar,
-            // columnSortedAscendingIcon: SortedAscIcon,
-            // columnSortedDescendingIcon: SortedDescIcon,
+            columnSortedAscendingIcon: SortedAscIcon,
+            columnSortedDescendingIcon: SortedDescIcon,
           }}
           slotProps={{
             toolbar: {
               pagination: pagination,
+              validationMessages: convertFromInvalidToMessage(invalids),
               showHeaderRow: showHeaderRow,
               headerColumns: muiColumns,
               headerRow: headerRow,
