@@ -1498,6 +1498,14 @@ const ScrCom0024Page = () => {
                         : false
                     }
                   />
+                </ColStack>
+              </RowStack>
+            </Section>
+            {/* 会場連絡(会員管理)セクション */}
+            <Section name='会場連絡(会員管理)'>
+              {/* 縦 1列目 */}
+              <RowStack>
+                <ColStack>
                   <TextField
                     label='会場会員管理担当メールアドレス'
                     name='placeMemberManagementStaffMailAddress'
