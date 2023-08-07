@@ -296,14 +296,14 @@ const _ROUTES = [
     // SCR-TRA-0001 取引管理マスタ一覧
     id: 'SCR-TRA-0001',
     name: '取引管理マスタ一覧',
-    path: '/tra/deel-masters',
+    path: '/tra/masters',
     element: <ScrTra0001Page />,
   },
   {
     // SCR-TRA-0003 取引管理マスタメンテナンス
     id: 'SCR-TRA-0003',
     name: '取引管理マスタメンテナンス',
-    path: '-',
+    path: '/tra/masters/:masterId',
     element: <ScrTra0003Page />,
   },
   {
@@ -311,7 +311,6 @@ const _ROUTES = [
     id: 'SCR-TRA-0005',
     name: '会員売上伝票一覧',
     path: '/tra/member-salses-slips',
-    // eslint-disable-next-line react/jsx-no-undef
     element: <ScrTra0005Page />,
   },
   {
