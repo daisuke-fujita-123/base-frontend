@@ -8,7 +8,7 @@ import { Box } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Popup } from 'layouts/Popup';
 import { PopSection } from 'layouts/Section';
-import { ColStack, ControlsStackItem, RowStack } from 'layouts/Stack';
+import { ColStack, RowStack } from 'layouts/Stack';
 
 import { CancelButton, ConfirmButton } from 'controls/Button';
 import { Select, SelectValue } from 'controls/Select';
@@ -20,7 +20,7 @@ import {
   ScrCom0011GetReportListInfo,
   ScrCom0011GetReportListInfoRequest,
   ScrCom0011GetReportListInfoResponse,
-} from 'apis/com/ScrCom0011';
+} from 'apis/com/ScrCom0011Api';
 
 import { useForm } from 'hooks/useForm';
 
@@ -41,10 +41,12 @@ interface ScrCom0011PopupProps {
   handleCancel: () => void;
   // 出力ボタン押下時に呼び出し元へ渡すパラメータ
   handleConfirm: (
-    // 帳票ID 帳票名
-    selectValues: SelectValuesModel,
-    // TODO: 帳票コメント行数可変を戻り値にしたい
-    comment: string,
+    // 帳票ID
+    reportId: string,
+    // 帳票名
+    reportName: string,
+    // 帳票コメント
+    reportComment: string,
     // 初期値
     defaultValue: string
   ) => void;
@@ -70,18 +72,34 @@ const selectValuesInitialValues: SelectValuesModel = {
  * useForm データモデル
  */
 interface reportModel {
-  // TODO:コメント(動的)
-  reportComment1: '';
+  reportComment1: string;
+  reportComment2: string;
+  reportComment3: string;
+  reportComment4: string;
+  reportComment5: string;
+  reportComment6: string;
+  reportComment7: string;
+  reportComment8: string;
+  reportComment9: string;
+  reportComment10: string;
   // 出力帳票
-  outputReporsSelection: '';
+  outputReporsSelection: string;
 }
 
 /*
  * useForm データモデル 初期値
  */
 const initialValues: reportModel = {
-  // TODO:コメント(動的)
   reportComment1: '',
+  reportComment2: '',
+  reportComment3: '',
+  reportComment4: '',
+  reportComment5: '',
+  reportComment6: '',
+  reportComment7: '',
+  reportComment8: '',
+  reportComment9: '',
+  reportComment10: '',
   // 出力帳票
   outputReporsSelection: '',
 };
@@ -96,26 +114,74 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
   // state
   const [reportsValue, setReportsValue] =
     useState<ScrCom0011GetReportListInfoResponse>();
-  const [commentRow, setCommentRow] = useState<string>('');
-  const [commentLine, setCommentLine] = useState<string>('');
+  const [commentRow, setCommentRow] = useState<number>();
+  const [commentLine, setCommentLine] = useState<number>();
   // 出力帳票リスト
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
+  // 帳票ID
+  const [reportId, setReportId] = useState<string>('');
+  // 帳票名
+  const [reportName, setReportName] = useState<string>('');
+
   // 初期値
   const [defaultValue, setDefaultValue] = useState<string>('');
-  // 可変させるコメントの行数
-  const [rowCount, setRowCount] = useState<string>('');
   // trueの場合  => "最大行数"と"1行最大文字数"が共にNull
   const [isNull, setIsNull] = useState<boolean>();
+  // 可変させるコメントの行数(バリデーション)
+  const [rowCount, setRowCount] = useState<number>(1);
+  // 可変させるコメントの文字数(バリデーション)
+  const [reportCommentLengthForVal, setReportCommentLengthForVal] =
+    useState<number>(250);
 
   // 初回レンダリング判定フラグ
   const renderFlgRef = useRef(false);
 
+  /**
+   * 動的に変更するコメントのバリデーションスキーマ
+   */
   const validationSchema = {
-    // TODO: 行数も文字数も動的にバリデーションをかける
-    // => 行数の可変の制御方法不明
-    // reportComment: yup.string().label('コメント').max(250).fullAndHalfWidth(),
+    reportComment1: yup
+      .string()
+      .label('コメント１行目')
+      .max(reportCommentLengthForVal),
+    reportComment2: yup
+      .string()
+      .label('コメント２行目')
+      .max(reportCommentLengthForVal),
+    reportComment3: yup
+      .string()
+      .label('コメント３行目')
+      .max(reportCommentLengthForVal),
+    reportComment4: yup
+      .string()
+      .label('コメント４行目')
+      .max(reportCommentLengthForVal),
+    reportComment5: yup
+      .string()
+      .label('コメント５行目')
+      .max(reportCommentLengthForVal),
+    reportComment6: yup
+      .string()
+      .label('コメント６行目')
+      .max(reportCommentLengthForVal),
+    reportComment7: yup
+      .string()
+      .label('コメント７行目')
+      .max(reportCommentLengthForVal),
+    reportComment8: yup
+      .string()
+      .label('コメント８行目')
+      .max(reportCommentLengthForVal),
+    reportComment9: yup
+      .string()
+      .label('コメント９行目')
+      .max(reportCommentLengthForVal),
+    reportComment10: yup
+      .string()
+      .label('コメント１０行目')
+      .max(reportCommentLengthForVal),
   };
 
   // form
@@ -125,7 +191,7 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
   });
 
   // プルダウンの値
-  const { watch } = methods;
+  const { getValues, watch, reset } = methods;
 
   // 帳票出力ポップアップ表示時の処理
   useEffect(() => {
@@ -148,13 +214,9 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
         ),
       });
     };
-    // 遷移元画面遷移時には処理を実行しない
-    if (renderFlgRef.current) {
-      // 初期表示処理
-      initialize();
-    } else {
-      renderFlgRef.current = true;
-    }
+
+    // 初期表示処理
+    initialize();
   }, []);
 
   // プルダウン選択時の処理
@@ -165,24 +227,28 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
       if (value.outputReporsSelection === undefined) return;
       // 選択した値とAPIから取得した値の帳票IDで比較しプルダウンで選択した行数と文字数を設定
       reportsValue?.reportList.map((e) => {
-        if (e.reportId === value.outputReporsSelection) {
-          // 値がともにNull | ''の場合は不備案内書として扱う
+        // プルダウンの選択値とAPIの取得値で一致しているものを使用
+        if (String(e.reportId) === value.outputReporsSelection) {
+          // 値がともにNull | 0以外の場合は不備案内書として扱う
           if (
-            (e.popupComment1lineMaxCharacterCount === null ||
-              e.popupComment1lineMaxCharacterCount === '') &&
-            (e.popupCommentMaxRow === null || e.popupCommentMaxRow === '')
+            e.popupComment1lineMaxCharacterCount > 0 &&
+            e.popupCommentMaxRow > 0
           ) {
+            setReportId(e.reportId);
+            setReportName(e.reportName);
             setIsNull(true);
-          } else {
-            setIsNull(false);
             setCommentRow(e.popupCommentMaxRow);
             setCommentLine(e.popupComment1lineMaxCharacterCount);
             setDefaultValue(e.default);
             // コメントの可変の行数を制御する処理
             setRowCount(e.popupCommentMaxRow);
-
-            // TODO:バリデーションを動的にする為 validationSchemaに追加
-            // validationSchema[`reportComment${2}`] = '';
+            // バリデーションの文字数を設定
+            setReportCommentLengthForVal(e.popupComment1lineMaxCharacterCount);
+          } else {
+            setReportId(e.reportId);
+            setReportName(e.reportName);
+            setDefaultValue(e.default);
+            setIsNull(false);
           }
         }
       });
@@ -204,16 +270,117 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
     });
   };
 
-  // 帳票ポップアップ出力ボタン押下時の処理
+  /**
+   * TODO: 将来的にリファクタリング対象
+   * 帳票ポップアップ出力ボタン押下時の処理
+   */
   const handleConfirm = () => {
+    // 動的に取得したコメント行数文のコメントを取得
+    const commentRowList: string[] = [];
+    if (rowCount >= 10) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+      commentRowList.push(getValues('reportComment10'));
+    } else if (rowCount === 9) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+    } else if (rowCount === 8) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+    } else if (rowCount === 7) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+    } else if (rowCount === 6) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+    } else if (rowCount === 5) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+    } else if (rowCount === 4) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+    } else if (rowCount === 3) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+    } else if (rowCount === 2) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+    } else if (rowCount === 1) {
+      commentRowList.push(getValues('reportComment1'));
+    }
+
+    // 改行コードでつなげた帳票コメントをjoinして一つの文字列にする
+    const reportComment = commentRowList.join('\n');
+
     props.handleConfirm(
-      // 帳票ID 帳票名
-      selectValues,
-      // TODO: 帳票コメント行数可変を戻り値にしたい
-      '',
+      // 帳票ID
+      reportId,
+      // 帳票名
+      reportName,
+      // 帳票コメント
+      reportComment,
       // 初期値
-      defaultValue
+      defaultValue === undefined ? '' : defaultValue
     );
+
+    // 出力後にフォームをリセット
+    reset(initialValues);
+  };
+
+  /**
+   *  コメント動的可変の処理
+   */
+  const reportCommentLine = () => {
+    const commentBox = [];
+    for (let i = 1; i <= rowCount; i++) {
+      commentBox.push(
+        <TextField
+          name={`reportComment${i}`}
+          key={`reportComment${i}`}
+          size='l'
+        />
+      );
+      // 最大10個のコメント列にするように制御
+      if (i == 10) {
+        break;
+      }
+    }
+    return commentBox;
   };
 
   return (
@@ -265,19 +432,8 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
                     isNull ? (
                       <>
                         <Typography variant='body1'>コメント</Typography>
-                        <ControlsStackItem size='m'>
-                          {/* コメント行数をAPIから取得した最大行数分可変させる */}
-                          {Array(rowCount)
-                            .fill('test')
-                            .map((val, i) => {
-                              return (
-                                <TextField
-                                  key={val + i}
-                                  name={'reportComment' + i}
-                                />
-                              );
-                            })}
-                        </ControlsStackItem>
+                        {/* コメント行数をAPIから取得した最大行数分可変させる */}
+                        {reportCommentLine()}
                       </>
                     ) : (
                       ''

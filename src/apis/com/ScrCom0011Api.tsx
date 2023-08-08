@@ -19,9 +19,9 @@ export interface reportList {
   /** 帳票名 */
   reportName: string;
   /** ポップアップコメント最大行数 */
-  popupCommentMaxRow: string;
+  popupCommentMaxRow: number;
   /** ポップアップコメント1行最大文字数 */
-  popupComment1lineMaxCharacterCount: string;
+  popupComment1lineMaxCharacterCount: number;
   /** 初期値 */
   default: string;
 }
@@ -31,7 +31,7 @@ export const ScrCom0011GetReportListInfo = async (
   request: ScrCom0011GetReportListInfoRequest
 ): Promise<ScrCom0011GetReportListInfoResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0011/get-report-list-info',
+    'com/scr-com-0011/get-report-list-info',
     request
   );
   return response.data;
