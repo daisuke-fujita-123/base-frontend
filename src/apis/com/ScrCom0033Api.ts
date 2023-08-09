@@ -7,7 +7,7 @@ export interface ScrCom0033GetApproverRequest {
   /** タブID */
   tabId: number;
   /** 申請金額 */
-  applicationMoney: string;
+  applicationMoney: number;
   /** 申請者ID */
   appalicationId: string;
 }
