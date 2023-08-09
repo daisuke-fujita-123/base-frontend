@@ -129,9 +129,7 @@ interface ScrCom0032PopupProps {
  * バリデーションスキーマ
  */
 const validationSchema = {
-  registrationChangeMemo: yup.string().label('登録変更メモ'),
-  //   .max(250)
-  //   .fullAndHalfWidth(),
+  registrationChangeMemo: yup.string().label('登録変更メモ').max(250),
 };
 
 /**
