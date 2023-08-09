@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -127,16 +127,13 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
 
   // 初期値
   const [defaultValue, setDefaultValue] = useState<string>('');
-  // trueの場合  => "最大行数"と"1行最大文字数"が共にNull
-  const [isNull, setIsNull] = useState<boolean>();
+  // true => 不備案内書 false => それ以外
+  const [isDefectGuide, setIsDefectGuide] = useState<boolean>();
   // 可変させるコメントの行数(バリデーション)
   const [rowCount, setRowCount] = useState<number>(1);
   // 可変させるコメントの文字数(バリデーション)
   const [reportCommentLengthForVal, setReportCommentLengthForVal] =
     useState<number>(250);
-
-  // 初回レンダリング判定フラグ
-  const renderFlgRef = useRef(false);
 
   /**
    * 動的に変更するコメントのバリデーションスキーマ
@@ -191,7 +188,45 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
   });
 
   // プルダウンの値
-  const { getValues, watch, reset } = methods;
+  const { getValues, setValue, watch, reset } = methods;
+
+  // 不備案内書かそれ以外かで設定値を変更する
+  const judgeDefectGuideSetter = (
+    // 帳票ID
+    reportId: string,
+    // 帳票名
+    reportName: string,
+    // コメント行数
+    commentRow: number,
+    // コメント文字数
+    commentLine: number,
+    // 初期値
+    defaultValue: string,
+    // 最大行数
+    popupCommentMaxRow: number,
+    // 最大文字数
+    popupComment1lineMaxCharacterCount: number
+  ): void => {
+    if (popupComment1lineMaxCharacterCount > 0 && popupCommentMaxRow > 0) {
+      // 不備案内書の場合の設定値
+      setIsDefectGuide(true);
+      setReportId(reportId);
+      setReportName(reportName);
+      setCommentRow(commentRow);
+      setCommentLine(commentLine);
+      setDefaultValue(defaultValue);
+      // コメントの可変の行数を制御する処理
+      setRowCount(popupCommentMaxRow);
+      // バリデーションの文字数を設定
+      setReportCommentLengthForVal(popupComment1lineMaxCharacterCount);
+    } else {
+      // 不備案内書以外の場合の設定値
+      setIsDefectGuide(false);
+      setReportId(reportId);
+      setReportName(reportName);
+      setDefaultValue(defaultValue);
+    }
+  };
 
   // 帳票出力ポップアップ表示時の処理
   useEffect(() => {
@@ -213,6 +248,23 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
           response.reportList
         ),
       });
+
+      // 取得したリストが1つ以下なら初期値として取得した1つを設定する
+      if (response.reportList.length <= 1) {
+        const temp = response.reportList[0];
+        setValue('outputReporsSelection', temp.reportId);
+        judgeDefectGuideSetter(
+          temp.reportId,
+          temp.reportName,
+          temp.popupCommentMaxRow,
+          temp.popupComment1lineMaxCharacterCount,
+          temp.default,
+          // コメントの可変の行数を制御する処理
+          temp.popupCommentMaxRow,
+          // バリデーションの文字数を設定
+          temp.popupComment1lineMaxCharacterCount
+        );
+      }
     };
 
     // 初期表示処理
@@ -226,30 +278,21 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
       if (name !== 'outputReporsSelection') return;
       if (value.outputReporsSelection === undefined) return;
       // 選択した値とAPIから取得した値の帳票IDで比較しプルダウンで選択した行数と文字数を設定
-      reportsValue?.reportList.map((e) => {
+      reportsValue?.reportList.forEach((e) => {
         // プルダウンの選択値とAPIの取得値で一致しているものを使用
         if (String(e.reportId) === value.outputReporsSelection) {
           // 値がともにNull | 0以外の場合は不備案内書として扱う
-          if (
-            e.popupComment1lineMaxCharacterCount > 0 &&
-            e.popupCommentMaxRow > 0
-          ) {
-            setReportId(e.reportId);
-            setReportName(e.reportName);
-            setIsNull(true);
-            setCommentRow(e.popupCommentMaxRow);
-            setCommentLine(e.popupComment1lineMaxCharacterCount);
-            setDefaultValue(e.default);
+          judgeDefectGuideSetter(
+            e.reportId,
+            e.reportName,
+            e.popupCommentMaxRow,
+            e.popupComment1lineMaxCharacterCount,
+            e.default,
             // コメントの可変の行数を制御する処理
-            setRowCount(e.popupCommentMaxRow);
+            e.popupCommentMaxRow,
             // バリデーションの文字数を設定
-            setReportCommentLengthForVal(e.popupComment1lineMaxCharacterCount);
-          } else {
-            setReportId(e.reportId);
-            setReportName(e.reportName);
-            setDefaultValue(e.default);
-            setIsNull(false);
-          }
+            e.popupComment1lineMaxCharacterCount
+          );
         }
       });
     });
@@ -271,7 +314,6 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
   };
 
   /**
-   * TODO: 将来的にリファクタリング対象
    * 帳票ポップアップ出力ボタン押下時の処理
    */
   const handleConfirm = () => {
@@ -395,13 +437,13 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
                     label='出力帳票選択'
                     name='outputReporsSelection'
                     selectValues={selectValues.outputReportInfoSelectValues}
-                    blankOption
+                    // blankOption
                     required
                   />
                   <br />
                   {
                     // プルダウンにて不備案内書が選択された場合にのみ表示
-                    isNull ? (
+                    isDefectGuide ? (
                       <RowStack>
                         <ColStack>
                           <Box>
@@ -429,7 +471,7 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
                   <br />
                   {
                     // プルダウンにて不備案内書が選択された場合にのみ表示
-                    isNull ? (
+                    isDefectGuide ? (
                       <>
                         <Typography variant='body1'>コメント</Typography>
                         {/* コメント行数をAPIから取得した最大行数分可変させる */}
