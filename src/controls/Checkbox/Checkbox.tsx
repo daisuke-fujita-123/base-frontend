@@ -73,11 +73,12 @@ export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
           required={required}
           disabled={disabled || isReadOnly}
           {...field}
+          style={{ whiteSpace: 'nowrap' }}
         />
       </StyledFormControl>
       {helperText && (
         <MarginBox justifyContent='flex-start' ml={3.6}>
-          <Typography>{helperText}</Typography>
+          <Typography color='inherit'>{helperText}</Typography>
         </MarginBox>
       )}
     </InputLayout>
