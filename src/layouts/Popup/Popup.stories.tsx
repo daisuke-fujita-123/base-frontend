@@ -1,11 +1,17 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
 import React, { useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 
 import { Box } from 'layouts/Box';
 import { Popup } from 'layouts/Popup';
+import { Stack } from 'layouts/Stack/Stack';
 import { StackSection } from 'layouts/StackSection';
 
-import { Button, Stack } from '@mui/material';
+import { Button, CancelButton, ConfirmButton } from 'controls/Button';
+import { Checkbox } from 'controls/Checkbox';
+import { theme } from 'controls/theme';
+
+import { ThemeProvider } from '@mui/material';
 
 export default {
   component: Popup,
@@ -20,27 +26,16 @@ export default {
     children: {
       description: 'ポップアップ内のtitle配下に表示するエレメントの配列',
     },
-    buttons: {
-      description:
-        'ポップアップのフッター部分に表示するボタン。nameはボタンの表示名、onClickはボタン押下時のイベント',
+    bottom: {
+      description: 'Popup内の右下にボタンを配置する場合に指定',
     },
   },
 } as ComponentMeta<typeof Popup>;
-
-const closeModalHandle = () => {
-  console.log('ダイアログを閉じたいです。');
-};
-
-const modalButtons = [
-  { name: '同意します。', onClick: closeModalHandle },
-  { name: '同意しません。', onClick: closeModalHandle },
-];
 
 export const Index: ComponentStoryObj<typeof Popup> = {
   args: {
     open: true,
     children: ['タイトル1中身', 'タイトル2中身'],
-    buttons: modalButtons,
   },
 };
 
@@ -57,29 +52,62 @@ export const Example = () => {
     setIsOpen(false);
   };
 
-  const buttons = [
-    { name: '同意します。', onClick: handleClosePopupClick },
-    { name: '同意しません。', onClick: handleClosePopupClick },
-  ];
+  interface SampleInput {
+    cancelFlag1: boolean;
+    cancelFlag2: boolean;
+  }
+  const isReadOnly = useState<boolean>(false);
+  const methods = useForm<SampleInput>({
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
+    defaultValues: {
+      cancelFlag1: false,
+      cancelFlag2: true,
+    },
+    context: isReadOnly,
+  });
 
   return (
-    <>
-      <Button onClick={handleOpenPopupClick}>ポップアップを開く</Button>
-      <Popup open={isOpen} buttons={buttons}>
-        <StackSection titles={titles} isError>
-          <Stack>
-            <div>・会計処理日はオープン期間内を設定してください</div>
-            <div>・会計処理日はオープン期間内を設定してください</div>
-          </Stack>
-        </StackSection>
-        <StackSection titles={titles} isWarning>
-          <Box>Stack1</Box>
-        </StackSection>
-        <StackSection titles={titles}>
-          <Box>Stack1</Box>
-          <Box>Stack2</Box>
-        </StackSection>
-      </Popup>
-    </>
+    <ThemeProvider theme={theme}>
+      <FormProvider {...methods}>
+        <Button onClick={handleOpenPopupClick}>ポップアップを開く</Button>
+        <Popup open={isOpen}>
+          <Popup main>
+            <StackSection titles={titles} isError>
+              <Stack>
+                <div>・会計処理日はオープン期間内を設定してください</div>
+                <div>・会計処理日はオープン期間内を設定してください</div>
+              </Stack>
+            </StackSection>
+            <StackSection titles={titles} isWarning>
+              <Stack>
+                <Checkbox
+                  name='cancelFlag1'
+                  label='ワーニングメッセージ１：１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０１２３４５６７８９０'
+                  helperText='ワーニングメッセージ'
+                />
+                <Checkbox
+                  name='cancelFlag2'
+                  label='ワーニングメッセージ２：ワーニング２'
+                />
+              </Stack>
+            </StackSection>
+            <StackSection titles={titles}>
+              <Stack>
+                <div>・会計処理日はオープン期間内を設定してください</div>
+                <div>・会計処理日はオープン期間内を設定してください</div>
+              </Stack>
+              <Box>Stack2</Box>
+            </StackSection>
+          </Popup>
+          <Popup bottom>
+            <CancelButton onClick={handleClosePopupClick}>
+              キャンセル
+            </CancelButton>
+            <ConfirmButton onClick={handleOpenPopupClick}>確定</ConfirmButton>
+          </Popup>
+        </Popup>
+      </FormProvider>
+    </ThemeProvider>
   );
 };
