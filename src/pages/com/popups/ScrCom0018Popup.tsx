@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -21,16 +22,14 @@ import {
   ScrCom0018GetServiceListResponse,
 } from 'apis/com/ScrCom0018Api';
 import {
-  ScrCom9999GetCodeManagementMasterListbox,
-  ScrCom9999GetCodeManagementMasterListboxRequest,
-  ScrCom9999GetCodeManagementMasterListboxResponse,
+  ScrCom9999GetCodeManagementMaster,
+  ScrCom9999GetCodeManagementMasterRequest,
+  ScrCom9999GetCodeManagementMasterResponse,
 } from 'apis/com/ScrCom9999Api';
 
 import { useForm } from 'hooks/useForm';
 
-import { AppContext } from 'providers/AppContextProvider';
-
-import yup from 'utils/validation/ValidationDefinition';
+import { AuthContext } from 'providers/AuthProvider';
 
 /**
  * 検索結果行データモデル
@@ -39,9 +38,9 @@ interface ServiceInfoModel {
   // DataGrid内id
   id: string;
   // サービスID
-  serviceId?: string;
+  serviceId: string;
   // サービス名
-  serviceName?: string;
+  serviceName: string;
   // 変更予約
   changeReservation: string;
   // 対象サービス区分
@@ -69,9 +68,9 @@ const selectValuesInitialValues: SelectValuesModel = {
  */
 export interface SelectServiceInfoModel {
   // サービスID
-  serviceId?: string;
+  serviceId: string;
   // サービス名
-  serviceName?: string;
+  serviceName: string;
   // 対象サービス区分
   targetedServiceKindName: string;
 }
@@ -116,7 +115,7 @@ const convertToServiceModel = (
  * コード管理マスタリストボックス情報取得APIレスポンスからへの変換
  */
 const CodeManagementSelectValuesModel = (
-  response: ScrCom9999GetCodeManagementMasterListboxResponse
+  response: ScrCom9999GetCodeManagementMasterResponse
 ): SelectValue[] => {
   return response.searchGetCodeManagementMasterListbox.map((x) => {
     return {
@@ -130,8 +129,8 @@ const CodeManagementSelectValuesModel = (
  * サービス検索スキーマ
  */
 const serviceSchama = {
-  seviceId: yup.string().label('サービスID').max(6).halfWidthOnly(),
-  serviceName: yup.string().label('サービス名').max(30).fullAndHalfWidth(),
+  seviceId: yup.string().label('サービスID').max(6).half(),
+  serviceName: yup.string().label('サービス名').max(30),
 };
 
 /**
@@ -161,8 +160,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
 
   // user
-  const { appContext } = useContext(AppContext);
-  const businessDate = new Date(); // TODO: 業務日付実装待ち
+  const { user } = useContext(AuthContext);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -193,7 +191,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
   // サービス検索ポップアップ表示時の処理
   useEffect(() => {
     // 初期表示
-    const initialize = async (businessDate: Date) => {
+    const initialize = async (businessDate: string) => {
       // API-COM-0018-0001: サービス一覧取得
       const serviceRequest: ScrCom0018GetServiceListRequest = {
         // 業務日付
@@ -203,13 +201,13 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
       const serviceResult = convertToServiceModel(serviceResponse);
 
       // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const staffDepartmentRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // 担当部門
-          codeId: 'CDE-COM-0001',
-        };
-      const staffDepartmentResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(staffDepartmentRequest);
+      const staffDepartmentRequest: ScrCom9999GetCodeManagementMasterRequest = {
+        // 担当部門
+        codeId: 'CDE-COM-0001',
+      };
+      const staffDepartmentResponse = await ScrCom9999GetCodeManagementMaster(
+        staffDepartmentRequest
+      );
 
       // プルダウンにデータを設定
       setSelectValues({
@@ -222,7 +220,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
       setServiceResult(serviceResult);
     };
 
-    initialize(businessDate);
+    initialize(user.taskDate);
   }, [isOpen]);
 
   // イベントハンドル：検索
@@ -245,7 +243,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
           : getValues('useFlag') === 1
           ? false
           : undefined,
-      businessDate: businessDate, // TODO
+      businessDate: user.taskDate,
     };
     const serviceResponse = await getServiceList(serviceRequest);
     const serviceResult = convertToServiceModel(serviceResponse);
@@ -268,7 +266,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
     const selectServiceList: SelectServiceInfoModel[] = [];
     rowSelectionModel.forEach((d) => {
       serviceResult.forEach((f) => {
-        if (f.serviceId?.includes(d)) {
+        if (f.serviceId.includes(d)) {
           selectServiceList.push({
             serviceId: f.serviceId,
             serviceName: f.serviceName,

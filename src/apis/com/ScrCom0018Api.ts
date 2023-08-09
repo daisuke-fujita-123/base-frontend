@@ -3,7 +3,7 @@ import { comApiClient } from 'providers/ApiClient';
 // API-COM-0018-0001: サービス一覧取得API リクエスト
 export interface ScrCom0018GetServiceListRequest {
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
   // サービスID
   serviceId?: string;
   // サービス名
@@ -36,7 +36,7 @@ export const getServiceList = async (
   req: ScrCom0018GetServiceListRequest
 ): Promise<ScrCom0018GetServiceListResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0018/get-service-list',
+    '/com/scr-com-0018/get-service-list',
     req
   );
   return response.data;
