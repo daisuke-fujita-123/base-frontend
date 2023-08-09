@@ -30,8 +30,6 @@ import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
 
-import { SCREEN_ID } from 'definitions/screenId';
-
 /**
  * 登録内容申請ポップアップデータモデル
  */
@@ -134,6 +132,12 @@ const validationSchema = {
 };
 
 /**
+ * 画面ID 定数
+ */
+const SCR_COM_0032 = 'SCR-COM-0032';
+const SCR_COM_0034 = 'SCR-COM-0034';
+
+/**
  * 登録内容申請ポップアップ
  */
 const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
@@ -166,8 +170,7 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   // 登録内容申請ポップアップキャンセルボタン押下時の処理
   const handleCancel = () => {
     // 画面ID => 登録内容確認ポップアップからの遷移
-    // TODO: SCREEN_ID 定義ファイルで記載する方法 要確認
-    if (data.screenId === SCREEN_ID[0].screenId) {
+    if (data.screenId === SCR_COM_0032) {
       // 取引会計管理かそれ以外かで判定
       if (isTra) {
         const traMessege = Format(getMessage('MSG-FR-INF-00007'), [
@@ -182,7 +185,7 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
       }
       // 画面ID => 一括登録確認画面からの遷移
       // TODO: SCREEN_ID 定義ファイルで記載する方法 要確認
-    } else if (data.screenId === SCREEN_ID[1].screenId) {
+    } else if (data.screenId === SCR_COM_0034) {
       const bulkRegistrationMessege = Format(getMessage('MSG-FR-INF-00009'), [
         'ダイアログ4',
       ]);
