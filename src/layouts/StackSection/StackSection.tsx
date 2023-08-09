@@ -5,7 +5,6 @@ import { PopSection } from 'layouts/Section';
 interface TitlesProps {
   name: string;
   decoration?: React.ReactNode | React.ReactNode[];
-  open?: boolean;
 }
 interface StackSectionProps {
   children: ReactNode[] | ReactNode;
@@ -24,7 +23,6 @@ export const StackSection = (props: StackSectionProps) => {
             key={index}
             name={titles[index].name}
             decoration={titles[index].decoration}
-            open={titles[index].open}
             isWarning={isWarning}
             isError={isError}
           >
@@ -34,7 +32,7 @@ export const StackSection = (props: StackSectionProps) => {
       ) : (
         <PopSection
           name={titles[0].name}
-          decoration={titles[0].open}
+          decoration={titles[0].decoration}
           isWarning={isWarning}
           isError={isError}
         >

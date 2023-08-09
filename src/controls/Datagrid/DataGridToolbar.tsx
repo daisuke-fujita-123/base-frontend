@@ -168,6 +168,7 @@ const GridPagination = () => {
  */
 interface GridToolbarProps {
   pagination?: boolean;
+  validationMessages?: string[];
   showHeaderRow?: boolean;
   headerColumns?: any[];
   headerRow?: GridValidRowModel;
@@ -181,6 +182,7 @@ interface GridToolbarProps {
 export const GridToolbar = (props: GridToolbarProps) => {
   const {
     pagination = false,
+    validationMessages,
     showHeaderRow = false,
     headerColumns = [],
     headerRow = undefined,
@@ -196,6 +198,9 @@ export const GridToolbar = (props: GridToolbarProps) => {
   return (
     <>
       {pagination && <GridPagination />}
+      {validationMessages?.map((x, i) => (
+        <div key={i}>{x}</div>
+      ))}
       {showHeaderRow && (
         <StyledDataGrid
           columns={headerColumns}
