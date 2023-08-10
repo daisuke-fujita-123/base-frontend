@@ -287,8 +287,9 @@ const ScrCom0027Page = () => {
   // route
   const { screenPermissionId } = useParams();
   const [searchParams] = useSearchParams();
+  const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
-  // user情報(businessDateも併せて取得予定)
+  // user情報
   const { user } = useContext(AuthContext);
   // 編集権限_disable設定
   const setDisableFlg = user.editPossibleScreenIdList.filter((x) => {
@@ -444,7 +445,7 @@ const ScrCom0027Page = () => {
     };
 
     // 初期表示処理(履歴表示)
-    const initializeHistory = async (changeHistoryNumber: string) => {
+    const historyInfoInitialize = async (changeHistoryNumber: string) => {
       // 変更履歴情報取得API
       const getHistoryInfoRequest = {
         changeHistoryNumber: changeHistoryNumber,
@@ -477,6 +478,11 @@ const ScrCom0027Page = () => {
       setScreenResult(newScreenResult);
     };
 
+    // 履歴表示の初期化処理
+    if (applicationId !== null) {
+      historyInfoInitialize(applicationId);
+    }
+
     // 新規追加の初期化処理
     if (screenPermissionId === undefined || screenPermissionId === 'new') {
       initializeNew();
@@ -502,13 +508,14 @@ const ScrCom0027Page = () => {
       initializeOrg(screenPermissionId);
       return;
     }
-
-    // 履歴表示の初期化処理
-    const changeHistoryNumber = searchParams.get('change-history-number');
-    if (changeHistoryNumber !== undefined && changeHistoryNumber !== null) {
-      initializeHistory(changeHistoryNumber);
-    }
-  }, [screenPermissionId, searchParams, setValue, reset, disableFlg]);
+  }, [
+    screenPermissionId,
+    searchParams,
+    setValue,
+    reset,
+    applicationId,
+    disableFlg,
+  ]);
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
