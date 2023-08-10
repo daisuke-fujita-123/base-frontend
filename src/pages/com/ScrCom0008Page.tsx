@@ -3,6 +3,12 @@ import { FormProvider } from 'react-hook-form';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
+
+import {
+  ScrDoc9999CreateReportImageDoc,
+  ScrDoc9999CreateReportImageDocRequest,
+} from 'pages/doc/ScrDoc9999Api';
 
 import { Box, CenterBox, MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -29,22 +35,24 @@ import {
   ScrCom0008RegistUpdateReportCommentRequest,
 } from 'apis/com/ScrCom0008Api';
 import {
-  changeExpectDateInfo,
+  ChangeExpectDateInfo,
   ScrCom9999GetChangeDate,
   ScrCom9999GetChangeDateRequest,
   ScrCom9999GetHistoryInfo,
   ScrCom9999GetHistoryInfoRequest,
 } from 'apis/com/ScrCom9999Api';
+import {
+  ScrTra9999CreateReportImageTra,
+  ScrTra9999CreateReportImageTraRequest,
+} from 'apis/tra/ScrTra9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
-import yup from 'utils/ValidationDefinition';
 
-import { SCREEN_ID } from 'definitions/screenId';
 import ScrCom0032Popup, {
   registrationChangeList,
   ScrCom0032PopupModel,
@@ -110,6 +118,11 @@ const selectValuesInitialValues: SelectValuesModel = {
 };
 
 /**
+ * 画面ID 定数
+ */
+const SCR_COM_0008 = 'SCR-COM-0008';
+
+/**
  * SCR-COM-0008 帳票コメント画面
  */
 const ScrCom0008Page = () => {
@@ -117,7 +130,10 @@ const ScrCom0008Page = () => {
   const isReadOnly = useState<boolean>(false);
 
   // router
-  const { reportId } = useParams();
+  const { reportIdFromUseParam } = useParams();
+  const reportId: string =
+    reportIdFromUseParam !== undefined ? reportIdFromUseParam : '';
+
   // パスパラメータから取得する変更履歴番号
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -146,9 +162,10 @@ const ScrCom0008Page = () => {
     useState<boolean>(false);
   // 可変バリデーション用の帳票コメント
   const [reportCommentLengthForVal, setReportCommentLengthForVal] =
-    useState<number>(250);
+    useState<number>(70);
+
   // user情報
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   /**
    * バリデーションスキーマをAPIにて取得した"コメント1行最大文字数"に応じて動的に設定
@@ -157,30 +174,25 @@ const ScrCom0008Page = () => {
     reportComment1: yup
       .string()
       .label('帳票コメント1')
-      .max(reportCommentLengthForVal)
-      .fullAndHalfWidth(),
+      .max(reportCommentLengthForVal),
     reportComment2: yup
       .string()
       .label('帳票コメント2')
-      .max(reportCommentLengthForVal)
-      .fullAndHalfWidth(),
+      .max(reportCommentLengthForVal),
     reportComment3: yup
       .string()
       .label('帳票コメント3')
-      .max(reportCommentLengthForVal)
-      .fullAndHalfWidth(),
+      .max(reportCommentLengthForVal),
     reportComment4: yup
       .string()
       .label('帳票コメント4')
-      .max(reportCommentLengthForVal)
-      .fullAndHalfWidth(),
+      .max(reportCommentLengthForVal),
   };
 
   // form
   const methods = useForm<CorporationBasicModel>({
     defaultValues: initialValues,
     resolver: yupResolver(yup.object(validationSchema)),
-    // context: isReadOnly,
   });
   const {
     formState: { dirtyFields, errors },
@@ -210,11 +222,10 @@ const ScrCom0008Page = () => {
 
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
-        // TODO: 業務日付取得方法実装後に変更
-        businessDate: '',
-        screenId: SCREEN_ID[0].screenId,
+        screenId: SCR_COM_0008,
         tabId: '',
-        getKeyValue: '',
+        masterId: reportId,
+        businessDate: user.taskDate,
       };
       const getChangeDateResponse = await ScrCom9999GetChangeDate(
         getChangeDateRequest
@@ -283,7 +294,7 @@ const ScrCom0008Page = () => {
   const handleSwichDisplay = async () => {
     if (!reportId) return;
 
-    const changeHistoryNumber = searchParams.get('change-history-number');
+    const changeHistoryNumber: any = searchParams.get('change-history-number');
 
     // SCR-COM-9999-0025: 変更履歴情報取得API
     const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
@@ -322,7 +333,7 @@ const ScrCom0008Page = () => {
   /**
    *  確定ボタンクリック時（反映予定日整合性チェック後）のイベントハンドラ
    */
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     setChangeHistoryDateCheckisOpen(false);
 
     // 登録更新の結果を登録確認ポップアップへ渡す
@@ -332,28 +343,8 @@ const ScrCom0008Page = () => {
       warningList: [],
       // 階層が違うため変換のメソッドにて形式を変換して設定
       registrationChangeList: convertToRegistrationChangeList(dirtyFields),
-      changeExpectDate: '',
+      changeExpectDate: getValues('changeHistoryNumber'),
     });
-
-    // SCR-COM-0008-0007: 帳票コメント情報登録更新API
-    const applyRegistrationCommissionInfoRequest: ScrCom0008RegistUpdateReportCommentRequest =
-      {
-        /** 帳票ID */
-        reportId: '',
-        /** 帳票コメント */
-        reportComment: '',
-        /** 申請従業員ID */
-        applicationEmployeeId: '',
-        /** 登録変更メモ */
-        registrationChangeMemo: '',
-        /** 変更予定日 */
-        changeExpectDate: '',
-        /** 画面ID */
-        screenId: SCREEN_ID[0].screenId,
-      };
-    await ScrCom0008RegistUpdateReportComment(
-      applyRegistrationCommissionInfoRequest
-    );
   };
 
   /**
@@ -378,8 +369,8 @@ const ScrCom0008Page = () => {
 
     // 変更リストとして値を設定して返却
     registrationChangeList.push({
-      screenId: SCREEN_ID[0].screenId,
-      screenName: SCREEN_ID[0].screenName,
+      screenId: SCR_COM_0008,
+      screenName: '帳票コメント',
       tabId: 0,
       tabName: '',
       sectionList: [
@@ -396,7 +387,7 @@ const ScrCom0008Page = () => {
    *  API-COM-9999-0026: 変更予定日取得API レスポンスから SelectValueモデルへの変換
    */
   const convertToChangeExpectDateSelectValueModel = (
-    changeExpectDateInfo: changeExpectDateInfo[]
+    changeExpectDateInfo: ChangeExpectDateInfo[]
   ): SelectValue[] => {
     return changeExpectDateInfo.map((x) => {
       return {
@@ -409,34 +400,36 @@ const ScrCom0008Page = () => {
   /**
    * TODO: プレビューボタンクリック時のイベントハンドラ
    */
-  const handlePreviewConfirm = () => {
+  const handlePreviewConfirm = async () => {
     // システム種別で呼び出すAPIのURIをTRAとDOCで分岐
     if (getSystemKind === 'TRA') {
       // API-TRA-9999-0002: イメージ帳票作成API（取引会計管理）
-      // const createReportImageTraRequest: ScrTra9999CreateReportImageTraRequest = {
-      //   functionId: '',
-      //   reportId: '',
-      //   reportTitle: '',
-      //   operatorId: '',
-      //   operatorName: '',
-      //   comment: '',
-      // };
-      // const formStorageFilePath = await ScrTra9999CreateReportImageTra(
-      //   createReportImageTraRequest
-      // );
+      const createReportImageTraRequest: ScrTra9999CreateReportImageTraRequest =
+        {
+          functionId: SCR_COM_0008,
+          reportId: reportId,
+          reportTitle: '',
+          operatorId: user.employeeId,
+          operatorName: user.organizationName,
+          comment: '',
+        };
+      const formStorageFilePath = await ScrTra9999CreateReportImageTra(
+        createReportImageTraRequest
+      );
     } else if (getSystemKind === 'DOC') {
-      // // API-TRA-9999-0001: イメージ帳票作成API（書類管理）
-      // const createReportImageDocRequest: ScrDoc9999CreateReportImageDocRequest = {
-      //   functionId: '',
-      //   reportId: '',
-      //   reportTitle: '',
-      //   operatorId: '',
-      //   operatorName: '',
-      //   comment: '',
-      // };
-      // const formStorageFilePath = await ScrDoc9999CreateReportImageDoc(
-      //   createReportImageDocRequest
-      // );
+      // API-TRA-9999-0001: イメージ帳票作成API（書類管理）
+      const createReportImageDocRequest: ScrDoc9999CreateReportImageDocRequest =
+        {
+          functionId: SCR_COM_0008,
+          reportId: reportId,
+          reportTitle: '',
+          operatorId: user.employeeId,
+          operatorName: user.organizationName,
+          comment: '',
+        };
+      const formStorageFilePath = await ScrDoc9999CreateReportImageDoc(
+        createReportImageDocRequest
+      );
     }
     // TODO: 取得した帳票格納ファイルPATHを別タブで開くことで、イメージ帳票PDFを表示する。
     // (formStorageFilePath)
@@ -459,9 +452,26 @@ const ScrCom0008Page = () => {
   /**
    * 登録内容確認ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handleRegistConfirm = () => {
+  const handleRegistConfirm = (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
     setIsChangeHistoryBtn(false);
+    // SCR-COM-0008-0007: 帳票コメント情報登録更新API
+    const applyRegistrationCommissionInfoRequest: ScrCom0008RegistUpdateReportCommentRequest =
+      {
+        /** 帳票ID */
+        reportId: reportId,
+        /** 帳票コメント */
+        reportComment: 'TODO: つなげて1行にする',
+        /** 申請従業員ID */
+        applicationEmployeeId: user.employeeId,
+        /** 登録変更メモ */
+        registrationChangeMemo: registrationChangeMemo,
+        /** 変更予定日 */
+        changeExpectDate: getValues('changeHistoryNumber'),
+        /** 画面ID */
+        screenId: SCR_COM_0008,
+      };
+    ScrCom0008RegistUpdateReportComment(applyRegistrationCommissionInfoRequest);
   };
 
   /**
@@ -599,6 +609,7 @@ const ScrCom0008Page = () => {
       <ScrCom0032Popup
         isOpen={isOpenPopup}
         data={scrCom0032PopupData}
+        // 本機能ではこちらを使用
         handleRegistConfirm={handleRegistConfirm}
         handleApprovalConfirm={handleApprovalConfirm}
         handleCancel={handlePopupCancel}

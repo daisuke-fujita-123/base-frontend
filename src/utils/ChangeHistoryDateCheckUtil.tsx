@@ -126,7 +126,7 @@ export const ChangeHistoryDateCheckUtil = (
       ) : (
         <Dialog
           open={handleDialog}
-          title={'反映予定が既にありますかが、よろしいでしょうか？'}
+          title={'反映予定が既にありますが、よろしいでしょうか？'}
           buttons={[
             {
               name: 'YES',
