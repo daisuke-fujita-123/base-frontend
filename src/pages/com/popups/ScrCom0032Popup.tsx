@@ -21,7 +21,7 @@ import { Typography } from 'controls/Typography';
 import {
   ScrCom0032GetApproval,
   ScrCom0032GetApprovalRequest,
-} from 'apis/com/SrcCom0032Api';
+} from 'apis/com/ScrCom0032Api';
 
 /**
  * 登録内容確認ポップアップデータモデル
@@ -34,7 +34,7 @@ export interface ScrCom0032PopupModel {
   // 登録・変更内容リスト
   registrationChangeList: registrationChangeList[];
   // 変更予定日
-  changeExpectDate: string;
+  changeExpectDate: string | null;
 }
 
 /**
@@ -120,7 +120,7 @@ interface ScrCom0032PopupProps {
   // キャンセルボタン押下時に渡すパラメータ（なし）
   handleCancel: () => void;
   // 確定ボタン押下時に渡すパラメータ（なし）
-  handleRegistConfirm: () => void;
+  handleRegistConfirm: (registrationChangeMemo: string) => void;
   // 承認申請ボタン押下時に呼び出し元へ渡すパラメータ（登録内容メモ）
   handleApprovalConfirm: (registrationChangeMemo: string) => void;
 }
@@ -137,7 +137,7 @@ const validationSchema = {
  */
 const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   // props
-  const { isOpen, handleCancel, handleRegistConfirm, data } = props;
+  const { isOpen, handleCancel, data } = props;
 
   // column
   const columns: GridColDef[] = [
@@ -343,9 +343,17 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     return () => subscription.unsubscribe();
   }, [setValue, watch]);
 
-  // 登録内容確認ポップアップ確定ボタン押下時の処理
+  // 登録内容確認ポップアップ承認申請ボタン押下時の処理
   const handleApprovalConfirm = () => {
     props.handleApprovalConfirm(
+      // 登録変更メモ
+      getValues('registrationChangeMemo')
+    );
+  };
+
+  // 登録内容確認ポップアップ確定ボタン押下時の処理
+  const handleRegistConfirm = () => {
+    props.handleRegistConfirm(
       // 登録変更メモ
       getValues('registrationChangeMemo')
     );
