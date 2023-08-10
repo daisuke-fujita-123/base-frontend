@@ -54,7 +54,7 @@ export default {
 interface SampleInput {
   sampleName: string | number;
   sampleName1: string[] | number[];
-  sampleName2: string[];
+  sampleName2: string[] | number[];
 }
 // TDOO クラッシュ原因の特定
 // const Template: Story<SelectProps<SampleInput>> = (args) => {
@@ -91,7 +91,7 @@ export const Example = () => {
     defaultValues: {
       sampleName: 0,
       sampleName1: [0],
-      sampleName2: ['0'],
+      sampleName2: [0],
     },
     context: isReadOnly,
   });
@@ -103,17 +103,17 @@ export const Example = () => {
   ];
 
   const sampleAutoComplete: SelectValue[] = [
-    { displayValue: '0', value: '0' },
-    { displayValue: '1', value: '1' },
-    { displayValue: '2', value: '2' },
-    { displayValue: '3', value: '3' },
-    { displayValue: '4', value: '4' },
-    { displayValue: '5', value: '5' },
-    { displayValue: '6', value: '6' },
-    { displayValue: '7', value: '7' },
-    { displayValue: '8', value: '8' },
-    { displayValue: '9', value: '9' },
-    { displayValue: '10', value: '10' },
+    { displayValue: '00', value: 0 },
+    { displayValue: '01', value: 1 },
+    { displayValue: '02', value: 2 },
+    { displayValue: '03', value: 3 },
+    { displayValue: '04', value: 4 },
+    { displayValue: '05', value: 5 },
+    { displayValue: '06', value: 6 },
+    { displayValue: '07', value: 7 },
+    { displayValue: '08', value: 8 },
+    { displayValue: '09', value: 9 },
+    { displayValue: '10', value: 10 },
   ];
 
   return (
