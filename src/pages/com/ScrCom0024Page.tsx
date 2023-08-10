@@ -9,7 +9,6 @@ import ScrCom0032Popup, {
   ScrCom0032PopupModel,
 } from 'pages/com/popups/ScrCom0032Popup';
 
-import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 import { ColStack, RowStack, Stack } from 'layouts/Stack';
@@ -950,30 +949,29 @@ const ScrCom0024Page = () => {
                         : true
                     }
                   />
-                  <MarginBox mb={5}>
-                    <TextField
-                      label='会場名'
-                      name='placeName'
-                      size='m'
-                      // 新規登録時・または編集権限ありの場合 活性
-                      required={
-                        placeCode === undefined ||
-                        placeCode === 'new' ||
-                        user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                          ? true
-                          : false
-                      }
-                      disabled={
-                        !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                          ? true
-                          : false
-                      }
-                    />
-                  </MarginBox>
+                  <TextField
+                    label='会場名'
+                    name='placeName'
+                    size='m'
+                    // 新規登録時・または編集権限ありの場合 活性
+                    required={
+                      placeCode === undefined ||
+                      placeCode === 'new' ||
+                      user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
                   <Radio
                     label='おまとめ会場'
                     name='omatomePlaceFlag'
                     required
+                    row={true}
                     radioValues={[
                       {
                         value: 'target',
@@ -997,24 +995,23 @@ const ScrCom0024Page = () => {
                       },
                     ]}
                   />
-                  <MarginBox mt={4} mb={5}>
-                    <TextField
-                      label='計算書表示会場名'
-                      name='statementDisplayPlaceName'
-                      size='m'
-                      // おまとめ会場が対象の場合必須
-                      required={omatomePlaceFlag ? true : false}
-                      // 編集権限なしの場合 非活性
-                      disabled={
-                        !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                          ? true
-                          : false
-                      }
-                    />
-                  </MarginBox>
+                  <TextField
+                    label='計算書表示会場名'
+                    name='statementDisplayPlaceName'
+                    size='m'
+                    // おまとめ会場が対象の場合必須
+                    required={omatomePlaceFlag ? true : false}
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
                   <Radio
                     label='利用フラグ'
                     name='useFlag'
+                    row={true}
                     required
                     radioValues={[
                       {
@@ -1039,19 +1036,17 @@ const ScrCom0024Page = () => {
                       },
                     ]}
                   />
-                  <MarginBox mt={4}>
-                    <DatePicker
-                      label='提供開始日'
-                      name='partnerStartDate'
-                      required
-                      // 編集権限なしの場合 非活性
-                      disabled={
-                        !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                          ? true
-                          : false
-                      }
-                    />
-                  </MarginBox>
+                  <DatePicker
+                    label='提供開始日'
+                    name='partnerStartDate'
+                    required
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
                   <Select
                     label='開催曜日'
                     name='sessionWeekKind'
@@ -1141,6 +1136,7 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='ホンダグループ'
                     name='hondaGroupFlag'
+                    row={true}
                     // おまとめ会場が対象の場合必須
                     required={omatomePlaceFlag ? true : false}
                     radioValues={[
@@ -1160,20 +1156,17 @@ const ScrCom0024Page = () => {
                       },
                     ]}
                   />
-                  <MarginBox mt={9}>
-                    <TextField
-                      label='保証金'
-                      name='guaranteeDeposit'
-                      // 編集権限なしの場合、またはおまとめ会場が対象外の場合 非活性
-                      disabled={
-                        !user.editPossibleScreenIdList.includes(
-                          'SCR-COM-0024'
-                        ) || omatomePlaceFlag === false
-                          ? true
-                          : false
-                      }
-                    />
-                  </MarginBox>
+                  <TextField
+                    label='保証金'
+                    name='guaranteeDeposit'
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
+                  />
                 </ColStack>
               </RowStack>
             </Section>
@@ -1185,6 +1178,7 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='書類発送指示'
                     name='instructionsForSendingDocuments'
+                    row={true}
                     radioValues={[
                       {
                         value: 'sendingDocumentsTarget',
@@ -1212,6 +1206,8 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='指示対象'
                     name='referent'
+                    // TODO: ラジオボタンの項目が縦にならない
+                    row={true}
                     // 書類発送指示が対象の場合必須
                     required={
                       documentShippingInstructionFlag === true ? true : false
@@ -1303,6 +1299,7 @@ const ScrCom0024Page = () => {
                   <TextField
                     name='paymentDueDate'
                     label='出金期日'
+                    unit={'日'}
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
                       !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
@@ -1314,6 +1311,7 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='出金設定'
                     name='paymentConfig'
+                    row={true}
                     radioValues={[
                       {
                         value: 'bulk',
@@ -1339,8 +1337,6 @@ const ScrCom0024Page = () => {
                       },
                     ]}
                   />
-                  {/* TODO: テキストボックスの後ろに[日]の文字列を配置する */}
-                  {/* <Typography variant='body2'>{'日'}</Typography> */}
                 </ColStack>
               </RowStack>
             </Section>
@@ -1381,6 +1377,7 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='支払通知'
                     name='paymentNotice'
+                    row={true}
                     radioValues={[
                       {
                         value: 'paymentNoticeTarget',
