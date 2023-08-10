@@ -537,7 +537,7 @@ export interface ScrCom9999GetChangeDateRequest {
   // マスタID
   masterId: string;
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
 }
 
 /** API-COM-9999-0026: 変更予定日取得API レスポンス */
@@ -551,11 +551,11 @@ export interface ChangeExpectDateInfo {
   // 変更履歴番号
   changeHistoryNumber: string;
   // 変更予定日
-  changeExpectDate: Date;
+  changeExpectDate: string;
 }
 
 /** API-COM-9999-0026: 変更予定日取得API */
-export const ScrCom9999GetChangeDatebox = async (
+export const ScrCom9999GetChangeDate = async (
   request: ScrCom9999GetChangeDateRequest
 ): Promise<ScrCom9999GetChangeDateResponse> => {
   const response = await comApiClient.post(
