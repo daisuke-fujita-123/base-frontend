@@ -11,9 +11,9 @@ export default {
 export const Index: ComponentStoryObj<typeof Table> = {
   args: {
     columns: [
-      { headerName: 'name', width: 70 },
-      { headerName: 'calories', width: 130 },
-      { headerName: 'fat', width: 50 },
+      { field: 'name', headerName: 'name', width: 70 },
+      { field: 'calories', headerName: 'calories', width: 130 },
+      { field: 'fat', headerName: 'fat', width: 50 },
     ],
     rows: [
       { name: 'Frozen yoghurt', calories: 'カロリー', fat: 300 },
@@ -27,9 +27,9 @@ export const Index: ComponentStoryObj<typeof Table> = {
 
 export const Example = () => {
   const columns: TableColDef[] = [
-    { headerName: 'name', width: 70 },
-    { headerName: 'calories', width: 130 },
-    { headerName: 'fat', width: 50 },
+    { field: 'name', headerName: 'name', width: 70 },
+    { field: 'calories', headerName: 'calories', width: 130 },
+    { field: 'fat', headerName: 'fat', width: 50 },
   ];
 
   const rows: TableRowModel[] = [

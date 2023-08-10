@@ -134,7 +134,7 @@ export const theme = createTheme({
           height: 30,
           padding: 0,
           borderColor: '#bbbbbbb',
-          minWidth: 225,
+          minWidth: 180,
           maxWidth: 1550,
           background: '#ffffff',
         },
