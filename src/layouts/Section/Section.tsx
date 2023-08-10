@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
 import {
+  Box,
   ContentsBox,
   ContentsOutsideBox,
   ErrorBox,
@@ -37,6 +38,10 @@ interface SectionProps {
   isWarning?: boolean;
   isError?: boolean;
   openable?: boolean;
+  width?: number;
+}
+export interface SectionClose {
+  closeSection: () => void;
 }
 
 const StyledAccordion = styled(AccordionMui)({
@@ -44,36 +49,35 @@ const StyledAccordion = styled(AccordionMui)({
   width: 'calc( 100% + 2px )',
   margin: 0,
 });
-
-export const Section = (props: SectionProps) => {
+// eslint-disable-next-line react/display-name
+export const Section = forwardRef((props: SectionProps, ref) => {
   const {
     name,
     children,
     decoration,
-    open = true,
     isSearch = false,
     isTransparent = false,
     serchLabels,
     openable = true,
+    width,
   } = props;
 
-  const [expanded, setExpanded] = useState<boolean>(open);
+  const [expanded, setExpanded] = useState<boolean>(true);
 
   const onClick = () => {
     setExpanded(!expanded);
   };
 
-  useEffect(() => {
-    if (!open) setExpanded(false);
-  }, [open]);
+  useImperativeHandle(ref, () => ({
+    closeSection: () => setExpanded(false),
+  }));
 
   if (!name) {
     return <ContentsBox>{children}</ContentsBox>;
   }
-
   const flexColSx = { display: 'flex', flexDirection: 'column' };
   return (
-    <>
+    <Box width={width}>
       <SubTitle onClick={onClick} openable={openable}>
         {name}
       </SubTitle>
@@ -90,22 +94,18 @@ export const Section = (props: SectionProps) => {
           </AccordionDetails>
         </StyledAccordion>
       </ContentsBox>
-    </>
+    </Box>
   );
-};
+});
 
 export const PopSection = (props: SectionProps) => {
-  const { name, children, open = true, isWarning, isError } = props;
+  const { name, children, isWarning, isError } = props;
 
-  const [expanded, setExpanded] = useState<boolean>(open);
+  const [expanded, setExpanded] = useState<boolean>(true);
 
   const onClick = () => {
     setExpanded(!expanded);
   };
-
-  useEffect(() => {
-    if (!open) setExpanded(false);
-  }, [open]);
 
   if (!name) {
     return <ContentsBox>{children}</ContentsBox>;

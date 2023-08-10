@@ -2,7 +2,7 @@ import React from 'react';
 
 import { theme } from 'controls/theme';
 
-import { styled, Typography as TypographyMui } from '@mui/material';
+import { Chip, styled, Typography as TypographyMui } from '@mui/material';
 
 const StyledRequiredLabel = styled('div')({
   background: theme.palette.error.main,
@@ -72,5 +72,10 @@ export const CaptionLabel = (props: LabelProps) => {
       <CaptionLabelText>{text}</CaptionLabelText>
     </StyledCaptionLabel>
   );
+};
+
+export const Wappen = (props: LabelProps) => {
+  const { text } = props;
+  return <Chip size='small' color='error' label={text}></Chip>;
 };
 
