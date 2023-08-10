@@ -59,6 +59,28 @@ interface CorporationBasicModel {
   reportComment3: string;
   // 帳票コメント4
   reportComment4: string;
+  // 帳票コメント5
+  reportComment5: string;
+  // 帳票コメント6
+  reportComment6: string;
+  // 帳票コメント7
+  reportComment7: string;
+  // 帳票コメント8
+  reportComment8: string;
+  // 帳票コメント9
+  reportComment9: string;
+  // 帳票コメント10
+  reportComment10: string;
+  // 帳票コメント11
+  reportComment11: string;
+  // 帳票コメント12
+  reportComment12: string;
+  // 帳票コメント13
+  reportComment13: string;
+  // 帳票コメント14
+  reportComment14: string;
+  // 帳票コメント15
+  reportComment15: string;
   // 変更履歴番号
   changeHistoryNumber: string | null;
   // 変更履歴番号+変更予定日
@@ -75,6 +97,17 @@ const initialValues: CorporationBasicModel = {
   reportComment2: '',
   reportComment3: '',
   reportComment4: '',
+  reportComment5: '',
+  reportComment6: '',
+  reportComment7: '',
+  reportComment8: '',
+  reportComment9: '',
+  reportComment10: '',
+  reportComment11: '',
+  reportComment12: '',
+  reportComment13: '',
+  reportComment14: '',
+  reportComment15: '',
   changeHistoryNumber: '',
   changeExpectedDate: '',
   memberChangeHistories: [],
@@ -431,6 +464,17 @@ const ScrCom0008Page = () => {
       reportComment2: '',
       reportComment3: '',
       reportComment4: '',
+      reportComment5: '',
+      reportComment6: '',
+      reportComment7: '',
+      reportComment8: '',
+      reportComment9: '',
+      reportComment10: '',
+      reportComment11: '',
+      reportComment12: '',
+      reportComment13: '',
+      reportComment14: '',
+      reportComment15: '',
       changeHistoryNumber: changeHistoryNumber,
       memberChangeHistories: [],
       changeExpectedDate: '',
@@ -503,6 +547,146 @@ const ScrCom0008Page = () => {
   const handleRegistConfirm = (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
     setIsChangeHistoryBtn(false);
+
+    // 動的に取得したコメント行数文のコメントを取得
+    const commentRowList: string[] = [];
+    if (getCommentRow >= 15) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+      commentRowList.push(getValues('reportComment10'));
+      commentRowList.push(getValues('reportComment11'));
+      commentRowList.push(getValues('reportComment12'));
+      commentRowList.push(getValues('reportComment13'));
+      commentRowList.push(getValues('reportComment14'));
+      commentRowList.push(getValues('reportComment15'));
+    } else if (getCommentRow === 14) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+      commentRowList.push(getValues('reportComment10'));
+      commentRowList.push(getValues('reportComment11'));
+      commentRowList.push(getValues('reportComment12'));
+      commentRowList.push(getValues('reportComment13'));
+      commentRowList.push(getValues('reportComment14'));
+    } else if (getCommentRow === 13) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+      commentRowList.push(getValues('reportComment10'));
+      commentRowList.push(getValues('reportComment11'));
+      commentRowList.push(getValues('reportComment12'));
+      commentRowList.push(getValues('reportComment13'));
+    } else if (getCommentRow === 12) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+      commentRowList.push(getValues('reportComment10'));
+      commentRowList.push(getValues('reportComment11'));
+      commentRowList.push(getValues('reportComment12'));
+    } else if (getCommentRow === 11) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+      commentRowList.push(getValues('reportComment10'));
+      commentRowList.push(getValues('reportComment11'));
+    } else if (getCommentRow === 10) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+      commentRowList.push(getValues('reportComment10'));
+    } else if (getCommentRow === 9) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+      commentRowList.push(getValues('reportComment9'));
+    } else if (getCommentRow === 8) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+      commentRowList.push(getValues('reportComment8'));
+    } else if (getCommentRow === 7) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+      commentRowList.push(getValues('reportComment7'));
+    } else if (getCommentRow === 6) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+      commentRowList.push(getValues('reportComment6'));
+    } else if (getCommentRow === 5) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+      commentRowList.push(getValues('reportComment5'));
+    } else if (getCommentRow === 4) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+      commentRowList.push(getValues('reportComment4'));
+    } else if (getCommentRow === 3) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+      commentRowList.push(getValues('reportComment3'));
+    } else if (getCommentRow === 2) {
+      commentRowList.push(getValues('reportComment1'));
+      commentRowList.push(getValues('reportComment2'));
+    } else if (getCommentRow === 1) {
+      commentRowList.push(getValues('reportComment1'));
+    }
+
     // SCR-COM-0008-0007: 帳票コメント情報登録更新API
     const applyRegistrationCommissionInfoRequest: ScrCom0008RegistUpdateReportCommentRequest =
       {
