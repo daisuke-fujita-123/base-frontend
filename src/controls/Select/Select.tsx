@@ -135,14 +135,18 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
             )}
           </StyledFormControl>
         ) : (
-          // TODO 挙動を要確認（SelectではなくTextFieldになっている）
           <Autocomplete
             multiple={multiple}
             disabled={disabled}
             limitTags={2}
             size='small'
-            options={selectValues.map((option) => option.displayValue)}
-            getOptionLabel={(option) => option}
+            options={selectValues}
+            getOptionLabel={(option) =>
+              typeof option === 'string' ? option : option.displayValue
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.value === value.value
+            }
             {...register(name)}
             onChange={(e, newValue) => {
               setValue(
@@ -155,7 +159,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
               value.map((option, index) => (
                 <Chip
                   {...getTagProps({ index })}
-                  label={option}
+                  label={option.displayValue}
                   size='small'
                   key={index}
                   style={{ maxHeight: 30, marginTop: -3, marginRight: 4 }}
