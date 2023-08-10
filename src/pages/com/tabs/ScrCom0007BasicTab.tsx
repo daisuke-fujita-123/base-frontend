@@ -16,33 +16,33 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'reportId',
     headerName: '帳票ID',
-    size: 'm',
+    size: 'l',
     cellType: 'link',
   },
   {
     field: 'reportName',
     headerName: '帳票名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'reportOutputFormatKind',
-    headerName: '帳票出力形式区分',
-    size: 'm',
+    headerName: '出力形式',
+    size: 'l',
   },
   {
     field: 'commentEditFlag',
-    headerName: 'コメント編集フラグ',
-    size: 'm',
+    headerName: 'コメント編集可否',
+    size: 'l',
   },
   {
     field: 'changeReservationFlag',
-    headerName: '変更予約フラグ',
-    size: 'm',
+    headerName: '変更予約',
+    size: 'l',
   },
   {
     field: 'outputSourceFunctionName',
-    headerName: '出力元機能名',
-    size: 'm',
+    headerName: '出力元機能',
+    size: 'l',
   },
 ];
 
@@ -114,6 +114,8 @@ const ScrCom0007BasicTab = () => {
             break;
         }
         // コメント編集フラグがtrue以外の場合は帳票IDセルはリンクではなくラベルにする
+        // TODO: コメント編集フラグがTrue=> "可"と表示
+        // TODO: コメント編集フラグがFalse=> 空白で表示
         return {
           id: href ? x.id : '',
           href: href,

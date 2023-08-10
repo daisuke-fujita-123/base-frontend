@@ -19,20 +19,6 @@ import {
 
 import { useNavigate } from 'hooks/useNavigate';
 
-// TODO: ./datasetが存在しない為要確認
-// import { CELL_TYPE_DATASET } from './dataset';
-
-/**
- * セルタイプ行データモデル
- */
-interface CellTypeRowModel {
-  id: number;
-  input: string;
-  select: string;
-  radio: string;
-  checkbox: boolean;
-  datepicker: string;
-}
 /**
  * 検索条件列定義
  */
@@ -40,38 +26,38 @@ const changeHistoryColumns: GridColDef[] = [
   {
     field: 'applicationId',
     headerName: '申請ID',
-    size: 'm',
+    size: 'l',
     cellType: 'link',
   },
   {
     field: 'applicationSourceScreen',
     headerName: '申請元画面',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'tabAllRegist',
     headerName: 'タブ名/一括登録',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'changeDate',
     headerName: '変更日',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'applicantIdName',
     headerName: '申請者ID/申請者名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'applicantDateTime',
     headerName: '申請日時',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'registUpdateMemoExistence',
     headerName: '登録・変更メモ',
-    size: 'm',
+    size: 'l',
     tooltip: true,
   },
 ];
@@ -172,8 +158,8 @@ const ScrCom0007ChangeHistoryTab = () => {
         tooltips: searchResult.map((x) => {
           return {
             id: x.applicationId,
-            value: 'あり',
             text: x.registUpdateMemo,
+            value: 'あり',
           };
         }),
       },
@@ -183,14 +169,15 @@ const ScrCom0007ChangeHistoryTab = () => {
   }, []);
 
   /**
-   * @param url 申請IDリンク押下時のイベントハンドラ
+   * 申請IDリンク押下時のイベントハンドラ
+   * @param url
    */
   const handleLinkClick = (url: string) => {
     navigate(url);
   };
 
   /**
-   * CSV出力アイコンクリック時のイベントハンドラ
+   * TODO: CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
     // exportCsv(cellTypeRows, 'filename.csv');
