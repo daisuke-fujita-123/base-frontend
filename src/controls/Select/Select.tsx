@@ -15,6 +15,8 @@ import { AddIconButton } from 'controls/Button';
 import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
+import Pulldown from 'icons/pulldown_arrow.png';
+
 import {
   Box,
   Chip,
@@ -71,6 +73,10 @@ export const StyledMenuItem = styled(MenuItem)({
   },
 });
 
+const PulldownIcon = () => {
+  return <img style={{ marginRight: 10 }} src={Pulldown}></img>;
+};
+
 export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
   const {
     label,
@@ -85,12 +91,12 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
     size = 's',
   } = props;
 
-  const { register, formState, control } = useFormContext();
+  const { register, formState, control, setValue } = useFormContext();
   const watchValue = useWatch({ name, control });
 
   // 複数選択された場合、先頭行の空白は削除する
   const omitBlankValue = (val: string[]) => {
-    return val.length > 1 ? val.filter((e) => e) : val;
+    return val.filter((e) => e !== '');
   };
   const isReadOnly = control?._options?.context[0];
   return (
@@ -100,7 +106,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
       required={required}
       size={size}
     >
-      <Box sx={{ minWidth: minWidth, height: 30 }}>
+      <Box sx={{ minWidth: minWidth, minHeight: 30 }}>
         {/* 選択肢が10個未満の場合が上段、選択肢が10個以上の場合が下段。10個以上の場合は、選択肢を検索することができる。 */}
         {selectValues.length < 10 ? (
           <StyledFormControl fullWidth error={!!formState.errors[name]}>
@@ -113,6 +119,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
               inputProps={{
                 readOnly: isReadOnly,
               }}
+              IconComponent={PulldownIcon}
             >
               {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
               {selectValues.map((option, index) => (
@@ -128,13 +135,37 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
             )}
           </StyledFormControl>
         ) : (
-          // TODO 挙動を要確認（SelectではなくTextFieldになっている）
           <Autocomplete
-            freeSolo
             multiple={multiple}
             disabled={disabled}
+            limitTags={2}
             size='small'
-            options={selectValues.map((option) => option.displayValue)}
+            options={selectValues}
+            getOptionLabel={(option) =>
+              typeof option === 'string' ? option : option.displayValue
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.value === value.value
+            }
+            {...register(name)}
+            onChange={(e, newValue) => {
+              setValue(
+                name,
+                newValue as FieldPathValue<FieldValues, FieldPath<FieldValues>>
+              );
+            }}
+            value={watchValue}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  {...getTagProps({ index })}
+                  label={option.displayValue}
+                  size='small'
+                  key={index}
+                  style={{ maxHeight: 30, marginTop: -3, marginRight: 4 }}
+                />
+              ))
+            }
             renderInput={(params) => (
               <StyledTextFiled
                 {...params}
@@ -146,19 +177,6 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
                 }
               />
             )}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  {...getTagProps({ index })}
-                  label={option}
-                  size='small'
-                  key={index}
-                  style={{ maxHeight: 30, marginTop: -4, marginRight: 4 }}
-                />
-              ))
-            }
-            {...register(name)}
-            value={multiple ? omitBlankValue(watchValue) : watchValue}
           />
         )}
       </Box>
@@ -189,6 +207,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
       FieldPath<FieldValues>
     >);
   };
+  if (!watchValue) return <></>;
   return (
     <InputLayout
       label={label}
@@ -201,7 +220,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
           {watchValue?.map((val: string, index: number) => {
             return (
               <Box key={index} mb={2}>
-                <Box sx={{ minWidth: minWidth, height: 30 }}>
+                <Box sx={{ minWidth: minWidth, minHeight: 30 }}>
                   <StyledFormControl fullWidth error={!!formState.errors[name]}>
                     <SelectMui
                       disabled={disabled}
@@ -222,6 +241,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
                       inputProps={{
                         readOnly: isReadOnly,
                       }}
+                      IconComponent={PulldownIcon}
                     >
                       {blankOption && <MenuItem value=''>{'　'}</MenuItem>}
                       {selectValues.map((option, index) => (

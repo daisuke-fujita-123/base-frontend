@@ -8,11 +8,12 @@ import {
 
 import { InputLayout } from 'layouts/InputLayout';
 
-import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import { Stack, styled } from '@mui/material';
+import Calendar from 'icons/button_calendar.png';
+
+import { IconButton, Stack, styled } from '@mui/material';
 import {
   DatePicker as DatePickerMui,
   LocalizationProvider,
@@ -31,15 +32,21 @@ export interface DatePickerProps<T extends FieldValues> {
   size?: 's' | 'm' | 'l' | 'xl';
 }
 
-const TextField = styled(StyledTextFiled)({
-  '& .MuiIconButton-root': {
-    ...theme.palette.calender,
-    borderRadius: 0,
-    width: 28,
-    height: 28,
-    marginRight: theme.spacing(-2.6),
-  },
+const StyledButton = styled(IconButton)({
+  ...theme.palette.calender,
+  borderRadius: 0,
+  width: 30,
+  height: 30,
+  marginRight: theme.spacing(-2),
 });
+
+const CalenderIcon = () => {
+  return (
+    <StyledButton>
+      <img src={Calendar}></img>
+    </StyledButton>
+  );
+};
 
 export const DatePicker = <T extends FieldValues>(
   props: DatePickerProps<T>
@@ -116,7 +123,35 @@ export const DatePicker = <T extends FieldValues>(
             value={new Date(field.value)}
             onChange={handleValueChange}
             // slots={{ textField: TextField }}
-            // slotProps={{ textField: { helperText: helperText } }}
+            slots={{
+              openPickerIcon: CalenderIcon,
+            }}
+            slotProps={{
+              layout: {
+                sx: {
+                  '& .MuiPickersCalendarHeader-labelContainer': {
+                    fontWeight: 'bold',
+                  },
+                  '& .MuiButtonBase-root.MuiPickersDay-root': {
+                    '&.Mui-selected': {
+                      border: '3px solid #f37246',
+                      backgroundColor: '#fde8d4',
+                      color: '#000000',
+                    },
+                  },
+                },
+              },
+              textField: {
+                helperText: helperText,
+                sx: {
+                  '& .MuiOutlinedInput-root': {
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#f37246',
+                    },
+                  },
+                },
+              },
+            }}
             // format='yyyy/mm/dd'
             readOnly={isReadOnly}
             disabled={disabled}

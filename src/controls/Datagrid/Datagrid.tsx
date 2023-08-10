@@ -1,33 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+import { ObjectSchema, ValidationError } from 'yup';
 
 import { InfoButton } from 'controls/Button';
-import { Link } from 'controls/Link';
-import { theme } from 'controls/theme';
-
-import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import {
-  Box,
-  Pagination as MuiPagination,
-  PaginationItem as MuiPaginationItem,
-  Stack,
-  styled,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import {
-  DataGridPro as MuiDataGridPro,
-  DataGridProProps,
-  GridColDef as MuiGridColDef,
-  gridPageCountSelector,
-  gridPaginationModelSelector,
-  GridRenderCellParams,
-  GridRowsProp,
-  useGridApiContext,
-  useGridSelector,
-} from '@mui/x-data-grid-pro';
-import saveAs from 'file-saver';
-import Papa from 'papaparse';
 import {
   GridCellForTooltip,
   GridCheckboxCell,
@@ -36,7 +11,35 @@ import {
   GridInputCell,
   GridRadioCell,
   GridSelectCell,
-} from './DataGridCell';
+} from 'controls/Datagrid/DataGridCell';
+import { GridToolbar } from 'controls/Datagrid/DataGridToolbar';
+import {
+  appendErrorToInvalids,
+  convertFromInvalidToMessage,
+  convertFromResolverToInvalids,
+  convertFromSizeToWidth,
+  InvalidModel,
+  removeIdFromInvalids,
+  resolveGridWidth,
+} from 'controls/Datagrid/DataGridUtil';
+import { Link } from 'controls/Link';
+import { theme } from 'controls/theme';
+
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
+
+import { Box, styled, Tooltip } from '@mui/material';
+import {
+  DataGridPro as MuiDataGridPro,
+  DataGridProProps,
+  GridColDef as MuiGridColDef,
+  GridRenderCellParams,
+  GridRowsProp,
+  GridValidRowModel,
+} from '@mui/x-data-grid-pro';
+import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
+import saveAs from 'file-saver';
+import Papa from 'papaparse';
 
 const StyledDataGrid = styled(MuiDataGridPro)({
   fontSize: 13,
@@ -81,69 +84,6 @@ const StyledDataGrid = styled(MuiDataGridPro)({
 });
 
 /**
- * Paginationコンポーネント
- */
-const Pagination = () => {
-  // const { total } = props;
-
-  const apiRef = useGridApiContext();
-  const totalRowCount = apiRef.current.state.rows.totalRowCount;
-  const paginationModel = useGridSelector(apiRef, gridPaginationModelSelector);
-  const pageCount = useGridSelector(apiRef, gridPageCountSelector);
-
-  const pageNumber = (page: number) => {
-    if (isNaN(page)) {
-      return 0;
-    }
-    return page;
-  };
-  const currentPageStart = pageNumber(
-    paginationModel.pageSize * paginationModel.page + 1
-  );
-  const cureentPageEnd = pageNumber(
-    paginationModel.pageSize * (paginationModel.page + 1)
-  );
-
-  const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
-    page: number
-  ) => {
-    apiRef.current.setPage(page - 1);
-  };
-
-  return (
-    <Stack
-      spacing={2}
-      direction='row'
-      // justifyContent='flex-end'
-      alignItems='center'
-    >
-      <MuiPagination
-        size='medium'
-        shape='rounded'
-        variant='outlined'
-        count={pageCount}
-        page={paginationModel.page + 1}
-        onChange={handlePageChange}
-        renderItem={(item) => (
-          <MuiPaginationItem
-            slots={{
-              previous: ArrowLeftIcon,
-              next: ArrowRightIcon,
-            }}
-            {...item}
-          />
-        )}
-      />
-      <Typography>
-        {totalRowCount.toLocaleString()} 件 （ {currentPageStart}～
-        {cureentPageEnd} 件）
-      </Typography>
-    </Stack>
-  );
-};
-
-/**
  * DataGridの列モデル定義
  */
 export type GridColDef = MuiGridColDef & {
@@ -162,11 +102,16 @@ export type GridColDef = MuiGridColDef & {
     | 'checkbox'
     | 'datepicker'
     | 'link'
+    | 'button'
     | any[];
   /**
    * tooltip
    */
   tooltip?: boolean;
+  /**
+   * tooltip
+   */
+  validator?: any;
   /**
    * selectValues
    */
@@ -175,11 +120,17 @@ export type GridColDef = MuiGridColDef & {
    * radioValues
    */
   radioValues?: any[]; // cellType = 'radio'
-
+  /**
+   * radioInputTypes
+   */
   radioInputTypes?: string[];
-
+  /**
+   * cellHelperText
+   */
   cellHelperText?: string; // cellType = 'input'
-
+  /**
+   * cellHelperButton
+   */
   cellHelperButton?: 'info';
 };
 
@@ -191,10 +142,31 @@ export interface DataGridProps extends DataGridProProps {
    * 列の定義情報
    */
   columns: GridColDef[];
+
   /**
-   * 行データ<br>
+   * 行データ
    */
   rows: GridRowsProp;
+  /**
+   * resolver
+   */
+  resolver?: ObjectSchema<any>;
+  /**
+   * controlled
+   */
+  controlled?: boolean;
+  /**
+   * disabled
+   */
+  disabled?: boolean;
+  /**
+   * height
+   */
+  height?: string | number;
+  /**
+   * width
+   */
+  width?: string | number;
   /**
    * refs
    */
@@ -204,9 +176,21 @@ export interface DataGridProps extends DataGridProProps {
    */
   tooltips?: GridTooltipsModel[]; // add, tooltip = 'true'
   /**
+   * showHeaderRow
+   */
+  showHeaderRow?: boolean;
+  /**
+   * headerRow
+   */
+  headerRow?: GridValidRowModel;
+  /**
+   * headerApiRef
+   */
+  headerApiRef?: React.MutableRefObject<GridApiPro>;
+  /**
    * onRowChange
    */
-  onRowChange?: (row: any) => void; // add, cellType = 'input'
+  onRowValueChange?: (row: any) => void; // add, cellType = 'input'
   /**
    * リンククリック時のハンドラ<br>
    * cellTypeがlinkの時のみ指定
@@ -216,8 +200,13 @@ export interface DataGridProps extends DataGridProProps {
   onLinkClick?: (url: string) => void; // add, cellType = 'link'
 
   onCellHelperButtonClick?: (firld: string, row: number) => void; // add, cellOptionalButton
+
+  getCellDisabled?: (params: any) => boolean;
 }
 
+/**
+ * hrefリンクデータモデル
+ */
 export interface GridHrefsModel {
   field: string;
   hrefs: {
@@ -226,6 +215,9 @@ export interface GridHrefsModel {
   }[];
 }
 
+/**
+ * ツールチップデータモデル
+ */
 export interface GridTooltipsModel {
   field: string;
   tooltips: {
@@ -243,9 +235,19 @@ export const DataGrid = (props: DataGridProps) => {
   const {
     columns,
     rows,
+    controlled = true,
+    resolver,
+    disabled = false,
     tooltips,
     hrefs,
+    showHeaderRow = false,
+    headerRow,
+    headerApiRef,
     initialState,
+    /** size */
+    height,
+    width,
+    /** sorting */
     /** sorting */
     /** filtering */
     /** pagination */
@@ -253,115 +255,170 @@ export const DataGrid = (props: DataGridProps) => {
     /** selection */
     checkboxSelection = false,
     /** misc */
-    onRowChange,
+    onRowValueChange,
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
+    getCellDisabled,
     apiRef,
   } = props;
 
-  // ref
-  // const apiRef = useGridApiRef();
+  const defaultInvalids: InvalidModel[] =
+    resolver === undefined ? [] : convertFromResolverToInvalids(resolver);
+
+  // state
+  const [invalids, setInvalids] = useState<InvalidModel[]>(defaultInvalids);
 
   // handler
-  const handleRowChange = (row: any) => {
-    if (onRowChange === undefined) return;
-    onRowChange(row);
+  const handleRowValueChange = async (row: any) => {
+    if (resolver !== undefined) {
+      // 一旦、変更行のバリデーションエラーを解除
+      removeIdFromInvalids(invalids, row.id);
+      try {
+        await resolver.validate(row, { abortEarly: false });
+      } catch (err) {
+        if (err instanceof ValidationError) {
+          // ハリデーションエラーがない場合は列のIDを追加
+          appendErrorToInvalids(invalids, err.inner, row.id);
+        }
+      }
+      console.log(invalids);
+      setInvalids([...invalids]);
+    }
+
+    onRowValueChange && onRowValueChange(row);
   };
 
   // handler
   const handleLinkClick = (url: string) => {
-    if (onLinkClick === undefined) return;
-    onLinkClick(url);
+    onLinkClick && onLinkClick(url);
   };
 
   // heander
   const handleClick = (params: any) => {
-    if (onCellHelperButtonClick === undefined) return;
-    onCellHelperButtonClick(params.field, params.id);
+    onCellHelperButtonClick && onCellHelperButtonClick(params.field, params.id);
   };
 
   const handleProcessRowUpdate = (newRow: any, oldRow: any) => {
     return newRow;
   };
 
-  const generateInputCell = (params: any) => (
-    <>
-      <GridInputCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        helperText={params.colDef.cellHelperText}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={() => handleClick(params)} />
-      )}
-    </>
-  );
+  const generateInputCell = (params: any) => {
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
-  const generateSelectCell = (params: any) => (
-    <>
-      <GridSelectCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        selectValues={params.colDef.selectValues}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={() => handleClick(params)} />
-      )}
-    </>
-  );
+    return (
+      <>
+        <GridInputCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          helperText={params.colDef.cellHelperText}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={() => handleClick(params)} />
+        )}
+      </>
+    );
+  };
 
-  const generateRadioCell = (params: any) => (
-    <>
-      <GridRadioCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        radioValues={params.colDef.radioValues}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={handleClick} />
-      )}
-    </>
-  );
+  const generateSelectCell = (params: any) => {
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
-  const generateCustomizableRadioCell = (params: any) => (
-    <>
-      <GridCustomizableRadiioCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-        radioValues={params.colDef.radioInputTypes}
-      />
-      {params.colDef.cellHelperButton === 'info' && (
-        <InfoButton onClick={handleClick} />
-      )}
-    </>
-  );
+    return (
+      <>
+        <GridSelectCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          selectValues={params.colDef.selectValues}
+          controlled={controlled}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={() => handleClick(params)} />
+        )}
+      </>
+    );
+  };
 
-  const generateCheckboxCell = (params: any) => (
-    <>
-      <GridCheckboxCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-      />
-    </>
-  );
+  const generateRadioCell = (params: any) => {
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
-  const generateDatepickerCell = (params: any) => (
-    <>
-      <GridDatepickerCell
-        id={params.id}
-        value={params.value}
-        field={params.field}
-      />
-      {params.colDef.cellOptionalButton === 'info' && (
-        <InfoButton onClick={handleClick} />
-      )}
-    </>
-  );
+    return (
+      <>
+        <GridRadioCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          radioValues={params.colDef.radioValues}
+          controlled={controlled}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
+
+  const generateCustomizableRadioCell = (params: any) => {
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    return (
+      <>
+        <GridCustomizableRadiioCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          radioValues={params.colDef.radioInputTypes}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+        {params.colDef.cellHelperButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
+
+  const generateCheckboxCell = (params: any) => {
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    return (
+      <>
+        <GridCheckboxCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          controlled={controlled}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+      </>
+    );
+  };
+
+  const generateDatepickerCell = (params: any) => {
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    return (
+      <>
+        <GridDatepickerCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+        {params.colDef.cellOptionalButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
 
   const generateMultiInputCell = (params: any) => {
     const cellTypes = params.colDef.cellType;
@@ -377,6 +434,7 @@ export const DataGrid = (props: DataGridProps) => {
                 value={params.value[i]}
                 field={[params.field, i]}
                 helperText={x.helperText}
+                onRowValueChange={handleRowValueChange}
               />
             );
           }
@@ -388,10 +446,12 @@ export const DataGrid = (props: DataGridProps) => {
                 value={params.value[i]}
                 field={[params.field, i]}
                 selectValues={x.selectValues}
+                controlled={controlled}
+                onRowValueChange={handleRowValueChange}
               />
             );
           }
-          return <>cellType error</>;
+          return <>invalid cellType</>;
         })}
       </>
     );
@@ -423,21 +483,12 @@ export const DataGrid = (props: DataGridProps) => {
 
   // 独自のカラム定義からMUI DataGridのカラム定義へ変換
   const muiColumns: MuiGridColDef[] = columns.map((value) => {
-    let width = value.width !== undefined ? value.width : 80;
-    if (value.size === 'ss') {
-      width = 80;
-    }
-    if (value.size === 's') {
-      width = 100;
-    }
-    if (value.size === 'm') {
-      width = 150;
-    }
-    if (value.size === 'l') {
-      width = 300;
-    }
+    const width =
+      value.width !== undefined
+        ? value.width
+        : convertFromSizeToWidth(value.size);
 
-    let renderCell = undefined;
+    let renderCell = value.renderCell;
     if (value.cellType === 'input') {
       renderCell = generateInputCell;
     }
@@ -475,23 +526,40 @@ export const DataGrid = (props: DataGridProps) => {
     };
   });
 
+  const SortedAscIcon = () => {
+    return (
+      <div>
+        <img src={SortAsc}></img>
+      </div>
+    );
+  };
+  const SortedDescIcon = () => {
+    return (
+      <div>
+        <img src={SortDesc}></img>
+      </div>
+    );
+  };
+
   return (
     <>
       <Box
         sx={{
-          height: 500,
-          width: '100%',
+          height: height ? height : '100%',
+          width: width ? width : resolveGridWidth(muiColumns),
           '& .cold': {
             backgroundColor: '#b9d5ff91',
-            color: '#1a3e72',
           },
           '& .hot': {
             backgroundColor: '#ff943975',
-            color: '#1a3e72',
+          },
+          '& .disabled': {
+            backgroundColor: '#D8D8D8',
           },
         }}
       >
         <StyledDataGrid
+          {...props}
           columns={muiColumns}
           rows={rows}
           initialState={{
@@ -505,6 +573,7 @@ export const DataGrid = (props: DataGridProps) => {
           /** size */
           columnHeaderHeight={28}
           rowHeight={30}
+          autoHeight={height === undefined}
           /** sorting */
           /** pagination */
           pagination={pagination}
@@ -517,7 +586,19 @@ export const DataGrid = (props: DataGridProps) => {
           hideFooter
           processRowUpdate={handleProcessRowUpdate}
           slots={{
-            toolbar: pagination ? Pagination : undefined,
+            toolbar: GridToolbar,
+            columnSortedAscendingIcon: SortedAscIcon,
+            columnSortedDescendingIcon: SortedDescIcon,
+          }}
+          slotProps={{
+            toolbar: {
+              pagination: pagination,
+              validationMessages: convertFromInvalidToMessage(invalids),
+              showHeaderRow: showHeaderRow,
+              headerColumns: muiColumns,
+              headerRow: headerRow,
+              headerApiRef: headerApiRef,
+            },
           }}
           experimentalFeatures={{
             columnGrouping: true,
