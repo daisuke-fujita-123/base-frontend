@@ -1,4 +1,4 @@
-import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032';
+import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032Popup';
 
 import { comApiClient } from 'providers/ApiClient';
 
@@ -7,7 +7,7 @@ export interface ScrCom0027GetScreenPermissionRequest {
   // 画面権限ID
   screenPermissionId: string;
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
 }
 
 // API-COM-0027-0001：画面権限一覧情報取得API レスポンス
@@ -40,7 +40,7 @@ export const getScreenPermission = async (
   request: ScrCom0027GetScreenPermissionRequest
 ): Promise<ScrCom0027GetScreenPermissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0027/get-screen-permission',
+    '/com/scr-com-0027/get-screen-permission',
     request
   );
   return response.data;
@@ -56,7 +56,10 @@ export interface ScrCom0027GetScreenResponse {
 export const getScreen = async (
   request: undefined
 ): Promise<ScrCom0027GetScreenResponse> => {
-  const response = await comApiClient.post('/scr-com-0027/get-screen', request);
+  const response = await comApiClient.post(
+    '/com/scr-com-0027/get-screen',
+    request
+  );
   return response.data;
 };
 
@@ -67,7 +70,7 @@ export interface ScrCom0027InputCheckScreenPermissionRequest {
   // 画面権限名
   screenPermissionName: string;
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
   // 画面ID一覧
   screenIdList: ScreenIdList[];
 }
@@ -80,8 +83,12 @@ interface ScreenIdList {
 // API-COM-0027-0003: 画面権限詳細情報入力チェックAPI レスポンス
 export interface ScrCom0027InputCheckScreenPermissionResponse {
   // リスト
-  errorMessages: string[];
-  warningMessages: string[];
+  errorList: ErrorList[];
+}
+
+interface ErrorList {
+  errorCode: string;
+  errorMessage: string;
 }
 
 //  API-COM-0027-0003: 画面権限詳細情報入力チェックAPI
@@ -89,7 +96,7 @@ export const checkScreenPermission = async (
   request: ScrCom0027InputCheckScreenPermissionRequest
 ): Promise<ScrCom0027InputCheckScreenPermissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0027/input-check-screen-permission',
+    '/com/scr-com-0027/input-check-screen-permission',
     request
   );
   return response.data;
@@ -118,7 +125,7 @@ export const registScreenPermission = async (
   request: ScrCom0027RegistScreenPermissionRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/scr-com-0027/regist-screen-permission',
+    '/com/scr-com-0027/regist-screen-permission',
     request
   );
   return response.data;
@@ -129,7 +136,7 @@ export interface ScrCom0027GetScreenPermissionOrganizationRequest {
   // リスト
   screenPermissionList: ScreenPermissionOrgList[];
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
 }
 
 export interface ScreenPermissionOrgList {
@@ -172,7 +179,38 @@ export const getScreenPermissionOrganization = async (
   request: ScrCom0027GetScreenPermissionOrganizationRequest
 ): Promise<ScrCom0027GetScreenPermissionOrganizationResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0027/get-screen-permission-organization',
+    '/com/scr-com-0027/get-screen-permission-organization',
+    request
+  );
+  return response.data;
+};
+
+/** API-COM-9999-0025: 変更履歴情報取得API リクエスト */
+export interface ScrCom9999GetHistoryInfoRequest {
+  // 変更履歴番号
+  changeHistoryNumber: string;
+}
+
+/** API-COM-9999-0025: 変更履歴情報取得API レスポンス */
+export interface ScrCom9999GetHistoryInfoResponse {
+  // 画面権限ID
+  screenPermissionId: string;
+  // 画面権限名
+  screenPermissionName: string;
+  // 利用フラグ
+  useFlag: boolean;
+  // 設定役職数
+  totalSettingPost: number;
+  // リスト
+  screenList: ScreenList[];
+}
+
+/** API-COM-9999-0025: 変更履歴情報取得API */
+export const ScrCom9999GetHistoryInfo = async (
+  request: ScrCom9999GetHistoryInfoRequest
+): Promise<ScrCom9999GetHistoryInfoResponse> => {
+  const response = await comApiClient.post(
+    '/com/scr-com-9999/get-history-info',
     request
   );
   return response.data;

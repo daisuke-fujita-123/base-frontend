@@ -3,10 +3,13 @@ import { FormProvider } from 'react-hook-form';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import ScrCom0032Popup, {
+  columnList,
   ScrCom0032PopupModel,
-} from 'pages/com/popups/ScrCom0032';
+  sectionList,
+} from 'pages/com/popups/ScrCom0032Popup';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -14,9 +17,8 @@ import { Section } from 'layouts/Section';
 import { ColStack, RowStack, Stack } from 'layouts/Stack';
 
 import { AddButton, CancelButton, ConfirmButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 import { Radio } from 'controls/Radio';
-import { TableRowModel } from 'controls/Table';
 import { TextField } from 'controls/TextField';
 
 import {
@@ -32,40 +34,14 @@ import {
   ScrCom0027GetScreenResponse,
   ScrCom0027InputCheckScreenPermissionRequest,
   ScrCom0027RegistScreenPermissionRequest,
-  ScreenList,
+  ScrCom9999GetHistoryInfo,
   ScreenPermissionOrgList,
 } from 'apis/com/ScrCom0027Api';
-import {
-  ScrCom9999GetHistoryInfo,
-  ScrCom9999GetHistoryInfoRequest,
-} from 'apis/com/ScrCom9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
-
-import yup from 'utils/validation/ValidationDefinition';
-
-/**
- * 画面権限データモデル
- */
-interface SearchScreenResultRowModel {
-  // 画面権限ID
-  screenPermissionId: string;
-  // 業務日付
-  businessDate: Date;
-}
-
-/**
- * 画面権限データモデル
- */
-const initialValues: SearchScreenResultRowModel = {
-  // 画面権限ID
-  screenPermissionId: '',
-  // 業務日付
-  businessDate: new Date(),
-};
+import { AuthContext } from 'providers/AuthProvider';
 
 /**
  * 検索結果行データモデル
@@ -76,12 +52,36 @@ interface ScreenResultModel {
   // 画面権限名
   screenPermissionName: string;
   // 利用フラグ
-  useFlag: boolean;
+  useFlag: string;
   // 設定役職数
-  totalSettingPost: number;
+  totalSettingPost: number | string;
   // リスト
-  screenList: ScreenList[];
+  screenList: ScreenModel[];
+  // 変更履歴番号
+  changeHistoryNumber: string;
+  // 変更予定日
+  changeExpectDate: string;
 }
+
+/**
+ * 画面権限データモデル
+ */
+const initialValues: ScreenResultModel = {
+  // 画面権限ID
+  screenPermissionId: '',
+  // 画面権限名
+  screenPermissionName: '',
+  // 利用フラグ
+  useFlag: '',
+  // 設定役職数
+  totalSettingPost: 0,
+  // リスト
+  screenList: [],
+  // 変更履歴番号
+  changeHistoryNumber: '',
+  // 変更予定日
+  changeExpectDate: '',
+};
 
 interface ScreenPermissionModel {
   // 画面権限ID
@@ -94,7 +94,7 @@ interface ScreenPermissionModel {
   totalSettingPost: number;
 }
 
-interface ScreenOrgModel {
+interface ScreenModel {
   // 項目ID
   id: string;
   // 画面ID
@@ -102,7 +102,7 @@ interface ScreenOrgModel {
   // 画面名
   screenName: string;
   // 編集権限
-  editPermission?: boolean;
+  editPermission: number;
 }
 
 /**
@@ -112,7 +112,12 @@ interface ScreenOrgResultModel {
   // 画面権限リスト
   screenPermissionList: ScreenPermissionModel[];
   // 画面リスト
-  screenList: ScreenOrgModel[];
+  screenList: ScreenModel[];
+}
+
+interface ScreenIdList {
+  // 画面ID
+  screenId: string;
 }
 
 /**
@@ -124,34 +129,20 @@ const sectionDef = [
     fields: [
       'screenPermissionId',
       'screenPermissionName',
-      'businessDate',
+      'useFlag',
+      'totalSettingPost',
       'screenId',
+      'screenName',
+      'editPermission',
     ],
-  },
-];
-
-/**
- * 検索条件列定義
- */
-const searchResultColumns: GridColDef[] = [
-  {
-    field: 'screenId',
-    headerName: '画面ID',
-    size: 'm',
-  },
-  {
-    field: 'screenName',
-    headerName: '画面名',
-    size: 'l',
-  },
-  {
-    field: 'editPermission',
-    headerName: '編集権限',
-    size: 'l',
-    cellType: 'radio',
-    radioValues: [
-      { value: 1, displayValue: '参照' },
-      { value: 2, displayValue: '編集' },
+    name: [
+      '権限ID',
+      '権限名',
+      '利用フラグ',
+      '設定役職数',
+      '画面ID',
+      '画面名',
+      '編集権限',
     ],
   },
 ];
@@ -160,25 +151,22 @@ const searchResultColumns: GridColDef[] = [
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  changedSections: [],
-  errorMessages: [],
-  warningMessages: [],
+  // 登録・変更内容リスト
+  registrationChangeList: [],
+  errorList: [],
+  warningList: [],
+  changeExpectDate: '',
 };
 
 /**
  * 画面権限スキーマ
  */
 const screenPermissionSchama = {
-  screenPermissionId: yup.string().label('権限ID').max(6).halfWidthOnly(),
-  screenPermissionName: yup
-    .string()
-    .label('権限名')
-    .max(30)
-    .fullAndHalfWidth()
-    .required(),
+  screenPermissionId: yup.string().label('権限ID').max(6).half(),
+  screenPermissionName: yup.string().label('権限名').max(30).required(),
   totalSettingPost: yup.number().label('設定役職数').max(3),
-  screenId: yup.string().label('画面ID').max(12).halfWidthOnly(),
-  screenName: yup.string().label('画面名').max(30).fullAndHalfWidth(),
+  screenId: yup.string().label('画面ID').max(12).half(),
+  screenName: yup.string().label('画面名').max(30),
 };
 
 // API-COM-0027-0001：画面権限一覧情報取得API データモデルへ変換処理
@@ -188,21 +176,23 @@ const convertToScreenModel = (
   return {
     screenPermissionId: screen.screenPermissionId,
     screenPermissionName: screen.screenPermissionName,
-    useFlag: screen.useFlag,
+    useFlag: screen.useFlag === true ? 'true' : 'false',
     totalSettingPost: screen.totalSettingPost,
     screenList: convertScreenListModel(screen),
+    changeHistoryNumber: '',
+    changeExpectDate: '',
   };
 };
 
 const convertScreenListModel = (
   req: ScrCom0027GetScreenPermissionResponse
-): ScreenList[] => {
+): ScreenModel[] => {
   return req.screenList.map((x) => {
     return {
       id: x.screenId,
       screenId: x.screenId,
       screenName: x.screenName,
-      editPermission: x.editPermission,
+      editPermission: x.editPermission === true ? 1 : 2,
     };
   });
 };
@@ -210,13 +200,13 @@ const convertScreenListModel = (
 // API-COM-0027-0002：画面一覧情報取得API データモデルへ変換処理
 const convertToNewScreenModel = (
   screen: ScrCom0027GetScreenResponse
-): ScreenList[] => {
+): ScreenModel[] => {
   return screen.screenList.map((x) => {
     return {
       id: x.screenId,
       screenId: x.screenId,
       screenName: x.screenName,
-      editPermission: false,
+      editPermission: 1,
     };
   });
 };
@@ -233,13 +223,13 @@ const convertToScreenOrgModel = (
 
 const convertScreenList = (
   screen: ScrCom0027GetScreenPermissionOrganizationResponse
-): ScreenOrgModel[] => {
+): ScreenModel[] => {
   return screen.screenList.map((x) => {
     return {
       id: x.screenId,
       screenId: x.screenId,
       screenName: x.screenName,
-      editPermission: x.editPermission,
+      editPermission: x.editPermission === true ? 1 : 2,
     };
   });
 };
@@ -259,22 +249,34 @@ const convertScreenPermissionList = (
 
 // API-COM-0027-0004: 画面権限登録API データモデルへ変換処理
 const convertFromScreenPermissionModel = (
-  screenPermission: ScreenPermissionModel,
-  screen: ScreenList[],
-  user: string
+  screenPermission: ScreenResultModel,
+  user: string,
+  idList: ScreenIdList[],
+  registrationChangeMemo: string
 ): ScrCom0027RegistScreenPermissionRequest => {
   return {
     screenPermissionId: screenPermission.screenPermissionId,
     screenPermissionName: screenPermission.screenPermissionName,
-    useFlag: screenPermission.useFlag,
-    screenIdList: screen.map((x) => {
-      return {
-        screenId: x.screenId,
-      };
-    }), // TODO: 編集権限取得方法不明なため、アーキチーム回答後に実装変更予定
+    useFlag: screenPermission.useFlag === 'true' ? true : false,
+    screenIdList: idList,
     applicationEmployeeId: user,
     screenId: 'SCR-COM-0027',
-    registrationChangeMemo: '', // TODO: 登録内容申請ポップアップから取得のため、実装後に対応
+    registrationChangeMemo: registrationChangeMemo,
+  };
+};
+
+const convertToHistoryInfo = (
+  screen: ScrCom0027GetScreenPermissionResponse,
+  changeHistoryNumber: string
+): ScreenResultModel => {
+  return {
+    screenPermissionId: screen.screenPermissionId,
+    screenPermissionName: screen.screenPermissionName,
+    useFlag: screen.useFlag === true ? 'true' : 'false',
+    totalSettingPost: screen.totalSettingPost,
+    screenList: convertScreenListModel(screen),
+    changeHistoryNumber: changeHistoryNumber,
+    changeExpectDate: '',
   };
 };
 
@@ -287,10 +289,15 @@ const ScrCom0027Page = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   // user情報(businessDateも併せて取得予定)
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
+  // 編集権限_disable設定
+  const setDisableFlg = user.editPossibleScreenIdList.filter((x) => {
+    return x.includes('SCR-COM-0027');
+  });
+  const disableFlg = setDisableFlg[0] === 'SCR-COM-0027' ? false : true;
 
   // state
-  const [screenResult, setScreenResult] = useState<ScreenList[]>([]);
+  const [screenResult, setScreenResult] = useState<ScreenModel[]>([]);
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
@@ -299,7 +306,7 @@ const ScrCom0027Page = () => {
   const isReadOnly = useState<boolean>(false);
 
   // form
-  const methods = useForm<any>({
+  const methods = useForm<ScreenResultModel>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: initialValues,
@@ -313,6 +320,46 @@ const ScrCom0027Page = () => {
     reset,
   } = methods;
 
+  // ラジオボタン（利用フラグ）
+  const flagRadiovalues = [
+    {
+      value: 'true',
+      displayValue: '可',
+    },
+    {
+      value: 'false',
+      displayValue: '不可',
+    },
+  ];
+
+  const editRadioValues = [
+    { value: 1, displayValue: '参照' },
+    { value: 2, displayValue: '編集' },
+  ];
+
+  /**
+   * 検索条件列定義
+   */
+  const searchResultColumns: GridColDef[] = [
+    {
+      field: 'screenId',
+      headerName: '画面ID',
+      size: 'm',
+    },
+    {
+      field: 'screenName',
+      headerName: '画面名',
+      size: 'l',
+    },
+    {
+      field: 'editPermission',
+      headerName: '編集権限',
+      size: 'l',
+      cellType: 'radio',
+      radioValues: editRadioValues,
+    },
+  ];
+
   /**
    * 初期画面表示時に処理結果一覧検索処理を実行
    */
@@ -324,7 +371,7 @@ const ScrCom0027Page = () => {
         // 画面権限ID
         screenPermissionId: screenPermissionId,
         // 業務日付
-        businessDate: new Date(), // TODO:業務日付の実装待ち
+        businessDate: user.taskDate,
       };
       const screenResponse = await getScreenPermission(screenRequest);
       const screenResult = convertToScreenModel(screenResponse);
@@ -345,7 +392,7 @@ const ScrCom0027Page = () => {
           // 画面権限ID
           screenPermissionList: screenPermissionId,
           // 業務日付
-          businessDate: new Date(), // TODO:業務日付の実装待ち
+          businessDate: user.taskDate,
         };
       const screenOrgResponse = await getScreenPermissionOrganization(
         screenOrgRequest
@@ -370,14 +417,19 @@ const ScrCom0027Page = () => {
       }
 
       // 画面にデータを設定
-      setValue('screenPermissionId', permissionId);
-      setValue('screenPermissionName', permissionName);
+      if (permissionId !== undefined) {
+        setValue('screenPermissionId', permissionId);
+      }
+      if (permissionName !== undefined) {
+        setValue('screenPermissionName', permissionName);
+      }
+
       setValue(
         'useFlag',
         tFlag === undefined
-          ? false
+          ? 'false'
           : fFlag === undefined
-          ? true
+          ? 'true'
           : tFlag !== undefined && fFlag !== undefined
           ? ''
           : ''
@@ -393,16 +445,23 @@ const ScrCom0027Page = () => {
 
     // 初期表示処理(履歴表示)
     const initializeHistory = async (changeHistoryNumber: string) => {
-      // SCR-COM-9999-0025: 変更履歴情報取得API
-      const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
+      // 変更履歴情報取得API
+      const getHistoryInfoRequest = {
         changeHistoryNumber: changeHistoryNumber,
       };
       const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
         getHistoryInfoRequest
       );
+      const historyInfo = convertToHistoryInfo(
+        getHistoryInfoResponse,
+        changeHistoryNumber
+      );
 
       // 画面にデータを設定
-      reset(getHistoryInfoResponse);
+      reset(historyInfo);
+
+      // データグリッドにデータを設定
+      setScreenResult(historyInfo.screenList);
     };
 
     // 初期表示(新規追加)
@@ -412,7 +471,7 @@ const ScrCom0027Page = () => {
       const newScreenResult = convertToNewScreenModel(newScreenResponse);
 
       // 画面にデータを設定
-      setValue('useFlag', true);
+      setValue('useFlag', 'true');
       setValue('totalSettingPost', '-');
       // データグリッドにデータを設定
       setScreenResult(newScreenResult);
@@ -449,30 +508,50 @@ const ScrCom0027Page = () => {
     if (changeHistoryNumber !== undefined && changeHistoryNumber !== null) {
       initializeHistory(changeHistoryNumber);
     }
-  }, [screenPermissionId, searchParams, setValue, reset]);
+  }, [screenPermissionId, searchParams, setValue, reset, disableFlg]);
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果からCSVを出力する。');
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hours = d.getHours();
+    const min = d.getMinutes();
+    exportCsv(
+      screenResult,
+      '画面権限詳細_' +
+        user.employeeId +
+        '_' +
+        year.toString() +
+        (month < 10 ? '0' : '') +
+        month.toString() +
+        (day < 10 ? '0' : '') +
+        day.toString() +
+        hours.toString() +
+        min.toString() +
+        '.csv'
+    );
   };
 
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): TableRowModel[] => {
+  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
     const fields = Object.keys(dirtyFields);
-    const changedSections: TableRowModel[] = [];
+    const changedSections: sectionList[] = [];
+    const columnList: columnList[] = [];
     sectionDef.forEach((d) => {
       fields.forEach((f) => {
         if (d.fields.includes(f)) {
-          changedSections.push({
-            変更種類: '基本情報変更',
-            セクション名: d.section,
-          });
+          columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
         }
+      });
+      changedSections.push({
+        sectionName: d.section,
+        columnList: columnList,
       });
     });
     return changedSections;
@@ -482,28 +561,42 @@ const ScrCom0027Page = () => {
    * 確定ボタンクリック時のイベントハンドラ
    */
   const handleConfirm = async () => {
+    const idList: ScreenIdList[] = [];
+    screenResult.forEach((x) => {
+      if (x.editPermission === 1) {
+        idList.push({
+          screenId: x.screenId,
+        });
+      }
+    });
+
     const screenCheckRequest: ScrCom0027InputCheckScreenPermissionRequest = {
       // 画面権限ID
       screenPermissionId: getValues('screenPermissionId'),
       // 画面権限名
       screenPermissionName: getValues('screenPermissionName'),
       // 業務日付
-      businessDate: new Date(), // TODO: 業務日付取得機能実装後に変更
+      businessDate: user.taskDate,
       // 画面ID一覧
-      screenIdList: screenResult.map((x) => {
-        return {
-          screenId: x.screenId,
-        };
-      }),
+      screenIdList: idList,
     };
     const checkResult = await checkScreenPermission(screenCheckRequest);
 
     // 登録更新の結果を登録確認ポップアップへ渡す
     setIsOpenPopup(true);
     setScrCom0032PopupData({
-      errorMessages: checkResult.errorMessages,
-      warningMessages: checkResult.warningMessages,
-      changedSections: convertToChngedSections(dirtyFields),
+      errorList: checkResult.errorList,
+      warningList: [],
+      registrationChangeList: [
+        {
+          screenId: 'SCR-COM-0027',
+          screenName: '画面権限詳細',
+          tabId: '',
+          tabName: '',
+          sectionList: convertToChngedSections(dirtyFields),
+        },
+      ],
+      changeExpectDate: getValues('changeExpectDate'),
     });
   };
 
@@ -517,14 +610,24 @@ const ScrCom0027Page = () => {
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const handlePopupConfirm = async (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
+
+    const idList: ScreenIdList[] = [];
+    screenResult.forEach((x) => {
+      if (x.editPermission === 1) {
+        idList.push({
+          screenId: x.screenId,
+        });
+      }
+    });
 
     // API-COM-0027-0004: 画面権限登録API
     const request = convertFromScreenPermissionModel(
       getValues(),
-      screenResult,
-      appContext.user
+      user.employeeId,
+      idList,
+      registrationChangeMemo
     );
     await registScreenPermission(request);
   };
@@ -547,7 +650,6 @@ const ScrCom0027Page = () => {
               name='画面権限詳細'
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                  {/* TODO：エクスポートアイコンに将来的に変更 */}
                   <AddButton onClick={handleIconOutputCsvClick}>
                     CSV出力
                   </AddButton>
@@ -568,6 +670,7 @@ const ScrCom0027Page = () => {
                     label='権限名'
                     name='screenPermissionName'
                     size='m'
+                    disabled={disableFlg}
                     required
                   />
                 </ColStack>
@@ -576,18 +679,8 @@ const ScrCom0027Page = () => {
                     label='利用フラグ'
                     name='useFlag'
                     size='s'
-                    radioValues={[
-                      {
-                        value: 'true',
-                        displayValue: '可',
-                        disabled: false,
-                      },
-                      {
-                        value: 'false',
-                        displayValue: '不可',
-                        disabled: false,
-                      },
-                    ]}
+                    radioValues={flagRadiovalues}
+                    row
                   />
                 </ColStack>
                 <ColStack>
@@ -603,7 +696,7 @@ const ScrCom0027Page = () => {
               <DataGrid
                 columns={searchResultColumns}
                 rows={screenResult}
-                pageSize={10}
+                disabled={disableFlg}
               />
             </Section>
           </FormProvider>
@@ -619,12 +712,14 @@ const ScrCom0027Page = () => {
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
+      {isOpenPopup && (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      )}
     </>
   );
 };
