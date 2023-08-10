@@ -5,21 +5,10 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
 
-import {
-  ScrDoc9999CreateReportImageDoc,
-  ScrDoc9999CreateReportImageDocRequest,
-} from 'pages/doc/ScrDoc9999Api';
-
 import { Box, CenterBox, MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import {
-  ColStack,
-  ControlsStackItem,
-  RightElementStack,
-  RowStack,
-  Stack,
-} from 'layouts/Stack';
+import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 
 import { CancelButton, ConfirmButton, PrimaryButton } from 'controls/Button';
 import { DatePicker } from 'controls/DatePicker';
@@ -40,15 +29,15 @@ import {
   ScrCom9999GetChangeDateRequest,
   ScrCom9999GetHistoryInfo,
   ScrCom9999GetHistoryInfoRequest,
+  ScrCom9999GetHistoryInfoResponse,
 } from 'apis/com/ScrCom9999Api';
-import {
-  ScrTra9999CreateReportImageTra,
-  ScrTra9999CreateReportImageTraRequest,
-} from 'apis/tra/ScrTra9999Api';
+import { ScrDoc9999CreateReportImageDocRequest } from 'apis/doc/ScrDoc9999Api';
+import { ScrTra9999CreateReportImageTraRequest } from 'apis/tra/ScrTra9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
+import { _expApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
@@ -71,7 +60,7 @@ interface CorporationBasicModel {
   // 帳票コメント4
   reportComment4: string;
   // 変更履歴番号
-  changeHistoryNumber: string;
+  changeHistoryNumber: string | null;
   // 変更履歴番号+変更予定日
   memberChangeHistories: any[];
   // 変更予定日
@@ -146,17 +135,17 @@ const ScrCom0008Page = () => {
     selectValuesInitialValues
   );
   // 帳票コメント情報取得APIにて取得した 帳票ID
-  const [getReportId, setGetReportId] = useState<any>();
+  const [getReportId, setGetReportId] = useState<string>('');
   // 帳票コメント情報取得APIにて取得した 帳票名
-  const [getReportName, setGetReportName] = useState<any>();
+  const [getReportName, setGetReportName] = useState<string>('');
   // 帳票コメント情報取得APIにて取得した コメント最大行数
-  const [getCommentRow, setGetCommentRow] = useState<any>();
+  const [getCommentRow, setGetCommentRow] = useState<number>(0);
   // 帳票コメント情報取得APIにて取得した コメント1行最大文字数
-  const [getCommentLine, setGetCommentLine] = useState<any>();
+  const [getCommentLine, setGetCommentLine] = useState<number>(0);
   // 帳票コメント情報取得APIにて取得した 変更タイムスタンプ
-  const [getChangeTimestamp, setGetChangeTimestamp] = useState<string>();
+  const [getChangeTimestamp, setGetChangeTimestamp] = useState<string>('');
   // 帳票コメント情報取得APIにて取得した システム種別
-  const [getSystemKind, setGetSystemKind] = useState<string>();
+  const [getSystemKind, setGetSystemKind] = useState<string>('');
   const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
   const [changeHistoryDateCheckisOpen, setChangeHistoryDateCheckisOpen] =
     useState<boolean>(false);
@@ -173,19 +162,63 @@ const ScrCom0008Page = () => {
   const validationSchema = {
     reportComment1: yup
       .string()
-      .label('帳票コメント1')
+      .label('帳票コメント１行目')
       .max(reportCommentLengthForVal),
     reportComment2: yup
       .string()
-      .label('帳票コメント2')
+      .label('帳票コメント２行目')
       .max(reportCommentLengthForVal),
     reportComment3: yup
       .string()
-      .label('帳票コメント3')
+      .label('帳票コメント３行目')
       .max(reportCommentLengthForVal),
     reportComment4: yup
       .string()
-      .label('帳票コメント4')
+      .label('帳票コメント4行目')
+      .max(reportCommentLengthForVal),
+    reportComment5: yup
+      .string()
+      .label('帳票コメント５行目')
+      .max(reportCommentLengthForVal),
+    reportComment6: yup
+      .string()
+      .label('帳票コメント６行目')
+      .max(reportCommentLengthForVal),
+    reportComment7: yup
+      .string()
+      .label('帳票コメント７行目')
+      .max(reportCommentLengthForVal),
+    reportComment8: yup
+      .string()
+      .label('帳票コメント８行目')
+      .max(reportCommentLengthForVal),
+    reportComment9: yup
+      .string()
+      .label('帳票コメント９行目')
+      .max(reportCommentLengthForVal),
+    reportComment10: yup
+      .string()
+      .label('帳票コメント１０行目')
+      .max(reportCommentLengthForVal),
+    reportComment111: yup
+      .string()
+      .label('帳票コメント１１行目')
+      .max(reportCommentLengthForVal),
+    reportComment12: yup
+      .string()
+      .label('帳票コメント１２行目')
+      .max(reportCommentLengthForVal),
+    reportComment13: yup
+      .string()
+      .label('帳票コメント１３行目')
+      .max(reportCommentLengthForVal),
+    reportComment14: yup
+      .string()
+      .label('帳票コメント１４行目')
+      .max(reportCommentLengthForVal),
+    reportComment15: yup
+      .string()
+      .label('帳票コメント１５行目')
       .max(reportCommentLengthForVal),
   };
 
@@ -220,6 +253,16 @@ const ScrCom0008Page = () => {
       const getCommissionDisplayResponse =
         await ScrCom0008GetReportCommentCurrent(getReportCommentCurrentRequest);
 
+      // 画面にデータを設定
+      setGetReportId(getCommissionDisplayResponse.reportId);
+      setGetReportName(getCommissionDisplayResponse.reportName);
+      setGetCommentRow(getCommissionDisplayResponse.commentRow);
+      setGetCommentLine(getCommissionDisplayResponse.commentLine);
+      setGetChangeTimestamp(getCommissionDisplayResponse.changeTimestamp);
+      setGetSystemKind(getCommissionDisplayResponse.systemKind);
+      // バリデーションの文字数を設定
+      setReportCommentLengthForVal(getCommissionDisplayResponse.commentLine);
+
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: SCR_COM_0008,
@@ -231,16 +274,6 @@ const ScrCom0008Page = () => {
         getChangeDateRequest
       );
 
-      // バリデーションの文字数を設定
-      setReportCommentLengthForVal(getCommissionDisplayResponse.commentLine);
-
-      // 画面にデータを設定
-      setGetReportId(getCommissionDisplayResponse.reportId);
-      setGetReportName(getCommissionDisplayResponse.reportName);
-      setGetCommentRow(getCommissionDisplayResponse.commentRow);
-      setGetCommentLine(getCommissionDisplayResponse.commentLine);
-      setGetChangeTimestamp(getCommissionDisplayResponse.changeTimestamp);
-      setGetSystemKind(getCommissionDisplayResponse.systemKind);
       setSelectValues({
         // 変更予約日付
         changeReservationInfoSelectValues:
@@ -257,23 +290,19 @@ const ScrCom0008Page = () => {
 
       // SCR-COM-9999-0025: 変更履歴情報取得API
       const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
-        changeHistoryNumber: '',
+        changeHistoryNumber: changeHistoryNumber,
       };
       const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
         getHistoryInfoRequest
       );
 
+      const historyInfo = convertToHistoryInfo(
+        getHistoryInfoResponse,
+        changeHistoryNumber
+      );
+
       // 画面にデータを設定
-      setGetReportId(getHistoryInfoResponse.changeHistoryInfo.get('reportId'));
-      setGetReportName(
-        getHistoryInfoResponse.changeHistoryInfo.get('reportName')
-      );
-      setGetCommentRow(
-        getHistoryInfoResponse.changeHistoryInfo.get('commentRow')
-      );
-      setGetCommentLine(
-        getHistoryInfoResponse.changeHistoryInfo.get('commentLine')
-      );
+      reset(historyInfo);
     };
 
     // 現在情報表示の初期化処理
@@ -304,20 +333,13 @@ const ScrCom0008Page = () => {
       getHistoryInfoRequest
     );
 
-    setIsChangeHistoryBtn(true);
+    const historyInfo = convertToHistoryInfo(
+      getHistoryInfoResponse,
+      changeHistoryNumber
+    );
 
     // 画面にデータを設定
-    setGetReportId(getHistoryInfoResponse.changeHistoryInfo.get('reportId'));
-    setGetReportName(
-      getHistoryInfoResponse.changeHistoryInfo.get('reportName')
-    );
-    setGetCommentRow(
-      getHistoryInfoResponse.changeHistoryInfo.get('commentRow')
-    );
-    setGetCommentLine(
-      getHistoryInfoResponse.changeHistoryInfo.get('commentLine')
-    );
-
+    reset(historyInfo);
     setIsChangeHistoryBtn(true);
   };
 
@@ -398,7 +420,26 @@ const ScrCom0008Page = () => {
   };
 
   /**
-   * TODO: プレビューボタンクリック時のイベントハンドラ
+   * 変更履歴情報取得APIリクエストからデータモデルへの変換
+   */
+  const convertToHistoryInfo = (
+    getHistoryInfoResponse: ScrCom9999GetHistoryInfoResponse,
+    changeHistoryNumber: string | null
+  ): CorporationBasicModel => {
+    return {
+      reportComment1: '',
+      reportComment2: '',
+      reportComment3: '',
+      reportComment4: '',
+      changeHistoryNumber: changeHistoryNumber,
+      memberChangeHistories: [],
+      changeExpectedDate: '',
+    };
+  };
+
+  /**
+   * プレビューボタンクリック時のイベントハンドラ
+   * TODO: 詳細設計 修正次第 APIの戻り値を修正しレスポンスに設定
    */
   const handlePreviewConfirm = async () => {
     // システム種別で呼び出すAPIのURIをTRAとDOCで分岐
@@ -413,9 +454,9 @@ const ScrCom0008Page = () => {
           operatorName: user.organizationName,
           comment: '',
         };
-      const formStorageFilePath = await ScrTra9999CreateReportImageTra(
-        createReportImageTraRequest
-      );
+      // const formStorageFile = await ScrTra9999CreateReportImageTra(
+      //   createReportImageTraRequest
+      // );
     } else if (getSystemKind === 'DOC') {
       // API-TRA-9999-0001: イメージ帳票作成API（書類管理）
       const createReportImageDocRequest: ScrDoc9999CreateReportImageDocRequest =
@@ -427,12 +468,19 @@ const ScrCom0008Page = () => {
           operatorName: user.organizationName,
           comment: '',
         };
-      const formStorageFilePath = await ScrDoc9999CreateReportImageDoc(
-        createReportImageDocRequest
-      );
+      // const formStorageFile = await ScrDoc9999CreateReportImageDoc(
+      //   createReportImageDocRequest
+      // );
+
+      // 取得した帳票格納ファイルを別タブで開くことで、イメージ帳票PDFを表示する。
+      const formStorageFile = await _expApiClient.get('/_exp/hello.pef', {
+        responseType: 'blob',
+      });
+      // const downloadUrl = window.URL.createObjectURL(formStorageFile);
+      const downloadUrl = window.URL.createObjectURL(formStorageFile.data);
+      window.open(downloadUrl, '__blank');
+      window.URL.revokeObjectURL(downloadUrl);
     }
-    // TODO: 取得した帳票格納ファイルPATHを別タブで開くことで、イメージ帳票PDFを表示する。
-    // (formStorageFilePath)
   };
 
   /**
@@ -481,6 +529,28 @@ const ScrCom0008Page = () => {
     setIsOpenPopup(false);
   };
 
+  /**
+   *  コメント動的可変の処理
+   */
+  const reportCommentLine = () => {
+    const commentBox = [];
+    for (let i = 1; i <= getCommentRow; i++) {
+      commentBox.push(
+        <TextField
+          name={`reportComment${i}`}
+          key={`reportComment${i}`}
+          size='l'
+          disabled={historyFlag ? true : false}
+        />
+      );
+      // 最大10個のコメント列にするように制御
+      if (i == 15) {
+        break;
+      }
+    }
+    return commentBox;
+  };
+
   return (
     <>
       <MainLayout>
@@ -515,24 +585,8 @@ const ScrCom0008Page = () => {
                 </ColStack>
               </RowStack>
               <br />
-              <ControlsStackItem size='m'>
-                <TextField
-                  name='reportComment1'
-                  disabled={historyFlag ? true : false}
-                />
-                <TextField
-                  name='reportComment2'
-                  disabled={historyFlag ? true : false}
-                />
-                <TextField
-                  name='reportComment3'
-                  disabled={historyFlag ? true : false}
-                />
-                <TextField
-                  name='reportComment4'
-                  disabled={historyFlag ? true : false}
-                />
-              </ControlsStackItem>
+              {/* コメント行数をAPIから取得した最大行数分可変させる */}
+              {reportCommentLine()}
               <br />
               <Stack>
                 <CenterBox>

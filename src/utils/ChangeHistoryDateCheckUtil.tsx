@@ -10,7 +10,7 @@ interface changeHistoryDateCheckProps {
   // 反映予定日
   changeExpectedDate: string;
   // 変更予約日
-  changeHistoryNumber: string;
+  changeHistoryNumber: string | null;
   // 表示切替フラグ
   isChangeHistoryBtn: boolean;
   // 変更予約日リスト
