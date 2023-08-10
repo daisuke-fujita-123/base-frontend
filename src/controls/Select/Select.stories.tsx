@@ -53,6 +53,8 @@ export default {
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface SampleInput {
   sampleName: string | number;
+  sampleName1: string[] | number[];
+  sampleName2: string[] | number[];
 }
 // TDOO クラッシュ原因の特定
 // const Template: Story<SelectProps<SampleInput>> = (args) => {
@@ -88,6 +90,8 @@ export const Example = () => {
     reValidateMode: 'onBlur',
     defaultValues: {
       sampleName: 0,
+      sampleName1: [0],
+      sampleName2: [0],
     },
     context: isReadOnly,
   });
@@ -96,6 +100,20 @@ export const Example = () => {
     { displayValue: '二輪', value: 0 },
     { displayValue: '三輪', value: 1 },
     { displayValue: '四輪', value: 2 },
+  ];
+
+  const sampleAutoComplete: SelectValue[] = [
+    { displayValue: '00', value: 0 },
+    { displayValue: '01', value: 1 },
+    { displayValue: '02', value: 2 },
+    { displayValue: '03', value: 3 },
+    { displayValue: '04', value: 4 },
+    { displayValue: '05', value: 5 },
+    { displayValue: '06', value: 6 },
+    { displayValue: '07', value: 7 },
+    { displayValue: '08', value: 8 },
+    { displayValue: '09', value: 9 },
+    { displayValue: '10', value: 10 },
   ];
 
   return (
@@ -110,12 +128,19 @@ export const Example = () => {
           required={false}
         />
         <Select
-          label='サンプルセレクト'
+          label='サンプルセレクト(Multiple)'
           selectValues={sampleSelect}
-          name='sampleName'
+          name='sampleName1'
           disabled={false}
           blankOption={true}
           required={false}
+          multiple={true}
+        />
+        <Select
+          label='Autocomplete'
+          selectValues={sampleAutoComplete}
+          name='sampleName2'
+          multiple={true}
         />
       </ThemeProvider>
     </FormProvider>

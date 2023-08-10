@@ -132,7 +132,7 @@ export const DatePicker = <T extends FieldValues>(
                   '& .MuiPickersCalendarHeader-labelContainer': {
                     fontWeight: 'bold',
                   },
-                  '& .MuiPickersDay-root': {
+                  '& .MuiButtonBase-root.MuiPickersDay-root': {
                     '&.Mui-selected': {
                       border: '3px solid #f37246',
                       backgroundColor: '#fde8d4',

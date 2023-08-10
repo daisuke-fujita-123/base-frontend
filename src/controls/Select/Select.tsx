@@ -91,12 +91,12 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
     size = 's',
   } = props;
 
-  const { register, formState, control } = useFormContext();
+  const { register, formState, control, setValue } = useFormContext();
   const watchValue = useWatch({ name, control });
 
   // 複数選択された場合、先頭行の空白は削除する
   const omitBlankValue = (val: string[]) => {
-    return val.length > 1 ? val.filter((e) => e) : val;
+    return val.filter((e) => e !== '');
   };
   const isReadOnly = control?._options?.context[0];
   return (
@@ -135,13 +135,37 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
             )}
           </StyledFormControl>
         ) : (
-          // TODO 挙動を要確認（SelectではなくTextFieldになっている）
           <Autocomplete
-            freeSolo
             multiple={multiple}
             disabled={disabled}
+            limitTags={2}
             size='small'
-            options={selectValues.map((option) => option.displayValue)}
+            options={selectValues}
+            getOptionLabel={(option) =>
+              typeof option === 'string' ? option : option.displayValue
+            }
+            isOptionEqualToValue={(option, value) =>
+              option.value === value.value
+            }
+            {...register(name)}
+            onChange={(e, newValue) => {
+              setValue(
+                name,
+                newValue as FieldPathValue<FieldValues, FieldPath<FieldValues>>
+              );
+            }}
+            value={watchValue}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  {...getTagProps({ index })}
+                  label={option.displayValue}
+                  size='small'
+                  key={index}
+                  style={{ maxHeight: 30, marginTop: -3, marginRight: 4 }}
+                />
+              ))
+            }
             renderInput={(params) => (
               <StyledTextFiled
                 {...params}
@@ -153,19 +177,6 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
                 }
               />
             )}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  {...getTagProps({ index })}
-                  label={option}
-                  size='small'
-                  key={index}
-                  style={{ maxHeight: 30, marginTop: -4, marginRight: 4 }}
-                />
-              ))
-            }
-            {...register(name)}
-            value={multiple ? omitBlankValue(watchValue) : watchValue}
           />
         )}
       </Box>
