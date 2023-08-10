@@ -508,7 +508,7 @@ export const ScrCom9999GetAddressInfo = async (
 /** API-COM-9999-0025: 変更履歴情報取得API リクエスト */
 export interface ScrCom9999GetHistoryInfoRequest {
   // 変更履歴番号
-  changeHistoryNumber: string;
+  changeHistoryNumber: string | null;
 }
 
 /** API-COM-9999-0025: 変更履歴情報取得API レスポンス */
