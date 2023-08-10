@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
 import {
+  Box,
   ContentsBox,
   ContentsOutsideBox,
   ErrorBox,
@@ -37,6 +38,7 @@ interface SectionProps {
   isWarning?: boolean;
   isError?: boolean;
   openable?: boolean;
+  width?: number;
 }
 export interface SectionClose {
   closeSection: () => void;
@@ -57,6 +59,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
     isTransparent = false,
     serchLabels,
     openable = true,
+    width,
   } = props;
 
   const [expanded, setExpanded] = useState<boolean>(true);
@@ -74,7 +77,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
   }
   const flexColSx = { display: 'flex', flexDirection: 'column' };
   return (
-    <>
+    <Box width={width}>
       <SubTitle onClick={onClick} openable={openable}>
         {name}
       </SubTitle>
@@ -91,7 +94,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
           </AccordionDetails>
         </StyledAccordion>
       </ContentsBox>
-    </>
+    </Box>
   );
 });
 
