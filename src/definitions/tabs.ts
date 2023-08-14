@@ -1,5 +1,5 @@
 /**
- * TABS
+ * タブ定義
  */
 export const TABS = [
   {
@@ -45,3 +45,7 @@ export const TABS = [
     hash: '#change-hisotry',
   },
 ];
+
+export const getTab = (screenId: string, id: number) => {
+  return TABS.find((x) => x.screenId === screenId && x.id === id);
+};
