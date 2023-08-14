@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FieldPath,
   FieldPathValue,
@@ -19,13 +19,11 @@ import Pulldown from 'icons/pulldown_arrow.png';
 
 import {
   Box,
-  Chip,
   FormControl,
   FormHelperText,
   Select as SelectMui,
   styled,
 } from '@mui/material';
-import Autocomplete from '@mui/material/Autocomplete';
 import MenuItem from '@mui/material/MenuItem';
 
 export interface SelectValue {
@@ -91,13 +89,36 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
     size = 's',
   } = props;
 
-  const { register, formState, control, setValue } = useFormContext();
+  const { register, formState, control } = useFormContext();
   const watchValue = useWatch({ name, control });
 
   // 複数選択された場合、先頭行の空白は削除する
   const omitBlankValue = (val: string[]) => {
     return val.filter((e) => e !== '');
   };
+
+  // 検索可能なSelect用変数
+  const [searchVal, setSearchVal] = useState<string>('');
+  const [isType, setIsType] = useState<boolean>(false);
+  const [filteringVal, setFilteringVal] = useState<SelectValue[]>(selectValues);
+
+  // 検索可能なSelectの選択肢検索変数
+  const handleChange = (val: string) => {
+    setSearchVal(val);
+  };
+
+  // 選択肢のフィルタリング
+  useEffect(() => {
+    if (isType) return;
+    if (!searchVal) {
+      setFilteringVal(selectValues);
+    } else {
+      setFilteringVal(
+        selectValues.filter((val) => val.displayValue.includes(searchVal))
+      );
+    }
+  }, [isType, searchVal, selectValues]);
+
   const isReadOnly = control?._options?.context[0];
   return (
     <InputLayout
@@ -135,49 +156,40 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
             )}
           </StyledFormControl>
         ) : (
-          <Autocomplete
-            multiple={multiple}
-            disabled={disabled}
-            limitTags={2}
-            size='small'
-            options={selectValues}
-            getOptionLabel={(option) =>
-              typeof option === 'string' ? option : option.displayValue
-            }
-            isOptionEqualToValue={(option, value) =>
-              option.value === value.value
-            }
-            {...register(name)}
-            onChange={(e, newValue) => {
-              setValue(
-                name,
-                newValue as FieldPathValue<FieldValues, FieldPath<FieldValues>>
-              );
-            }}
-            value={watchValue}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  {...getTagProps({ index })}
-                  label={option.displayValue}
-                  size='small'
-                  key={index}
-                  style={{ maxHeight: 30, marginTop: -3, marginRight: 4 }}
-                />
-              ))
-            }
-            renderInput={(params) => (
-              <StyledTextFiled
-                {...params}
-                error={!!formState.errors[name]}
-                helperText={
-                  formState.errors[name]?.message
-                    ? String(formState.errors[name]?.message)
-                    : null
-                }
-              />
+          <StyledFormControl fullWidth error={!!formState.errors[name]}>
+            <SelectMui
+              disabled={disabled}
+              value={multiple ? omitBlankValue(watchValue) : watchValue}
+              {...register(name)}
+              multiple={multiple}
+              sx={{ textAlign: 'left' }}
+              inputProps={{
+                readOnly: isReadOnly,
+              }}
+              IconComponent={PulldownIcon}
+            >
+              {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
+              {
+                <StyledMenuItem value=''>
+                  <StyledTextFiled
+                    onChange={(e) => handleChange(e.target.value)}
+                    onCompositionStart={() => setIsType(true)}
+                    onCompositionEnd={() => setIsType(false)}
+                  ></StyledTextFiled>
+                </StyledMenuItem>
+              }
+              {filteringVal.map((option, index) => (
+                <StyledMenuItem key={index} value={option.value}>
+                  {option.displayValue}
+                </StyledMenuItem>
+              ))}
+            </SelectMui>
+            {formState.errors[name]?.message && (
+              <FormHelperText>
+                {String(formState.errors[name]?.message)}
+              </FormHelperText>
             )}
-          />
+          </StyledFormControl>
         )}
       </Box>
     </InputLayout>
