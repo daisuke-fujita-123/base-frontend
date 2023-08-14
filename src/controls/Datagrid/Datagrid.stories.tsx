@@ -113,6 +113,7 @@ export const Example = () => {
       field: 'input1',
       cellType: 'input',
       headerName: 'Input 1',
+      required: true,
     },
     {
       field: 'input2',
@@ -151,6 +152,13 @@ export const Example = () => {
       headerName: 'DatePicker',
       size: 'l',
     },
+
+    {
+      field: 'fromto',
+      cellType: 'fromto',
+      headerName: 'FromTo',
+      size: 'l',
+    },
   ];
 
   const rows: GridRowsProp = [
@@ -166,6 +174,7 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
       id: '0002',
@@ -179,6 +188,7 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
       id: '0003',
@@ -192,6 +202,7 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
       id: '0004',
@@ -205,6 +216,7 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
       id: '0005',
@@ -218,6 +230,7 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
   ];
 
@@ -226,8 +239,13 @@ export const Example = () => {
     input2: yup.string().required().max(10).label('Input 2'),
   });
 
+  const handleOnClick = () => {
+    console.log(rows);
+  };
+
   return (
     <>
+      <Button onClick={handleOnClick}>log</Button>
       <DataGrid columns={columns} rows={rows} resolver={validationSchema} />
     </>
   );

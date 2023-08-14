@@ -13,14 +13,71 @@ import { Typography } from 'controls/Typography';
 
 import Calendar from 'icons/button_calendar.png';
 
-import { IconButton, Stack, styled } from '@mui/material';
+import { Box, IconButton, Stack, styled } from '@mui/material';
 import {
+  BaseSingleInputFieldProps,
   DatePicker as DatePickerMui,
+  DateValidationError,
+  FieldSection,
   LocalizationProvider,
+  UseDateFieldProps,
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
 import { ja } from 'date-fns/locale';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
+
+interface DatePickerFieldProps
+  extends UseDateFieldProps<Date>,
+    BaseSingleInputFieldProps<
+      Date | null,
+      Date,
+      FieldSection,
+      DateValidationError
+    > {
+  /**
+   * @typescript-to-proptypes-ignore
+   */
+  options?: Dayjs[];
+}
+
+// eslint-disable-next-line react/display-name
+const DatePickerField = React.forwardRef(
+  (props: DatePickerFieldProps, inputRef: React.Ref<HTMLInputElement>) => {
+    const {
+      label,
+      disabled,
+      readOnly,
+      id,
+      value,
+      onChange,
+      InputProps: { ref: containerRef, startAdornment, endAdornment } = {},
+      inputProps,
+      options = [],
+      ...other
+    } = props;
+
+    return (
+      <Box
+        sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}
+        id={id}
+        ref={containerRef}
+      >
+        {startAdornment}
+        <input
+          id={id}
+          disabled={disabled}
+          readOnly={readOnly}
+          ref={inputRef}
+          value={'aaaa'}
+          onChange={(e) => {
+            console.log(e);
+          }}
+        />
+        {endAdornment}
+      </Box>
+    );
+  }
+);
 
 export interface DatePickerProps<T extends FieldValues> {
   name: Path<T>;
@@ -124,6 +181,7 @@ export const DatePicker = <T extends FieldValues>(
             onChange={handleValueChange}
             // slots={{ textField: TextField }}
             slots={{
+              // field: DatePickerField,
               openPickerIcon: CalenderIcon,
             }}
             slotProps={{

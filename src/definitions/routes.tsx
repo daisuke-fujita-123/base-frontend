@@ -1,17 +1,12 @@
 import React from 'react';
 
-import ScrCom0011PopupTester from 'pages/_dev/ScrCom0011PopupTester';
-import ScrCom0018PopupTester from 'pages/_dev/ScrCom0018PopupTester';
-import ScrCom0032PopupTester from 'pages/_dev/ScrCom0032PopupTester';
-import ScrCom0033PopupTester from 'pages/_dev/ScrCom0033PopupTester';
-import ScrCom0035PopupTester from 'pages/_dev/ScrCom0035PopupTester';
-import ScrCom0036PopupTester from 'pages/_dev/ScrCom0036PopupTester';
-import ScrCom0038PopupTester from 'pages/_dev/ScrCom0038PopupTester';
 import DatagridCellJoin from 'pages/_exp/DatagridCellJoin';
 import DataGridCellType from 'pages/_exp/DatagridCellType';
 import DatagridColumnGroups from 'pages/_exp/DatagridColumnGroups';
 import Experiments from 'pages/_exp/Experiments';
 import Layouts from 'pages/_exp/Layouts';
+import Logout from 'pages/_exp/Logout';
+import Scroll from 'pages/_exp/Scroll';
 import WatchForm from 'pages/_exp/WatchForm';
 import ScrCom0001Page from 'pages/com/ScrCom0001Page';
 import ScrCom0002Page from 'pages/com/ScrCom0002Page';
@@ -72,7 +67,7 @@ import ScrTra0038Page from 'pages/tra/ScrTra0038Page';
 import GlobalLayout from 'layouts/GlobalLayout';
 
 /**
- * _routes
+ * 画面URI定義
  */
 const _ROUTES = [
   {
@@ -461,55 +456,6 @@ const _ROUTES = [
     element: <ScrTra0038Page />,
   },
   {
-    // SCR-COM-0011 帳票選択（ポップアップ）テスター
-    id: 'SCR-COM-0011',
-    name: '帳票選択（ポップアップ）テスター',
-    path: '/_dev/tester/scr-com-0011',
-    element: <ScrCom0011PopupTester />,
-  },
-  {
-    // SCR-COM-0018 サービス一覧（ポップアップ）テスター
-    id: 'SCR-COM-0018',
-    name: 'サービス一覧（ポップアップ）テスター',
-    path: '/_dev/tester/scr-com-0018',
-    element: <ScrCom0018PopupTester />,
-  },
-  {
-    // SCR-COM-0032 登録内容確認（ポップアップ）テスター
-    id: 'SCR-COM-0032',
-    name: '登録内容確認（ポップアップ）テスター',
-    path: '/_dev/tester/scr-com-0032',
-    element: <ScrCom0032PopupTester />,
-  },
-  {
-    // SCR-COM-0033 登録内容申請（ポップアップ）テスター
-    id: 'SCR-COM-0033',
-    name: '登録内容申請（ポップアップ）テスター',
-    path: '/_dev/tester/scr-com-0033',
-    element: <ScrCom0033PopupTester />,
-  },
-  {
-    // SCR-COM-0035 CSV読込（ポップアップ）テスター
-    id: 'SCR-COM-0035',
-    name: 'CSV読込（ポップアップ）テスター',
-    path: '/_dev/tester/scr-com-0035',
-    element: <ScrCom0035PopupTester />,
-  },
-  {
-    // SCR-COM-0036 一括登録エラー確認（ポップアップ）テスター
-    id: 'SCR-COM-0036',
-    name: '一括登録エラー確認（ポップアップ）テスター',
-    path: '/_dev/tester/scr-com-0036',
-    element: <ScrCom0036PopupTester />,
-  },
-  {
-    // SCR-COM-0038 エラー確認（ポップアップ）テスター
-    id: 'SCR-COM-0038',
-    name: 'エラー確認（ポップアップ）テスター',
-    path: '/_dev/tester/scr-com-0038',
-    element: <ScrCom0038PopupTester />,
-  },
-  {
     // exp Experiments
     id: 'Experiments',
     name: 'Experiments',
@@ -551,12 +497,31 @@ const _ROUTES = [
     path: '/_exp/watch-form',
     element: <WatchForm />,
   },
+  {
+    // exp Scroll
+    id: 'Scroll',
+    name: 'Scroll',
+    path: '/_exp/Scroll',
+    element: <Scroll />,
+  },
+  {
+    // exp Logout
+    id: 'Logout',
+    name: 'Logout',
+    path: '/_exp/logout',
+    element: <Logout />,
+  },
 ];
 
 /**
- * routes
+ * 画面URI定義
  */
 export const ROUTES = [
+  {
+    path: '/_exp/logout',
+    element: <Logout />,
+    children: [],
+  },
   {
     path: '/',
     element: <GlobalLayout />,

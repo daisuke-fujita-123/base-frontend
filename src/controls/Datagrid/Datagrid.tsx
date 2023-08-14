@@ -8,6 +8,7 @@ import {
   GridCheckboxCell,
   GridCustomizableRadiioCell,
   GridDatepickerCell,
+  GridFromtoCell,
   GridInputCell,
   GridRadioCell,
   GridSelectCell,
@@ -33,6 +34,7 @@ import {
   DataGridPro as MuiDataGridPro,
   DataGridProProps,
   GridColDef as MuiGridColDef,
+  GridColumnHeaderParams,
   GridRenderCellParams,
   GridRowsProp,
   GridValidRowModel,
@@ -92,6 +94,10 @@ export type GridColDef = MuiGridColDef & {
    */
   size?: 'ss' | 's' | 'm' | 'l';
   /**
+   * required
+   */
+  required?: boolean;
+  /**
    * cellType
    */
   cellType?:
@@ -101,6 +107,7 @@ export type GridColDef = MuiGridColDef & {
     | 'radio'
     | 'checkbox'
     | 'datepicker'
+    | 'fromto'
     | 'link'
     | 'button'
     | any[];
@@ -198,9 +205,13 @@ export interface DataGridProps extends DataGridProProps {
    * @returns
    */
   onLinkClick?: (url: string) => void; // add, cellType = 'link'
-
+  /**
+   * onCellHelperButtonClick
+   */
   onCellHelperButtonClick?: (firld: string, row: number) => void; // add, cellOptionalButton
-
+  /**
+   * getCellDisabled
+   */
   getCellDisabled?: (params: any) => boolean;
 }
 
@@ -298,6 +309,7 @@ export const DataGrid = (props: DataGridProps) => {
     onCellHelperButtonClick && onCellHelperButtonClick(params.field, params.id);
   };
 
+  // heander
   const handleProcessRowUpdate = (newRow: any, oldRow: any) => {
     return newRow;
   };
@@ -420,6 +432,25 @@ export const DataGrid = (props: DataGridProps) => {
     );
   };
 
+  const generateFromtoCell = (params: any) => {
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    return (
+      <>
+        <GridFromtoCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+        {params.colDef.cellOptionalButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
+
   const generateMultiInputCell = (params: any) => {
     const cellTypes = params.colDef.cellType;
 
@@ -509,6 +540,9 @@ export const DataGrid = (props: DataGridProps) => {
     if (value.cellType === 'datepicker') {
       renderCell = generateDatepickerCell;
     }
+    if (value.cellType === 'fromto') {
+      renderCell = generateFromtoCell;
+    }
     if (value.cellType === 'link') {
       renderCell = generateLinkCell;
     }
@@ -519,10 +553,21 @@ export const DataGrid = (props: DataGridProps) => {
       renderCell = generateMultiInputCell;
     }
 
+    let renderHeader = value.renderHeader;
+    if (value.required) {
+      renderHeader = (params: GridColumnHeaderParams) => (
+        <strong>
+          {params.colDef.headerName}
+          <span style={{ color: '#ff0000' }}> *</span>
+        </strong>
+      );
+    }
+
     return {
       ...value,
       width: width,
       renderCell: renderCell,
+      renderHeader: renderHeader,
     };
   });
 
