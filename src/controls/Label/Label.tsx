@@ -9,6 +9,9 @@ const StyledRequiredLabel = styled('div')({
   width: theme.spacing(8),
   height: theme.spacing(4),
   marginLeft: theme.spacing(1),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const RequiredLabelText = styled(TypographyMui)({

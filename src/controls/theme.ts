@@ -90,9 +90,11 @@ export const theme = createTheme({
   typography: {
     fontFamily: ['メイリオ', 'Meiryo'].join(','),
     fontSize: 13,
+    fontWeightBold: 700,
+    fontWeightRegular: 400,
     body1: {
       fontSize: 13,
-      lineHeight: 1.5,
+      lineHeight: 1,
     },
   },
   spacing: 5,
