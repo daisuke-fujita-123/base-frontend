@@ -16,10 +16,10 @@ export const useForm = <
 >(
   props: useFormPropsReact<TFieldValues, TContext>
 ) => {
-  const { defaultValues, resolver, context } = props;
+  const { defaultValues, resolver, context = false } = props;
 
   // context
-  const { setNeedsConfitmTransition } = useContext(AppContext);
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
 
   // form
   const methods = useFormReact<TFieldValues>({
@@ -34,19 +34,12 @@ export const useForm = <
     formState: { isDirty },
   } = methods;
 
-  // 初回表示時処理
-  // useEffect(() => {
-  //   return () => {
-  //     setNeedsConfitmTransition(false);
-  //   };
-  // }, [setNeedsConfitmTransition]);
-
   // 初回値変更時処理
   useEffect(() => {
     if (isDirty) {
-      setNeedsConfitmTransition(true);
+      setNeedsConfirmNavigate(true);
     }
-  }, [isDirty, setNeedsConfitmTransition]);
+  }, [isDirty]);
 
   return methods;
 };

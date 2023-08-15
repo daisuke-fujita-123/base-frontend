@@ -1,29 +1,49 @@
 import React from 'react';
 import { FieldValues, Path, useFormContext } from 'react-hook-form';
 
-import TextareaAutosize from '@mui/base/TextareaAutosize';
-import { FormHelperText } from '@mui/material';
+import { FormHelperText, styled, TextareaAutosize } from '@mui/material';
 
 export interface TextareaProps<T extends FieldValues> {
   name: Path<T>;
   disabled?: boolean;
   maxRows?: number;
-  minRows?: number;
+  size?: 's' | 'm' | 'l' | 'xl';
 }
+
+export const StyledTextArea = styled(TextareaAutosize)({
+  padding: '0 0 0 8px',
+  border: '1px solid #bbbbbb',
+  fontFamily: ['メイリオ', 'Meiryo'].join(','),
+  fontSize: 13,
+  '&.Mui-focused fieldset': {
+    borderColor: '#f37246',
+  },
+});
+
 export const Textarea = <T extends FieldValues>(props: TextareaProps<T>) => {
-  const { name, disabled = false, maxRows, minRows } = props;
+  const { name, disabled = false, maxRows = 8, size = 's' } = props;
   const { register, formState, control } = useFormContext();
   const isReadOnly = control?._options?.context[0];
+
+  const areaWidth = () => {
+    if (size === 's') return 225;
+    else if (size === 'm') return 490;
+    else if (size === 'l') return 755;
+    else if (size === 'xl') return 1550;
+    else return 225;
+  };
+
   return (
     <>
-      <TextareaAutosize
+      <StyledTextArea
         {...register(name)}
         disabled={disabled}
         maxRows={maxRows}
-        minRows={minRows}
+        minRows={8}
         readOnly={isReadOnly}
-      ></TextareaAutosize>
-      <FormHelperText sx={{ color: 'red' }}>
+        style={{ width: areaWidth() }}
+      ></StyledTextArea>
+      <FormHelperText>
         {formState.errors[name]?.message
           ? String(formState.errors[name]?.message)
           : null}
