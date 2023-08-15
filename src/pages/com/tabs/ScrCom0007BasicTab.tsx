@@ -81,7 +81,7 @@ interface SearchResultRowModelForConvert {
   // コメント編集フラグ
   commentEditFlag: string;
   // 変更予約フラグ
-  changeReservationFlag: boolean;
+  changeReservationFlag: string;
   // 出力元機能名
   outputSourceFunctionName: string;
 }
@@ -99,7 +99,7 @@ const convertToSearchResultRowModel = (
       reportName: x.reportName,
       reportOutputFormatKind: x.reportOutputFormatKind,
       commentEditFlag: x.commentEditFlag === true ? '可' : '',
-      changeReservationFlag: x.changeReservationFlag,
+      changeReservationFlag: x.changeReservationFlag === true ? 'あり' : '',
       outputSourceFunctionName: x.outputSourceFunctionName,
     };
   });
