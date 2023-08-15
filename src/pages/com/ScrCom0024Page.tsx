@@ -30,20 +30,19 @@ import {
 } from 'apis/com/ScrCom0024Api';
 import {
   ResultList,
-  ScrCom9999GetCodeManagementMasterListbox,
-  ScrCom9999GetCodeManagementMasterListboxRequest,
+  ScrCom9999GetCodeManagementMaster,
+  ScrCom9999GetCodeManagementMasterRequest,
   ScrCom9999GetCodeValue,
   ScrCom9999GetCodeValueRequest,
-  ScrCom9999GetPlaceMasterListbox,
+  ScrCom9999GetPlaceMaster,
+  SearchGetCodeManagementMasterListbox,
+  SearchGetPlaceMasterListbox,
 } from 'apis/com/ScrCom9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
 import { AuthContext } from 'providers/AuthProvider';
-
-import { CODE_ID } from 'definitions/codeId';
 
 /**
  * 会場基本情報データモデル
@@ -55,10 +54,14 @@ interface PlaceBasicModel {
   placeName: string;
   // おまとめ会場フラグ
   omatomePlaceFlag: boolean;
+  // おまとめ会場フラグ-値変換
+  omatomePlaceValue: string;
   // 計算書表示会場名
   statementDisplayPlaceName: string;
   // 利用フラグ
   useFlag: boolean;
+  // 利用フラグ -値変換
+  useValue: string;
   // 提供開始日
   partnerStartDate: string;
   // 開催曜日区分
@@ -81,14 +84,20 @@ interface PlaceBasicModel {
   posPutTogetherPlaceCode: string;
   // ホンダグループフラグ
   hondaGroupFlag: boolean;
+  // ホンダグループフラグ -値変換
+  hondaGroupValue: string;
   // 保証金
   guaranteeDeposit: number | string;
   // ライブ会場グループコード
   livePlaceGroupCode: string;
   // 書類発送指示フラグ
   documentShippingInstructionFlag: boolean;
+  // 書類発送指示フラグ -値変換
+  documentShippingInstructionValue: string;
   // 指示対象
-  referent: string;
+  referent: boolean;
+  // 指示対象
+  referentValue: string;
   // 書類発送会場直送フラグ
   documentShippingPlaceDirectDeliveryFlag: boolean;
   // 書類発送担当者
@@ -101,6 +110,8 @@ interface PlaceBasicModel {
   paymentDueDate: string;
   /** 出金設定 */
   paymentAllFlag: boolean;
+  /** 出金設定 -値変換 */
+  paymentAllValue: string;
   /** 振込銀行名 */
   bankName: string;
   /** 振込支店名 */
@@ -115,6 +126,8 @@ interface PlaceBasicModel {
   virtualAccountGiveRuleCode: string;
   /** 支払通知フラグ */
   paymentNoticeFlag: boolean;
+  /** 支払通知フラグ -値変換 */
+  paymentNoticeValue: string;
   /** 支払通知担当者 */
   paymentNoticeStaff: string;
   /** 支払通知メールアドレス */
@@ -122,9 +135,9 @@ interface PlaceBasicModel {
   /** 支払通知FAX番号 */
   paymentNoticeFaxNumber: string;
   /** 入金元銀行コード */
-  receiptSourceBankCode: string;
+  receiptSourceBankName: string;
   /** 入金元支店コード */
-  receiptSourceBranchCode: string;
+  receiptSourceBranchName: string;
   /** 入金元口座名義カナ */
   receiptSourceAccountNameKana: string;
   /** 会場会員管理担当メールアドレス */
@@ -140,8 +153,10 @@ const initialValues: PlaceBasicModel = {
   placeCd: '',
   placeName: '',
   omatomePlaceFlag: false,
+  omatomePlaceValue: '',
   statementDisplayPlaceName: '',
   useFlag: false,
+  useValue: '',
   partnerStartDate: '',
   sessionWeekKind: '',
   contractId: '',
@@ -152,17 +167,21 @@ const initialValues: PlaceBasicModel = {
   placeGroupCode: '',
   paymentDestinationPlaceName: '',
   hondaGroupFlag: false,
+  hondaGroupValue: '',
   posPutTogetherPlaceCode: '',
   guaranteeDeposit: '',
   livePlaceGroupCode: '',
   documentShippingInstructionFlag: false,
-  referent: '',
+  documentShippingInstructionValue: '',
+  referent: false,
+  referentValue: '',
   documentShippingPlaceDirectDeliveryFlag: false,
   documentShippingStaff: '',
   documentShippingMailAddress: '',
   documentShippingFaxNumber: '',
   paymentDueDate: '',
   paymentAllFlag: false,
+  paymentAllValue: '',
   bankName: '',
   branchName: '',
   accountKind: '',
@@ -170,11 +189,12 @@ const initialValues: PlaceBasicModel = {
   accountNameKana: '',
   virtualAccountGiveRuleCode: '',
   paymentNoticeFlag: false,
+  paymentNoticeValue: '',
   paymentNoticeStaff: '',
   paymentNoticeMailAddress: '',
   paymentNoticeFaxNumber: '',
-  receiptSourceBankCode: '',
-  receiptSourceBranchCode: '',
+  receiptSourceBankName: '',
+  receiptSourceBranchName: '',
   receiptSourceAccountNameKana: '',
   placeMemberManagementStaffMailAddress: '',
   omatomePlaceContactImpossibleTargetedKind: '',
@@ -298,6 +318,18 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
 };
 
 /**
+ * CODE_ID 定数
+ */
+// 開催曜日区分
+const SCR_TRA_0018 = 'SCR-TRA-0018';
+// ライブ会場グループコード
+const CDE_COM_0218 = 'CDE-COM-0218';
+// バーチャル口座ルール
+const CDE_COM_0139 = 'CDE-COM-0139';
+// おまとめ会場連絡不可対象
+const CDE_COM_0140 = 'CDE-COM-0140';
+
+/**
  * SCR-COM-0024 会場詳細画面
  */
 const ScrCom0024Page = () => {
@@ -332,7 +364,6 @@ const ScrCom0024Page = () => {
   const navigate = useNavigate();
 
   // user情報
-  const { appContext } = useContext(AppContext);
   const { user } = useContext(AuthContext);
 
   // popup
@@ -340,14 +371,130 @@ const ScrCom0024Page = () => {
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
 
+  // リストボックスを設定する共通処理(現在情報の表示・新規登録)
+  const listboxSetting = async () => {
+    // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
+    const sessionWeekKindRequest: ScrCom9999GetCodeManagementMasterRequest = {
+      businessDate: user.taskDate,
+      // 開催曜日区分
+      codeId: SCR_TRA_0018,
+    };
+    const sessionWeekKindResponse = await ScrCom9999GetCodeManagementMaster(
+      sessionWeekKindRequest
+    );
+
+    // SCR-COM-9999-0016: 会場マスタリストボックス情報取得API
+    const placeGroupResponse = await ScrCom9999GetPlaceMaster();
+
+    // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
+    const livePlaceGroupCodeRequest: ScrCom9999GetCodeManagementMasterRequest =
+      {
+        businessDate: user.taskDate,
+        // ライブ会場グループコード
+        codeId: CDE_COM_0218,
+      };
+    const livePlaceGroupCodeResponse = await ScrCom9999GetCodeManagementMaster(
+      livePlaceGroupCodeRequest
+    );
+
+    // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
+    const virtualAccountGrantRuleRequest: ScrCom9999GetCodeManagementMasterRequest =
+      {
+        businessDate: user.taskDate,
+        // バーチャル口座付与ルール
+        codeId: CDE_COM_0139,
+      };
+    const virtualAccountGrantRuleResponse =
+      await ScrCom9999GetCodeManagementMaster(virtualAccountGrantRuleRequest);
+
+    // SCR-COM-9999-0031: コード値取得API(bank_master)
+    const scrCom9999GetCodeValueRequestForBank: ScrCom9999GetCodeValueRequest =
+      {
+        entityList: [
+          {
+            entityName: 'bank_master',
+          },
+        ],
+      };
+    const bankNameResponse = await ScrCom9999GetCodeValue(
+      scrCom9999GetCodeValueRequestForBank
+    );
+
+    // SCR-COM-9999-0031: コード値取得API(branch_master)
+    const scrCom9999GetCodeValueRequestForBranch: ScrCom9999GetCodeValueRequest =
+      {
+        entityList: [
+          {
+            entityName: 'branch_master',
+          },
+        ],
+      };
+    const branchNameResponse = await ScrCom9999GetCodeValue(
+      scrCom9999GetCodeValueRequestForBranch
+    );
+
+    // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
+    const omatomePlaceContactImpossibleTargetedKindRequest: ScrCom9999GetCodeManagementMasterRequest =
+      {
+        businessDate: user.taskDate,
+        // おまとめ会場連絡不可対象
+        codeId: CDE_COM_0140,
+      };
+    const omatomePlaceContactImpossibleTargetedKindResponse =
+      await ScrCom9999GetCodeManagementMaster(
+        omatomePlaceContactImpossibleTargetedKindRequest
+      );
+
+    // 画面にデータを設定 リストボックス
+    setSelectValues({
+      // 開催曜日
+      sessionWeekKindSelectValues: convertFrom0010ToSelectValueModel(
+        sessionWeekKindResponse.searchGetCodeManagementMasterListbox
+      ),
+      // 会場グループ
+      placeGroupCodeSelectValues: convertFrom0016ToSelectValueModel(
+        placeGroupResponse.searchGetPlaceMasterListbox
+      ),
+      // 支払先会場名
+      paymentDestinationPlaceNameSelectValues:
+        convertFrom0016ToSelectValueModel(
+          placeGroupResponse.searchGetPlaceMasterListbox
+        ),
+      // POSまとめ会場
+      posPutTogetherPlaceCodeSelectValues: convertFrom0016ToSelectValueModel(
+        placeGroupResponse.searchGetPlaceMasterListbox
+      ),
+      // ライブ会場グループコード
+      livePlaceGroupCodeSelectValues: convertFrom0010ToSelectValueModel(
+        livePlaceGroupCodeResponse.searchGetCodeManagementMasterListbox
+      ),
+      // バーチャル口座付与ルール
+      virtualAccountGrantRuleSelectValues: convertFrom0010ToSelectValueModel(
+        virtualAccountGrantRuleResponse.searchGetCodeManagementMasterListbox
+      ),
+      // 銀行名
+      bankNameSelectValues: convertToCodeValueSelectValueModel(
+        bankNameResponse.resultList
+      ),
+      // 支店名
+      branchNameSelectValues: convertToCodeValueSelectValueModel(
+        branchNameResponse.resultList
+      ),
+      // おまとめ会場連絡不可対象
+      omatomePlaceContactImpossibleTargetedKindSelectValues:
+        convertFrom0010ToSelectValueModel(
+          omatomePlaceContactImpossibleTargetedKindResponse.searchGetCodeManagementMasterListbox
+        ),
+    });
+  };
+
   // 初期表示処理
   useEffect(() => {
     // 現在表示 初期表示
     const initialize = async (placeCd: string) => {
       // SCR-COM-0024-0001: ライブ会場データ取得API
       const placeBasicRequest: ScrCom0024GetPlaceDataRequest = {
-        // TODO: 業務日付取得方法実装後に変更
-        businessDate: '',
+        businessDate: user.taskDate,
         placeCd: placeCd,
       };
       const placeBasicResponse = await ScrCom0024GetPlaceData(
@@ -355,84 +502,143 @@ const ScrCom0024Page = () => {
       );
       const placeBasic = convertToPlaceBasicModel(placeBasicResponse);
 
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const sessionWeekKindRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // 開催曜日区分
-          codeId: CODE_ID[0].codeId,
-        };
-      const sessionWeekKindResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(sessionWeekKindRequest);
+      // 初期表示時のラジオボタン制御用
+      // おまとめ会場フラグ
+      const convertToOmatomePlaceValue: string =
+        placeBasic.omatomePlaceFlag === true ? 'target' : 'unTarget';
+      // 利用フラグ
+      const convertToUseValue: string =
+        placeBasic.useFlag === true ? 'yes' : 'no';
+      // ホンダグループ
+      const convertToHondaGroupValue: string =
+        placeBasic.hondaGroupFlag === true ? 'hondaTarget' : 'hondaUnTarget';
+      // 書類発送指示
+      const convertToDocumentShippingInstructionValue: string =
+        placeBasic.documentShippingInstructionFlag === true
+          ? 'sendingDocumentsTarget'
+          : 'sendingDocumentsUnTarget';
+      // 指示対象
+      const convertToReferent: string =
+        placeBasic.documentShippingPlaceDirectDeliveryFlag === true
+          ? 'meberDirectDelivery'
+          : 'onlyAuc';
+      // 出金設定
+      const convertToPaymentAllValue: string =
+        placeBasic.paymentAllFlag === true ? 'bulk' : 'eachTime';
+      // 出金設定
+      const convertToPaymentNoticeValue: string =
+        placeBasic.paymentNoticeFlag === true
+          ? 'paymentNoticeTarget'
+          : 'paymentNoticeUnTarget';
 
-      // SCR-COM-9999-0016: 会場マスタリストボックス情報取得API
-      const placeGroupResponse = await ScrCom9999GetPlaceMasterListbox();
-
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const livePlaceGroupCodeRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // ライブ会場グループコード
-          codeId: CODE_ID[1].codeId,
-        };
-      const livePlaceGroupCodeResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(
-          livePlaceGroupCodeRequest
-        );
-
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const virtualAccountGrantRuleRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // バーチャル口座付与ルール
-          codeId: CODE_ID[2].codeId,
-        };
-      const virtualAccountGrantRuleResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(
-          virtualAccountGrantRuleRequest
-        );
-
-      // SCR-COM-9999-0031: コード値取得API(bank_master)
-      const scrCom9999GetCodeValueRequestForBank: ScrCom9999GetCodeValueRequest =
-        {
-          entityList: [
-            {
-              entityName: 'bank_master',
-            },
-          ],
-        };
-      const bankNameResponse = await ScrCom9999GetCodeValue(
-        scrCom9999GetCodeValueRequestForBank
+      // 画面にデータを設定
+      // 会場基本情報セクション
+      // 会場コード
+      setValue('placeCd', placeBasic.placeCd);
+      // 会場名
+      setValue('placeName', placeBasic.placeName);
+      // おまとめ会場(ラジオボタン)
+      setValue('omatomePlaceValue', convertToOmatomePlaceValue);
+      // 計算表示会場名
+      setValue(
+        'statementDisplayPlaceName',
+        placeBasic.statementDisplayPlaceName
       );
-
-      // SCR-COM-9999-0031: コード値取得API(branch_master)
-      const scrCom9999GetCodeValueRequestForBranch: ScrCom9999GetCodeValueRequest =
-        {
-          entityList: [
-            {
-              entityName: 'branch_master',
-            },
-          ],
-        };
-      const brannchNameResponse = await ScrCom9999GetCodeValue(
-        scrCom9999GetCodeValueRequestForBranch
+      // 利用フラグ(ラジオボタン)
+      setValue('useValue', convertToUseValue);
+      // 提供開始日
+      setValue('partnerStartDate', placeBasic.partnerStartDate);
+      // 開催曜日(リストボックス)
+      setValue('sessionWeekKind', placeBasic.placeCd);
+      // 契約ID
+      setValue('contractId', placeBasic.contractId);
+      // 法人ID
+      setValue('corporationId', placeBasic.corporationId);
+      // 法人名
+      setValue('corporationName', placeBasic.corporationName);
+      // 事業拠点電話番号
+      setValue('telephoneNumber', placeBasic.telephoneNumber);
+      // 請求先ID
+      setValue('billingId', placeBasic.billingId);
+      // 会場グループ(リストボックス)
+      setValue('placeGroupCode', placeBasic.placeCd);
+      // 支払先会場名(リストボックス)
+      setValue('paymentDestinationPlaceName', placeBasic.placeCd);
+      // POSまとめ会場名(リストボックス)
+      setValue('posPutTogetherPlaceCode', placeBasic.placeCd);
+      // ライブ会場グループコード(リストボックス)
+      setValue('livePlaceGroupCode', placeBasic.placeCd);
+      // ホンダグループフラグ
+      setValue('hondaGroupValue', convertToHondaGroupValue);
+      // 保証金
+      setValue('guaranteeDeposit', placeBasic.guaranteeDeposit);
+      // 会場契約ID
+      setValue('contractId', placeBasic.contractId);
+      // 書類発送指示セクション
+      // 書類発送指示(ラジオボタン)
+      setValue(
+        'documentShippingInstructionValue',
+        convertToDocumentShippingInstructionValue
       );
-
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const omatomePlaceContactImpossibleTargetedKindRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // おまとめ会場連絡不可対象
-          codeId: '',
-        };
-      const omatomePlaceContactImpossibleTargetedKindResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(
-          omatomePlaceContactImpossibleTargetedKindRequest
-        );
+      // 書類発送会場直送フラグ(ラジオボタン)
+      setValue('referentValue', convertToReferent);
+      // 書類発送担当者
+      setValue('documentShippingStaff', placeBasic.documentShippingStaff);
+      // 書類発送メールアドレス
+      setValue(
+        'documentShippingMailAddress',
+        placeBasic.documentShippingMailAddress
+      );
+      // 書類発送FAX番号
+      setValue(
+        'documentShippingFaxNumber',
+        placeBasic.documentShippingFaxNumber
+      );
+      // 出金設定セクション
+      // 出金期日
+      setValue('paymentDueDate', placeBasic.paymentDueDate);
+      // 出金一括フラグ(ラジオボタン)
+      setValue('paymentAllValue', convertToPaymentAllValue);
+      // 振込口座情報セクション
+      // 銀行名
+      setValue('bankName', placeBasic.bankName);
+      // 支店名
+      setValue('branchName', placeBasic.branchName);
+      // 種別
+      setValue('accountKind', placeBasic.accountKind);
+      // 口座名義
+      setValue('accountNumber', placeBasic.accountNumber);
+      // 口座名義 カナ
+      setValue('accountNameKana', placeBasic.accountNameKana);
+      // バーチャル口座付与ルール(リストボックス)
+      setValue('virtualAccountGiveRuleCode', placeBasic.placeCd);
+      // 支払通知送付先指定セクション
+      // 支払通知フラグ(ラジオボタン)
+      setValue('paymentNoticeValue', convertToPaymentNoticeValue);
+      // 支払通知担当者
+      setValue('paymentNoticeStaff', placeBasic.paymentNoticeStaff);
+      // 支払通知メールアドレス
+      setValue('paymentNoticeMailAddress', placeBasic.paymentNoticeMailAddress);
+      // 支払通知FAX番号
+      setValue('paymentNoticeFaxNumber', placeBasic.paymentNoticeMailAddress);
+      // 入金元口座情報セクション
+      // 銀行名(リストボックス)
+      setValue('receiptSourceBankName', placeBasic.placeCd);
+      // 支店名(リストボックス)
+      setValue('receiptSourceBranchName', placeBasic.placeCd);
+      // 入金元口座名義カナ
+      setValue(
+        'receiptSourceAccountNameKana',
+        placeBasic.receiptSourceAccountNameKana
+      );
+      // 会場連絡（会員管理）セクション
+      // 会場会員管理担当メールアドレス
+      setValue(
+        'placeMemberManagementStaffMailAddress',
+        placeBasic.placeMemberManagementStaffMailAddress
+      );
+      // おまとめ会場連絡不可対象(リストボックス)
+      setValue('omatomePlaceContactImpossibleTargetedKind', placeBasic.placeCd);
 
       // 判定用データを設定
       setOmatomePlaceFlag(placeBasic.omatomePlaceFlag);
@@ -440,217 +646,14 @@ const ScrCom0024Page = () => {
         placeBasic.documentShippingInstructionFlag
       );
 
-      // 画面にデータを設定
-      // 会場基本情報セクション
-      setValue('placeCd', placeBasic.placeCd);
-      setValue('placeName', placeBasic.placeName);
-      setValue('omatomePlaceFlag', placeBasic.omatomePlaceFlag);
-      setValue(
-        'statementDisplayPlaceName',
-        placeBasic.statementDisplayPlaceName
-      );
-      setValue('useFlag', placeBasic.useFlag);
-      setValue('partnerStartDate', placeBasic.partnerStartDate);
-      setValue('contractId', placeBasic.contractId);
-      setValue('corporationId', placeBasic.corporationId);
-      setValue('corporationName', placeBasic.corporationName);
-      setValue('telephoneNumber', placeBasic.telephoneNumber);
-      setValue(
-        'paymentDestinationPlaceName',
-        placeBasic.paymentDestinationPlaceName
-      );
-      setValue('hondaGroupFlag', placeBasic.hondaGroupFlag);
-      setValue('guaranteeDeposit', placeBasic.guaranteeDeposit);
-      setValue('contractId', placeBasic.contractId);
-      // 書類発送指示セクション
-      setValue(
-        'documentShippingInstructionFlag',
-        placeBasic.documentShippingInstructionFlag
-      );
-      setValue(
-        'documentShippingPlaceDirectDeliveryFlag',
-        placeBasic.documentShippingPlaceDirectDeliveryFlag
-      );
-      setValue('documentShippingStaff', placeBasic.documentShippingStaff);
-      setValue(
-        'documentShippingMailAddress',
-        placeBasic.documentShippingMailAddress
-      );
-      setValue(
-        'documentShippingFaxNumber',
-        placeBasic.documentShippingFaxNumber
-      );
-      // 出金設定セクション
-      setValue('paymentDueDate', placeBasic.paymentDueDate);
-      setValue('paymentAllFlag', placeBasic.paymentAllFlag);
-      // 振込口座情報セクション
-      setValue('bankName', placeBasic.bankName);
-      setValue('branchName', placeBasic.branchName);
-      setValue('accountKind', placeBasic.accountKind);
-      setValue('accountNumber', placeBasic.accountNumber);
-      setValue('accountNameKana', placeBasic.accountNameKana);
-      // 支払通知送付先指定セクション
-      setValue('paymentNoticeFlag', placeBasic.paymentNoticeFlag);
-      setValue('paymentNoticeStaff', placeBasic.paymentNoticeStaff);
-      setValue('paymentNoticeMailAddress', placeBasic.paymentNoticeMailAddress);
-      setValue('paymentNoticeFaxNumber', placeBasic.paymentNoticeMailAddress);
-      // 入金元口座情報セクション
-      setValue(
-        'receiptSourceAccountNameKana',
-        placeBasic.receiptSourceAccountNameKana
-      );
-      // 会場連絡（会員管理）セクション
-      setValue(
-        'placeMemberManagementStaffMailAddress',
-        placeBasic.placeMemberManagementStaffMailAddress
-      );
-
-      setSelectValues({
-        // 開催曜日
-        sessionWeekKindSelectValues:
-          sessionWeekKindResponse.searchGetCodeManagementMasterListbox,
-        // 会場グループ
-        placeGroupCodeSelectValues:
-          placeGroupResponse.searchGetPlaceMasterListbox,
-        // 支払先会場名
-        paymentDestinationPlaceNameSelectValues:
-          placeGroupResponse.searchGetPlaceMasterListbox,
-        // POSまとめ会場
-        posPutTogetherPlaceCodeSelectValues:
-          placeGroupResponse.searchGetPlaceMasterListbox,
-        // ライブ会場グループコード
-        livePlaceGroupCodeSelectValues:
-          livePlaceGroupCodeResponse.searchGetCodeManagementMasterListbox,
-        // バーチャル口座付与ルール
-        virtualAccountGrantRuleSelectValues:
-          virtualAccountGrantRuleResponse.searchGetCodeManagementMasterListbox,
-        // 銀行名
-        bankNameSelectValues: convertToCodeValueSelectValueModel(
-          bankNameResponse.resultList
-        ),
-        // 支店名
-        branchNameSelectValues: convertToCodeValueSelectValueModel(
-          brannchNameResponse.resultList
-        ),
-        // おまとめ会場連絡不可対象
-        omatomePlaceContactImpossibleTargetedKindSelectValues:
-          omatomePlaceContactImpossibleTargetedKindResponse.searchGetCodeManagementMasterListbox,
-      });
+      // 全リストボックスのAPI実行と設定
+      listboxSetting();
     };
 
     // 新規追加 初期表示
-    const initializeNew = async () => {
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const sessionWeekKindRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // 開催曜日区分
-          codeId: CODE_ID[0].codeId,
-        };
-      const sessionWeekKindResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(sessionWeekKindRequest);
-
-      // SCR-COM-9999-0016: 会場マスタリストボックス情報取得API
-      const placeGroupResponse = await ScrCom9999GetPlaceMasterListbox();
-
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const livePlaceGroupCodeRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // ライブ会場グループコード
-          codeId: CODE_ID[1].codeId,
-        };
-      const livePlaceGroupCodeResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(
-          livePlaceGroupCodeRequest
-        );
-
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const virtualAccountGrantRuleRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // バーチャル口座付与ルール
-          codeId: CODE_ID[2].codeId,
-        };
-      const virtualAccountGrantRuleResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(
-          virtualAccountGrantRuleRequest
-        );
-
-      // SCR-COM-9999-0031: コード値取得API(bank_master)
-      const scrCom9999GetCodeValueRequestForBank: ScrCom9999GetCodeValueRequest =
-        {
-          entityList: [
-            {
-              entityName: 'bank_master',
-            },
-          ],
-        };
-      const bankNameResponse = await ScrCom9999GetCodeValue(
-        scrCom9999GetCodeValueRequestForBank
-      );
-
-      // SCR-COM-9999-0031: コード値取得API(branch_master)
-      const scrCom9999GetCodeValueRequestForBranch: ScrCom9999GetCodeValueRequest =
-        {
-          entityList: [
-            {
-              entityName: 'branch_master',
-            },
-          ],
-        };
-      const brannchNameResponse = await ScrCom9999GetCodeValue(
-        scrCom9999GetCodeValueRequestForBranch
-      );
-
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-      const omatomePlaceContactImpossibleTargetedKindRequest: ScrCom9999GetCodeManagementMasterListboxRequest =
-        {
-          // TODO: 業務日付取得方法実装後に変更
-          businessDate: '',
-          // おまとめ会場連絡不可対象
-          codeId: '',
-        };
-      const omatomePlaceContactImpossibleTargetedKindResponse =
-        await ScrCom9999GetCodeManagementMasterListbox(
-          omatomePlaceContactImpossibleTargetedKindRequest
-        );
-
-      // 画面にデータを設定
-      setSelectValues({
-        // 開催曜日
-        sessionWeekKindSelectValues:
-          sessionWeekKindResponse.searchGetCodeManagementMasterListbox,
-        // 会場グループ
-        placeGroupCodeSelectValues:
-          placeGroupResponse.searchGetPlaceMasterListbox,
-        // 支払先会場名
-        paymentDestinationPlaceNameSelectValues:
-          placeGroupResponse.searchGetPlaceMasterListbox,
-        // POSまとめ会場
-        posPutTogetherPlaceCodeSelectValues:
-          placeGroupResponse.searchGetPlaceMasterListbox,
-        // ライブ会場グループコード
-        livePlaceGroupCodeSelectValues:
-          livePlaceGroupCodeResponse.searchGetCodeManagementMasterListbox,
-        // バーチャル口座付与ルール
-        virtualAccountGrantRuleSelectValues:
-          virtualAccountGrantRuleResponse.searchGetCodeManagementMasterListbox,
-        // 銀行名
-        bankNameSelectValues: convertToCodeValueSelectValueModel(
-          bankNameResponse.resultList
-        ),
-        // 支店名
-        branchNameSelectValues: convertToCodeValueSelectValueModel(
-          brannchNameResponse.resultList
-        ),
-        // おまとめ会場連絡不可対象
-        omatomePlaceContactImpossibleTargetedKindSelectValues:
-          omatomePlaceContactImpossibleTargetedKindResponse.searchGetCodeManagementMasterListbox,
-      });
+    const initializeNew = () => {
+      // 全リストボックスのAPI実行と設定
+      listboxSetting();
     };
 
     // 新規作成の画面遷移の場合は初期表示のAPIを呼び出さない
@@ -661,23 +664,21 @@ const ScrCom0024Page = () => {
     }
   }, []);
 
-  // ラジオボタン処理
+  // おまとめ会場のラジオボタン処理
   useEffect(() => {
     const subscription = watch((value, { name, type }) => {
       // textの変更も監視対象のため、setValueでtextを変更した場合を無視しないと無弁ループする
-      if (name !== 'omatomePlaceFlag') return;
-      const omatomePlaceValue = String(value.omatomePlaceFlag);
+      if (name !== 'omatomePlaceValue') return;
+      const omatomePlaceValue = String(value.omatomePlaceValue);
       if (omatomePlaceValue === undefined) return;
-
-      console.log(omatomePlaceValue);
 
       if (omatomePlaceValue === 'target') {
         setOmatomePlaceFlag(true);
-        setValue('referent', '');
+        setValue('referentValue', '');
       } else {
         // おまとめ会場が対象外の場合、"AUC宛のみ"固定とする
         setOmatomePlaceFlag(false);
-        setValue('referent', 'onlyAuc');
+        setValue('referentValue', 'onlyAuc');
       }
     });
     return () => subscription.unsubscribe();
@@ -693,8 +694,10 @@ const ScrCom0024Page = () => {
       placeCd: response.placeCd,
       placeName: response.placeName,
       omatomePlaceFlag: response.omatomePlaceFlag,
+      omatomePlaceValue: response.omatomePlaceFlag === true ? 'yes' : 'no',
       statementDisplayPlaceName: response.statementDisplayPlaceName,
       useFlag: response.useFlag,
+      useValue: response.useFlag === true ? 'target' : 'unTarget',
       partnerStartDate: response.partnerStartDate,
       sessionWeekKind: response.sessionWeekKind,
       contractId: response.contractId,
@@ -706,10 +709,21 @@ const ScrCom0024Page = () => {
       paymentDestinationPlaceName: response.paymentDestinationPlaceName,
       posPutTogetherPlaceCode: response.posPutTogetherPlaceCode,
       hondaGroupFlag: response.hondaGroupFlag,
+      hondaGroupValue:
+        response.hondaGroupFlag === true ? 'hondaTarget' : 'hondaUnTarget',
       guaranteeDeposit: response.guaranteeDeposit,
       livePlaceGroupCode: response.livePlaceGroupCode,
-      referent: '',
       documentShippingInstructionFlag: response.documentShippingInstructionFlag,
+      documentShippingInstructionValue:
+        response.documentShippingInstructionFlag === true
+          ? 'sendingDocumentsTarget'
+          : 'sendingDocumentsUnTarget',
+      referent: response.documentShippingPlaceDirectDeliveryFlag,
+      referentValue:
+        response.documentShippingPlaceDirectDeliveryFlag === true ||
+        response.omatomePlaceFlag === true
+          ? 'meberDirectDelivery'
+          : 'onlyAuc',
       documentShippingPlaceDirectDeliveryFlag:
         response.documentShippingPlaceDirectDeliveryFlag,
       documentShippingStaff: response.documentShippingStaff,
@@ -717,6 +731,7 @@ const ScrCom0024Page = () => {
       documentShippingFaxNumber: response.documentShippingFaxNumber,
       paymentDueDate: response.paymentDueDate,
       paymentAllFlag: response.paymentAllFlag,
+      paymentAllValue: response.paymentAllFlag === true ? 'bulk' : 'eachTime',
       bankName: response.bankName,
       branchName: response.branchName,
       accountKind: response.accountKind,
@@ -724,17 +739,49 @@ const ScrCom0024Page = () => {
       accountNameKana: response.accountNameKana,
       virtualAccountGiveRuleCode: response.virtualAccountGiveRuleCode,
       paymentNoticeFlag: response.paymentNoticeFlag,
+      paymentNoticeValue:
+        response.paymentNoticeFlag === true
+          ? 'paymentNoticeTarget'
+          : 'paymentNoticeUnTarget',
       paymentNoticeStaff: response.paymentNoticeStaff,
       paymentNoticeMailAddress: response.paymentNoticeMailAddress,
       paymentNoticeFaxNumber: response.paymentNoticeFaxNumber,
-      receiptSourceBankCode: response.receiptSourceBankCode,
-      receiptSourceBranchCode: response.receiptSourceBranchCode,
+      receiptSourceBankName: response.receiptSourceBankCode,
+      receiptSourceBranchName: response.receiptSourceBranchCode,
       receiptSourceAccountNameKana: response.receiptSourceAccountNameKana,
       placeMemberManagementStaffMailAddress:
         response.placeMemberManagementStaffMailAddress,
       omatomePlaceContactImpossibleTargetedKind:
         response.omatomePlaceContactImpossibleTargetedKind,
     };
+  };
+
+  /**
+   *  API-COM-9999-0010: コード管理マスタリストボックス情報取得API レスポンスから SelectValueモデルへの変換
+   */
+  const convertFrom0010ToSelectValueModel = (
+    searchGetCodeManagementMasterListbox: SearchGetCodeManagementMasterListbox[]
+  ): SelectValue[] => {
+    return searchGetCodeManagementMasterListbox.map((x) => {
+      return {
+        value: x.codeValue,
+        displayValue: x.codeName,
+      };
+    });
+  };
+
+  /**
+   *  API-COM-9999-0016: 会場マスタリストボックス情報取得API レスポンスから SelectValueモデルへの変換
+   */
+  const convertFrom0016ToSelectValueModel = (
+    searchGetPlaceMasterListbox: SearchGetPlaceMasterListbox[]
+  ): SelectValue[] => {
+    return searchGetPlaceMasterListbox.map((x) => {
+      return {
+        value: x.placeCode,
+        displayValue: x.placeName,
+      };
+    });
   };
 
   /**
@@ -768,7 +815,7 @@ const ScrCom0024Page = () => {
       errorList: response.errorList,
       warningList: response.warningList,
       registrationChangeList: response.registrationChangeList,
-      changeExpectDate: '2022/03/18',
+      changeExpectDate: user.taskDate,
     });
   };
 
@@ -796,7 +843,7 @@ const ScrCom0024Page = () => {
       {
         placeCode: getValues('placeCd'),
         placeName: getValues('placeName'),
-        omatomePlaceFlag: getValues('omatomePlaceFlag'),
+        omatomePlaceFlag: true,
         statementDisplayPlaceName: getValues('statementDisplayPlaceName'),
         useFlag: getValues('useFlag'),
         partnerStartDate: getValues('partnerStartDate'),
@@ -824,8 +871,8 @@ const ScrCom0024Page = () => {
         paymentNoticeStaff: getValues('paymentNoticeStaff'),
         paymentNoticeMailAddress: getValues('paymentNoticeMailAddress'),
         paymentNoticeFaxNumber: getValues('paymentNoticeFaxNumber'),
-        receiptSourceBankCode: getValues('receiptSourceBankCode'),
-        receiptSourceBranchCode: getValues('receiptSourceBranchCode'),
+        receiptSourceBankCode: getValues('receiptSourceBankName'),
+        receiptSourceBranchCode: getValues('receiptSourceBranchName'),
         receiptSourceAccountNameKana: getValues('receiptSourceAccountNameKana'),
         placeMemberManagementStaffMailAddress: getValues(
           'placeMemberManagementStaffMailAddress'
@@ -845,83 +892,8 @@ const ScrCom0024Page = () => {
    * @param registrationChangeMemo 登録変更メモ(登録内容確認ポップアップからの受取)
    */
   const handleApprovalConfirm = (registrationChangeMemo: string) => {
-    console.log(
-      '登録承認ボタン押下後 呼び出し元画面にて受け取った登録変更メモ：' +
-        registrationChangeMemo
-    );
     setIsOpenPopup(false);
   };
-
-  /**
-   * セクション構造定義
-   */
-  // const sectionDef = [
-  //   {
-  //     section: '会場基本情報',
-  //     fields: [
-  //       'placeCd',
-  //       'placeName',
-  //       'omatomePlaceFlag',
-  //       'statementDisplayPlaceName',
-  //       'partnerStartDate',
-  //       'sessionWeekKind',
-  //       'placeGroupCode',
-  //       'paymentDestinationPlaceName',
-  //       'posPutTogetherPlaceCode',
-  //       'hondaGroupFlag',
-  //       'livePlaceGroupCode',
-  //     ],
-  //   },
-  //   {
-  //     section: '書類発送指示',
-  //     fields: [
-  //       'instructionsForSendingDocuments',
-  //       'referent',
-  //       'documentShippingStaff',
-  //       'documentShippingMailAddress',
-  //       'documentShippingFaxNumber',
-  //     ],
-  //   },
-  //   {
-  //     section: '出金設定',
-  //     fields: ['paymentDueDate', 'paymentConfig'],
-  //   },
-  //   {
-  //     section: '振込口座情報',
-  //     fields: [
-  //       'bankName',
-  //       'branchName',
-  //       'accountKind',
-  //       'accountNumber',
-  //       'accountNameKana',
-  //       'virtualAccountGiveRuleCode',
-  //     ],
-  //   },
-  //   {
-  //     section: '支払通知送付先指定',
-  //     fields: [
-  //       'paymentNotice',
-  //       'paymentNoticeStaff',
-  //       'paymentNoticeMailAddress',
-  //       'paymentNoticeFaxNumber',
-  //     ],
-  //   },
-  //   {
-  //     section: '入金元口座情報',
-  //     fields: [
-  //       'receiptSourceBankName',
-  //       'receiptSourceBranchName',
-  //       'receiptSourceAccountNameKana',
-  //     ],
-  //   },
-  //   {
-  //     section: '会場連絡(会員管理)',
-  //     fields: [
-  //       'placeMemberManagementStaffMailAddress',
-  //       'omatomePlaceContactImpossibleTargetedKind',
-  //     ],
-  //   },
-  // ];
 
   return (
     <>
@@ -969,14 +941,14 @@ const ScrCom0024Page = () => {
                   />
                   <Radio
                     label='おまとめ会場'
-                    name='omatomePlaceFlag'
+                    name='omatomePlaceValue'
                     required
                     row={true}
                     radioValues={[
                       {
                         value: 'target',
                         displayValue: '対象',
-                        // 編集権限なしの場合 非活性
+                        // TODO: 編集権限なしの場合 非活性
                         disabled: !user.editPossibleScreenIdList.includes(
                           'SCR-COM-0024'
                         )
@@ -986,7 +958,7 @@ const ScrCom0024Page = () => {
                       {
                         value: 'unTarget',
                         displayValue: '対象外',
-                        // 編集権限なしの場合 非活性
+                        // TODO: 編集権限なしの場合 非活性
                         disabled: !user.editPossibleScreenIdList.includes(
                           'SCR-COM-0024'
                         )
@@ -1010,14 +982,14 @@ const ScrCom0024Page = () => {
                   />
                   <Radio
                     label='利用フラグ'
-                    name='useFlag'
+                    name='useValue'
                     row={true}
                     required
                     radioValues={[
                       {
                         value: 'yes',
                         displayValue: '可',
-                        // 編集権限なしの場合 非活性
+                        // TODO: 編集権限なしの場合 非活性
                         disabled: !user.editPossibleScreenIdList.includes(
                           'SCR-COM-0024'
                         )
@@ -1027,7 +999,7 @@ const ScrCom0024Page = () => {
                       {
                         value: 'no',
                         displayValue: '不可',
-                        // 編集権限なしの場合 非活性
+                        // TODO: 編集権限なしの場合 非活性
                         disabled: !user.editPossibleScreenIdList.includes(
                           'SCR-COM-0024'
                         )
@@ -1063,7 +1035,6 @@ const ScrCom0024Page = () => {
                   <TextField
                     label='契約ID'
                     name='contractId'
-                    // value={contractId}
                     required
                     // 編集権限なしの場合 非活性
                     disabled={
@@ -1075,16 +1046,54 @@ const ScrCom0024Page = () => {
                 </ColStack>
                 {/* 縦 2列目 */}
                 <ColStack>
-                  <TextField label='法人ID' name='corporationId' />
-                  <TextField label='法人名' name='corporationName' size='l' />
-                  <TextField label='請求先ID' name='billingId' />
-                  <TextField label='TEL' name='telephoneNumber' />
+                  <TextField
+                    label='法人ID'
+                    name='corporationId'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                  <TextField
+                    label='法人名'
+                    name='corporationName'
+                    size='l'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                  <TextField
+                    label='請求先ID'
+                    name='billingId'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                  <TextField
+                    label='TEL'
+                    name='telephoneNumber'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
                   <Select
                     label='会場グループ'
                     name='placeGroupCode'
                     size='m'
                     selectValues={selectValues.placeGroupCodeSelectValues}
                     blankOption
+                    // TODO: 確認中の為コメントアウト
                     // 編集権限なしの場合 非活性
                     disabled={
                       !user.editPossibleScreenIdList.includes('SCR-COM-0024')
@@ -1130,14 +1139,20 @@ const ScrCom0024Page = () => {
                     size='m'
                     selectValues={selectValues.livePlaceGroupCodeSelectValues}
                     blankOption
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                   />
                 </ColStack>
                 <ColStack>
                   <Radio
                     label='ホンダグループ'
-                    name='hondaGroupFlag'
+                    name='hondaGroupValue'
                     row={true}
-                    // おまとめ会場が対象の場合必須
+                    // TODO: 編集権限なしの場合 非活性
                     required={omatomePlaceFlag ? true : false}
                     radioValues={[
                       {
@@ -1177,12 +1192,13 @@ const ScrCom0024Page = () => {
                 <ColStack>
                   <Radio
                     label='書類発送指示'
-                    name='instructionsForSendingDocuments'
+                    name='documentShippingInstructionValue'
                     row={true}
                     radioValues={[
                       {
                         value: 'sendingDocumentsTarget',
                         displayValue: '対象',
+                        // TODO: 編集権限なしの場合 非活性
                         disabled:
                           !user.editPossibleScreenIdList.includes(
                             'SCR-COM-0024'
@@ -1193,7 +1209,7 @@ const ScrCom0024Page = () => {
                       {
                         value: 'sendingDocumentsUnTarget',
                         displayValue: '対象外',
-                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: 編集権限なしの場合 非活性
                         disabled:
                           !user.editPossibleScreenIdList.includes(
                             'SCR-COM-0024'
@@ -1205,7 +1221,7 @@ const ScrCom0024Page = () => {
                   />
                   <Radio
                     label='指示対象'
-                    name='referent'
+                    name='referentValue'
                     // TODO: ラジオボタンの項目が縦にならない
                     row={true}
                     // 書類発送指示が対象の場合必須
@@ -1216,7 +1232,7 @@ const ScrCom0024Page = () => {
                       {
                         value: 'meberDirectDelivery',
                         displayValue: '会員直送&AUC宛',
-                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
                         // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
                         disabled:
                           !user.editPossibleScreenIdList.includes(
@@ -1228,7 +1244,7 @@ const ScrCom0024Page = () => {
                       {
                         value: 'onlyAuc',
                         displayValue: 'AUC宛のみ',
-                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
                         // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
                         disabled:
                           !user.editPossibleScreenIdList.includes(
@@ -1310,13 +1326,13 @@ const ScrCom0024Page = () => {
                   />
                   <Radio
                     label='出金設定'
-                    name='paymentConfig'
+                    name='paymentAllValue'
                     row={true}
                     radioValues={[
                       {
                         value: 'bulk',
                         displayValue: '一括',
-                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
                         disabled:
                           !user.editPossibleScreenIdList.includes(
                             'SCR-COM-0024'
@@ -1327,7 +1343,7 @@ const ScrCom0024Page = () => {
                       {
                         value: 'eachTime',
                         displayValue: '都度',
-                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
                         disabled:
                           !user.editPossibleScreenIdList.includes(
                             'SCR-COM-0024'
@@ -1345,14 +1361,62 @@ const ScrCom0024Page = () => {
               <RowStack>
                 {/* 縦 1列目 */}
                 <ColStack>
-                  <TextField label='銀行名' name='bankName' size='l' />
-                  <TextField label='支店名' name='branchName' size='l' />
-                  <TextField label='種別' name='accountKind' />
+                  <TextField
+                    label='銀行名'
+                    name='bankName'
+                    size='l'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                  <TextField
+                    label='支店名'
+                    name='branchName'
+                    size='l'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                  <TextField
+                    label='種別'
+                    name='accountKind'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
                 </ColStack>
                 {/* 縦 2列目 */}
                 <ColStack>
-                  <TextField label='口座番号' name='accountNumber' />
-                  <TextField label='口座名義' name='accountNameKana' size='m' />
+                  <TextField
+                    label='口座番号'
+                    name='accountNumber'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
+                  <TextField
+                    label='口座名義'
+                    name='accountNameKana'
+                    size='m'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
+                  />
                   <Select
                     label='バーチャル口座付与ルール'
                     name='virtualAccountGiveRuleCode'
@@ -1376,13 +1440,13 @@ const ScrCom0024Page = () => {
                 <ColStack>
                   <Radio
                     label='支払通知'
-                    name='paymentNotice'
+                    name='paymentNoticeValue'
                     row={true}
                     radioValues={[
                       {
                         value: 'paymentNoticeTarget',
                         displayValue: '対象',
-                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
                         disabled:
                           !user.editPossibleScreenIdList.includes(
                             'SCR-COM-0024'
@@ -1393,7 +1457,7 @@ const ScrCom0024Page = () => {
                       {
                         value: 'paymentNoticeUnTarget',
                         displayValue: '対象外',
-                        // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
                         disabled:
                           !user.editPossibleScreenIdList.includes(
                             'SCR-COM-0024'
@@ -1507,6 +1571,12 @@ const ScrCom0024Page = () => {
                     label='会場会員管理担当メールアドレス'
                     name='placeMemberManagementStaffMailAddress'
                     size='l'
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                   />
                   <Select
                     label='おまとめ会場連絡不可対象'
@@ -1515,6 +1585,12 @@ const ScrCom0024Page = () => {
                       selectValues.omatomePlaceContactImpossibleTargetedKindSelectValues
                     }
                     blankOption
+                    // 編集権限なしの場合 非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                   />
                 </ColStack>
               </RowStack>
@@ -1539,14 +1615,16 @@ const ScrCom0024Page = () => {
         </MainLayout>
       </MainLayout>
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        // 本画面で使用するのはRegistConfirmのみ
-        handleRegistConfirm={handleRegistConfirm}
-        handleApprovalConfirm={handleApprovalConfirm}
-        handleCancel={handlePopupCancel}
-      />
+      {isOpenPopup && (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          // 本画面で使用するのはRegistConfirmのみ
+          handleRegistConfirm={handleRegistConfirm}
+          handleApprovalConfirm={handleApprovalConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      )}
     </>
   );
 };
