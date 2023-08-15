@@ -5,6 +5,7 @@ import {
   ContentsBox,
   ContentsOutsideBox,
   ErrorBox,
+  MarginBox,
   RightBox,
   SearchTextBox,
   WarningBox,
@@ -88,7 +89,13 @@ export const Section = forwardRef((props: SectionProps, ref) => {
               <SearchTextBox>{serchLabels}</SearchTextBox>
             </AccordionSummary>
           )}
-          {expanded && <RightBox>{decoration}</RightBox>}
+          {expanded && (
+            <RightBox>
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                {decoration}
+              </MarginBox>
+            </RightBox>
+          )}
           <AccordionDetails sx={{ m: theme.spacing(4) }}>
             <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
           </AccordionDetails>

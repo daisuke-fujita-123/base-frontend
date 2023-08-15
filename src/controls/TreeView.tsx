@@ -130,7 +130,6 @@ const StyledAccordionSummary = styled(AccordionSummary)({
   },
   '& .MuiAccordionSummary-content.Mui-expanded': {
     margin: theme.spacing(3),
-    height: 20,
   },
   '& .Mui-expanded': {
     margin: 0,
@@ -155,6 +154,7 @@ const StyledAccordionDetails = styled(AccordionDetails)({
   margin: 0,
   padding: 0,
   marginLeft: theme.spacing(9),
+  marginTop: -7,
 });
 
 const StyledExpandMoreIcon = styled('image')({
@@ -162,13 +162,15 @@ const StyledExpandMoreIcon = styled('image')({
 });
 
 const StyledIconButton = styled(IconButton)({
+  gap: 5,
   position: 'absolute',
-  top: theme.spacing(2.8),
+  top: 12,
   left: theme.spacing(23),
   margin: 0,
   marginLeft: theme.spacing(2),
   padding: 0,
   color: theme.palette.accordion.color,
+  fontSize: 13,
 });
 
 const StarIconButton = styled(IconButton)({
@@ -177,7 +179,6 @@ const StarIconButton = styled(IconButton)({
 
 const StyledIcon = styled('image')({
   marginRight: theme.spacing(1),
-  marginTop: theme.spacing(0.6),
   height: 16,
 });
 
