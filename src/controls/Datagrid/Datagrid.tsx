@@ -483,7 +483,10 @@ export const DataGrid = (props: DataGridProps) => {
 
   // 独自のカラム定義からMUI DataGridのカラム定義へ変換
   const muiColumns: MuiGridColDef[] = columns.map((value) => {
-    const width = convertFromSizeToWidth(value.size);
+    const width =
+      value.width !== undefined
+        ? value.width
+        : convertFromSizeToWidth(value.size);
 
     let renderCell = value.renderCell;
     if (value.cellType === 'input') {

@@ -17,6 +17,7 @@ import { Typography } from 'controls/Typography';
 
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+
 import { IconButton, styled } from '@mui/material';
 import { default as TableMui } from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -106,20 +107,20 @@ interface ConditionProps {
 }
 
 /**
- * 検索条件データモデル
+ * 条件データモデル
  */
-export interface SearchConditionProps {
+export interface ConditionModel {
   conditionType: string;
   condition: {
-    conditions: number;
+    conditions: string | number;
     conditionVal: string | number;
   }[];
 }
 
 /**
- * TableコンポーネントのProps
+ * ContitionalTableコンポーネントのProps
  */
-interface TableProps {
+interface ContitionalTableProps {
   /**
    * 列の定義情報
    */
@@ -138,7 +139,7 @@ interface TableProps {
    */
   handleChange: (
     val: string | number,
-    changeVal: DeepKey<SearchConditionProps>,
+    changeVal: DeepKey<ConditionModel>,
     indexRow: number,
     indexCol?: number
   ) => void;
@@ -146,12 +147,12 @@ interface TableProps {
   /**
    * テーブル表示内容（行）
    */
-  rows: SearchConditionProps[];
+  rows: ConditionModel[];
 
   /**
    * テーブル行変更
    */
-  handleSetItem: (val: SearchConditionProps[]) => void;
+  handleSetItem: (val: ConditionModel[]) => void;
 
   /**
    * 価格設定テーブル表示
@@ -169,11 +170,11 @@ interface TableProps {
 }
 
 /**
- * Tableコンポーネント
+ * ConditionalTableコンポーネント
  * @param props
  * @returns
  */
-export const ConditionalTable = (props: TableProps) => {
+export const ConditionalTable = (props: ContitionalTableProps) => {
   const {
     columns,
     getItems,
@@ -206,7 +207,7 @@ export const ConditionalTable = (props: TableProps) => {
   );
 };
 
-export const SetConditionTable = (props: TableProps) => {
+export const SetConditionTable = (props: ContitionalTableProps) => {
   const {
     columns,
     getItems,
@@ -370,6 +371,7 @@ export const SetConditionTable = (props: TableProps) => {
       return true;
     }
   };
+
   return (
     <TableMui>
       <TableHead>
@@ -565,12 +567,12 @@ export const SetConditionTable = (props: TableProps) => {
   );
 };
 
-interface OutputCsvprops extends SearchConditionProps {
+interface OutputCsvprops extends ConditionModel {
   commission: string[];
 }
 
 interface PriceTableProps {
-  setCondition: SearchConditionProps[];
+  setCondition: ConditionModel[];
   changeCodeToValue: (code: string | number) => string;
   handleVisibleTable: () => void;
 }
@@ -580,43 +582,39 @@ export const PricingTable = (props: PriceTableProps) => {
   const [outputCsvdata, setOutputCsvdata] = useState<OutputCsvprops[] | null>(
     null
   );
-  const setNewTableData = useCallback(
-    (setCondition: SearchConditionProps[]) => {
-      setOutputCsvdata(null);
-      const setArray: SearchConditionProps[] = JSON.parse(
-        JSON.stringify(setCondition)
-      );
-      const newTableData: OutputCsvprops[] = setArray.map((val, index) => {
-        const condisition = setCondition.find((_, index) => index === 0);
-        const condisitionCount: number = condisition
-          ? condisition.condition.length
-          : 0;
-        if (index === 0) {
-          return { ...val, commission: [''] };
-        } else {
-          const newVal: SearchConditionProps = { ...val };
-          if (condisitionCount > 1) {
-            for (let i = 0; i <= condisitionCount; i++) {
-              const pushItem: SearchConditionProps['condition'] =
-                val.condition.map((val) => ({
-                  conditions: val.conditions,
-                  conditionVal: val.conditionVal,
-                }));
-              newVal.condition.push({ ...pushItem[i] });
-            }
+  const setNewTableData = useCallback((setCondition: ConditionModel[]) => {
+    setOutputCsvdata(null);
+    const setArray: ConditionModel[] = JSON.parse(JSON.stringify(setCondition));
+    const newTableData: OutputCsvprops[] = setArray.map((val, index) => {
+      const condisition = setCondition.find((_, index) => index === 0);
+      const condisitionCount: number = condisition
+        ? condisition.condition.length
+        : 0;
+      if (index === 0) {
+        return { ...val, commission: [''] };
+      } else {
+        const newVal: ConditionModel = { ...val };
+        if (condisitionCount > 1) {
+          for (let i = 0; i <= condisitionCount; i++) {
+            const pushItem: ConditionModel['condition'] = val.condition.map(
+              (val) => ({
+                conditions: val.conditions,
+                conditionVal: val.conditionVal,
+              })
+            );
+            newVal.condition.push({ ...pushItem[i] });
           }
-
-          return {
-            ...val,
-            commission: new Array<string>(condisitionCount).fill(''),
-          };
         }
-      });
 
-      setOutputCsvdata(newTableData);
-    },
-    []
-  );
+        return {
+          ...val,
+          commission: new Array<string>(condisitionCount).fill(''),
+        };
+      }
+    });
+
+    setOutputCsvdata(newTableData);
+  }, []);
 
   useEffect(() => {
     setNewTableData(setCondition);

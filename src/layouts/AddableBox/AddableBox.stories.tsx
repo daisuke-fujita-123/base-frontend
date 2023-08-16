@@ -2,27 +2,37 @@ import { ComponentMeta } from '@storybook/react';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
 
-import { Section } from 'layouts/Section';
 import { RowStack, Stack } from 'layouts/Stack';
 
-import { DeepKey, SetConditionTable } from 'controls/ConditionalTable';
+import {
+  ConditionModel,
+  DeepKey,
+  SetConditionTable,
+} from 'controls/ConditionalTable';
 import { Radio } from 'controls/Radio';
 import { Select } from 'controls/Select';
 import { TableColDef } from 'controls/Table';
 import { PriceTextField } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
+import { Button } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import {
-  AddableBox,
-  CommissionFormValues,
-  SearchConditionProps,
-} from './AddableBox';
+import { AddableBox } from './AddableBox';
 
 export default {
   component: AddableBox,
   parameters: { controls: { expanded: true } },
 } as ComponentMeta<typeof AddableBox>;
+
+interface FormModel {
+  conditions: {
+    commissionType: number;
+    productCode: number;
+    priceChange: number;
+    plusMinus: number;
+    price: number;
+  }[];
+}
 
 export const Example = () => {
   const columns: TableColDef[] = [
@@ -43,7 +53,7 @@ export const Example = () => {
     { displayValue: '≧', value: 6 },
   ];
 
-  const getItems = [
+  const conditionTypes = [
     {
       displayValue: '落札金額',
       value: 'ITM_PR_001',
@@ -121,174 +131,190 @@ export const Example = () => {
     },
   ];
 
-  // 条件種類変更後にAPIより条件、値を取得する
-  const handleGetConditionData = (select: string) => {
-    return getItems.find((val) => val.value === select) ?? null;
-  };
-
-  const initialVal: SearchConditionProps = {
-    conditionType: '',
-    condition: [
-      {
-        conditions: 0,
-        conditionVal: '',
-      },
-    ],
-  };
-  const [rows, setRows] = useState<SearchConditionProps[]>([initialVal]);
-
-  // 値の変更を検知する
-  const handleChange = (
-    val: string | number,
-    changeVal: DeepKey<SearchConditionProps>,
-    indexRow: number,
-    indexCol?: number
-  ) => {
-    const newArray: SearchConditionProps[] = rows.map(
-      (row: SearchConditionProps, rowIndex: number) => {
-        if (changeVal === 'conditionType' && typeof val === 'string') {
-          if (rowIndex === indexRow) {
-            return { ...row, [changeVal]: val };
-          }
-          return row;
-        } else if (indexCol !== undefined) {
-          if (rowIndex === indexRow) {
-            const newCondition = row.condition.map(
-              (rowCondition, rowConditionIndex) => {
-                if (rowConditionIndex === indexCol) {
-                  return { ...rowCondition, [changeVal]: val };
-                }
-                return rowCondition;
-              }
-            );
-            return { ...row, condition: newCondition };
-          }
-          return row;
-        } else {
-          return row;
-        }
-      }
-    );
-
-    setRows(newArray);
-  };
-
-  const handleSetItem = (sortValues: SearchConditionProps[]) => {
-    setRows(sortValues);
-  };
-  // 明細設定
-  const isReadOnly = useState<boolean>(false);
-
-  const fieldInitVal = {
-    commissionType: 1,
-    productCode: 1,
-    priceChange: 0,
-    plusMinus: 0,
-    price: 0,
-  };
-  const [datalist, setDatalist] = useState([fieldInitVal]);
-
-  const CommissionMethods = useForm<CommissionFormValues>({
-    mode: 'onBlur',
-    reValidateMode: 'onBlur',
-    context: isReadOnly,
-  });
-
-  const control = CommissionMethods.control;
-
-  const { fields, append, remove } = useFieldArray({
-    name: 'rows',
-    control,
-  });
-
-  useEffect(() => {
-    CommissionMethods.setValue('rows', datalist);
-  }, [CommissionMethods, datalist]);
-
-  // 明細追加
-  const handleAddClick = () => {
-    try {
-      setDatalist((prev) => [...prev, fieldInitVal]);
-      append(fieldInitVal);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // 明細削除
-  const handleRemoveClick = (index: number) => {
-    try {
-      setDatalist(datalist.filter((_, i) => index !== i));
-      remove(index);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   /**
    * APIから取得した手数料データ
    */
-  const commissionType = [{ displayValue: '出品料', value: 1 }];
-
-  const productCode = [{ displayValue: 'XXXXXXXX', value: 1 }];
-
+  const commissionType = [
+    { displayValue: '出品料', value: 1 },
+    { displayValue: '????', value: 2 },
+  ];
+  const productCode = [
+    { displayValue: 'XXXXXXXX', value: 1 },
+    { displayValue: '????', value: 2 },
+  ];
   const price = [
     { value: 0, displayValue: '変動金額' },
     { value: 1, displayValue: '変動後の金額' },
   ];
-
   const plusMinus = [
     { value: 0, displayValue: '+' },
     { value: 1, displayValue: '-' },
   ];
+
+  const formInitialValues: FormModel = {
+    conditions: [
+      {
+        commissionType: 1,
+        productCode: 1,
+        priceChange: 0,
+        plusMinus: 0,
+        price: 0,
+      },
+    ],
+  };
+  const conditionInitialValues: ConditionModel[][] = [
+    [
+      {
+        conditionType: '',
+        condition: [
+          {
+            conditions: 0,
+            conditionVal: '',
+          },
+        ],
+      },
+    ],
+  ];
+
+  // state
+  const [datalist, setDatalist] = useState<FormModel>(formInitialValues);
+  const [rows, setRows] = useState<ConditionModel[][]>(conditionInitialValues);
+
+  // form
+  const methods = useForm<FormModel>({
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
+    defaultValues: formInitialValues,
+    context: false,
+  });
+  const arrayMethods = useFieldArray({
+    name: 'conditions',
+    control: methods.control,
+  });
+
+  // 条件種類変更後にAPIより条件、値を取得する
+  const handleGetConditionData = (select: string) => {
+    return conditionTypes.find((val) => val.value === select) ?? null;
+  };
+
+  // 値の変更を検知する
+  const handleChange = (
+    val: string | number,
+    changeVal: DeepKey<ConditionModel>,
+    index: number,
+    indexRow: number,
+    indexCol?: number
+  ) => {
+    const row = rows[index][indexRow];
+    if (changeVal === 'conditionType' && typeof val === 'string') {
+      row.conditionType = val;
+    }
+    if (changeVal === 'conditions' && indexCol !== undefined) {
+      row.condition[indexCol].conditions = val;
+    }
+    if (changeVal === 'conditionVal' && indexCol !== undefined) {
+      row.condition[indexCol].conditionVal = val;
+    }
+
+    setRows([...rows]);
+  };
+
+  const handleSetItem = (sortValues: ConditionModel[], index: number) => {
+    rows[index] = sortValues;
+    setRows([...rows]);
+  };
+
+  useEffect(() => {
+    methods.setValue('conditions', datalist.conditions);
+  }, [methods, datalist]);
+
+  // 明細追加
+  const handleAddClick = () => {
+    rows.push([
+      {
+        conditionType: '',
+        condition: [
+          {
+            conditions: 0,
+            conditionVal: '',
+          },
+        ],
+      },
+    ]);
+    setRows([...rows]);
+    arrayMethods.append({
+      commissionType: 1,
+      productCode: 1,
+      priceChange: 0,
+      plusMinus: 0,
+      price: 0,
+    });
+  };
+
+  // 明細削除
+  const handleRemoveClick = (index: number) => {
+    // setDatalist(datalist.conditions.filter((_, i) => index !== i));
+    arrayMethods.remove(index);
+  };
+
+  const handleOnClick = () => {
+    console.log(methods.getValues());
+    console.log(rows);
+  };
+
   return (
-    <FormProvider {...CommissionMethods}>
+    <FormProvider {...methods}>
       <ThemeProvider theme={theme}>
-        <Section name='条件' isTransparent>
-          <AddableBox
-            handleAddClick={handleAddClick}
-            handleRemoveClick={handleRemoveClick}
-          >
-            {fields.map((val) => (
-              <Stack spacing={6} key={val.id}>
-                <RowStack>
-                  <Select
-                    required
-                    name='commissionType'
-                    label='手数料種類'
-                    selectValues={commissionType}
-                  ></Select>
-                  <Select
-                    required
-                    name='productCode'
-                    label='商品コード'
-                    selectValues={productCode}
-                  ></Select>
-                </RowStack>
-                <SetConditionTable
-                  columns={columns}
-                  getItems={getItems}
-                  conditions={conditions}
-                  handleChange={handleChange}
-                  rows={rows}
-                  handleSetItem={handleSetItem}
-                  handleGetConditionData={handleGetConditionData}
-                  isEditable={false}
+        <AddableBox
+          handleAddClick={handleAddClick}
+          handleRemoveClick={handleRemoveClick}
+        >
+          {arrayMethods.fields.map((val, i) => (
+            <Stack spacing={6} key={val.id}>
+              <RowStack>
+                <Select
+                  required
+                  name={`conditions.${i}.commissionType`}
+                  label='手数料種類'
+                  selectValues={commissionType}
                 />
-                <RowStack spacing={2}>
-                  <Radio
-                    required
-                    name='priceChange'
-                    label='値引値増金額'
-                    radioValues={price}
-                  ></Radio>
-                  <Radio name='plusMinus' radioValues={plusMinus} row></Radio>
-                  <PriceTextField name='price'></PriceTextField>円
-                </RowStack>
-              </Stack>
-            ))}
-          </AddableBox>
-        </Section>
+                <Select
+                  required
+                  name={`conditions.${i}.productCode`}
+                  label='商品コード'
+                  selectValues={productCode}
+                />
+              </RowStack>
+              <SetConditionTable
+                columns={columns}
+                getItems={conditionTypes}
+                conditions={conditions}
+                handleChange={(val, changeVal, indexRow, indexCol) =>
+                  handleChange(val, changeVal, i, indexRow, indexCol)
+                }
+                rows={rows[i]}
+                handleSetItem={(sortValues) => handleSetItem(sortValues, i)}
+                handleGetConditionData={handleGetConditionData}
+                isEditable={false}
+              />
+              <RowStack spacing={2}>
+                <Radio
+                  required
+                  name={`conditions.${i}.priceChange`}
+                  label='値引値増金額'
+                  radioValues={price}
+                />
+                <Radio
+                  name={`conditions.${i}.plusMinus`}
+                  radioValues={plusMinus}
+                  row
+                />
+                <PriceTextField name={`conditions.${i}.price`} />円
+              </RowStack>
+            </Stack>
+          ))}
+        </AddableBox>
+        <Button onClick={handleOnClick}>log</Button>
       </ThemeProvider>
     </FormProvider>
   );
