@@ -115,22 +115,22 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'corporationId',
     headerName: '法人ID',
-    size: 'm',
+    size: 's',
   },
   {
     field: 'corporationName',
     headerName: '法人名',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'systemKind',
     headerName: 'システム種別',
-    size: 'm',
+    size: 's',
   },
   {
     field: 'reportName',
     headerName: '帳票名',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'reportCreateTime',
@@ -140,7 +140,7 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'reportFileName',
     headerName: 'ファイル名',
-    size: 'l',
+    width: 600,
   },
 ];
 
@@ -275,7 +275,7 @@ const ScrCom0009Page = () => {
     context: false,
   });
   const { watch, getValues } = methods;
-
+  const [disable, setDisable] = useState<boolean>(true);
   // user情報
   const { getMessage } = useContext(MessageContext);
 
@@ -352,9 +352,6 @@ const ScrCom0009Page = () => {
    * 検索クリック時のイベントハンドラ
    */
   const handleSearchClick = async () => {
-    // TODO 確認後削除
-    console.log(getValues());
-
     // 帳票作成日チェック（FROM＞TOでないこと）
     if (
       getValues('reportCreateDateFrom') !== '' ||
@@ -399,6 +396,7 @@ const ScrCom0009Page = () => {
     // データグリッドにデータを設定
     setSearchResult(searchResult);
     setOpenSection(false);
+    setDisable(false);
   };
 
   /**
@@ -416,7 +414,6 @@ const ScrCom0009Page = () => {
   /**
    * Sectionを閉じた際のラベル作成
    */
-  // TODO 検索ボタン押下前のラベル表示の修正
   const serchLabels = serchData.map((val, index) => {
     let nameVal = getValues(val.name);
     if (val.name === 'corporationIdAndName') {
@@ -490,7 +487,6 @@ const ScrCom0009Page = () => {
       }
     });
     return () => subscription.unsubscribe();
-    // TODO warningの解消が必要
   }, [watch]);
 
   /**
@@ -561,6 +557,7 @@ const ScrCom0009Page = () => {
                   name='reportName'
                   selectValues={selectValues.reportNameSelectValues}
                   blankOption
+                  size='m'
                 />
               </RowStack>
               <CenterBox>
@@ -578,17 +575,23 @@ const ScrCom0009Page = () => {
               name='再出力対象選択'
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                  <AddButton onClick={handleConfirm}>ファイル出力</AddButton>
+                  <AddButton disable={disable} onClick={handleConfirm}>
+                    ファイル出力
+                  </AddButton>
                 </MarginBox>
               }
             >
-              <DataGrid
-                columns={searchResultColumns}
-                rows={searchResult}
-                pagination
-                checkboxSelection
-                onRowSelectionModelChange={handRowSelectionModelChange}
-              />
+              {searchResult.length !== 0 ? (
+                <DataGrid
+                  columns={searchResultColumns}
+                  rows={searchResult}
+                  pagination
+                  checkboxSelection
+                  onRowSelectionModelChange={handRowSelectionModelChange}
+                />
+              ) : (
+                ''
+              )}
             </Section>
           </FormProvider>
         </MainLayout>
