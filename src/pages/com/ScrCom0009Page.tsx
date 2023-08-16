@@ -275,7 +275,6 @@ const ScrCom0009Page = () => {
     context: false,
   });
   const { watch, getValues } = methods;
-  const [disable, setDisable] = useState<boolean>(true);
   // user情報
   const { getMessage } = useContext(MessageContext);
 
@@ -396,7 +395,6 @@ const ScrCom0009Page = () => {
     // データグリッドにデータを設定
     setSearchResult(searchResult);
     setOpenSection(false);
-    setDisable(false);
   };
 
   /**
@@ -575,9 +573,11 @@ const ScrCom0009Page = () => {
               name='再出力対象選択'
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                  <AddButton disable={disable} onClick={handleConfirm}>
-                    ファイル出力
-                  </AddButton>
+                  {searchResult.length !== 0 ? (
+                    <AddButton onClick={handleConfirm}>ファイル出力</AddButton>
+                  ) : (
+                    ''
+                  )}
                 </MarginBox>
               }
             >
