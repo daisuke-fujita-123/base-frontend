@@ -919,7 +919,6 @@ const ScrCom0029Page = () => {
                     label='利用フラグ'
                     name='useFlag'
                     size='s'
-                    row
                     radioValues={radioValues}
                   />
                 </ColStack>
