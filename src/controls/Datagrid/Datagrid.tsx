@@ -213,6 +213,10 @@ export interface DataGridProps extends DataGridProProps {
    * getCellDisabled
    */
   getCellDisabled?: (params: any) => boolean;
+  /**
+   * getSelectValues
+   */
+  getSelectValues?: (params: any) => any[];
 }
 
 /**
@@ -270,6 +274,7 @@ export const DataGrid = (props: DataGridProps) => {
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
     getCellDisabled,
+    getSelectValues,
     apiRef,
   } = props;
 
@@ -335,6 +340,9 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateSelectCell = (params: any) => {
+    const selectValues = getSelectValues
+      ? getSelectValues(params)
+      : params.colDef.selectValues;
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
@@ -343,7 +351,7 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
-          selectValues={params.colDef.selectValues}
+          selectValues={selectValues}
           controlled={controlled}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
