@@ -1,45 +1,53 @@
 import React from 'react';
-import { FieldValues, Path, useFormContext } from 'react-hook-form';
+import {
+  FieldValues,
+  Path,
+  useController,
+  useFormContext,
+} from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
 
 import {
   FormControl,
+  FormControlLabel,
   FormHelperText,
+  Radio as MuiRadio,
   RadioGroup,
-  Stack,
-  Typography,
 } from '@mui/material';
 
 interface RadioValue {
   value: string | number;
   displayValue: string;
-  disabled?: boolean;
 }
 export interface RadioProps<T extends FieldValues> {
   name: Path<T>;
   radioValues: RadioValue[];
   label?: string;
+  size?: 's' | 'm' | 'l' | 'xl';
   labelPosition?: 'above' | 'side';
   required?: boolean;
-  row?: boolean;
-  size?: 's' | 'm' | 'l' | 'xl';
+  disabled?: boolean;
+  column?: boolean;
+  backgroundColor?: string;
 }
 
 export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
   const {
-    label,
-    labelPosition,
-    required = false,
     name,
-    radioValues,
-    row = true,
+    label,
     size = 's',
+    labelPosition,
+    column = false,
+    required = false,
+    disabled = false,
+    radioValues,
+    backgroundColor,
   } = props;
 
-  const { register, formState, control } = useFormContext();
+  const { formState, control } = useFormContext();
+  const { field } = useController({ name, control });
 
-  const isReadOnly = control?._options?.context[0];
   return (
     <InputLayout
       label={label}
@@ -48,30 +56,27 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
       size={size}
     >
       <FormControl error={!!formState.errors[name]}>
-        <RadioGroup row={row} {...register(name)}>
-          {radioValues.map((value, index) => {
-            return (
-              <Stack
-                key={index}
-                spacing={3}
-                direction='row'
-                marginRight={2}
-                marginTop={1}
-                marginBottom={1}
-              >
-                <input
-                  key={index}
-                  type='radio'
-                  disabled={isReadOnly}
-                  value={value.value}
-                  {...register(name)}
+        <RadioGroup row={!column} {...field}>
+          {radioValues.map((value, index) => (
+            <FormControlLabel
+              sx={{
+                '&.MuiFormControlLabel-root .MuiFormControlLabel-label': {
+                  backgroundColor: backgroundColor
+                    ? { backgroundColor }
+                    : 'transparent',
+                },
+              }}
+              key={index}
+              value={value.value}
+              label={value.displayValue}
+              control={
+                <MuiRadio
+                  readOnly={control?._options?.context[0]}
+                  disabled={disabled}
                 />
-                <Typography variant='h6' fontSize={'1rem'}>
-                  {value.displayValue}
-                </Typography>
-              </Stack>
-            );
-          })}
+              }
+            />
+          ))}
         </RadioGroup>
         {formState.errors[name]?.message && (
           <FormHelperText>

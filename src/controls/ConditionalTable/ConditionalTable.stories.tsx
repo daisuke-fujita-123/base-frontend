@@ -1,10 +1,19 @@
 import { ComponentMeta } from '@storybook/react';
 import React, { useState } from 'react';
 
+import { MarginBox } from 'layouts/Box';
+import { Section } from 'layouts/Section';
+
+import { Icon } from 'controls/Icon';
+import { TableColDef } from 'controls/Table';
+import { theme } from 'controls/theme';
+
+import { ThemeProvider } from '@mui/material';
 import {
   ConditionalTable,
+  ConditionModel,
+  DeepKey,
   PricingTable,
-  TableColDef,
 } from './ConditionalTable';
 
 export default {
@@ -12,28 +21,11 @@ export default {
   parameters: { controls: { expanded: true } },
 } as ComponentMeta<typeof ConditionalTable>;
 
-/**
- * 検索条件データモデル
- */
-export interface SearchConditionProps {
-  conditionType: string;
-  condition: {
-    conditions: number;
-    conditionVal: string | number;
-  }[];
-}
-
-export type DeepKey<T> = T extends object
-  ? {
-      [K in keyof T]: `${K & string}` | `${K & string}.${DeepKey<T[K]>}`;
-    }[keyof T]
-  : '';
-
 export const Example = () => {
   const columns: TableColDef[] = [
-    { headerName: '条件種類', width: 150 },
-    { headerName: '条件', width: 100 },
-    { headerName: '値', width: 100 },
+    { field: 'conditionType', headerName: '条件種類', width: 150 },
+    { field: 'conditions', headerName: '条件', width: 100 },
+    { field: 'conditionVal', headerName: '値', width: 150 },
   ];
 
   /**
@@ -48,7 +40,7 @@ export const Example = () => {
     { displayValue: '≧', value: 6 },
   ];
 
-  const rows = [
+  const getItems = [
     {
       displayValue: '落札金額',
       value: 'ITM_PR_001',
@@ -126,7 +118,12 @@ export const Example = () => {
     },
   ];
 
-  const initialVal: SearchConditionProps = {
+  // 条件種類変更後にAPIより条件、値を取得する
+  const handleGetConditionData = (select: string) => {
+    return getItems.find((val) => val.value === select) ?? null;
+  };
+
+  const initialVal: ConditionModel = {
     conditionType: '',
     condition: [
       {
@@ -135,19 +132,17 @@ export const Example = () => {
       },
     ],
   };
-  const [searchCondition, setSearchCondition] = useState<
-    SearchConditionProps[]
-  >([initialVal]);
+  const [rows, setRows] = useState<ConditionModel[]>([initialVal]);
 
   // 値の変更を検知する
   const handleChange = (
     val: string | number,
-    changeVal: DeepKey<SearchConditionProps>,
+    changeVal: DeepKey<ConditionModel>,
     indexRow: number,
     indexCol?: number
   ) => {
-    const newArray: SearchConditionProps[] = searchCondition.map(
-      (row: SearchConditionProps, rowIndex: number) => {
+    const newArray: ConditionModel[] = rows.map(
+      (row: ConditionModel, rowIndex: number) => {
         if (changeVal === 'conditionType' && typeof val === 'string') {
           if (rowIndex === indexRow) {
             return { ...row, [changeVal]: val };
@@ -172,11 +167,11 @@ export const Example = () => {
       }
     );
 
-    setSearchCondition(newArray);
+    setRows(newArray);
   };
 
-  const handleSetItem = (sortValues: SearchConditionProps[]) => {
-    setSearchCondition(sortValues);
+  const handleSetItem = (sortValues: ConditionModel[]) => {
+    setRows(sortValues);
   };
 
   const [pricingTableVisible, setPricingTableVisible] =
@@ -188,25 +183,61 @@ export const Example = () => {
   const onClickExport = () => {
     console.log('exportCSV');
   };
-  console.log(pricingTableVisible);
+
+  const changeCodeToValue = (code: string | number): string => {
+    for (const r of getItems) {
+      if (r.value === code) {
+        return r.displayValue;
+      }
+      if (r.conditions) {
+        for (const c of r.conditions) {
+          if (c.value === Number(code)) {
+            return c.displayValue;
+          }
+        }
+      }
+      if (typeof r.conditionVal === 'string') {
+        return String(code);
+      } else if (r.conditionVal) {
+        for (const v of r.conditionVal) {
+          if (v?.value === code) {
+            return v.displayValue;
+          }
+        }
+      }
+    }
+    return '';
+  };
+  const decoration = (
+    <MarginBox mr={5} gap={2}>
+      <Icon iconName='一括登録' iconType='import' onClick={onClickExport} />
+      <Icon iconName='CSV出力' iconType='export' onClick={onClickExport} />
+    </MarginBox>
+  );
   return (
-    <>
-      <ConditionalTable
-        columns={columns}
-        rows={rows}
-        conditions={conditions}
-        handleChange={handleChange}
-        searchCondition={searchCondition}
-        handleSetItem={handleSetItem}
-        handleVisibleTable={handleVisibleTable}
-      />
-      {pricingTableVisible && (
-        <PricingTable
-          setCondition={searchCondition}
-          onClickExport={onClickExport}
+    <ThemeProvider theme={theme}>
+      <Section name='条件設定'>
+        <ConditionalTable
+          columns={columns}
+          getItems={getItems}
+          conditions={conditions}
+          handleChange={handleChange}
+          rows={rows}
+          handleSetItem={handleSetItem}
+          handleVisibleTable={handleVisibleTable}
+          handleGetConditionData={handleGetConditionData}
         />
+      </Section>
+      {pricingTableVisible && (
+        <Section name='価格設定' decoration={decoration}>
+          <PricingTable
+            setCondition={rows}
+            changeCodeToValue={changeCodeToValue}
+            handleVisibleTable={handleVisibleTable}
+          />
+        </Section>
       )}
-    </>
+    </ThemeProvider>
   );
 };
 
