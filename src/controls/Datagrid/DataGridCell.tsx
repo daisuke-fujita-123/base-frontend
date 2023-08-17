@@ -434,6 +434,66 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
 });
 
 /**
+ * GridDatepickerCellPropsコンポーネントのProps
+ */
+interface GridFromtoCellProps {
+  id: string | number;
+  value: string[];
+  field: string;
+  disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
+}
+
+/**
+ * GridCheckboxCellコンポーネント
+ * プルダウン用のセル
+ */
+// eslint-disable-next-line react/display-name
+export const GridFromtoCell = memo((props: GridFromtoCellProps) => {
+  const { id, value, field, disabled = false, onRowValueChange } = props;
+
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
+  const apiRef = useGridApiContext();
+
+  const handleValueChange = useCallback(
+    (value: Date | null, index: number) => {
+      const date = new Date(String(value));
+      const formattedValue = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+      // const newValue = event.target.value;
+      const row = apiRef.current.getRow(id);
+      row[field][index] = formattedValue;
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
+    },
+    [apiRef, field, id]
+  );
+
+  return (
+    <LocalizationProvider
+      // dateAdapter={AdapterDayjs}
+      dateAdapter={AdapterDateFns}
+      adapterLocale={ja}
+    >
+      <>
+        <DatePicker
+          value={new Date(value[0])}
+          onChange={(value) => handleValueChange(value, 0)}
+          disabled={disabled}
+        />
+        <DatePicker
+          value={new Date(value[1])}
+          onChange={(value) => handleValueChange(value, 1)}
+          disabled={disabled}
+        />
+      </>
+    </LocalizationProvider>
+  );
+});
+
+/**
  * GridCellForTooltipコンポーネント
  * ツールチップ用ののセル
  */
