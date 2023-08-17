@@ -777,7 +777,7 @@ const ScrCom0029Page = () => {
   const handleConfirm = async () => {
     // 画面入力チェック
     const errList: ErrorList[] = [];
-    let flg = '';
+    const flg = [];
     approvalResult.map((x) => {
       // 承認者.第1~4のいずれの行もチェックしていない場合
       if (
@@ -786,11 +786,11 @@ const ScrCom0029Page = () => {
         x.number3 === false &&
         x.number4 === false
       ) {
-        flg = 'err';
+        flg.push('t');
       }
     });
 
-    if (flg === 'err') {
+    if (flg.length === approvalResult.length) {
       errList.push({
         errorCode: 'MSG-FR-ERR-00007',
         errorMessage: '承認者が何も設定されていません。',
