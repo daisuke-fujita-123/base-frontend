@@ -7,7 +7,7 @@ export interface ScrCom0029GetApprovalPermissionRequest {
   // 承認権限ID
   approvalPermissionId: string;
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
 }
 
 // API-COM-0029-0001: 承認権限一覧取得API レスポンス
@@ -54,7 +54,7 @@ export const getApprovalPermissionList = async (
   request: ScrCom0029GetApprovalPermissionRequest
 ): Promise<ScrCom0029GetApprovalPermissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0029/get-approval-permission',
+    '/com/scr-com-0029/get-approval-permission',
     request
   );
   return response.data;
@@ -88,7 +88,7 @@ export const getApprovalPermissionCreateList = async (
   request: undefined
 ): Promise<ScrCom0029GetApprovalPermissionCreateResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0029/get-approval',
+    '/com/scr-com-0029/get-approval',
     request
   );
   return response.data;
@@ -101,7 +101,7 @@ export interface ScrCom0029CheckApprovalPermissionRequest {
   // 承認権限名
   approvalPermissionName: string;
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
   // 利用不可設定フラグ
   changeUnavailableFlag: boolean;
   // 承認権限チェックリスト
@@ -126,7 +126,12 @@ interface CheckApprovalPermissionInfo {
 // API-COM-0029-0003: 承認権限詳細情報入力チェックAPI レスポンス
 export interface ScrCom0029CheckApprovalPermissionResponse {
   // リスト
-  errorMessages: string[];
+  errorList: ErrorList[];
+}
+
+interface ErrorList {
+  errorCode: string;
+  errorMessage: string;
 }
 
 // API-COM-0029-0003: 承認権限詳細情報入力チェックAPI
@@ -134,7 +139,7 @@ export const checkApprovalPermission = async (
   request: ScrCom0029CheckApprovalPermissionRequest
 ): Promise<ScrCom0029CheckApprovalPermissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0029/input-check-approval-permission',
+    '/com/scr-com-0029/input-check-approval-permission',
     request
   );
   return response.data;
@@ -157,7 +162,7 @@ export interface ScrCom0029RegistApprovalPermissionRequest {
   // 登録変更メモ
   registrationChangeMemo: string;
   // 変更タイムスタンプ
-  changeTimestamp: Date;
+  changeTimestamp: string;
 }
 
 interface ApprvlList {
@@ -188,7 +193,7 @@ export const registApprovalPermission = async (
   request: ScrCom0029RegistApprovalPermissionRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/scr-com-0029/regist-approval-permission',
+    '/com/scr-com-0029/registration-approval-prmssn',
     request
   );
   return response.data;
@@ -199,7 +204,7 @@ export interface ScrCom0029GetApprovalPermissionMultiRequest {
   // 承認権限ID
   approvalPermissionId: string[];
   // 業務日付
-  businessDate: Date;
+  businessDate: string;
 }
 
 // API-COM-0029-0006: 承認権限一覧取得API(組織管理画面から遷移） レスポンス
@@ -253,7 +258,38 @@ export const getApprovalPermissionMultiList = async (
   request: ScrCom0029GetApprovalPermissionMultiRequest
 ): Promise<ScrCom0029GetApprovalPermissionMultiResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0029/get-approval-permission-organization',
+    '/com/scr-com-0029/get-approval-permission-organization',
+    request
+  );
+  return response.data;
+};
+
+/** API-COM-9999-0025: 変更履歴情報取得API リクエスト */
+export interface ScrCom9999GetHistoryInfoRequest {
+  // 変更履歴番号
+  changeHistoryNumber: string;
+}
+
+/** API-COM-9999-0025: 変更履歴情報取得API レスポンス */
+export interface ScrCom9999GetHistoryInfoResponse {
+  // 承認権限ID
+  approvalPermissionId: string;
+  // 承認権限名
+  approvalPermissionName: string;
+  // 利用フラグ
+  useFlag: boolean;
+  // 設定役職数
+  totalSettingPost: number;
+  // 承認権限リスト
+  approvalPermissionDetailList: ApprovalPermissionList[];
+}
+
+/** API-COM-9999-0025: 変更履歴情報取得API */
+export const ScrCom9999GetHistoryInfo = async (
+  request: ScrCom9999GetHistoryInfoRequest
+): Promise<ScrCom9999GetHistoryInfoResponse> => {
+  const response = await comApiClient.post(
+    '/com/scr-com-9999/get-history-info',
     request
   );
   return response.data;
