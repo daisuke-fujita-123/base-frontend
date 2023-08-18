@@ -22,7 +22,6 @@ export const StackSection = (props: StackSectionProps) => {
           <PopSection
             key={index}
             name={titles[index].name}
-            decoration={titles[index].decoration}
             isWarning={isWarning}
             isError={isError}
           >
@@ -32,7 +31,6 @@ export const StackSection = (props: StackSectionProps) => {
       ) : (
         <PopSection
           name={titles[0].name}
-          decoration={titles[0].decoration}
           isWarning={isWarning}
           isError={isError}
         >
