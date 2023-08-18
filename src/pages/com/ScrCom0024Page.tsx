@@ -942,28 +942,21 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='おまとめ会場'
                     name='omatomePlaceValue'
+                    disabled={
+                      // 編集権限なしの場合 非活性
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                     required
-                    row={true}
                     radioValues={[
                       {
                         value: 'target',
                         displayValue: '対象',
-                        // TODO: 編集権限なしの場合 非活性
-                        disabled: !user.editPossibleScreenIdList.includes(
-                          'SCR-COM-0024'
-                        )
-                          ? true
-                          : false,
                       },
                       {
                         value: 'unTarget',
                         displayValue: '対象外',
-                        // TODO: 編集権限なしの場合 非活性
-                        disabled: !user.editPossibleScreenIdList.includes(
-                          'SCR-COM-0024'
-                        )
-                          ? true
-                          : false,
                       },
                     ]}
                   />
@@ -983,28 +976,21 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='利用フラグ'
                     name='useValue'
-                    row={true}
+                    disabled={
+                      // 編集権限なしの場合 非活性
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                     required
                     radioValues={[
                       {
                         value: 'yes',
                         displayValue: '可',
-                        // TODO: 編集権限なしの場合 非活性
-                        disabled: !user.editPossibleScreenIdList.includes(
-                          'SCR-COM-0024'
-                        )
-                          ? true
-                          : false,
                       },
                       {
                         value: 'no',
                         displayValue: '不可',
-                        // TODO: 編集権限なしの場合 非活性
-                        disabled: !user.editPossibleScreenIdList.includes(
-                          'SCR-COM-0024'
-                        )
-                          ? true
-                          : false,
                       },
                     ]}
                   />
@@ -1093,7 +1079,6 @@ const ScrCom0024Page = () => {
                     size='m'
                     selectValues={selectValues.placeGroupCodeSelectValues}
                     blankOption
-                    // TODO: 確認中の為コメントアウト
                     // 編集権限なしの場合 非活性
                     disabled={
                       !user.editPossibleScreenIdList.includes('SCR-COM-0024')
@@ -1151,19 +1136,17 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='ホンダグループ'
                     name='hondaGroupValue'
-                    row={true}
-                    // TODO: 編集権限なしの場合 非活性
+                    disabled={
+                      // 編集権限なしの場合 非活性
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                        ? true
+                        : false
+                    }
                     required={omatomePlaceFlag ? true : false}
                     radioValues={[
                       {
                         value: 'hondaTarget',
                         displayValue: '対象',
-                        // 編集権限なしの場合 非活性
-                        disabled: !user.editPossibleScreenIdList.includes(
-                          'SCR-COM-0024'
-                        )
-                          ? true
-                          : false,
                       },
                       {
                         value: 'hondaUnTarget',
@@ -1193,65 +1176,49 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='書類発送指示'
                     name='documentShippingInstructionValue'
-                    row={true}
+                    disabled={
+                      // 編集権限なしの場合 非活性
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                     radioValues={[
                       {
                         value: 'sendingDocumentsTarget',
                         displayValue: '対象',
-                        // TODO: 編集権限なしの場合 非活性
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || omatomePlaceFlag === false
-                            ? true
-                            : false,
                       },
                       {
                         value: 'sendingDocumentsUnTarget',
                         displayValue: '対象外',
-                        // TODO: 編集権限なしの場合 非活性
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || omatomePlaceFlag === false
-                            ? true
-                            : false,
+                        // 編集権限なしの場合 非活性
                       },
                     ]}
                   />
                   <Radio
                     label='指示対象'
                     name='referentValue'
-                    // TODO: ラジオボタンの項目が縦にならない
-                    row={true}
+                    // 編集権限なしの場合 非活性
                     // 書類発送指示が対象の場合必須
                     required={
                       documentShippingInstructionFlag === true ? true : false
+                    }
+                    // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      !omatomePlaceFlag
+                        ? true
+                        : false
                     }
                     radioValues={[
                       {
                         value: 'meberDirectDelivery',
                         displayValue: '会員直送&AUC宛',
-                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                        // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || !omatomePlaceFlag
-                            ? true
-                            : false,
                       },
                       {
                         value: 'onlyAuc',
                         displayValue: 'AUC宛のみ',
-                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                        // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || !omatomePlaceFlag
-                            ? true
-                            : false,
                       },
                     ]}
                   />
@@ -1327,29 +1294,21 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='出金設定'
                     name='paymentAllValue'
-                    row={true}
+                    // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                    disabled={
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                     radioValues={[
                       {
                         value: 'bulk',
                         displayValue: '一括',
-                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || omatomePlaceFlag === false
-                            ? true
-                            : false,
                       },
                       {
                         value: 'eachTime',
                         displayValue: '都度',
-                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || omatomePlaceFlag === false
-                            ? true
-                            : false,
                       },
                     ]}
                   />
@@ -1441,29 +1400,21 @@ const ScrCom0024Page = () => {
                   <Radio
                     label='支払通知'
                     name='paymentNoticeValue'
-                    row={true}
+                    disabled={
+                      // 編集権限なしの場合、またはおまとめ会場が対象外の場合
+                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
+                      omatomePlaceFlag === false
+                        ? true
+                        : false
+                    }
                     radioValues={[
                       {
                         value: 'paymentNoticeTarget',
                         displayValue: '対象',
-                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || omatomePlaceFlag === false
-                            ? true
-                            : false,
                       },
                       {
                         value: 'paymentNoticeUnTarget',
                         displayValue: '対象外',
-                        // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                        disabled:
-                          !user.editPossibleScreenIdList.includes(
-                            'SCR-COM-0024'
-                          ) || omatomePlaceFlag === false
-                            ? true
-                            : false,
                       },
                     ]}
                   />
