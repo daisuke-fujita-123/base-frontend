@@ -113,6 +113,7 @@ export const Example = () => {
       field: 'input1',
       cellType: 'input',
       headerName: 'Input 1',
+      required: true,
     },
     {
       field: 'input2',
@@ -151,11 +152,18 @@ export const Example = () => {
       headerName: 'DatePicker',
       size: 'l',
     },
+
+    {
+      field: 'fromto',
+      cellType: 'fromto',
+      headerName: 'FromTo',
+      size: 'l',
+    },
   ];
 
   const rows: GridRowsProp = [
     {
-      id: '0001',
+      id: 0,
       corporationId: '0001',
       corporationName: '法人1',
       corporationGroupName: '法人グループ1',
@@ -166,9 +174,10 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0002',
+      id: 1,
       corporationId: '0002',
       corporationName: '法人2',
       corporationGroupName: '法人グループ2',
@@ -179,9 +188,10 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0003',
+      id: 2,
       corporationId: '0003',
       corporationName: '法人3',
       corporationGroupName: '法人グループ3',
@@ -192,9 +202,10 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0004',
+      id: 3,
       corporationId: '0004',
       corporationName: '法人4',
       corporationGroupName: '法人グループ4',
@@ -205,9 +216,10 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0005',
+      id: 4,
       corporationId: '0005',
       corporationName: '法人5',
       corporationGroupName: '法人グループ5',
@@ -218,6 +230,7 @@ export const Example = () => {
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
   ];
 
@@ -226,9 +239,33 @@ export const Example = () => {
     input2: yup.string().required().max(10).label('Input 2'),
   });
 
+  const handleGetSelectValues = (params: any) => {
+    return params.id % 2 === 0
+      ? [
+          { value: '1', displayValue: 'one' },
+          { value: '2', displayValue: 'two' },
+          { value: '3', displayValue: 'three' },
+        ]
+      : [
+          { value: '4', displayValue: 'four' },
+          { value: '5', displayValue: 'five' },
+          { value: '6', displayValue: 'six' },
+        ];
+  };
+
+  const handleOnClick = () => {
+    console.log(rows);
+  };
+
   return (
     <>
-      <DataGrid columns={columns} rows={rows} resolver={validationSchema} />
+      <Button onClick={handleOnClick}>log</Button>
+      <DataGrid
+        columns={columns}
+        rows={rows}
+        resolver={validationSchema}
+        getSelectValues={handleGetSelectValues}
+      />
     </>
   );
 };

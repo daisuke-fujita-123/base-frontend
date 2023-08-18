@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 
@@ -8,7 +8,7 @@ import yup from 'utils/yup';
 import { CenterBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
 import { MainLayout } from 'layouts/MainLayout';
-import { Section } from 'layouts/Section';
+import { Section, SectionClose } from 'layouts/Section';
 
 import { Button, SearchButton } from 'controls/Button';
 import { Checkbox } from 'controls/Checkbox';
@@ -61,6 +61,7 @@ interface SearchConditionModel {
   radio2: number;
   select1?: string;
   select2?: number;
+  select3?: string[];
   check1: boolean;
   check2: boolean;
   file?: File;
@@ -108,6 +109,7 @@ const searchConditionInitialValues: SearchConditionModel = {
   radio2: 1,
   select1: '1',
   select2: 1,
+  select3: [],
   check1: false,
   check2: false,
   file: undefined,
@@ -166,12 +168,12 @@ const searchResultColDef: GridColDef[] = [
     field: 'firstname',
     headerName: 'First Name',
     tooltip: true,
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'lastname',
     headerName: 'Last Name',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'input',
@@ -322,10 +324,7 @@ const Experiments = () => {
   }, [methods]);
 
   // Sectionの開閉処理
-  const [open, setopen] = useState<boolean>(true);
-  useEffect(() => {
-    if (!open) setopen(true);
-  }, [open]);
+  const sectionRef = useRef<SectionClose>();
 
   const handleSeachClick = async () => {
     try {
@@ -347,7 +346,8 @@ const Experiments = () => {
     } catch (error) {
       console.error(error);
     }
-    setopen(false);
+    if (sectionRef.current && sectionRef.current.closeSection)
+      sectionRef.current.closeSection();
   };
 
   const handleUpdateClick = async () => {
@@ -387,7 +387,7 @@ const Experiments = () => {
     <MainLayout>
       <MainLayout main>
         <FormProvider {...methods}>
-          <Section name='検索条件' isSearch open={open}>
+          <Section name='検索条件' isSearch ref={sectionRef}>
             <Typography>search condition</Typography>
             <Grid container>
               <Grid item xs={2}>
@@ -475,6 +475,15 @@ const Experiments = () => {
                     { value: 1, displayValue: '1' },
                     { value: 2, displayValue: '2' },
                   ]}
+                />
+                <Select
+                  name='select3'
+                  label='select3'
+                  selectValues={[
+                    { value: '1', displayValue: '1' },
+                    { value: '2', displayValue: '2' },
+                  ]}
+                  multiple
                 />
                 <Checkbox name='check1' label='check1' />
                 <Checkbox name='check2' label='check2' />
