@@ -12,8 +12,6 @@ import { Typography } from 'controls/Typography';
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { SCREEN_ID } from 'definitions/screenId';
-
 /**
  * エラー確認ポップアップ データモデル
  */
@@ -51,6 +49,13 @@ interface ScrCom0038PopupProps {
   // キャンセルボタン押下時に渡すパラメータ
   handleCancel: () => void;
 }
+
+/**
+ * 画面IDの定数定義
+ */
+const SCR_TRA_0018 = 'SCR-TRA-0018';
+const SCR_TRA_0033 = 'SCR-TRA-0033';
+const SCR_DOC_0010 = 'SCR-DOC-0010';
 
 /**
  * エラー確認ポップアップ
@@ -101,13 +106,13 @@ const ScrCom0038Popup = (props: ScrCom0038PopupProps) => {
    */
   const handleConfirm = () => {
     // 遷移元画面が入金詳細 => 入金一覧画面へ遷移
-    if (data.expirationScreenId === SCREEN_ID[0].screenId) {
+    if (data.expirationScreenId === SCR_TRA_0018) {
       navigate('/tra/recepts');
       // 遷移元画面が計算書詳細 => 計算書一覧画面へ遷移
-    } else if (data.expirationScreenId === SCREEN_ID[1].screenId) {
+    } else if (data.expirationScreenId === SCR_TRA_0033) {
       navigate('/tra/statements');
       // 遷移元画面が到着一括入力画面 => 到着一括入力画面へ遷移
-    } else if (data.expirationScreenId === SCREEN_ID[2].screenId) {
+    } else if (data.expirationScreenId === SCR_DOC_0010) {
       navigate('/doc/arrives');
     }
   };
