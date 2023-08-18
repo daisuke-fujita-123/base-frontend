@@ -31,13 +31,18 @@ import {
   ScrCom9999GetHistoryInfoRequest,
   ScrCom9999GetHistoryInfoResponse,
 } from 'apis/com/ScrCom9999Api';
-import { ScrDoc9999CreateReportImageDocRequest } from 'apis/doc/ScrDoc9999Api';
-import { ScrTra9999CreateReportImageTraRequest } from 'apis/tra/ScrTra9999Api';
+import {
+  ScrDoc9999CreateReportImageDoc,
+  ScrDoc9999CreateReportImageDocRequest,
+} from 'apis/doc/ScrDoc9999Api';
+import {
+  ScrTra9999CreateReportImageTra,
+  ScrTra9999CreateReportImageTraRequest,
+} from 'apis/tra/ScrTra9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { _expApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
@@ -148,9 +153,6 @@ const SCR_COM_0008 = 'SCR-COM-0008';
  * SCR-COM-0008 帳票コメント画面
  */
 const ScrCom0008Page = () => {
-  // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
-
   // router
   const { reportIdFromUseParam } = useParams();
   const reportId: string =
@@ -179,6 +181,8 @@ const ScrCom0008Page = () => {
   const [getChangeTimestamp, setGetChangeTimestamp] = useState<string>('');
   // 帳票コメント情報取得APIにて取得した システム種別
   const [getSystemKind, setGetSystemKind] = useState<string>('');
+  // 複数行の帳票コメントをつなげて1つの状態として管理する
+  const [reportComment, setReportComment] = useState<string>('');
   const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
   const [changeHistoryDateCheckisOpen, setChangeHistoryDateCheckisOpen] =
     useState<boolean>(false);
@@ -483,10 +487,10 @@ const ScrCom0008Page = () => {
 
   /**
    * プレビューボタンクリック時のイベントハンドラ
-   * TODO: 詳細設計 修正次第 APIの戻り値を修正しレスポンスに設定
    */
   const handlePreviewConfirm = async () => {
     // システム種別で呼び出すAPIのURIをTRAとDOCで分岐
+    let formStorageFile: any = '';
     if (getSystemKind === 'TRA') {
       // API-TRA-9999-0002: イメージ帳票作成API（取引会計管理）
       const createReportImageTraRequest: ScrTra9999CreateReportImageTraRequest =
@@ -498,9 +502,9 @@ const ScrCom0008Page = () => {
           operatorName: user.organizationName,
           comment: '',
         };
-      // const formStorageFile = await ScrTra9999CreateReportImageTra(
-      //   createReportImageTraRequest
-      // );
+      formStorageFile = await ScrTra9999CreateReportImageTra(
+        createReportImageTraRequest
+      );
     } else if (getSystemKind === 'DOC') {
       // API-TRA-9999-0001: イメージ帳票作成API（書類管理）
       const createReportImageDocRequest: ScrDoc9999CreateReportImageDocRequest =
@@ -512,16 +516,12 @@ const ScrCom0008Page = () => {
           operatorName: user.organizationName,
           comment: '',
         };
-      // const formStorageFile = await ScrDoc9999CreateReportImageDoc(
-      //   createReportImageDocRequest
-      // );
+      formStorageFile = await ScrDoc9999CreateReportImageDoc(
+        createReportImageDocRequest
+      );
 
       // 取得した帳票格納ファイルを別タブで開くことで、イメージ帳票PDFを表示する。
-      const formStorageFile = await _expApiClient.get('/_exp/hello.pef', {
-        responseType: 'blob',
-      });
-      // const downloadUrl = window.URL.createObjectURL(formStorageFile);
-      const downloadUrl = window.URL.createObjectURL(formStorageFile.data);
+      const downloadUrl = window.URL.createObjectURL(formStorageFile);
       window.open(downloadUrl, '__blank');
       window.URL.revokeObjectURL(downloadUrl);
     }
@@ -685,6 +685,9 @@ const ScrCom0008Page = () => {
       commentRowList.push(getValues('reportComment2'));
     } else if (getCommentRow === 1) {
       commentRowList.push(getValues('reportComment1'));
+
+      // 改行コードでつなげた帳票コメントをjoinして一つの文字列にする
+      setReportComment(commentRowList.join('\n'));
     }
 
     // SCR-COM-0008-0007: 帳票コメント情報登録更新API
@@ -693,7 +696,8 @@ const ScrCom0008Page = () => {
         /** 帳票ID */
         reportId: reportId,
         /** 帳票コメント */
-        reportComment: 'TODO: つなげて1行にする',
+        // 改行コードでつなげた一つの文字列として帳票コメントを送る
+        reportComment: reportComment,
         /** 申請従業員ID */
         applicationEmployeeId: user.employeeId,
         /** 登録変更メモ */
