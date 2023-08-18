@@ -5,6 +5,7 @@ import { theme } from 'controls/theme';
 
 import ApiClientProvider from 'providers/ApiClientProvider';
 import AppContextProvider from 'providers/AppContextProvider';
+import AuthProvider from 'providers/AuthProvider';
 import MessageProvider from 'providers/MessageProvider';
 
 import { ThemeProvider } from '@mui/material/styles';
@@ -25,7 +26,9 @@ const App = () => {
         <MessageProvider>
           <AppContextProvider>
             <ApiClientProvider>
-              <AppRoute />
+              <AuthProvider>
+                <AppRoute />
+              </AuthProvider>
             </ApiClientProvider>
           </AppContextProvider>
         </MessageProvider>
