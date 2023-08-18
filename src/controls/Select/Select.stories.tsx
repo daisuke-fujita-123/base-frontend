@@ -91,7 +91,7 @@ export const Example = () => {
     defaultValues: {
       sampleName: 0,
       sampleName1: [0],
-      sampleName2: [0],
+      sampleName2: ['2'],
     },
     context: isReadOnly,
   });
@@ -103,17 +103,30 @@ export const Example = () => {
   ];
 
   const sampleAutoComplete: SelectValue[] = [
-    { displayValue: '00', value: 0 },
-    { displayValue: '01', value: 1 },
-    { displayValue: '02', value: 2 },
-    { displayValue: '03', value: 3 },
-    { displayValue: '04', value: 4 },
-    { displayValue: '05', value: 5 },
-    { displayValue: '06', value: 6 },
-    { displayValue: '07', value: 7 },
-    { displayValue: '08', value: 8 },
-    { displayValue: '09', value: 9 },
-    { displayValue: '10', value: 10 },
+    { value: '2', displayValue: 'ｶｰｵｸ!＆ﾕｰｻﾞｰ代行出品' },
+    { value: '3', displayValue: '福祉･ﾊﾞｽﾄﾗ' },
+    { value: '4', displayValue: 'ヤナセ' },
+    { value: '5', displayValue: 'ﾔﾅｾﾛｰﾌﾟﾗ' },
+    { value: '6', displayValue: 'トラックレンタ・リース' },
+    { value: '9', displayValue: 'ﾊﾞｽﾄﾗﾌﾚｯｼｭ' },
+    { value: 'A', displayValue: 'スズキディーラー' },
+    { value: 'B', displayValue: '即売り' },
+    { value: 'C', displayValue: 'ヤナセ即売り' },
+    { value: 'D', displayValue: 'ﾌﾚｯｼｭ' },
+    { value: 'E', displayValue: 'ＶＵＣセレクト' },
+    { value: 'G', displayValue: 'ｵｰｸﾈｯﾄｻﾀﾃﾞｰ' },
+    { value: 'H', displayValue: 'ブランド売り切り' },
+    { value: 'I', displayValue: '月)BMWﾃﾞｨｰﾗ特選' },
+    { value: 'J', displayValue: 'お楽しみ売切り' },
+    { value: 'K', displayValue: 'Audi/VW' },
+    { value: 'M', displayValue: 'ｽﾎﾟｯﾄｲﾍﾞﾝﾄ' },
+    { value: 'N', displayValue: 'さきどりﾚﾝﾀﾘｰｽ' },
+    { value: 'O', displayValue: '月MAX30' },
+    { value: 'Q', displayValue: 'スペシャルメンバーズ' },
+    { value: 'R', displayValue: '月)BMWﾃﾞｨｰﾗﾌﾚｯｼｭ' },
+    { value: 'S', displayValue: 'シュテルン' },
+    { value: 'X', displayValue: '土曜ﾚﾝﾀﾘｰｽ' },
+    { value: 'Y', displayValue: 'レンタ・リース' },
   ];
 
   return (

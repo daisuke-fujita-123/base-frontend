@@ -255,8 +255,7 @@ const Layouts = () => {
                   </MuiStack>
                   <MuiStack spacing={4}>
                     <TextField label='オークション開催日' name='_' />
-                    <BlankLayout />
-                    <BlankLayout />
+                    <BlankLayout quantity={2} />
                     <Checkbox name='_' label='キャンセルフラグ1' />
                   </MuiStack>
                 </MuiStack>
