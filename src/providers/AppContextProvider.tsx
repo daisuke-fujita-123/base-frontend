@@ -9,27 +9,13 @@ import { NavigateOptions, useLocation, useNavigate } from 'react-router-dom';
 
 import { Dialog } from 'controls/Dialog';
 
-import { _expApiClient } from './ApiClient';
+import { DIALOGS } from 'definitions/dialogs';
 import { MessageContext } from './MessageProvider';
-
-const dialogInfos = [
-  {
-    id: 'SYSTEM_ERROR',
-    messageId: 'MSG-0002',
-    buttons: ['閉じる'],
-  },
-  {
-    id: 'NAVIGATE_CONFIRM',
-    messageId: 'MSG-0003',
-    buttons: ['キャンセル', 'OK'],
-  },
-];
 
 /**
  * AppType
  */
 type AppType = {
-  user: any;
   navigateTo: string | number;
   navigateOptions?: NavigateOptions;
   needsConfirmNavigate: boolean;
@@ -59,7 +45,6 @@ export const AppContext = createContext<AppContextType>({} as AppContextType);
  * AppType
  */
 const initialValues: AppType = {
-  user: undefined,
   navigateTo: '',
   navigateOptions: undefined,
   needsConfirmNavigate: false,
@@ -86,18 +71,21 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
   // router
   const navigateReact = useNavigate();
   const location = useLocation();
+  let to = location.pathname;
+  if (location.search !== '') {
+    to += location.search;
+  }
+  if (location.hash !== '') {
+    to += location.hash;
+  }
 
   // state
   const [appContext, setAppContext] = useState<AppType>({
     ...initialValues,
-    navigateTo: location.pathname,
+    navigateTo: to,
   });
   const [isOpenDialog, setIsOpenDialog] = useState(false);
   const [dialogInfo, setDialogInfo] = useState<any>({});
-
-  useEffect(() => {
-    initialize();
-  }, []);
 
   useEffect(() => {
     if (appContext.needsConfirmNavigate) {
@@ -119,11 +107,6 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
     }
   }, [appContext]);
 
-  const initialize = async () => {
-    const response = await _expApiClient.get('/_exp/user');
-    setAppContext((prev) => ({ ...prev, user: response.data }));
-  };
-
   const navigate = (to: string | number, options?: NavigateOptions) => {
     setAppContext((prev) => ({
       ...prev,
@@ -141,7 +124,7 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
     dialogId: string,
     onClick: (buttonName: string) => void
   ) => {
-    const dialogInfo = dialogInfos.find((x) => x.id === dialogId);
+    const dialogInfo = DIALOGS.find((x) => x.id === dialogId);
 
     setDialogInfo({
       title: getMessage(dialogInfo!.messageId),
@@ -157,10 +140,6 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
     });
     setIsOpenDialog(true);
   };
-
-  if (appContext.user === undefined) {
-    return <></>;
-  }
 
   const saveState = (state: object) => {
     globalState[location.pathname] = state;
@@ -178,7 +157,7 @@ const AppContextProvider = (props: AppContextProvicerProps) => {
         value={{
           appContext,
           navigate,
-          setNeedsConfirmNavigate,
+          setNeedsConfirmNavigate: setNeedsConfirmNavigate,
           showDialog,
           saveState,
           loadState,

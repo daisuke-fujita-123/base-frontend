@@ -5,13 +5,15 @@ import { MarginBox } from 'layouts/Box';
 import { Section } from 'layouts/Section';
 
 import { Icon } from 'controls/Icon';
+import { TableColDef } from 'controls/Table';
+import { theme } from 'controls/theme';
 
+import { ThemeProvider } from '@mui/material';
 import {
   ConditionalTable,
+  ConditionModel,
   DeepKey,
   PricingTable,
-  SearchConditionProps,
-  TableColDef,
 } from './ConditionalTable';
 
 export default {
@@ -21,9 +23,9 @@ export default {
 
 export const Example = () => {
   const columns: TableColDef[] = [
-    { headerName: '条件種類', width: 150 },
-    { headerName: '条件', width: 100 },
-    { headerName: '値', width: 150 },
+    { field: 'conditionType', headerName: '条件種類', width: 150 },
+    { field: 'conditions', headerName: '条件', width: 100 },
+    { field: 'conditionVal', headerName: '値', width: 150 },
   ];
 
   /**
@@ -38,7 +40,7 @@ export const Example = () => {
     { displayValue: '≧', value: 6 },
   ];
 
-  const rows = [
+  const getItems = [
     {
       displayValue: '落札金額',
       value: 'ITM_PR_001',
@@ -118,10 +120,10 @@ export const Example = () => {
 
   // 条件種類変更後にAPIより条件、値を取得する
   const handleGetConditionData = (select: string) => {
-    return rows.find((val) => val.value === select) ?? null;
+    return getItems.find((val) => val.value === select) ?? null;
   };
 
-  const initialVal: SearchConditionProps = {
+  const initialVal: ConditionModel = {
     conditionType: '',
     condition: [
       {
@@ -130,19 +132,17 @@ export const Example = () => {
       },
     ],
   };
-  const [searchCondition, setSearchCondition] = useState<
-    SearchConditionProps[]
-  >([initialVal]);
+  const [rows, setRows] = useState<ConditionModel[]>([initialVal]);
 
   // 値の変更を検知する
   const handleChange = (
     val: string | number,
-    changeVal: DeepKey<SearchConditionProps>,
+    changeVal: DeepKey<ConditionModel>,
     indexRow: number,
     indexCol?: number
   ) => {
-    const newArray: SearchConditionProps[] = searchCondition.map(
-      (row: SearchConditionProps, rowIndex: number) => {
+    const newArray: ConditionModel[] = rows.map(
+      (row: ConditionModel, rowIndex: number) => {
         if (changeVal === 'conditionType' && typeof val === 'string') {
           if (rowIndex === indexRow) {
             return { ...row, [changeVal]: val };
@@ -167,11 +167,11 @@ export const Example = () => {
       }
     );
 
-    setSearchCondition(newArray);
+    setRows(newArray);
   };
 
-  const handleSetItem = (sortValues: SearchConditionProps[]) => {
-    setSearchCondition(sortValues);
+  const handleSetItem = (sortValues: ConditionModel[]) => {
+    setRows(sortValues);
   };
 
   const [pricingTableVisible, setPricingTableVisible] =
@@ -185,7 +185,7 @@ export const Example = () => {
   };
 
   const changeCodeToValue = (code: string | number): string => {
-    for (const r of rows) {
+    for (const r of getItems) {
       if (r.value === code) {
         return r.displayValue;
       }
@@ -215,14 +215,14 @@ export const Example = () => {
     </MarginBox>
   );
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <Section name='条件設定'>
         <ConditionalTable
           columns={columns}
-          rows={rows}
+          getItems={getItems}
           conditions={conditions}
           handleChange={handleChange}
-          searchCondition={searchCondition}
+          rows={rows}
           handleSetItem={handleSetItem}
           handleVisibleTable={handleVisibleTable}
           handleGetConditionData={handleGetConditionData}
@@ -231,13 +231,13 @@ export const Example = () => {
       {pricingTableVisible && (
         <Section name='価格設定' decoration={decoration}>
           <PricingTable
-            setCondition={searchCondition}
+            setCondition={rows}
             changeCodeToValue={changeCodeToValue}
             handleVisibleTable={handleVisibleTable}
           />
         </Section>
       )}
-    </>
+    </ThemeProvider>
   );
 };
 
