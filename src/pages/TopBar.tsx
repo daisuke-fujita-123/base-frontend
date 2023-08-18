@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { useLocation } from 'react-router';
 import { matchPath } from 'react-router-dom';
 
-import { RowStack, Stack } from 'layouts/Stack';
+import { Stack } from 'layouts/Stack';
 
 import { Breadcrumbs } from 'controls/Breadcrumbs';
 import { LogoutButton } from 'controls/Button';
@@ -10,9 +10,9 @@ import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
-import { routes } from 'routes/routes';
+import { ROUTES } from 'definitions/routes';
 
 // const routes = [
 //   // { index: true, element: 'ScrCom0002' },
@@ -60,7 +60,7 @@ const subsystems = [
  */
 const TopBar = () => {
   // context
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   // router
   const location = useLocation();
@@ -79,7 +79,7 @@ const TopBar = () => {
   // URIの履歴からパンくずリストに渡すpropsを作成
   const breadcrumbs = uris.map((uri, index) => {
     // IDを入る部分を考慮してroutesの定義から一致するURIを検索
-    const matched = routes[0].children.find((route) => {
+    const matched = ROUTES[0].children.find((route) => {
       if (route.path === undefined) return false;
       return matchPath(route.path, uri) !== null;
     });
@@ -98,19 +98,29 @@ const TopBar = () => {
   return (
     <Stack justifyContent='space-between' direction='row' alignItems='center'>
       <Breadcrumbs breadCrumbs={breadcrumbs} />
-      <RowStack>
+      <Stack
+        justifyContent='flex-end'
+        direction='row'
+        alignItems='center'
+        spacing={theme.spacing(10)}
+      >
         <Typography>
-          ログインユーザー | {appContext.user.belong} {appContext.user.name}
+          ログインユーザー | {user.organizationName} {user.employeeName}
         </Typography>
-        <RowStack spacing={theme.spacing(1)}>
+        <Stack
+          justifyContent='flex-end'
+          direction='row'
+          alignItems='center'
+          spacing={theme.spacing(1)}
+        >
           <Link href={''}>ヘルプ</Link>
           <Typography>|</Typography>
           <Link href={''}>マニュアル</Link>
-        </RowStack>
+        </Stack>
         <div style={{ marginRight: theme.spacing(6) }}>
           <LogoutButton></LogoutButton>
         </div>
-      </RowStack>
+      </Stack>
     </Stack>
   );
 };
