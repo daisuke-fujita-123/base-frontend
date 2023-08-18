@@ -65,9 +65,22 @@ export interface ScrTra9999CreateReportImageTraRequest {
   comment: string;
 }
 
+/** API-TRA-9999-0002: イメージ帳票作成API（取引会計管理） レスポンス */
+export interface ScrTra9999CreateReportImageTraResponse {
+  /** レスポンス */
+  responseEntity: string;
+}
+
 /** API-TRA-9999-0002: イメージ帳票作成API（取引会計管理） */
 export const ScrTra9999CreateReportImageTra = async (
   request: ScrTra9999CreateReportImageTraRequest
-): Promise<void> => {
-  await traApiClient.post('/scr-tra-9999/create-report-image-tra', request);
+): Promise<ScrTra9999CreateReportImageTraResponse> => {
+  const response = await traApiClient.post(
+    '/com/scr-tra-9999/create-report-image-tra',
+    request,
+    {
+      responseType: 'blob',
+    }
+  );
+  return response.data;
 };

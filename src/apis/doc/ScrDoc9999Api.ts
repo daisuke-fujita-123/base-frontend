@@ -16,9 +16,22 @@ export interface ScrDoc9999CreateReportImageDocRequest {
   comment: string;
 }
 
+/** API-DOC-9999-0002: イメージ帳票作成API（書類管理） レスポンス */
+export interface ScrDoc9999CreateReportImageDocResponse {
+  /** レスポンス */
+  responseEntity: string;
+}
+
 /** API-DOC-9999-0002: イメージ帳票作成API（書類管理） */
 export const ScrDoc9999CreateReportImageDoc = async (
   request: ScrDoc9999CreateReportImageDocRequest
-): Promise<void> => {
-  await docApiClient.post('/scr-doc-9999/create-report-image-doc', request);
+): Promise<ScrDoc9999CreateReportImageDocResponse> => {
+  const response = await docApiClient.post(
+    '/com/scr-doc-9999/create-report-image-doc',
+    request,
+    {
+      responseType: 'blob',
+    }
+  );
+  return response.data;
 };
