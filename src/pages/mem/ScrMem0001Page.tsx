@@ -16,7 +16,12 @@ import { Section } from 'layouts/Section';
 import { ColStack, RowStack } from 'layouts/Stack';
 
 import { AddButton, SearchButton } from 'controls/Button';
-import { DataGrid, GridColDef, GridRefsModel } from 'controls/Datagrid';
+import {
+  DataGrid,
+  exportCsv,
+  GridColDef,
+  GridHrefsModel,
+} from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
 import { Dialog } from 'controls/Dialog';
 import { ContentsDivider } from 'controls/Divider';
@@ -25,19 +30,23 @@ import { PriceTextField, TextField } from 'controls/TextField';
 import { SerchLabelText } from 'controls/Typography';
 
 import {
-  ScrCom9999GetCodeManagementMasterMultiple,
+  ScrCom9999getCodeManagementMasterMultiple,
   ScrCom9999GetCodeValue,
+} from 'apis/com/ScrCom9999Api';
+import {
   ScrMem0001SearchCorporations,
   ScrMem0001SearchCorporationsRequest,
   ScrMem0001SearchCorporationsResponse,
+} from 'apis/mem/ScrMem0001Api';
+import {
   ScrMem9999GetCorporationGroup,
   ScrMem9999OutputReport,
   ScrMem9999OutputReportRequest,
-} from 'apis/mem/ScrMem0001Api';
+} from 'apis/mem/ScrMem9999Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
@@ -163,134 +172,85 @@ interface returnValue {
  * バリデーションスキーマ
  */
 const corporationBasicSchama = {
-  corporationId: yup.string().label('法人ID').max(8).halfWidthOnly(),
-  corporationName: yup.string().label('法人名').max(30).fullAndHalfWidth(),
+  corporationId: yup.string().label('法人ID').max(8).half(),
+  corporationName: yup.string().label('法人名').max(30),
   corporationGroupName: yup.string().label('法人グループ名'),
   corporationEntryKinds: yup.array().label('法人参加区分'),
-  representativeName: yup.string().label('代表者名').max(30).fullAndHalfWidth(),
-  guarantorName1: yup
-    .string()
-    .label('連帯保証人名⓵')
-    .max(30)
-    .fullAndHalfWidth(),
-  guarantorName2: yup
-    .string()
-    .label('連帯保証人名⓶')
-    .max(30)
-    .fullAndHalfWidth(),
-  eligibleBusinessNumber: yup
-    .string()
-    .label('適格事業者番号')
-    .max(14)
-    .halfWidthOnly(),
-  antiqueBusinessLicenseNumber: yup
-    .string()
-    .label('古物商許可番号')
-    .max(30)
-    .fullAndHalfWidth(),
+  representativeName: yup.string().label('代表者名').max(30),
+  guarantorName1: yup.string().label('連帯保証人名⓵').max(30),
+  guarantorName2: yup.string().label('連帯保証人名⓶').max(30),
+  eligibleBusinessNumber: yup.string().label('適格事業者番号').max(14).half(),
+  antiqueBusinessLicenseNumber: yup.string().label('古物商許可番号').max(30),
   logisticsBaseAddressAfterMunicipalities: yup
     .string()
     .label('物流拠点住所（市区町村以降）')
-    .max(80)
-    .fullAndHalfWidth(),
+    .max(80),
   logisticsBaseDistrictCode: yup.string().label('市区郡コード/市区郡名'),
-  logisticsBasePhoneNumber: yup
-    .string()
-    .label('物流拠点TEL')
-    .max(13)
-    .formatTel(),
+  logisticsBasePhoneNumber: yup.string().label('物流拠点TEL').max(13).phone(),
   limitStatusKinds: yup.string().label('制限状況'),
   courseEntryKinds: yup.array().label('コース参加区分'),
   basicsCorporationCreditAmountFrom: yup
     .string()
     .label('基本法人与信額（FROM）')
     .max(11)
-    .formatMoney(),
+    .numberWithComma(),
   basicsCorporationCreditAmountTo: yup
     .string()
     .label('基本法人与信額（TO）')
     .max(11)
-    .formatMoney(),
+    .numberWithComma(),
   temporaryCreditSettingDateFrom: yup
     .string()
     .label('臨時与信設定日（FROM）')
     .max(10)
-    .formatYmd(),
+    .date(),
   temporaryCreditSettingDateTo: yup
     .string()
     .label('臨時与信設定日（TO）')
     .max(10)
-    .formatYmd(),
-  contractId: yup.string().label('契約ID').max(7).halfWidthOnly(),
-  billingId: yup.string().label('請求先ID').max(4).halfWidthOnly(),
+    .date(),
+  contractId: yup.string().label('契約ID').max(7).half(),
+  billingId: yup.string().label('請求先ID').max(4).half(),
   staffDepartmentKinds: yup.string().label('契約種別'),
   liveOptionEntryKinds: yup.array().label('ライブ会場フラグ'),
   posPutTogetherPlaceCode: yup.string().label('会場名'),
-  posNumber: yup.string().label('POS番号').max(10).halfWidthOnly(),
-  iaucManagementNumber: yup
-    .string()
-    .label('アイオーク番号')
-    .max(7)
-    .halfWidthOnly(),
+  posNumber: yup.string().label('POS番号').max(10).half(),
+  iaucManagementNumber: yup.string().label('アイオーク番号').max(7).half(),
   autobankSystemTerminalContractId: yup
     .string()
     .label('端末契約ID')
     .max(7)
-    .halfWidthOnly(),
-  useStartDateFrom: yup
-    .string()
-    .label('利用開始日（FROM）')
-    .max(10)
-    .formatYmd(),
-  useStartDateTo: yup.string().label('利用開始日（TO）').max(10).formatYmd(),
-  idIssuanceDateFrom: yup
-    .string()
-    .label('ID発行年月日（FROM）')
-    .max(10)
-    .formatYmd(),
-  idIssuanceDateTo: yup
-    .string()
-    .label('ID発行年月日（TO）')
-    .max(10)
-    .formatYmd(),
+    .half(),
+  useStartDateFrom: yup.string().label('利用開始日（FROM）').max(10).date(),
+  useStartDateTo: yup.string().label('利用開始日（TO）').max(10).date(),
+  idIssuanceDateFrom: yup.string().label('ID発行年月日（FROM）').max(10).date(),
+  idIssuanceDateTo: yup.string().label('ID発行年月日（TO）').max(10).date(),
   courseChangeDateFrom: yup
     .string()
     .label('コース変更日（FROM）')
     .max(10)
-    .formatYmd(),
-  courseChangeDateTo: yup
-    .string()
-    .label('コース変更日（TO）')
-    .max(10)
-    .formatYmd(),
+    .date(),
+  courseChangeDateTo: yup.string().label('コース変更日（TO）').max(10).date(),
   recessPeriodStartDateFrom: yup
     .string()
     .label('休会期間FROM（FROM）')
     .max(10)
-    .formatYmd(),
+    .date(),
   recessPeriodStartDateTo: yup
     .string()
     .label('休会期間FROM（TO）')
     .max(10)
-    .formatYmd(),
+    .date(),
   recessPeriodEndDateFrom: yup
     .string()
     .label('休会期間TO（FROM）')
     .max(10)
-    .formatYmd(),
-  recessPeriodEndDateTo: yup
-    .string()
-    .label('休会期間TO（TO）')
-    .max(10)
-    .formatYmd(),
-  leavingDateFrom: yup.string().label('脱会日（FROM）').max(10).formatYmd(),
-  leavingDateTo: yup.string().label('脱会日（TO）').max(10).formatYmd(),
-  changeExpectDateFrom: yup
-    .string()
-    .label('変更日（FROM）')
-    .max(10)
-    .formatYmd(),
-  changeExpectDateTo: yup.string().label('変更日（TO）').max(10).formatYmd(),
+    .date(),
+  recessPeriodEndDateTo: yup.string().label('休会期間TO（TO）').max(10).date(),
+  leavingDateFrom: yup.string().label('脱会日（FROM）').max(10).date(),
+  leavingDateTo: yup.string().label('脱会日（TO）').max(10).date(),
+  changeExpectDateFrom: yup.string().label('変更日（FROM）').max(10).date(),
+  changeExpectDateTo: yup.string().label('変更日（TO）').max(10).date(),
 };
 
 /**
@@ -306,27 +266,27 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'corporationName',
     headerName: '法人名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'corporationGroupName',
     headerName: '法人グループ名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'representativeName',
     headerName: '代表者名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'guarantorName1',
     headerName: '連帯保証人名⓵',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'guarantorName2',
     headerName: '連帯保証人名⓶',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'corporationEntryKinds',
@@ -777,7 +737,7 @@ const serchData: { label: string; name: key }[] = [
  */
 const ScrMem0001Page = () => {
   // router
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { getMessage } = useContext(MessageContext);
 
@@ -786,7 +746,7 @@ const ScrMem0001Page = () => {
     selectValuesInitialValues
   );
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
-  const [hrefs, setHrefs] = useState<GridRefsModel[]>([]);
+  const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
   const [openSection, setOpenSection] = useState<boolean>(true);
   const [scrCom0035PopupIsOpen, setScrCom0035PopupIsOpen] =
     useState<boolean>(false);
@@ -794,6 +754,7 @@ const ScrMem0001Page = () => {
     useState<boolean>(false);
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
+  const [csvButtonDisable, setCsvButtonDisable] = useState<boolean>(true);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -823,7 +784,7 @@ const ScrMem0001Page = () => {
       };
 
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
 
@@ -934,7 +895,7 @@ const ScrMem0001Page = () => {
     const response = await ScrMem0001SearchCorporations(request);
     const searchResult = convertToSearchResultRowModel(response);
 
-    const hrefs: GridRefsModel[] = [{ field: 'corporationId', hrefs: [] }];
+    const hrefs: GridHrefsModel[] = [{ field: 'corporationId', hrefs: [] }];
     searchResult.map((x) => {
       hrefs[0].hrefs.push({
         id: x.corporationId,
@@ -946,13 +907,19 @@ const ScrMem0001Page = () => {
     if (response.limitCount < response.acquisitionCount) {
       // メッセージ取得機能へ引数を渡しメッセージを取得する
       const messege = Format(getMessage('MSG-FR-INF-00004'), [
-        '物流拠点一覧',
         response.acquisitionCount.toString(),
         response.responseCount.toString(),
       ]);
       // ダイアログを表示
       setTitle(messege);
       setHandleDialog(true);
+    }
+
+    // CSV出力ボタン活性非活性
+    if (response.acquisitionCount !== 0) {
+      setCsvButtonDisable(false);
+    } else {
+      setCsvButtonDisable(true);
     }
 
     setSearchResult(searchResult);
@@ -994,23 +961,44 @@ const ScrMem0001Page = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
-    alert('TODO：結果結果からCSVを出力する。');
+    const date = new Date();
+    const year = date.getFullYear().toString().padStart(4, '0');
+    const month = date.getMonth().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const fileName =
+      'SCR-MEM-0001_' +
+      user.employeeId +
+      '_' +
+      year +
+      month +
+      day +
+      hours +
+      minutes +
+      '.csv';
+    exportCsv(searchResult, fileName);
   };
 
   /**
    * 帳票選択ポップアップ出力クリック時のイベントハンドラ
    */
-  const handleConfirm = async (returnValue: returnValue) => {
+  const handleConfirm = async (
+    reportId: string,
+    reportName: string,
+    reportComment: string,
+    defaultValue: string
+  ) => {
     // 帳票作成パラメーター情報作成
     const outputReportRequest: ScrMem9999OutputReportRequest = {
       screenId: 'SCR-MEM-0001',
-      reportId: returnValue.reportId,
-      reportName: returnValue.reportName,
-      outputReportEmployeeId: appContext.user.id,
-      outputReportEmployeeName: appContext.user.name,
-      comment: returnValue.reportComment,
+      reportId: reportId,
+      reportName: reportName,
+      outputReportEmployeeId: user.employeeId,
+      outputReportEmployeeName: user.employeeName,
+      comment: reportComment,
       createReportParameterInfo: convertFromCreateReportParameterInfo(
-        returnValue.reportId,
+        reportId,
         getValues()
       ),
     };
@@ -1018,7 +1006,6 @@ const ScrMem0001Page = () => {
     const outputReportResponse = await ScrMem9999OutputReport(
       outputReportRequest
     );
-    // ダウンロードしたCSVをエクセルで開く
   };
 
   /**
@@ -1309,7 +1296,10 @@ const ScrMem0001Page = () => {
                   <AddButton onClick={handleIconOutputReportClick}>
                     帳票出力
                   </AddButton>
-                  <AddButton onClick={handleIconOutputCsvClick}>
+                  <AddButton
+                    disable={csvButtonDisable}
+                    onClick={handleIconOutputCsvClick}
+                  >
                     CSV出力
                   </AddButton>
                 </MarginBox>
@@ -1329,27 +1319,39 @@ const ScrMem0001Page = () => {
       </MainLayout>
 
       {/* CSV読込（ポップアップ） */}
-      <ScrCom0035Popup
-        allRegistrationDefinitions={allRegistrationDefinitions}
-        screanId={'SCR-MEM-0001'}
-        isOpen={scrCom0035PopupIsOpen}
-        setIsOpen={() => setScrCom0035PopupIsOpen(false)}
-      />
+      {scrCom0035PopupIsOpen ? (
+        <ScrCom0035Popup
+          allRegistrationDefinitions={allRegistrationDefinitions}
+          screenId={'SCR-MEM-0001'}
+          isOpen={scrCom0035PopupIsOpen}
+          setIsOpen={() => setScrCom0035PopupIsOpen(false)}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 帳票選択（ポップアップ） */}
-      <ScrCom0011Popup
-        isOpen={scrCom0011PopupIsOpen}
-        data={{ screenId: 'SCR-MEM-0001' }}
-        handleCancel={() => setScrCom0011PopupIsOpen(false)}
-        handleConfirm={handleConfirm}
-      />
+      {scrCom0011PopupIsOpen ? (
+        <ScrCom0011Popup
+          isOpen={scrCom0011PopupIsOpen}
+          data={{ screenId: 'SCR-MEM-0001' }}
+          handleCancel={() => setScrCom0011PopupIsOpen(false)}
+          handleConfirm={handleConfirm}
+        />
+      ) : (
+        ''
+      )}
 
       {/* ダイアログ */}
-      <Dialog
-        open={handleDialog}
-        title={title}
-        buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
-      />
+      {handleDialog ? (
+        <Dialog
+          open={handleDialog}
+          title={title}
+          buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };
