@@ -240,10 +240,11 @@ const ScrCom0023Page = () => {
               rows={searchResult}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
-              // TODO: 利用フラグがfalseの場合はレコードグレーアウト
-              getCellDisabled={(params) => {
-                if (params.usaFlag === false) return true;
-                return false;
+              // TODO: 利用フラグがfalseの場合は該当レコードグレーアウト
+              // => グレーアウトする色のデザインが出来次第修正
+              getRowClassName={(params) => {
+                if (params.row.useFlag === '不可') return 'hot';
+                return '';
               }}
             />
           </Section>
