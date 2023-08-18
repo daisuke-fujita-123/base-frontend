@@ -5,17 +5,16 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { DataGrid, exportCsv, GridColDef, GridHrefsModel } from 'controls/Datagrid';
 
 import {
-  ScrCom0026GetMasterPermission,
-  ScrCom0026GetMasterPermissionRequest,
-  ScrCom0026GetMasterPermissionResponse,
+    ScrCom0026GetMasterPermission, ScrCom0026GetMasterPermissionRequest,
+    ScrCom0026GetMasterPermissionResponse
 } from 'apis/com/ScrCom0026Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 /**
  * 検索結果行データモデル
@@ -48,7 +47,7 @@ const masterResultColumns: GridColDef[] = [
     field: 'masterPermissionName',
     headerName: '権限名',
     headerAlign: 'center',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'useFlag',
@@ -86,14 +85,13 @@ const ScrCom0026MasterPermissionTab = () => {
   const [masterResult, setMasterResult] = useState<SearchResultMasterModel[]>(
     []
   );
-  const [hrefs, setHrefs] = useState<any[]>([]);
+  const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
 
   // router
   const navigate = useNavigate();
 
   // user情報
-  const { appContext } = useContext(AppContext);
-  const businessDate = ''; // TODO: 業務日付実装待ち
+  const { user } = useContext(AuthContext);
 
   // 初期表示処理
   useEffect(() => {
@@ -106,22 +104,27 @@ const ScrCom0026MasterPermissionTab = () => {
       const masterResult = convertToMasterModel(masterResponse);
 
       // link設定
-      const hrefs = masterResult.map((x) => {
+      const href = masterResult.map((x) => {
         return {
-          field: 'masterPermissionId',
           id: x.id,
-          href: '/com/permissions/master/:' + x.masterPermissionId,
+          href: '/com/permissions/master/' + x.masterPermissionId,
         };
       });
+      const hrefs = [
+        {
+          field: 'masterPermissionId',
+          hrefs: href,
+        },
+      ];
 
       // データグリッドにデータを設定
       setMasterResult(masterResult);
       setHrefs(hrefs);
     };
-    if (businessDate !== null) {
-      initialize(businessDate);
+    if (user.taskDate !== null) {
+      initialize(user.taskDate);
     }
-  });
+  }, [user]);
 
   /**
    * リンククリック時のイベントハンドラ
@@ -135,16 +138,33 @@ const ScrCom0026MasterPermissionTab = () => {
    * 追加アイコンクリック時のイベントハンドラ
    */
   const handleIconAddClick = () => {
-    // TODO：新規作成用URI決定後に変更
-    navigate('/com/permissions#master');
+    navigate('/com/permissions/master/new');
   };
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果からCSVを出力する。');
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hours = d.getHours();
+    const min = d.getMinutes();
+    exportCsv(
+      masterResult,
+      'マスタ権限一覧' +
+        user.employeeId +
+        '_' +
+        year.toString() +
+        (month < 10 ? '0' : '') +
+        month.toString() +
+        (day < 10 ? '0' : '') +
+        day.toString() +
+        hours.toString() +
+        min.toString() +
+        '.csv'
+    );
   };
   return (
     <>
@@ -166,7 +186,6 @@ const ScrCom0026MasterPermissionTab = () => {
             <DataGrid
               columns={masterResultColumns}
               rows={masterResult}
-              pageSize={10}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
             />

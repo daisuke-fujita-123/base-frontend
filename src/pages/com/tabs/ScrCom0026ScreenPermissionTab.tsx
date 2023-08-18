@@ -5,17 +5,16 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { DataGrid, exportCsv, GridColDef, GridHrefsModel } from 'controls/Datagrid';
 
 import {
-  ScrCom0026GetScreenPermission,
-  ScrCom0026GetScreenPermissionRequest,
-  ScrCom0026GetScreenPermissionResponse,
+    ScrCom0026GetScreenPermission, ScrCom0026GetScreenPermissionRequest,
+    ScrCom0026GetScreenPermissionResponse
 } from 'apis/com/ScrCom0026Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 /**
  * 検索結果行データモデル
@@ -48,7 +47,7 @@ const screenResultColumns: GridColDef[] = [
     field: 'screenPermissionName',
     headerName: '権限名',
     headerAlign: 'center',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'useFlag',
@@ -86,14 +85,13 @@ const ScrCom0026ScreenPermissionTab = () => {
   const [screenResult, setScreenResult] = useState<SearchResultScreenModel[]>(
     []
   );
-  const [hrefs, setHrefs] = useState<any[]>([]);
+  const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
 
   // router
   const navigate = useNavigate();
 
   // user情報
-  const { appContext } = useContext(AppContext);
-  const businessDate = ''; // TODO: 業務日付実装待ち
+  const { user } = useContext(AuthContext);
 
   // 初期表示処理
   useEffect(() => {
@@ -106,22 +104,27 @@ const ScrCom0026ScreenPermissionTab = () => {
       const screenResult = convertToScreenModel(screenResponse);
 
       // link設定
-      const hrefs = screenResult.map((x) => {
+      const href = screenResult.map((x) => {
         return {
-          field: 'screenPermissionId',
           id: x.id,
-          href: '/com/permissions/screen/:' + x.screenPermissionId,
+          href: '/com/permissions/screen/' + x.screenPermissionId,
         };
       });
+      const hrefs = [
+        {
+          field: 'screenPermissionId',
+          hrefs: href,
+        },
+      ];
 
       // データグリッドにデータを設定
       setScreenResult(screenResult);
       setHrefs(hrefs);
     };
-    if (businessDate !== null) {
-      initialize(businessDate);
+    if (user.taskDate !== null) {
+      initialize(user.taskDate);
     }
-  });
+  }, [user]);
 
   /**
    * リンククリック時のイベントハンドラ
@@ -135,16 +138,33 @@ const ScrCom0026ScreenPermissionTab = () => {
    * 追加アイコンクリック時のイベントハンドラ
    */
   const handleIconAddClick = () => {
-    // TODO：新規作成用URI決定後に変更
-    navigate('/com/permissions#screen');
+    navigate('/com/permissions/screen/new');
   };
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果からCSVを出力する。');
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hours = d.getHours();
+    const min = d.getMinutes();
+    exportCsv(
+      screenResult,
+      '画面権限一覧' +
+        user.employeeId +
+        '_' +
+        year.toString() +
+        (month < 10 ? '0' : '') +
+        month.toString() +
+        (day < 10 ? '0' : '') +
+        day.toString() +
+        hours.toString() +
+        min.toString() +
+        '.csv'
+    );
   };
 
   return (
@@ -167,7 +187,6 @@ const ScrCom0026ScreenPermissionTab = () => {
             <DataGrid
               columns={screenResultColumns}
               rows={screenResult}
-              pageSize={10}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
             />

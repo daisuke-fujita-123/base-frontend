@@ -20,7 +20,7 @@ const ScrCom0026Page = () => {
   const tabValues: TabDef[] = [
     { title: '画面権限一覧', hash: '#screen' },
     { title: 'マスタ権限一覧', hash: '#master' },
-    { title: '承認種類一覧', hash: '#approvalkind' },
+    { title: '承認種類一覧', hash: '#approval-kind' },
     { title: '承認権限一覧', hash: '#approvalpermission' },
     { title: '変更履歴一覧', hash: '#changehistory' },
   ];

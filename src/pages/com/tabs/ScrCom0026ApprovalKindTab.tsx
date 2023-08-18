@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import ScrCom0032Popup, {
-  ScrCom0032PopupModel,
-} from 'pages/com/popups/ScrCom0032';
+    columnList, ScrCom0032PopupModel, sectionList
+} from 'pages/com/popups/ScrCom0032Popup';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -11,22 +11,14 @@ import { Section } from 'layouts/Section';
 import { Stack } from 'layouts/Stack';
 
 import { AddButton, ConfirmButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
-import { TableRowModel } from 'controls/Table';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 
 import {
-  ScrCom0026GetApprovalKind,
-  ScrCom0026GetApprovalKindRequest,
-  ScrCom0026GetApprovalKindResponse,
-  ScrCom0026RegistApprovalKind,
+    ScrCom0026GetApprovalKind, ScrCom0026GetApprovalKindRequest, ScrCom0026GetApprovalKindResponse,
+    ScrCom0026RegistApprovalKind, ScrCom9999GetHistoryInfo, ScrCom9999GetHistoryInfoResponse
 } from 'apis/com/ScrCom0026Api';
-import {
-  ScrCom9999GetHistoryInfo,
-  ScrCom9999GetHistoryInfoRequest,
-} from 'apis/com/ScrCom9999Api';
 
-import { AppContext } from 'providers/AppContextProvider';
-import { MessageContext } from 'providers/MessageProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
 
@@ -58,6 +50,17 @@ interface SearchResultApprovalModel {
   approval: boolean;
   // 承認種類ID
   approvalKindId: string;
+  // 変更前タイムスタンプ
+  beforeTimestamp: string;
+  // 変更履歴番号
+  changeHistoryNumber: string;
+  // 変更予定日
+  changeExpectDate: string;
+}
+
+interface ErrorList {
+  errorCode: string;
+  errorMessage: string;
 }
 
 /**
@@ -74,25 +77,25 @@ const approvalResultColumns: GridColDef[] = [
     field: 'systemKind',
     headerName: 'システム種別',
     headerAlign: 'center',
-    size: 'm',
+    size: 's',
   },
   {
     field: 'screenName',
     headerName: '変更画面',
     headerAlign: 'center',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'tabName',
     headerName: 'タブ名',
     headerAlign: 'center',
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'approvalConditionName',
     headerName: '条件',
     headerAlign: 'center',
-    size: 'm',
+    width: 400,
   },
   {
     field: 'number1',
@@ -141,6 +144,7 @@ const columnGroups: GridColumnGroupingModel = [
   },
 ];
 
+//
 const convertToApprovalKindModel = (
   approval: ScrCom0026GetApprovalKindResponse
 ): SearchResultApprovalModel[] => {
@@ -158,6 +162,34 @@ const convertToApprovalKindModel = (
       number4: x.number4,
       approval: x.approval,
       approvalKindId: x.approvalKindId,
+      beforeTimestamp: x.beforeTimestamp,
+      changeHistoryNumber: '',
+      changeExpectDate: '',
+    };
+  });
+};
+
+const convertToHistoryInfo = (
+  approval: ScrCom9999GetHistoryInfoResponse,
+  changeHistoryNumber: string
+): SearchResultApprovalModel[] => {
+  return approval.approvalKindList.map((x) => {
+    return {
+      id: x.number,
+      number: x.number,
+      systemKind: x.systemKind,
+      screenName: x.screenName,
+      tabName: x.tabName,
+      approvalConditionName: x.approvalConditionName,
+      number1: x.number1,
+      number2: x.number2,
+      number3: x.number3,
+      number4: x.number4,
+      approval: x.approval,
+      approvalKindId: x.approvalKindId,
+      beforeTimestamp: x.beforeTimestamp,
+      changeHistoryNumber: changeHistoryNumber,
+      changeExpectDate: '',
     };
   });
 };
@@ -166,9 +198,27 @@ const convertToApprovalKindModel = (
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  changedSections: [],
-  errorMessages: [],
-  warningMessages: [],
+  errorList: [],
+  warningList: [],
+  registrationChangeList: [
+    {
+      screenId: '',
+      screenName: '',
+      tabId: '',
+      tabName: '',
+      sectionList: [
+        {
+          sectionName: '',
+          columnList: [
+            {
+              columnName: '',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  changeExpectDate: '',
 };
 
 /**
@@ -179,6 +229,9 @@ const ScrCom0026ApprovalKindTab = () => {
   const [approvalResult, setApprovalResult] = useState<
     SearchResultApprovalModel[]
   >([]);
+  const [initApprovalResult, setInitApprovalResult] = useState<
+    SearchResultApprovalModel[]
+  >([]);
   // 履歴表示によるボタン活性判別フラグ
   const [activeFlag, setActiveFlag] = useState(false);
 
@@ -187,9 +240,7 @@ const ScrCom0026ApprovalKindTab = () => {
   const applicationId = searchParams.get('applicationId');
 
   // user情報
-  const { appContext } = useContext(AppContext);
-  const { getMessage } = useContext(MessageContext);
-  const businessDate = ''; // TODO: 業務日付実装待ち
+  const { user } = useContext(AuthContext);
 
   // popup
   const [isOpenPopup, setIsOpenPopup] = useState(false);
@@ -211,6 +262,11 @@ const ScrCom0026ApprovalKindTab = () => {
 
       // データグリッドにデータを設定
       setApprovalResult(approvalResult);
+
+      // 初期データを格納
+      if (initApprovalResult.length === 0) {
+        setInitApprovalResult(approvalResult);
+      }
     };
 
     // 履歴表示処理
@@ -218,19 +274,25 @@ const ScrCom0026ApprovalKindTab = () => {
       // ボタン非活性
       setActiveFlag(true);
 
-      // SCR-COM-9999-0025: 変更履歴情報取得API
-      const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
+      // 変更履歴情報取得API
+      const getHistoryInfoRequest = {
         changeHistoryNumber: applicationId,
       };
       const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
         getHistoryInfoRequest
       );
-      const getHistoryInfoResult = convertToApprovalKindModel(
-        getHistoryInfoResponse
+      const historyInfo = convertToHistoryInfo(
+        getHistoryInfoResponse,
+        applicationId
       );
 
       // データグリッドにデータを設定
-      setApprovalResult(getHistoryInfoResult);
+      setApprovalResult(historyInfo);
+
+      // 初期データを格納
+      if (initApprovalResult) {
+        setInitApprovalResult(historyInfo);
+      }
     };
 
     // 履歴表示処理
@@ -240,18 +302,36 @@ const ScrCom0026ApprovalKindTab = () => {
     }
 
     // 初期表示処理
-    if (businessDate !== null) {
-      initialize(businessDate);
+    if (user.taskDate !== null) {
+      initialize(user.taskDate);
       return;
     }
-  });
+  }, [applicationId, user, initApprovalResult]);
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果からCSVを出力する。');
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hours = d.getHours();
+    const min = d.getMinutes();
+    exportCsv(
+      approvalResult,
+      '承認種類' +
+        user.employeeId +
+        '_' +
+        year.toString() +
+        (month < 10 ? '0' : '') +
+        month.toString() +
+        (day < 10 ? '0' : '') +
+        day.toString() +
+        hours.toString() +
+        min.toString() +
+        '.csv'
+    );
   };
 
   /**
@@ -261,28 +341,28 @@ const ScrCom0026ApprovalKindTab = () => {
     {
       screenName: 'アクセス権限管理',
       screenId: 'SCR-COM-0026',
-      tabName: '承認種類',
-      tabId: 'xxx', // TODO
       section: '承認種類一覧',
-      columnName: '承認者',
       fields: ['number1', 'number2', 'number3', 'number4'],
+      name: ['第1', '第2', '第3', '第4'],
     },
   ];
 
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): TableRowModel[] => {
+  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
     const fields = Object.keys(dirtyFields);
-    const changedSections: TableRowModel[] = [];
+    const changedSections: sectionList[] = [];
     sectionDef.forEach((d) => {
+      const columnList: columnList[] = [];
       fields.forEach((f) => {
         if (d.fields.includes(f)) {
-          changedSections.push({
-            変更種類: '基本情報変更',
-            セクション名: d.section,
-          });
+          columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
         }
+      });
+      changedSections.push({
+        sectionName: d.section,
+        columnList: columnList,
       });
     });
     return changedSections;
@@ -293,8 +373,9 @@ const ScrCom0026ApprovalKindTab = () => {
    */
   const handleConfirm = () => {
     // 画面入力チェック
-    const errorMessages: string[] = [];
-    approvalResult.map((x) => {
+    const errorMessages: ErrorList[] = [];
+    const approvalResultRequest: SearchResultApprovalModel[] = [];
+    approvalResult.map((x, i) => {
       // 承認者.第1~4のいずれかがチェック済みであること
       if (
         x.number1 === false ||
@@ -302,7 +383,10 @@ const ScrCom0026ApprovalKindTab = () => {
         x.number3 === false ||
         x.number4 === false
       ) {
-        errorMessages.push(getMessage('MSG-FR-ERR-00005'));
+        errorMessages.push({
+          errorCode: 'MSG-FR-ERR-00005',
+          errorMessage: '承認者を入力してください。',
+        });
       }
 
       // 最大の承認者より前のチェックが全てチェック済みか
@@ -312,47 +396,120 @@ const ScrCom0026ApprovalKindTab = () => {
         x.number2 !== true &&
         x.number1 !== true
       ) {
-        errorMessages.push(getMessage('MSG-FR-ERR-00006'));
+        errorMessages.push({
+          errorCode: 'MSG-FR-ERR-00006',
+          errorMessage: '承認者を正しい組み合わせで入力してください。',
+        });
       } else if (
         x.number3 === true &&
         x.number2 !== true &&
         x.number1 !== true
       ) {
-        errorMessages.push(getMessage('MSG-FR-ERR-00006'));
+        errorMessages.push({
+          errorCode: 'MSG-FR-ERR-00006',
+          errorMessage: '承認者を正しい組み合わせで入力してください。',
+        });
       } else if (x.number2 === true && x.number1 !== true) {
-        errorMessages.push(getMessage('MSG-FR-ERR-00006'));
+        errorMessages.push({
+          errorCode: 'MSG-FR-ERR-00006',
+          errorMessage: '承認者を正しい組み合わせで入力してください。',
+        });
+      }
+
+      // 変更行のデータを取得
+      if (
+        x.number1 !== initApprovalResult[i].number1 ||
+        x.number2 !== initApprovalResult[i].number2 ||
+        x.number3 !== initApprovalResult[i].number3 ||
+        x.number4 !== initApprovalResult[i].number4
+      ) {
+        approvalResultRequest.push({
+          id: x.number,
+          number: x.number,
+          systemKind: x.systemKind,
+          screenName: x.screenName,
+          tabName: x.tabName,
+          approvalConditionName: x.approvalConditionName,
+          number1: x.number1,
+          number2: x.number2,
+          number3: x.number3,
+          number4: x.number4,
+          approval: x.approval,
+          approvalKindId: x.approvalKindId,
+          beforeTimestamp: x.beforeTimestamp,
+          changeHistoryNumber: '',
+          changeExpectDate: '',
+        });
       }
     });
 
     // 登録更新の結果を登録確認ポップアップへ渡す
     setIsOpenPopup(true);
     setScrCom0032PopupData({
-      changedSections: convertToChngedSections(approvalResult),
-      errorMessages: errorMessages,
-      warningMessages: [],
+      errorList: errorMessages,
+      warningList: [],
+      registrationChangeList: [
+        {
+          screenId: 'SCR-COM-0026',
+          screenName: 'アクセス権限管理',
+          tabId: '3',
+          tabName: '承認種類',
+          sectionList: convertToChngedSections(approvalResultRequest),
+        },
+      ],
+      changeExpectDate: '',
     });
   };
 
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const handlePopupConfirm = async (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
 
-    // API-COM-0026-0007: 承認種類登録更新API
-    const request = {
-      registApprovalKindList: approvalResult.map((x) => {
-        return {
-          approvalKindId: x.approvalKindId,
-          screenId: 'SCR-COM-0026',
-          tabId: 'xxx', // TODO
-          registrationChangeMemo: '',
-          changeApplicationEmployeeId: '',
+    // 変更行のデータを取得
+    const approvalResultRequest: SearchResultApprovalModel[] = [];
+    approvalResult.forEach((x, i) => {
+      if (
+        x.number1 !== initApprovalResult[i].number1 &&
+        x.number2 !== initApprovalResult[i].number2 &&
+        x.number3 !== initApprovalResult[i].number3 &&
+        x.number4 !== initApprovalResult[i].number4
+      ) {
+        approvalResultRequest.push({
+          id: x.number,
+          number: x.number,
+          systemKind: x.systemKind,
+          screenName: x.screenName,
+          tabName: x.tabName,
+          approvalConditionName: x.approvalConditionName,
           number1: x.number1,
           number2: x.number2,
           number3: x.number3,
           number4: x.number4,
-          businessDate: businessDate,
+          approval: x.approval,
+          approvalKindId: x.approvalKindId,
+          beforeTimestamp: x.beforeTimestamp,
+          changeHistoryNumber: '',
+          changeExpectDate: '',
+        });
+      }
+    });
+
+    // API-COM-0026-0007: 承認種類登録更新API
+    const request = {
+      registApprovalKindList: approvalResultRequest.map((x) => {
+        return {
+          approvalKindId: x.approvalKindId,
+          screenId: 'SCR-COM-0026',
+          tabId: '3',
+          registrationChangeMemo: registrationChangeMemo,
+          changeApplicationEmployeeId: user.employeeId,
+          number1: x.number1,
+          number2: x.number2,
+          number3: x.number3,
+          number4: x.number4,
+          businessDate: user.taskDate,
         };
       }),
     };
@@ -390,7 +547,7 @@ const ScrCom0026ApprovalKindTab = () => {
               columns={approvalResultColumns}
               columnGroupingModel={columnGroups}
               rows={approvalResult}
-              pageSize={10}
+              disabled={activeFlag}
             />
           </Section>
         </MainLayout>
@@ -406,12 +563,14 @@ const ScrCom0026ApprovalKindTab = () => {
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
+      {isOpenPopup && (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      )}
     </>
   );
 };
