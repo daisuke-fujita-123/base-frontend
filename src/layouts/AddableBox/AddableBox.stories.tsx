@@ -307,7 +307,6 @@ export const Example = () => {
                 <Radio
                   name={`conditions.${i}.plusMinus`}
                   radioValues={plusMinus}
-                  row
                 />
                 <PriceTextField name={`conditions.${i}.price`} />円
               </RowStack>
