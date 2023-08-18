@@ -315,14 +315,20 @@ export interface ScrMem9999SearchconditionRefineRequest {
 
 /** 検索条件絞込APIレスポンス */
 export interface ScrMem9999SearchconditionRefineResponse {
-  // 法人ID
-  corporationId: string[];
-  // 法人名称
-  corporationName: string[];
+  // 法人リスト
+  corporationList: CorporationList[];
   // 請求先ID
   billingId: string[];
   // 契約ID
   contractId: string[];
+}
+
+// 法人リスト
+export interface CorporationList {
+  // 法人ID
+  corporationId: string;
+  // 法人名称
+  corporationName: string;
 }
 
 /** API-MEM-9999-0023:検索条件絞込API*/
