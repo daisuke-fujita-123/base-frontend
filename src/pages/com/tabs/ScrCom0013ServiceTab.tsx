@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup/dist/yup';
+import yup from 'utils/yup';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -9,34 +10,42 @@ import { Section } from 'layouts/Section';
 import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 
 import { AddButton, ConfirmButton, PrimaryButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
 import { Select, SelectValue } from 'controls/Select';
 import { Typography } from 'controls/Typography';
 
 import {
-  errorList, ScrCom0013chkService, ScrCom0013DisplayComoditymanagementService,
+  ScrCom0013chkService,
+  ScrCom0013DisplayComoditymanagementService,
   ScrCom0013DisplayComoditymanagementServiceRequest,
-  ScrCom0013DisplayComoditymanagementServiceResponse, ScrCom0013MergeService,
-  ScrCom0013MergeServiceRequest, warnList
+  ScrCom0013DisplayComoditymanagementServiceResponse,
+  ScrCom0013MergeService,
+  ScrCom0013MergeServiceRequest,
 } from 'apis/com/ScrCom0013Api';
 import {
-  changeExpectDateInfo, ScrCom9999GetChangeDate, ScrCom9999GetChangeDateRequest,
-  ScrCom9999GetCodeManagementMasterListbox, ScrCom9999GetCodeManagementMasterListboxRequest,
-  ScrCom9999GetHistoryInfo, ScrCom9999GetHistoryInfoRequest, SearchGetCodeManagementMasterListbox
+  ChangeExpectDateInfo,
+  ScrCom9999GetChangeDate,
+  ScrCom9999GetChangeDateRequest,
+  ScrCom9999GetCodeManagementMaster,
+  ScrCom9999GetCodeManagementMasterRequest,
+  ScrCom9999GetHistoryInfo,
+  ScrCom9999GetHistoryInfoRequest,
+  SearchGetCodeManagementMasterListbox,
 } from 'apis/com/ScrCom9999Api';
 
 import { useForm } from 'hooks/useForm';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
-import { generate } from 'utils/BaseYup';
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
 import ScrCom0032Popup, {
-  ColumnListModel, errorMessagesModel, ScrCom0032PopupModel, SectionListModel,
-  warningMessagesModel
+  ScrCom0032PopupModel,
 } from '../popups/ScrCom00032Popup';
+import ScrCom0033Popup, {
+  ScrCom0033PopupModel,
+} from '../popups/ScrCom0033Popup';
 
 /**
  * 商品管理 画面 データモデル
@@ -68,7 +77,6 @@ interface displayComoditymanagement {
   changeExpectedDate: string;
 }
 
-
 /**
  * 検索結果行データモデル
  */
@@ -95,7 +103,6 @@ interface SearchResultRowModel {
   changeReserve: string;
 }
 
-
 /**
  * 検索条件(プルダウン)プルダウン データモデル
  */
@@ -107,7 +114,6 @@ interface SelectValuesModel {
   // 変更予約情報
   changeReservationInfoSelectValues: SelectValue[];
 }
-
 
 /**
  * 検索条件(プルダウン) 初期データ
@@ -121,49 +127,12 @@ const selectValuesInitialValues: SelectValuesModel = {
   changeReservationInfoSelectValues: [],
 };
 
-
-/**
- * 登録内容確認ポップアップ初期データ
- */
-const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  errorMessages: [
-    {
-      errorCode: '',
-      errorMessage: '',
-    },
-  ],
-  warningMessages: [
-    {
-      warningCode: '',
-      warningMessage: '',
-    },
-  ],
-  contentsList: {
-    screenName: '',
-    screenId: '',
-    tabName: '',
-    tabId: '',
-    sectionList: [
-      {
-        sectionName: '',
-        columnList: [
-          {
-            columnName: '',
-          },
-        ],
-      },
-    ],
-  },
-  changeExpectDate: new Date(),
-};
-
 /**
  * サービス情報入力チェックAPIリクエスト用 リスト データモデル
  */
 interface serviceInfoModel {
   serviceInfo: serviceInfo[];
 }
-
 
 /**
  * サービス情報入力チェックAPIリクエスト用 リスト 初期データ
@@ -173,14 +142,39 @@ interface serviceInfo {
   serviceName: string;
 }
 
+/**
+ * 登録内容確認ポップアップ初期データ
+ */
+const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
+  errorList: [],
+  warningList: [],
+  registrationChangeList: [],
+  changeExpectDate: '',
+};
+
+/**
+ * 登録内容申請ポップアップ初期データ
+ */
+const scrCom0033PopupInitialValues: ScrCom0033PopupModel = {
+  // 画面ID
+  screenId: '',
+  // タブID
+  tabId: 2,
+  // 申請金額
+  applicationMoney: 0,
+};
+
+/**
+ * 画面IDの定数
+ */
+const SCR_COM_0013 = 'SCR-COM-0013';
 
 /**
  * バリデーションスキーマ
  */
-const validationSchama = generate([
-  'serviceName',
-]);
-
+const validationSchema = {
+  reportComment1: yup.string().label('サービス名').max(30),
+};
 
 /**
  * SCR-COM-0013 商品管理画面 サービスタブ
@@ -203,14 +197,20 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
   // DataGrid InternalId採番用変数
   const [count, setCount] = useState(0);
 
-  // user情報
-  const { appContext } = useContext(AppContext);
+  // user情報(businessDateも併せて取得)
+  const { user } = useContext(AuthContext);
 
   // popup
-  const [isOpenPopup, setIsOpenPopup] = useState<boolean>(false);
+  // 登録内容確認ポップアップ
+  const [isOpenScrCom0032Popup, setIsOpenScrCom0032Popup] =
+    useState<boolean>(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
-
+  // 登録内容申請ポップアップ
+  const [isOpenScrCom0033Popup, setIsOpenScrCom0033Popup] =
+    useState<boolean>(false);
+  const [scrCom0033PopupData, setScrCom0033PopupData] =
+    useState<ScrCom0033PopupModel>(scrCom0033PopupInitialValues);
 
   /**
    * 商品管理 画面 初期データ
@@ -240,13 +240,12 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     memberChangeHistories: [],
     // 変更予定日
     changeExpectedDate: '',
-  }
+  };
 
   // form
   const methods = useForm<displayComoditymanagement>({
     defaultValues: initialValues,
-    resolver: yupResolver(validationSchama),
-    // context: isReadOnly,
+    resolver: yupResolver(yup.object(validationSchema)),
   });
   const {
     formState: { dirtyFields, errors },
@@ -255,7 +254,6 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     reset,
   } = methods;
 
-
   /**
    * 検索条件列定義
    */
@@ -263,25 +261,25 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     {
       field: 'serviceId',
       headerName: 'サービスID',
-      size: 'm',
+      size: 'l',
     },
     {
       field: 'serviceName',
       headerName: 'サービス名',
-      size: 'm',
+      size: 'l',
       cellType: 'input',
     },
     {
       field: 'responsibleCategory',
       headerName: '担当部門区分',
-      size: 'm',
+      size: 'l',
       cellType: 'select',
       selectValues: selectValues.responsibleCategoryValues,
     },
     {
       field: 'targetServiceDivision',
       headerName: '対象サービス区分',
-      size: 'm',
+      size: 'l',
       cellType: 'select',
       selectValues: selectValues.targetServiceDivisionValues,
     },
@@ -297,7 +295,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     },
     {
       field: 'multiContractPossibleFlg',
-      headerName: '複数契約可フラグ',
+      headerName: '複数契約可',
       size: 'l',
       cellType: 'radio',
       radioValues: [
@@ -318,10 +316,9 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     {
       field: 'changeReserve',
       headerName: '変更予約',
-      size: 'm',
+      size: 's',
     },
   ];
-
 
   /**
    * 商品管理表示API(コース情報表示) レスポンスから検索結果モデルへの変換
@@ -341,116 +338,65 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
         multiContractPossibleFlg: x.multiContractPossibleFlg,
         utilizationFlg: x.multiContractPossibleFlg,
         changeBfrTimestamp: x.changeBfrTimestamp,
-        changeReserve: x.changeReserve,
+        changeReserve: x.changeReserve === true ? 'あり' : '',
       };
     });
   };
 
+  // /**
+  //  * 変更した項目から登録・変更内容データへの変換
+  //  */
+  // const convertToRegistrationChangeList = (
+  //   dirtyFields: object
+  // ): registrationChangeList[] => {
+  //   // 変更を検知するフィールドのキー名リスト
+  //   const fields = Object.keys(dirtyFields);
+  //   // 返却する変更リスト
+  //   const registrationChangeList: registrationChangeList[] = [];
+  //   // 一時カラムリスト
+  //   const tempColumnList: { columnName: string }[] = [];
+
+  //   // 変更したキー名をカラムリストに設定
+  //   fields.forEach((f) => {
+  //     tempColumnList.push({
+  //       columnName: f,
+  //     });
+  //   });
+
+  //   // 変更リストとして値を設定して返却
+  //   registrationChangeList.push({
+  //     screenId: SCR_COM_0013,
+  //     screenName: '商品管理',
+  //     tabId: 2,
+  //     tabName: '',
+  //     sectionList: [
+  //       {
+  //         sectionName: 'サービステーブル一覧',
+  //         columnList: tempColumnList,
+  //       },
+  //     ],
+  //   });
+  //   return registrationChangeList;
+  // };
 
   /**
-   * APIレスポンスから表示用エラーメッセージへの変換
+   * 初期表示
    */
-  const convertToErrorMessages = (
-    response: errorList[]
-  ): errorMessagesModel[] => {
-    const list: errorMessagesModel[] = [];
-    if (response === undefined) {
-      return list;
-    }
-    response.map((x) => {
-      list.push({
-        errorCode: x.errorCode,
-        errorMessage: x.errorMessage,
-      });
-    });
-    return list;
-  };
-
-
-  /**
-   * APIレスポンスから表示用ワーニングメッセージへの変換
-   */
-  const convertToWarnMessages = (
-    response: warnList[]
-  ): warningMessagesModel[] => {
-    const list: warningMessagesModel[] = [];
-    if (response === undefined) {
-      return list;
-    }
-    response.map((x) => {
-      list.push({
-        warningCode: x.warnCode,
-        warningMessage: x.warnMessage,
-      });
-    });
-    return list;
-  };
-
-
-  /**
- * 変更した項目から登録・変更内容データへの変換
- */
-  const convertToSectionList = (dirtyFields: object): SectionListModel[] => {
-    const fields = Object.keys(dirtyFields);
-    const sectionList: SectionListModel[] = [];
-    const columnList: ColumnListModel[] = [];
-    sectionDef.forEach((d) => {
-      fields.forEach((f) => {
-        if (d.fields.includes(f)) {
-          columnList.push(
-            { columnName: d.section[d.fields.indexOf(f)] }
-          );
-        }
-      });
-      sectionList.push({
-        sectionName: d.section,
-        columnList: columnList,
-      });
-    });
-    return sectionList;
-  };
-
-
-  /**
-  * セクション構造定義
-  */
-  const sectionDef = [
-    {
-      section: 'サービステーブル一覧',
-      fields: [
-        'serviceId',
-        'serviceName',
-        'responsibleCategory',
-        'targetServiceDivision',
-        'cooperationInfoServiceFlg',
-        'multiContractPossibleFlg',
-        'utilizationFlg',
-        'changeBfrTimestamp',
-        'changeReserve',
-        'changeHistoryNumber',
-        'memberChangeHistories',
-        'changeExpectedDate',
-      ],
-    },
-  ]
-
-
-  /**
- * 初期表示
- */
   useEffect(() => {
     const initialize = async () => {
-      // SCR-COM-0013-0001: 商品管理表示API(コース情報表示）
-      const displayComoditymanagementServiceRequest: ScrCom0013DisplayComoditymanagementServiceRequest = {
-        /** 画面ID */
-        screenId: '',
-        /** タブID */
-        tabId: '',
-        /** 業務日付 */
-        // TODO: 業務日付取得方法実装後に変更
-        businessDate: '',
-      };
-      const response = await ScrCom0013DisplayComoditymanagementService(displayComoditymanagementServiceRequest);
+      // SCR-COM-0013-0002：商品管理表示API(サービス情報表示）
+      const displayComoditymanagementServiceRequest: ScrCom0013DisplayComoditymanagementServiceRequest =
+        {
+          /** 画面ID */
+          screenId: SCR_COM_0013,
+          /** タブID */
+          tabId: '2',
+          /** 業務日付 */
+          businessDate: user.taskDate,
+        };
+      const response = await ScrCom0013DisplayComoditymanagementService(
+        displayComoditymanagementServiceRequest
+      );
       const searchResult = convertToSearchResultRowModel(response);
 
       setSearchResult(searchResult);
@@ -461,48 +407,56 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
         tempInfoList.push({
           serviceId: e.serviceId,
           serviceName: e.serviceName,
-        })
-      })
+        });
+      });
       setServiceInfo(tempInfoList);
 
       // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API(担当部門)
-      const responsibleCategoryRequest: ScrCom9999GetCodeManagementMasterListboxRequest = {
-        codeId: 'CDE-COM-0013' //未定
-      };
-      const responsibleCategoryResponse = await ScrCom9999GetCodeManagementMasterListbox(responsibleCategoryRequest);
-
+      const responsibleCategoryRequest: ScrCom9999GetCodeManagementMasterRequest =
+        {
+          codeId: 'CDE-COM-0013', //未定
+        };
+      const responsibleCategoryResponse =
+        await ScrCom9999GetCodeManagementMaster(responsibleCategoryRequest);
 
       // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API(対象サービス)
-      const targetServiceDivisionRequest: ScrCom9999GetCodeManagementMasterListboxRequest = {
-        codeId: 'CDE-COM-0013' //未定
-      };
-      const targetServiceDivisionResponse = await ScrCom9999GetCodeManagementMasterListbox(targetServiceDivisionRequest);
-
+      const targetServiceDivisionRequest: ScrCom9999GetCodeManagementMasterRequest =
+        {
+          codeId: 'CDE-COM-0013', //未定
+        };
+      const targetServiceDivisionResponse =
+        await ScrCom9999GetCodeManagementMaster(targetServiceDivisionRequest);
 
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
-        // TODO: 業務日付取得方法実装後に変更
-        businessDate: '',
-        screenId: '',
-        tabId: 'SCR-COM-0013',
-        getKeyValue: '',
+        businessDate: user.taskDate,
+        screenId: SCR_COM_0013,
+        tabId: '2',
+        masterId: '',
       };
-      const getChangeDateResponse = await ScrCom9999GetChangeDate(getChangeDateRequest);
-
+      const getChangeDateResponse = await ScrCom9999GetChangeDate(
+        getChangeDateRequest
+      );
 
       // 画面にデータを設定
       setSelectValues({
         // 担当部門
-        responsibleCategoryValues: convertToCodeSelectValueModel(responsibleCategoryResponse.searchGetCodeManagementMasterListbox),
+        responsibleCategoryValues: convertToCodeSelectValueModel(
+          responsibleCategoryResponse.searchGetCodeManagementMasterListbox
+        ),
         // 対象サービス
-        targetServiceDivisionValues: convertToCodeSelectValueModel(targetServiceDivisionResponse.searchGetCodeManagementMasterListbox),
+        targetServiceDivisionValues: convertToCodeSelectValueModel(
+          targetServiceDivisionResponse.searchGetCodeManagementMasterListbox
+        ),
         // 変更予約
-        changeReservationInfoSelectValues: convertToChangeExpectDateSelectValueModel(getChangeDateResponse.changeExpectDateInfo)
+        changeReservationInfoSelectValues:
+          convertToChangeExpectDateSelectValueModel(
+            getChangeDateResponse.changeExpectDateInfo
+          ),
       });
     };
     initialize();
   }, []);
-
 
   /**
    *  API-COM-9999-0010: コード管理マスタリストボックス情報取得API レスポンスから SelectValueモデルへの変換
@@ -518,12 +472,11 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     });
   };
 
-
   /**
    *  API-COM-9999-0026: 変更予定日取得API レスポンスから SelectValueモデルへの変換
    */
   const convertToChangeExpectDateSelectValueModel = (
-    changeExpectDateInfo: changeExpectDateInfo[]
+    changeExpectDateInfo: ChangeExpectDateInfo[]
   ): SelectValue[] => {
     return changeExpectDateInfo.map((x) => {
       return {
@@ -533,13 +486,15 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     });
   };
 
-
   /**
    * 追加アイコンクリック時のイベントハンドラ
    */
   const handleIconAddClick = () => {
     // 現在のデータグリッドの行形式のまま1行追加する
-    const copyContractRow: SearchResultRowModel[] = Object.assign([], searchResult);
+    const copyContractRow: SearchResultRowModel[] = Object.assign(
+      [],
+      searchResult
+    );
     // internalId ユニーク採番変数
     const newCount = count + 1;
     copyContractRow.push({
@@ -568,15 +523,12 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     setSearchResult(copyContractRow);
   };
 
-
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
-  const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果結果からCSVを出力する。');
+  const handleExportCsvClick = () => {
+    exportCsv(searchResult, 'ScrCom0013ServiceTab.csv');
   };
-
 
   /**
    * 表示切替ボタンクリック時のイベントハンドラ
@@ -586,14 +538,15 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
       changeHistoryNumber: props.changeHisoryNumber,
     };
-    const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(getHistoryInfoRequest);
+    const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
+      getHistoryInfoRequest
+    );
 
     setIsChangeHistoryBtn(true);
 
     // 画面にデータを設定
     setServiceId(getHistoryInfoResponse.changeHistoryInfo.get('serviceId'));
   };
-
 
   /**
    * 確定ボタンクリック時のイベントハンドラ
@@ -603,7 +556,6 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     // 反映予定日整合性チェック
     setChangeHistoryDateCheckisOpen(true);
   };
-
 
   /**
    * 確定ボタンクリック時（反映予定日整合性チェック後）のイベントハンドラ
@@ -616,33 +568,67 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     if (serviceInfo !== undefined) {
       const checkResult = await ScrCom0013chkService(serviceInfo);
 
-      const errorMessages: errorMessagesModel[] = convertToErrorMessages(
-        checkResult.errorList
-      );
-
+      // 登録更新の結果を登録確認ポップアップへ渡す
+      setIsOpenScrCom0032Popup(true);
       setScrCom0032PopupData({
-        errorMessages: errorMessages,
-        warningMessages: convertToWarnMessages(
-          checkResult.warnList
-        ),
-        contentsList: {
-          screenName: '商品管理',
-          screenId: 'SCR-COM-0013',
-          tabName: 'サービス',
-          tabId: '',
-          sectionList: convertToSectionList(dirtyFields),
-        },
-        changeExpectDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
+        errorList: checkResult.errorList,
+        warningList: checkResult.warningList,
+        registrationChangeList: checkResult.registrationChangeList,
+        changeExpectDate: user.taskDate,
       });
     }
-  }
-
+  };
 
   /**
-   * ポップアップの確定ボタンクリック時のイベントハンドラ
+   * 登録内容確認ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = () => {
-    setIsOpenPopup(false);
+  const handleRegistConfirm = (registrationChangeMemo: string) => {
+    setIsOpenScrCom0032Popup(false);
+  };
+
+  /**
+   * 登録内容確認ポップアップの登録承認ボタンクリック時のイベントハンドラ
+   * @param registrationChangeMemo 登録変更メモ(登録内容確認ポップアップからの受取)
+   */
+  const handleApprovalConfirm = (registrationChangeMemo: string) => {
+    setIsOpenScrCom0032Popup(false);
+
+    setIsOpenScrCom0033Popup(true);
+    setScrCom0033PopupData({
+      screenId: SCR_COM_0013,
+      // タブID
+      tabId: 2,
+      // 申請金額
+      applicationMoney: 0,
+    });
+  };
+
+  /**
+   * 登録内容申請ポップアップの確定ボタンクリック時のイベントハンドラ
+   */
+  const handlePopupConfirm = (
+    // 従業員ID1
+    employeeId1: string,
+    // 従業員名1
+    emploeeName1: string,
+    // 従業員メールアドレス1
+    employeeMailAddress1: string,
+    // 従業員ID2
+    employeeId2: string,
+    // 従業員名2
+    emploeeName2: string,
+    // 従業員ID3
+    employeeId3: string,
+    // 従業員名3
+    emploeeName3: string,
+    // 従業員ID4
+    employeeId4: string,
+    // 従業員名4
+    emploeeName4: string,
+    // 申請コメント
+    applicationComment: string
+  ) => {
+    setIsOpenScrCom0032Popup(false);
     setIsChangeHistoryBtn(false);
 
     // SCR-COM-0013-0008: サービス情報登録更新API
@@ -652,36 +638,64 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
       /** サービス情報 */
       serviceInfo: searchResult,
       /** 申請従業員 */
-      applicationEmployeeId: appContext.user,
-      /**TODO: ↓ 渡し方不明 ↓ */
+      applicationEmployeeId: user.employeeName,
       /** 登録変更メモ */
       registrationChangeMemo: '',
       /** 第一承認者ID */
-      firstApproverId: '',
+      firstApproverId: employeeId1,
       /** 第一承認者アドレス  */
-      firstApproverMailAddress: '',
+      firstApproverMailAddress: employeeMailAddress1,
       /** 第二承認者ID */
-      secondApproverId: '',
+      secondApproverId: employeeId2,
       /** 第三承認者ID */
-      thirdApproverId: '',
+      thirdApproverId: employeeId3,
       /** 第四承認者ID */
-      fourthApproverId: '',
+      fourthApproverId: employeeId4,
       /** 申請コメント */
-      applicationComment: '',
+      applicationComment: applicationComment,
       /** 変更予定日 */
       changeExpectDate: '',
-    }
+    };
     ScrCom0013MergeService(mergeServiceRequest);
   };
 
-
   /**
-  * ポップアップのキャンセルボタンクリック時のイベントハンドラ
-  */
+   * 登録内容確認ポップアップのキャンセルボタンクリック時のイベントハンドラ
+   */
   const handlePopupCancel = () => {
-    setIsOpenPopup(false);
+    setIsOpenScrCom0032Popup(false);
   };
 
+  /**
+   * 登録内容申請ポップアップの確定ボタンクリック→ダイアログOK時のイベントハンドラ
+   * 登録内容申請ポップアップのキャンセルボタンクリック→ダイアログOK時のイベントハンドラ
+   *    * @param selectValues 第一～第四承認者のリストボックス(登録内容確認ポップアップからの受取)
+   *    * @param applicationComment 申請コメント(登録内容確認ポップアップからの受取)
+   */
+  const handleConfirmOrCancel = (
+    // 従業員ID1
+    employeeId1: string,
+    // 従業員名1
+    emploeeName1: string,
+    // 従業員メールアドレス1
+    employeeMailAddress1: string,
+    // 従業員ID2
+    employeeId2?: string,
+    // 従業員名2
+    emploeeName2?: string,
+    // 従業員ID3
+    employeeId3?: string,
+    // 従業員名3
+    emploeeName3?: string,
+    // 従業員ID4
+    employeeId4?: string,
+    // 従業員名4
+    emploeeName4?: string,
+    // 申請コメント
+    applicationComment?: string
+  ) => {
+    setIsOpenScrCom0033Popup(false);
+  };
 
   return (
     <>
@@ -692,15 +706,13 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
             name='サービステーブル一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                {/* TODO：エクスポートアイコンに将来的に変更 */}
-                <AddButton onClick={handleIconOutputCsvClick}>
-                  CSV出力
-                </AddButton>
+                <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
                 {/* 履歴表示の際追加ボタンは非活性 */}
                 <AddButton
                   onClick={handleIconAddClick}
                   disable={props.changeHisoryNumber === '' ? true : false}
-                >追加
+                >
+                  追加
                 </AddButton>
               </MarginBox>
             }
@@ -710,15 +722,15 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
               width={1200}
               columns={searchResultColumns}
               rows={searchResult}
-            // TODO: 履歴表示の場合にどのカラムを非活性にするか指定する(入力部分全て)
-            // getCellDisabled={(params) => {
-            //   if (params.field === 'input' && params.id === 0) return true;
-            //   if (params.field === 'select' && params.id === 1) return true;
-            //   if (params.field === 'radio' && params.id === 2) return true;
-            //   if (params.field === 'checkbox' && params.id === 3) return true;
-            //   if (params.field === 'datepicker' && params.id === 4) return true;
-            //   return false
-            // }}
+              // TODO: 履歴表示の場合にどのカラムを非活性にするか指定する(入力部分全て)
+              // getCellDisabled={(params) => {
+              //   if (params.field === 'input' && params.id === 0) return true;
+              //   if (params.field === 'select' && params.id === 1) return true;
+              //   if (params.field === 'radio' && params.id === 2) return true;
+              //   if (params.field === 'checkbox' && params.id === 3) return true;
+              //   if (params.field === 'datepicker' && params.id === 4) return true;
+              //   return false
+              // }}
             />
           </Section>
         </MainLayout>
@@ -734,7 +746,9 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
                     {/* 履歴表示の場合 非活性 */}
                     <Select
                       name='changeHistoryNumber'
-                      selectValues={selectValues.changeReservationInfoSelectValues}
+                      selectValues={
+                        selectValues.changeReservationInfoSelectValues
+                      }
                       blankOption
                       disabled={props.changeHisoryNumber === '' ? true : false}
                     />
@@ -767,19 +781,33 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
             <ConfirmButton
               onClick={onClickConfirm}
               disable={props.changeHisoryNumber === '' ? true : false}
-            >確定
+            >
+              確定
             </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      < ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
+      {isOpenScrCom0032Popup && (
+        <ScrCom0032Popup
+          isOpen={isOpenScrCom0032Popup}
+          data={scrCom0032PopupData}
+          handleRegistConfirm={handleRegistConfirm}
+          // 本機能ではこっちのみを使用
+          handleApprovalConfirm={handleApprovalConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      )}
+
+      {/* 登録内容申請ポップアップ */}
+      {isOpenScrCom0033Popup && (
+        <ScrCom0033Popup
+          isOpen={isOpenScrCom0033Popup}
+          data={scrCom0033PopupData}
+          handleConfirmOrCancel={handleConfirmOrCancel}
+        />
+      )}
 
       {/* 反映予定日整合性チェック */}
       <ChangeHistoryDateCheckUtil
@@ -791,6 +819,6 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
         handleConfirm={handleConfirm}
       />
     </>
-  )
-}
+  );
+};
 export default ScrCom0013ServiceTab;

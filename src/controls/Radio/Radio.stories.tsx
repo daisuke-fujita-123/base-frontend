@@ -94,7 +94,12 @@ export const Example = () => {
   return (
     <ThemeProvider theme={theme}>
       <FormProvider {...methods}>
-        <Radio label='性別' name='gender' radioValues={radioSample} />
+        <Radio
+          label='性別'
+          name='gender'
+          radioValues={radioSample}
+          backgroundColor='#6fb9ff'
+        />
         <Button onClick={hendleClick}>click</Button>
       </FormProvider>
     </ThemeProvider>

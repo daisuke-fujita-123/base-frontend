@@ -1,18 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import {
+  DataGrid,
+  exportCsv,
+  GridColDef,
+  GridHrefsModel,
+} from 'controls/Datagrid';
 
 import {
-  ScrCom0013DisplayComoditymanagementCourse, ScrCom0013DisplayComoditymanagementCourseRequest,
-  ScrCom0013DisplayComoditymanagementCourseResponse
+  ScrCom0013DisplayComoditymanagementCourse,
+  ScrCom0013DisplayComoditymanagementCourseRequest,
+  ScrCom0013DisplayComoditymanagementCourseResponse,
 } from 'apis/com/ScrCom0013Api';
 
 import { useNavigate } from 'hooks/useNavigate';
+
+import { AuthContext } from 'providers/AuthProvider';
 
 /**
  * 検索条件列定義
@@ -21,28 +29,28 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'courceId',
     headerName: 'コースID',
-    size: 'm',
+    size: 'l',
     cellType: 'link',
   },
   {
     field: 'courceName',
     headerName: 'コース名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'cooperationTargetService',
     headerName: '連携用対象サービス',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'utilizationFlg',
     headerName: '利用フラグ',
-    size: 'm',
+    size: 's',
   },
   {
     field: 'reservationExistence',
-    headerName: '予約有無',
-    size: 'm',
+    headerName: '変更予約',
+    size: 's',
   },
   {
     field: 'reflectionSchedule',
@@ -50,7 +58,6 @@ const searchResultColumns: GridColDef[] = [
     size: 'm',
   },
 ];
-
 
 /**
  * 検索結果行データモデル
@@ -65,13 +72,17 @@ interface SearchResultRowModel {
   // 連携用対象サービス
   cooperationTargetService: string;
   // 利用フラグ
-  utilizationFlg: boolean;
+  utilizationFlg: string;
   // 予約有無
-  reservationExistence: boolean;
+  reservationExistence: string;
   // 反映予定日
   reflectionSchedule: string;
 }
 
+/**
+ * 画面IDの定数
+ */
+const SCR_COM_0013 = 'SCR-COM-0013';
 
 /**
  * 商品管理表示API(コース情報表示) レスポンスから検索結果モデルへの変換
@@ -85,13 +96,12 @@ const convertToSearchResultRowModel = (
       courceId: x.courceId,
       courceName: x.courceName,
       cooperationTargetService: x.cooperationTargetService,
-      utilizationFlg: x.utilizationFlg,
-      reservationExistence: x.reservationExistence,
+      utilizationFlg: x.utilizationFlg === true ? '可' : '不可',
+      reservationExistence: x.reservationExistence === true ? 'あり' : '',
       reflectionSchedule: x.reflectionSchedule,
     };
   });
 };
-
 
 /**
  * SCR-COM-0013 商品管理画面 コースタブ
@@ -100,52 +110,55 @@ const convertToSearchResultRowModel = (
 const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
-  const [hrefs, setHrefs] = useState<any[]>([]);
+  const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
 
   // router
   const navigate = useNavigate();
 
+  // user情報(businessDateも併せて取得)
+  const { user } = useContext(AuthContext);
+
   /**
- * 初期表示
- */
+   * 初期表示
+   */
   useEffect(() => {
     const initialize = async () => {
       // SCR-COM-0013-0001: 商品管理表示API(コース情報表示）
-      const displayComoditymanagementCourseRequest: ScrCom0013DisplayComoditymanagementCourseRequest = {
-        /** 画面ID */
-        // TODO: ヘッダーからの取得方法
-        screenId: '',
-        /** タブID */
-        // TODO: ヘッダーからの取得方法
-        tabId: '',
-        /** 業務日付 */
-        // TODO: 業務日付取得方法実装後に変更
-        businessDate: '',
-      };
+      const displayComoditymanagementCourseRequest: ScrCom0013DisplayComoditymanagementCourseRequest =
+        {
+          /** 画面ID(商品管理画面) */
+          screenId: SCR_COM_0013,
+          /** タブID */
+          tabId: '1',
+          /** 業務日付 */
+          businessDate: user.taskDate,
+        };
 
-      const response = await ScrCom0013DisplayComoditymanagementCourse(displayComoditymanagementCourseRequest);
+      const response = await ScrCom0013DisplayComoditymanagementCourse(
+        displayComoditymanagementCourseRequest
+      );
       const searchResult = convertToSearchResultRowModel(response);
-      const hrefs = searchResult.map((x, index) => {
-        return {
-          field: 'courceId',
+      setSearchResult(searchResult);
+
+      // hrefsを設定
+      const hrefs: GridHrefsModel[] = [{ field: 'courceId', hrefs: [] }];
+      searchResult.map((x) => {
+        hrefs[0].hrefs.push({
           id: x.courceId,
           href: '/com/course/' + x.courceId,
-        };
+        });
       });
-      setSearchResult(searchResult);
       setHrefs(hrefs);
     };
     initialize();
   }, []);
 
-
   /**
-* リンククリック時のイベントハンドラ
-*/
+   * リンククリック時のイベントハンドラ
+   */
   const handleLinkClick = (url: string) => {
     navigate(url);
   };
-
 
   /**
    * 追加アイコンクリック時のイベントハンドラ
@@ -154,15 +167,12 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
     navigate('/com/cources/new');
   };
 
-
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
-  const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果結果からCSVを出力する。');
+  const handleExportCsvClick = () => {
+    exportCsv(searchResult, 'ScrCom0013CourceTab.csv');
   };
-
 
   return (
     <>
@@ -173,15 +183,13 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
             name='コース一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                {/* TODO：エクスポートアイコンに将来的に変更 */}
-                <AddButton onClick={handleIconOutputCsvClick}>
-                  CSV出力
-                </AddButton>
+                <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
                 {/* 履歴表示の場合 追加ボタン非活性 */}
                 <AddButton
                   onClick={handleIconAddClick}
                   disable={props.changeHisoryNumber === '' ? true : false}
-                >追加
+                >
+                  追加
                 </AddButton>
               </MarginBox>
             }
@@ -197,6 +205,6 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
         </MainLayout>
       </MainLayout>
     </>
-  )
-}
+  );
+};
 export default ScrCom0013CourceTab;

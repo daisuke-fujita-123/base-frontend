@@ -1,3 +1,5 @@
+import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom00032Popup';
+
 import { comApiClient } from 'providers/ApiClient';
 
 // SCR-COM-0013-0001：商品管理表示API(コース情報表示） リクエスト
@@ -71,7 +73,7 @@ export interface ServiceInfo {
   /** 変更前タイムスタンプ */
   changeBfrTimestamp: string;
   /** 変更予約 */
-  changeReserve: string;
+  changeReserve: boolean;
 }
 
 // SCR-COM-0013-0003：商品管理表示API(手数料情報表示） リクエスト
@@ -546,7 +548,7 @@ export const ScrCom0013DisplayComoditymanagementHistory =
 // SCR-COM-0013-0007: サービス情報入力チェックAPI
 export const ScrCom0013chkService = async (
   request: ScrCom0013chkServiceRequest
-): Promise<ScrCom0013chkServiceResponse> => {
+): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
     '/scr-com-0013/chk-service',
     request
