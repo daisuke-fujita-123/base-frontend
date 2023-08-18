@@ -26,6 +26,7 @@ import {
 
 import { useForm } from 'hooks/useForm';
 
+import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
@@ -38,20 +39,8 @@ export interface ScrCom0033PopupModel {
   screenId: string;
   // タブID
   tabId: number;
-  // 一括登録ID
-  allRegistrationId: string;
-  // マスタID
-  masterId: string;
-  // 登録変更メモ
-  registChangeMemo: string;
-  // 変更予定日
-  changeExpectDate: string;
   // 申請金額
   applicationMoney: number;
-  // 申請者ID
-  applicationId: string;
-  // プログラムID
-  programId: string;
 }
 
 /**
@@ -280,6 +269,9 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
 
   const { getMessage } = useContext(MessageContext);
 
+  // user情報
+  const { user } = useContext(AuthContext);
+
   // 初期表示(登録内容申請ポップアップ表示時の処理)
   useEffect(() => {
     const initialize = async () => {
@@ -324,7 +316,7 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
         /** 申請金額 */
         applicationMoney: data.applicationMoney,
         /** 申請者ID */
-        appalicationId: data.applicationId,
+        appalicationId: user.employeeId,
       };
       const response = await ScrCom0033GetApprover(request);
 
