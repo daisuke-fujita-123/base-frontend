@@ -129,7 +129,7 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
           /** 画面ID(商品管理画面) */
           screenId: SCR_COM_0013,
           /** タブID */
-          tabId: '1',
+          tabId: 1,
           /** 業務日付 */
           businessDate: user.taskDate,
         };

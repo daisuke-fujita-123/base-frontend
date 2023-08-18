@@ -7,7 +7,7 @@ export interface ScrCom0013DisplayComoditymanagementCourseRequest {
   /** 画面ID */
   screenId: string;
   /** タブID */
-  tabId: string;
+  tabId: number;
   /** 業務日付 */
   businessDate: string;
 }
@@ -41,7 +41,7 @@ export interface ScrCom0013DisplayComoditymanagementServiceRequest {
   /** 画面ID */
   screenId: string;
   /** タブID */
-  tabId: string;
+  tabId: number;
   /** 業務日付 */
   businessDate: string;
 }
@@ -81,7 +81,7 @@ export interface ScrCom0013DisplayComoditymanagementCommissionRequest {
   /** 画面ID */
   screenId: string;
   /** タブID */
-  tabId: string;
+  tabId: number;
   /** 業務日付 */
   businessDate: string;
 }
@@ -115,7 +115,7 @@ export interface ScrCom0013DisplayComoditymanagementDiscountRequest {
   /** 画面ID */
   screenId: string;
   /** タブID */
-  tabId: string;
+  tabId: number;
   /** 業務日付 */
   businessDate: string;
 }
@@ -207,7 +207,7 @@ export interface chgHistoryApproveInfo {
   // 申請元画面
   applicationScreen: string;
   // タブID
-  tabId: string;
+  tabId: number;
   // タブ名
   tabName: string;
   // 一括登録
@@ -241,7 +241,7 @@ export interface chgHistoryNotApproveInfo {
   // 申請元画面
   applicationScreen: string;
   // タブID
-  tabId: string;
+  tabId: number;
   // タブ名
   tabName: string;
   // 一括登録

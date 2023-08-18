@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
-import { yupResolver } from '@hookform/resolvers/yup/dist/yup';
 import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -165,16 +165,21 @@ const scrCom0033PopupInitialValues: ScrCom0033PopupModel = {
 };
 
 /**
- * 画面IDの定数
+ * 画面IDの定数定義
  */
 const SCR_COM_0013 = 'SCR-COM-0013';
 
 /**
+ * コードIDの定数定義
+ */
+const CDE_COM_0013 = 'CDE-COM-0013';
+
+/**
  * バリデーションスキーマ
  */
-const validationSchema = {
+const validationSchema: ObjectSchema<any> = yup.object({
   reportComment1: yup.string().label('サービス名').max(30),
-};
+});
 
 /**
  * SCR-COM-0013 商品管理画面 サービスタブ
@@ -196,6 +201,9 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
   const [serviceInfo, setServiceInfo] = useState<serviceInfoModel>();
   // DataGrid InternalId採番用変数
   const [count, setCount] = useState(0);
+  // 登録内容確認ポップアップ => 登録内容申請ポップアップへと引き渡す変更予約メモ
+  const [registrationChangeMemo, setRegistrationChangeMemo] =
+    useState<string>('');
 
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
@@ -245,7 +253,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
   // form
   const methods = useForm<displayComoditymanagement>({
     defaultValues: initialValues,
-    resolver: yupResolver(yup.object(validationSchema)),
+    // resolver: yupResolver(yup.object(validationSchema)),
   });
   const {
     formState: { dirtyFields, errors },
@@ -390,7 +398,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
           /** 画面ID */
           screenId: SCR_COM_0013,
           /** タブID */
-          tabId: '2',
+          tabId: 2,
           /** 業務日付 */
           businessDate: user.taskDate,
         };
@@ -414,7 +422,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
       // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API(担当部門)
       const responsibleCategoryRequest: ScrCom9999GetCodeManagementMasterRequest =
         {
-          codeId: 'CDE-COM-0013', //未定
+          codeId: CDE_COM_0013,
         };
       const responsibleCategoryResponse =
         await ScrCom9999GetCodeManagementMaster(responsibleCategoryRequest);
@@ -422,7 +430,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
       // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API(対象サービス)
       const targetServiceDivisionRequest: ScrCom9999GetCodeManagementMasterRequest =
         {
-          codeId: 'CDE-COM-0013', //未定
+          codeId: CDE_COM_0013,
         };
       const targetServiceDivisionResponse =
         await ScrCom9999GetCodeManagementMaster(targetServiceDivisionRequest);
@@ -594,6 +602,9 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     setIsOpenScrCom0032Popup(false);
 
     setIsOpenScrCom0033Popup(true);
+    // 登録内容申請ポップアップへと引き渡す予約変更メモを設定
+    setRegistrationChangeMemo(registrationChangeMemo);
+
     setScrCom0033PopupData({
       screenId: SCR_COM_0013,
       // タブID
@@ -604,9 +615,17 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
   };
 
   /**
-   * 登録内容申請ポップアップの確定ボタンクリック時のイベントハンドラ
+   * 登録内容確認ポップアップのキャンセルボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = (
+  const handlePopupCancel = () => {
+    setIsOpenScrCom0032Popup(false);
+  };
+
+  /**
+   * 登録内容申請ポップアップの確定ボタンクリック→ダイアログOK時のイベントハンドラ
+   * 登録内容申請ポップアップのキャンセルボタンクリック→ダイアログOK時のイベントハンドラ
+   */
+  const handleConfirmOrCancel = (
     // 従業員ID1
     employeeId1: string,
     // 従業員名1
@@ -640,7 +659,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
       /** 申請従業員 */
       applicationEmployeeId: user.employeeName,
       /** 登録変更メモ */
-      registrationChangeMemo: '',
+      registrationChangeMemo: registrationChangeMemo,
       /** 第一承認者ID */
       firstApproverId: employeeId1,
       /** 第一承認者アドレス  */
@@ -654,47 +673,9 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
       /** 申請コメント */
       applicationComment: applicationComment,
       /** 変更予定日 */
-      changeExpectDate: '',
+      changeExpectDate: getValues('changeHistoryNumber'),
     };
     ScrCom0013MergeService(mergeServiceRequest);
-  };
-
-  /**
-   * 登録内容確認ポップアップのキャンセルボタンクリック時のイベントハンドラ
-   */
-  const handlePopupCancel = () => {
-    setIsOpenScrCom0032Popup(false);
-  };
-
-  /**
-   * 登録内容申請ポップアップの確定ボタンクリック→ダイアログOK時のイベントハンドラ
-   * 登録内容申請ポップアップのキャンセルボタンクリック→ダイアログOK時のイベントハンドラ
-   *    * @param selectValues 第一～第四承認者のリストボックス(登録内容確認ポップアップからの受取)
-   *    * @param applicationComment 申請コメント(登録内容確認ポップアップからの受取)
-   */
-  const handleConfirmOrCancel = (
-    // 従業員ID1
-    employeeId1: string,
-    // 従業員名1
-    emploeeName1: string,
-    // 従業員メールアドレス1
-    employeeMailAddress1: string,
-    // 従業員ID2
-    employeeId2?: string,
-    // 従業員名2
-    emploeeName2?: string,
-    // 従業員ID3
-    employeeId3?: string,
-    // 従業員名3
-    emploeeName3?: string,
-    // 従業員ID4
-    employeeId4?: string,
-    // 従業員名4
-    emploeeName4?: string,
-    // 申請コメント
-    applicationComment?: string
-  ) => {
-    setIsOpenScrCom0033Popup(false);
   };
 
   return (
@@ -722,15 +703,42 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
               width={1200}
               columns={searchResultColumns}
               rows={searchResult}
-              // TODO: 履歴表示の場合にどのカラムを非活性にするか指定する(入力部分全て)
-              // getCellDisabled={(params) => {
-              //   if (params.field === 'input' && params.id === 0) return true;
-              //   if (params.field === 'select' && params.id === 1) return true;
-              //   if (params.field === 'radio' && params.id === 2) return true;
-              //   if (params.field === 'checkbox' && params.id === 3) return true;
-              //   if (params.field === 'datepicker' && params.id === 4) return true;
-              //   return false
-              // }}
+              resolver={validationSchema}
+              // TODO: 履歴表示の場合に入力欄は非活性
+              // 編集権限がない状態での表示は入力欄は非活性
+              getCellDisabled={(params) => {
+                if (
+                  params.field === 'serviceName' &&
+                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                )
+                  return true;
+                if (
+                  params.field === 'responsibleCategory' &&
+                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                )
+                  return true;
+                if (
+                  params.field === 'targetServiceDivision' &&
+                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                )
+                  return true;
+                if (
+                  params.field === 'cooperationInfoServiceFlg' &&
+                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                )
+                  return true;
+                if (
+                  params.field === 'multiContractPossibleFlg' &&
+                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                )
+                  return true;
+                if (
+                  params.field === 'changeReserve' &&
+                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                )
+                  return true;
+                return false;
+              }}
             />
           </Section>
         </MainLayout>
