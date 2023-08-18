@@ -58,19 +58,19 @@ interface ScrCom0033PopupProps {
     // 従業員メールアドレス1
     employeeMailAddress1: string,
     // 従業員ID2
-    employeeId2?: string,
+    employeeId2: string,
     // 従業員名2
-    emploeeName2?: string,
+    emploeeName2: string,
     // 従業員ID3
-    employeeId3?: string,
+    employeeId3: string,
     // 従業員名3
-    emploeeName3?: string,
+    emploeeName3: string,
     // 従業員ID4
-    employeeId4?: string,
+    employeeId4: string,
     // 従業員名4
-    emploeeName4?: string,
+    emploeeName4: string,
     // 申請コメント
-    applicationComment?: string
+    applicationComment: string
   ) => void;
 }
 
