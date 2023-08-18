@@ -55,10 +55,8 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
       } else {
         row[field] = newValue;
       }
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
@@ -85,6 +83,7 @@ interface GridSelectCellProps {
   value: string | number;
   field: string | any[];
   selectValues: any[];
+  controlled: boolean;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
 }
@@ -100,6 +99,7 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
     value,
     field,
     selectValues,
+    controlled,
     disabled = false,
     onRowValueChange,
   } = props;
@@ -121,10 +121,8 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
         row[field] = newSelection;
       }
       setSelection(newSelection);
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
@@ -132,7 +130,7 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
   return (
     <select
       style={{ width: '100px' }}
-      value={selection}
+      value={controlled ? selection : value}
       onChange={handleValueChange}
       disabled={disabled}
     >
@@ -153,6 +151,7 @@ interface GridRadioCellProps {
   value: string | number;
   radioValues: any[];
   field: string;
+  controlled: boolean;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
 }
@@ -168,6 +167,7 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
     value,
     radioValues,
     field,
+    controlled,
     disabled = false,
     onRowValueChange,
   } = props;
@@ -185,10 +185,8 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
       const row = apiRef.current.getRow(id);
       row[field] = newSelection;
       setSelection(newSelection);
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
@@ -201,7 +199,7 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
             type='radio'
             style={{ width: '60px' }}
             value={x.value}
-            checked={x.value === selection}
+            checked={x.value === (controlled ? selection : value)}
             onChange={handleValueChange}
             disabled={disabled}
           />
@@ -250,10 +248,8 @@ export const GridCustomizableRadiioCell = memo(
         const row = apiRef.current.getRow(id);
         row[field].selection = index;
         setSelection(index);
-        setNeedsConfirmNavigate(true);
-        if (onRowValueChange !== undefined) {
-          onRowValueChange(row);
-        }
+        setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+        onRowValueChange && onRowValueChange(row);
       },
       [apiRef, field, id]
     );
@@ -263,10 +259,8 @@ export const GridCustomizableRadiioCell = memo(
         const newValue = event.target.value;
         const row = apiRef.current.getRow(id);
         row[field].values[index] = newValue;
-        setNeedsConfirmNavigate(true);
-        if (onRowValueChange !== undefined) {
-          onRowValueChange(row);
-        }
+        setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+        onRowValueChange && onRowValueChange(row);
       },
       [apiRef, field, id]
     );
@@ -279,10 +273,8 @@ export const GridCustomizableRadiioCell = memo(
         ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         const row = apiRef.current.getRow(id);
         row[field].values[index][fromto] = formattedValue;
-        setNeedsConfirmNavigate(true);
-        if (onRowValueChange !== undefined) {
-          onRowValueChange(row);
-        }
+        setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+        onRowValueChange && onRowValueChange(row);
       },
       [apiRef, field, id]
     );
@@ -340,6 +332,7 @@ interface GridCheckboxCellProps {
   id: string | number;
   value: boolean | undefined;
   field: string;
+  controlled: boolean;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
 }
@@ -350,7 +343,14 @@ interface GridCheckboxCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
-  const { id, value, field, disabled = false, onRowValueChange } = props;
+  const {
+    id,
+    value,
+    field,
+    controlled,
+    disabled = false,
+    onRowValueChange,
+  } = props;
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
@@ -363,10 +363,8 @@ export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
       const newSelection = !row[field];
       row[field] = newSelection;
       setSelection(newSelection);
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
@@ -375,7 +373,7 @@ export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
     <input
       type='checkbox'
       style={{ width: '60px' }}
-      checked={selection}
+      checked={controlled ? selection : value}
       onChange={handleValueChange}
       disabled={disabled}
     />
@@ -414,10 +412,8 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
       // const newValue = event.target.value;
       const row = apiRef.current.getRow(id);
       row[field] = formattedValue;
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
@@ -433,6 +429,66 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
         onChange={handleValueChange}
         disabled={disabled}
       />
+    </LocalizationProvider>
+  );
+});
+
+/**
+ * GridDatepickerCellPropsコンポーネントのProps
+ */
+interface GridFromtoCellProps {
+  id: string | number;
+  value: string[];
+  field: string;
+  disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
+}
+
+/**
+ * GridCheckboxCellコンポーネント
+ * プルダウン用のセル
+ */
+// eslint-disable-next-line react/display-name
+export const GridFromtoCell = memo((props: GridFromtoCellProps) => {
+  const { id, value, field, disabled = false, onRowValueChange } = props;
+
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
+  const apiRef = useGridApiContext();
+
+  const handleValueChange = useCallback(
+    (value: Date | null, index: number) => {
+      const date = new Date(String(value));
+      const formattedValue = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+      // const newValue = event.target.value;
+      const row = apiRef.current.getRow(id);
+      row[field][index] = formattedValue;
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
+    },
+    [apiRef, field, id]
+  );
+
+  return (
+    <LocalizationProvider
+      // dateAdapter={AdapterDayjs}
+      dateAdapter={AdapterDateFns}
+      adapterLocale={ja}
+    >
+      <>
+        <DatePicker
+          value={new Date(value[0])}
+          onChange={(value) => handleValueChange(value, 0)}
+          disabled={disabled}
+        />
+        <DatePicker
+          value={new Date(value[1])}
+          onChange={(value) => handleValueChange(value, 1)}
+          disabled={disabled}
+        />
+      </>
     </LocalizationProvider>
   );
 });

@@ -1,6 +1,9 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
+import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
+
 import { Button } from 'controls/Button';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
 
@@ -107,12 +110,20 @@ export const Example = () => {
       size: 'm',
     },
     {
-      field: 'input',
+      field: 'input1',
       cellType: 'input',
+      headerName: 'Input 1',
+      required: true,
+    },
+    {
+      field: 'input2',
+      cellType: 'input',
+      headerName: 'Input 2',
     },
     {
       field: 'select',
       cellType: 'select',
+      headerName: 'Select',
       selectValues: [
         { value: '1', displayValue: 'one' },
         { value: '2', displayValue: 'two' },
@@ -122,6 +133,7 @@ export const Example = () => {
     {
       field: 'radio',
       cellType: 'radio',
+      headerName: 'Radio',
       radioValues: [
         { value: '1', displayValue: 'one' },
         { value: '2', displayValue: 'two' },
@@ -132,55 +144,128 @@ export const Example = () => {
     {
       field: 'checkbox',
       cellType: 'checkbox',
+      headerName: 'Checkbox',
     },
     {
       field: 'datepicker',
       cellType: 'datepicker',
+      headerName: 'DatePicker',
+      size: 'l',
+    },
+
+    {
+      field: 'fromto',
+      cellType: 'fromto',
+      headerName: 'FromTo',
       size: 'l',
     },
   ];
 
   const rows: GridRowsProp = [
     {
-      id: '0001',
+      id: 0,
       corporationId: '0001',
       corporationName: '法人1',
       corporationGroupName: '法人グループ1',
       representativeName: '代表者1',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0002',
+      id: 1,
       corporationId: '0002',
       corporationName: '法人2',
       corporationGroupName: '法人グループ2',
       representativeName: '代表者2',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0003',
+      id: 2,
       corporationId: '0003',
       corporationName: '法人3',
       corporationGroupName: '法人グループ3',
       representativeName: '代表者3',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0004',
+      id: 3,
       corporationId: '0004',
       corporationName: '法人4',
       corporationGroupName: '法人グループ4',
       representativeName: '代表者4',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0005',
+      id: 4,
       corporationId: '0005',
       corporationName: '法人5',
       corporationGroupName: '法人グループ5',
       representativeName: '代表者5',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
   ];
 
+  const validationSchema: ObjectSchema<any> = yup.object({
+    input1: yup.string().required().max(10).label('Input 1'),
+    input2: yup.string().required().max(10).label('Input 2'),
+  });
+
+  const handleGetSelectValues = (params: any) => {
+    return params.id % 2 === 0
+      ? [
+          { value: '1', displayValue: 'one' },
+          { value: '2', displayValue: 'two' },
+          { value: '3', displayValue: 'three' },
+        ]
+      : [
+          { value: '4', displayValue: 'four' },
+          { value: '5', displayValue: 'five' },
+          { value: '6', displayValue: 'six' },
+        ];
+  };
+
+  const handleOnClick = () => {
+    console.log(rows);
+  };
+
   return (
     <>
-      <DataGrid columns={columns} rows={rows} disabled />
+      <Button onClick={handleOnClick}>log</Button>
+      <DataGrid
+        columns={columns}
+        rows={rows}
+        resolver={validationSchema}
+        getSelectValues={handleGetSelectValues}
+      />
     </>
   );
 };
@@ -322,7 +407,7 @@ export const UpdatableHeaderRow = () => {
     },
   ];
 
-  const headerRow = {
+  const defaultHeaderRow = {
     soshikiIdOrMeisyo: 0,
     yakushokuIdOrMeisyo: 0,
     teiyoKaishiBi: '',
@@ -331,13 +416,6 @@ export const UpdatableHeaderRow = () => {
 
   const handleIkkatsuHaneiClick = () => {
     const headerRow = headerApiRef.current.getRow(-1);
-    // const rowIds = apiRef.current.getAllRowIds();
-    // rowIds.forEach((x) => {
-    //   const row = apiRef.current.getRow(x);
-    //   console.log(row);
-    //   row.soshikiIdOrMeisyo = '1';
-    //   row.yakushokuIdOrMeisyo = '1';
-    // });
     const newRows = rows.map((x) => {
       return {
         ...x,
@@ -348,15 +426,18 @@ export const UpdatableHeaderRow = () => {
       };
     });
     setRows(newRows);
+    setHeaderRow(headerRow);
   };
 
   const [rows, setRows] = useState(defaultRows);
+  const [headerRow, setHeaderRow] = useState(defaultHeaderRow);
 
   return (
     <>
       <DataGrid
         columns={columns}
         rows={rows}
+        controlled={false}
         showHeaderRow
         headerRow={headerRow}
         apiRef={apiRef}
