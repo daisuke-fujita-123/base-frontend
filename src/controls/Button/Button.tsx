@@ -180,18 +180,18 @@ const StyledAddIconButton = styled(IconButton)({
 });
 
 export const AddIconButton = (props: ButtonProps) => {
-  const { onClick } = props;
+  const { onClick, disable = false } = props;
   return (
-    <StyledAddIconButton onClick={onClick}>
+    <StyledAddIconButton onClick={onClick} disabled={disable}>
       {ButonIcon(ContentAdd)}
     </StyledAddIconButton>
   );
 };
 
 export const RemoveIconButton = (props: ButtonProps) => {
-  const { onClick } = props;
+  const { onClick, disable = false } = props;
   return (
-    <StyledAddIconButton onClick={onClick}>
+    <StyledAddIconButton onClick={onClick} disabled={disable}>
       {ButonIcon(ContentDel)}
     </StyledAddIconButton>
   );
@@ -241,13 +241,13 @@ const StyledDeleteButton = styled(ButtonMui)({
 });
 
 export const DeleteButton = (props: ButtonProps) => {
-  const { disable = false, onClick } = props;
+  const { disable = false, onClick, size = 'medium' } = props;
   return (
     <StyledDeleteButton
       startIcon={ButonIcon(ButtonDelete)}
       disabled={disable}
       onClick={onClick}
-      size='medium'
+      size={size}
     >
       削除
     </StyledDeleteButton>
@@ -276,8 +276,8 @@ export const CancelButton = (props: ButtonProps) => {
 const StyledLogoutButton = styled(ButtonMui)({
   ...theme.palette.logoutButton,
   fontWeight: 'bold',
-  width: theme.spacing(27),
-  height: theme.spacing(7),
+  width: 135,
+  height: 35,
   '&:hover': {
     ...theme.palette.logoutButton.hover,
   },
@@ -329,27 +329,27 @@ export const AccordionButton = (props: AccordionButtonProps) => {
 
 const StyledIconButton = styled(IconButton)({
   color: '#0075ff',
-  width: theme.spacing(6),
-  height: theme.spacing(6),
+  width: 35,
+  height: 35,
   '& .MuiSvgIcon-root': {
-    width: theme.spacing(6),
-    height: theme.spacing(6),
+    width: 35,
+    height: 35,
   },
 });
 
 export const InfoButton = (props: ButtonProps) => {
-  const { onClick, onBlur } = props;
+  const { onClick, onBlur, disable = false } = props;
   return (
-    <StyledIconButton onClick={onClick} onBlur={onBlur}>
+    <StyledIconButton onClick={onClick} onBlur={onBlur} disabled={disable}>
       {ButonIcon(Info)}
     </StyledIconButton>
   );
 };
 
 export const ClearButton = (props: ButtonProps) => {
-  const { onClick } = props;
+  const { onClick, disable = false } = props;
   return (
-    <StyledAddIconButton onClick={onClick}>
+    <StyledAddIconButton onClick={onClick} disabled={disable}>
       {ButonIcon(ContenClose)}
     </StyledAddIconButton>
   );

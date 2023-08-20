@@ -58,17 +58,21 @@ const AuthProvider = (props: AuthProviderProps) => {
   // state
   const [authContext, setAuthContext] =
     useState<AuthContextType>(initialValues);
+  const [initialized, setInitialized] = useState(false);
 
   const initialize = async () => {
     const response = await _expApiClient.post(
       '/_exp/scr-com-9999/get-user-info'
     );
     setAuthContext({ user: response.data });
+    setInitialized(true);
   };
 
   useEffect(() => {
     initialize();
   }, []);
+
+  if (!initialized) return <div>Loading....</div>;
 
   return (
     <>
