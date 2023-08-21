@@ -49,8 +49,10 @@ export interface ScrCom0033PopupModel {
 interface ScrCom0033PopupProps {
   isOpen: boolean;
   data: ScrCom0033PopupModel;
-  // 確定ボタン・キャンセルボタン押下時に渡すパラメータ
-  handleConfirmOrCancel: (
+  // キャンセルボタン押下時に渡すパラメータ => なし
+  handleCancel: () => void;
+  // 確定ボタン押下時に渡すパラメータ
+  handleConfirm: (
     // 従業員ID1
     employeeId1: string,
     // 従業員名1
@@ -123,7 +125,6 @@ const validationSchema = {
 /**
  * 画面ID 定数
  */
-const SCR_COM_0032 = 'SCR-COM-0032';
 const SCR_COM_0034 = 'SCR-COM-0034';
 
 /**
@@ -131,7 +132,7 @@ const SCR_COM_0034 = 'SCR-COM-0034';
  */
 const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   // props
-  const { isOpen, data } = props;
+  const { isOpen, data, handleCancel } = props;
 
   // form
   const methods = useForm<applicationModel>({
@@ -145,91 +146,6 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
     resolver: yupResolver(yup.object(validationSchema)),
   });
   const { getValues, setValue, watch, reset } = methods;
-
-  // 登録申請ポップアップ確定ボタン押下時の処理(ダイアログを呼び出す)
-  const handlePopupConfirm = () => {
-    // ダイアログを表示
-    const dialogMessege = Format(getMessage('MSG-FR-INF-00009'), [
-      'ダイアログ1',
-    ]);
-    setTitle(dialogMessege);
-    setHandleDialog(true);
-  };
-
-  // 登録内容申請ポップアップキャンセルボタン押下時の処理
-  const handleCancel = () => {
-    // 画面ID => 登録内容確認ポップアップからの遷移
-    if (data.screenId === SCR_COM_0032) {
-      // 取引会計管理かそれ以外かで判定
-      if (isTra) {
-        const traMessege = Format(getMessage('MSG-FR-INF-00007'), [
-          'ダイアログ2',
-        ]);
-        setTitle(traMessege);
-      } else {
-        const notTraMessege = Format(getMessage('MSG-FR-INF-00008'), [
-          'ダイアログ3',
-        ]);
-        setTitle(notTraMessege);
-      }
-      // 画面ID => 一括登録確認画面からの遷移
-      // TODO: SCREEN_ID 定義ファイルで記載する方法 要確認
-    } else if (data.screenId === SCR_COM_0034) {
-      const bulkRegistrationMessege = Format(getMessage('MSG-FR-INF-00009'), [
-        'ダイアログ4',
-      ]);
-      setTitle(bulkRegistrationMessege);
-      // 画面ID => それ以外
-    } else {
-      const notTraMessege = Format(getMessage('MSG-FR-INF-00008'), [
-        'ダイアログ3',
-      ]);
-      setTitle(notTraMessege);
-    }
-    // ダイアログを表示
-    setHandleDialog(true);
-  };
-
-  // ダイアログのOKボタン押下時の処理(呼び出し元画面で登録を行う)
-  const handleDialogConfirm = () => {
-    // 取引会計管理の処理の場合登録を行う
-    props.handleConfirmOrCancel(
-      // 従業員ID1
-      employeeId1,
-      // 従業員名1
-      employeeName1,
-      // 従業員メールアドレス
-      employeeMailAddress1,
-      // 従業員ID2
-      employeeId2,
-      // 従業員名2
-      employeeName2,
-      // 従業員ID3
-      employeeId3,
-      // 従業員名3
-      employeeName3,
-      // 従業員ID4
-      employeeId4,
-      // 従業員名4
-      employeeName4,
-      // 申請コメント
-      getValues('applicationComment')
-    );
-
-    // ローカルストレージに第１～第４承認者を保存
-    localStorage.setItem('lastApprover1', String(employeeName1));
-    localStorage.setItem('lastApprover2', String(employeeName2));
-    localStorage.setItem('lastApprover3', String(employeeName3));
-    localStorage.setItem('lastApprover4', String(employeeName4));
-
-    setHandleDialog(false);
-  };
-
-  // button
-  const dialogButtons = [
-    { name: 'キャンセル', onClick: () => setHandleDialog(false) },
-    { name: 'OK', onClick: handleDialogConfirm },
-  ];
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -261,7 +177,11 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   // 判定に使用する必要承認ステップ数
   const [needApprovalStep, setNeedApprovalStep] = useState<number>();
   // 判定に使用する取引会計管理かどうかのフラグ
-  const [isTra, setIsTra] = useState<boolean>(true);
+  const [isTra, setIsTra] = useState<boolean>(false);
+  // 判定に使用するキャンセル処理のフラグ(true=>ポップアップまで閉じる/false=>ダイアログのみ閉じる)
+  const [isCancel, setIsCancel] = useState<boolean>(false);
+  // 判定に使用する確定処理のフラグ(true=>確定ボタン押下/false=>キャンセルボタン押下)
+  const [isConfirm, setIsConfirm] = useState<boolean>(false);
 
   // メッセージポップアップ(ダイアログ)
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
@@ -272,15 +192,113 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
   // user情報
   const { user } = useContext(AuthContext);
 
+  // 登録申請ポップアップ確定ボタン押下時の処理(ダイアログを呼び出す)
+  const handlePopupConfirm = () => {
+    const dialogMessege = Format(getMessage('MSG-FR-INF-00009'), [
+      'ダイアログ1',
+    ]);
+    setIsCancel(false);
+    setIsConfirm(true);
+    setTitle(dialogMessege);
+    // ダイアログを表示
+    setHandleDialog(true);
+  };
+
+  // 登録内容申請ポップアップキャンセルボタン押下時の処理
+  const handlePopupCancel = () => {
+    // 画面ID => 登録内容確認ポップアップ(各画面)からの遷移
+    if (data.screenId !== SCR_COM_0034) {
+      // 取引会計管理の場合
+      if (isTra) {
+        setIsCancel(true);
+        const traMessege = Format(getMessage('MSG-FR-INF-00007'), [
+          'ダイアログ2',
+        ]);
+        setTitle(traMessege);
+        // 取引会計管理以外の場合
+      } else {
+        setIsConfirm(false);
+        const notTraMessege = Format(getMessage('MSG-FR-INF-00008'), [
+          'ダイアログ3',
+        ]);
+        setTitle(notTraMessege);
+      }
+      // 画面ID => 一括登録確認画面からの遷移
+    } else if (data.screenId === SCR_COM_0034) {
+      const bulkRegistrationMessege = Format(getMessage('MSG-FR-INF-00009'), [
+        'ダイアログ4',
+      ]);
+      setTitle(bulkRegistrationMessege);
+    }
+    // ダイアログを表示
+    setHandleDialog(true);
+  };
+
+  // ダイアログのキャンセルボタン押下時の処理
+  const handleDialogCancel = () => {
+    // 取引会計管理の処理の場合のみポップアップまで閉じて処理終了とする
+    if (isCancel) {
+      // 取引会計管理以外の場合はダイアログのみ閉じる
+      handleCancel();
+    } else {
+      setHandleDialog(false);
+    }
+  };
+
+  // ダイアログのOKボタン押下時の処理(呼び出し元画面で登録を行う)
+  const handleDialogConfirm = () => {
+    // 取引会計管理の処理の場合のみ登録を行う
+    if (isTra || isConfirm) {
+      props.handleConfirm(
+        // 従業員ID1
+        employeeId1,
+        // 従業員名1
+        employeeName1,
+        // 従業員メールアドレス
+        employeeMailAddress1,
+        // 従業員ID2
+        employeeId2,
+        // 従業員名2
+        employeeName2,
+        // 従業員ID3
+        employeeId3,
+        // 従業員名3
+        employeeName3,
+        // 従業員ID4
+        employeeId4,
+        // 従業員名4
+        employeeName4,
+        // 申請コメント
+        getValues('applicationComment')
+      );
+
+      // ローカルストレージに第１～第４承認者を保存
+      localStorage.setItem('lastApprover1', String(employeeId1));
+      localStorage.setItem('lastApprover2', String(employeeId2));
+      localStorage.setItem('lastApprover3', String(employeeId3));
+      localStorage.setItem('lastApprover4', String(employeeId4));
+    } else {
+      handleCancel();
+    }
+  };
+
+  // button (ダイアログ(メッセージポップアップ)用)
+  const dialogButtons = [
+    { name: 'OK', onClick: handleDialogConfirm },
+    { name: 'キャンセル', onClick: handleDialogCancel },
+  ];
+
   // 初期表示(登録内容申請ポップアップ表示時の処理)
   useEffect(() => {
     const initialize = async () => {
-      // ダイアログキャンセル処理用に画面IDがSCR-TRAなら取引会計管理と判断する
+      // ダイアログキャンセル処理用に画面IDがSCR-TRAから始まるなら取引会計管理と判断する
       const regex = /^SCR-TRA.+/;
       if (regex.test(data.screenId)) {
         setIsTra(true);
+        setIsCancel(true);
       } else {
         setIsTra(false);
+        setIsCancel(false);
       }
 
       // ローカルストレージから各承認者の値を取得
@@ -288,6 +306,11 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
       const lastApprover2 = localStorage.getItem('lastApprover2');
       const lastApprover3 = localStorage.getItem('lastApprover3');
       const lastApprover4 = localStorage.getItem('lastApprover4');
+
+      console.log(lastApprover1);
+      console.log(lastApprover2);
+      console.log(lastApprover3);
+      console.log(lastApprover4);
 
       // 初期値は前回承認者が存在しない場合はブランクを設定、存在する場合は初期値を前回承認者に設定
       setValue(
@@ -345,7 +368,7 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
 
     // 初期表示処理
     initialize();
-  }, []);
+  }, [isOpen]);
 
   // プルダウン選択時の処理
   useEffect(() => {
@@ -557,7 +580,9 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
                 </PopSection>
               </Popup>
               <Popup bottom>
-                <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
+                <CancelButton onClick={handlePopupCancel}>
+                  キャンセル
+                </CancelButton>
                 <ConfirmButton onClick={handlePopupConfirm}>確定</ConfirmButton>
               </Popup>
             </Popup>
