@@ -102,7 +102,12 @@ export const Example = () => {
       <Button onClick={handleOnClick}>log</Button>
       <ThemeProvider theme={theme}>
         <DatePicker label='DatePicker' name='date1' />
-        <DatePicker label='DatePicker（和暦付き）' name='date2' withWareki />
+        <DatePicker
+          label='DatePicker（和暦付き）'
+          name='date2'
+          withWareki
+          size='m'
+        />
       </ThemeProvider>
     </FormProvider>
   );
