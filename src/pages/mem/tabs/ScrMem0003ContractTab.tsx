@@ -1,13 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
+
+import ScrCom0038Popup, {
+  ScrCom0038PopupModel,
+} from 'pages/com/popups/ScrCom0038Popup';
 
 import { MarginBox, RightBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
+import { Stack } from 'layouts/Stack';
 
-import { AddButton } from 'controls/Button';
+import { AddButton, CancelButton, OutputButton } from 'controls/Button';
 import {
   DataGrid,
+  exportCsv,
   GridColDef,
   GridHrefsModel,
   GridTooltipsModel,
@@ -25,8 +31,15 @@ import {
 import { useNavigate } from 'hooks/useNavigate';
 
 import { memApiClient } from 'providers/ApiClient';
+import { AuthContext } from 'providers/AuthProvider';
 
-import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
+import {
+  GridCellParams,
+  GridColumnGroupingModel,
+  GridTreeNode,
+  useGridApiRef,
+} from '@mui/x-data-grid-pro';
+import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 
 /**
  * 契約情報列定義
@@ -53,7 +66,7 @@ const contractInfoColumns: GridColDef[] = [
   {
     field: 'businessBaseName',
     headerName: '事業拠点名',
-    size: 'm',
+    size: 'l',
   },
   // 請求先情報
   {
@@ -71,7 +84,7 @@ const contractInfoColumns: GridColDef[] = [
   {
     field: 'courseName',
     headerName: 'コース名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'optionEntryKind',
@@ -109,7 +122,7 @@ const billingInfoColumns: GridColDef[] = [
   {
     field: 'courseName',
     headerName: 'コース名',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'claimMethodKind',
@@ -119,32 +132,32 @@ const billingInfoColumns: GridColDef[] = [
   {
     field: 'debitBankName',
     headerName: '銀行（引落）',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'debitBranchName',
     headerName: '支店（引落）',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'debitAccountNumber',
     headerName: '口座番号（引落）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'payingBankName',
     headerName: '銀行（支払）',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'payingBranchName',
     headerName: '支店（支払）',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'payingAccountNumber',
     headerName: '口座番号（支払）',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'changeReservationfFlag',
@@ -176,27 +189,27 @@ const assignmentDocumentDestinationInfoColumns: GridColDef[] = [
   {
     field: 'assignmentDocumentDestinationMunicipalities',
     headerName: '市区町村',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'assignmentDocumentDestinationAddressBuildingName',
     headerName: '番地・号・建物名など',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'assignmentDocumentDestinationPhoneNumber',
     headerName: 'TEL',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'assignmentDocumentDestinationFaxNumber',
     headerName: 'FAX',
-    size: 's',
+    size: 'm',
   },
   {
     field: 'assignmentDocumentDestinationMailAddress',
     headerName: 'メールアドレス',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'assignmentDocumentDestinationShippingMethodSlipKind',
@@ -264,7 +277,22 @@ interface ContractInfoModel {
   courseName: string;
   optionEntryKind: string;
   optionContractFlag: string;
-  priceTotal: string;
+  discountFlag: boolean;
+  priceTotal: number;
+}
+
+interface ContractInfoRowModel {
+  id: string;
+  contractId: string;
+  contractChangeReservationfFlag: string;
+  businessBaseId: string;
+  businessBaseName: string;
+  billingId: string;
+  claimMethodKind: string;
+  courseName: string;
+  optionEntryKind: string;
+  optionContractFlag: string;
+  priceTotal: number;
 }
 
 /**
@@ -303,37 +331,13 @@ interface AssignmentDocumentDestinationModel {
 }
 
 /**
- * エラー確認ポップアップモデル
+ * 登録内容確認ポップアップ初期データ
  */
-interface ScrCom0038PopupDataModel {
-  // エラー内容リスト
-  errorList: [
-    {
-      // エラーコード
-      errorCode: string;
-      // エラーメッセージ
-      errorMessage: string;
-    }
-  ];
-  // ワーニング内容リスト
-  warnList: [
-    {
-      // エラーコード
-      errorCode: string;
-      // エラーメッセージ
-      errorMessage: string;
-    }
-  ];
-}
-
-const tooltips = [
-  {
-    field: 'priceTotal',
-    id: 0,
-    value: '',
-    text: 'サテロク 6,000円',
-  },
-];
+const scrCom0038PopupInitialValues: ScrCom0038PopupModel = {
+  errorList: [],
+  warningList: [],
+  expirationScreenId: '',
+};
 
 /**
  * 法人契約コース・サービス一覧取得APIリクエストから【四輪】契約情報セクションモデルへの変換
@@ -356,9 +360,8 @@ const convertToContractCourseServiceModel = (
         courseName: x.courseName,
         optionEntryKind: x.optionEntryKind,
         optionContractFlag: x.optionContractFlag ? 'あり' : '',
-
-        // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
-        priceTotal: (100000).toLocaleString(),
+        priceTotal: x.courselistPrice,
+        discountFlag: x.discountFlag,
       };
     }),
     bikeContractInfo: response.bikeContractInfo.map((x) => {
@@ -375,8 +378,8 @@ const convertToContractCourseServiceModel = (
         courseName: x.courseName,
         optionEntryKind: x.optionEntryKind,
         optionContractFlag: x.optionContractFlag ? 'あり' : '',
-        // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
-        priceTotal: (100000).toLocaleString(),
+        priceTotal: x.courselistPrice,
+        discountFlag: x.discountFlag,
       };
     }),
     billingInfo: response.billingInfo.map((x) => {
@@ -431,23 +434,12 @@ const convertToScrMem0003DataModel = (
 ): ScrMem0003RegistrationCorporationInfoRequest => {
   const newScrMem0003Data: ScrMem0003RegistrationCorporationInfoRequest =
     Object.assign(scrMem0003Data);
-  newScrMem0003Data.tvaaLimitCount = response.tvaaLimitCount;
-  newScrMem0003Data.tvaaResponseCount = response.tvaaResponseCount;
   newScrMem0003Data.tvaaAcquisitionCount = response.tvaaAcquisitionCount;
   newScrMem0003Data.tvaaContractInfo = response.tvaaContractInfo;
-
-  newScrMem0003Data.bikeLimitCount = response.bikeLimitCount;
-  newScrMem0003Data.bikeResponseCount = response.bikeResponseCount;
   newScrMem0003Data.bikeAcquisitionCount = response.bikeAcquisitionCount;
   newScrMem0003Data.bikeContractInfo = response.bikeContractInfo;
-
-  newScrMem0003Data.billingLimitCount = response.billingLimitCount;
-  newScrMem0003Data.billingResponseCount = response.billingResponseCount;
   newScrMem0003Data.billingAcquisitionCount = response.billingAcquisitionCount;
   newScrMem0003Data.billingInfo = response.billingInfo;
-
-  newScrMem0003Data.assignmentLimitCount = response.assignmentLimitCount;
-  newScrMem0003Data.assignmentResponseCount = response.assignmentResponseCount;
   newScrMem0003Data.assignmentAcquisitionCount =
     response.assignmentAcquisitionCount;
   newScrMem0003Data.assignmentDocumentDestinationInfo =
@@ -464,17 +456,31 @@ const ScrMem0003ContractTab = (props: {
 }) => {
   // router
   const { corporationId } = useParams();
+  const { user } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
+  const apiRefTvaaContractInfo = useGridApiRef();
+  const apiRefBikeCountInfo = useGridApiRef();
+  const apiRefBillingInfo = useGridApiRef();
+  const apiRefAssignmentDocumentDestination = useGridApiRef();
+
+  // コンポーネントを読み取り専用に変更するフラグ
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0003') === -1
+  );
 
   // state
+  const [tvaaContractInfo, setTvaaContractInfo] = useState<ContractInfoModel[]>(
+    []
+  );
   const [tvaaContractInfoRows, setTvaaContractInfoRows] = useState<
-    ContractInfoModel[]
+    ContractInfoRowModel[]
   >([]);
+  const [bikeCountInfo, setBikeCountInfo] = useState<ContractInfoModel[]>([]);
   const [bikeCountInfoRows, setBikeCountInfoRows] = useState<
-    ContractInfoModel[]
+    ContractInfoRowModel[]
   >([]);
   const [billingInfoRows, setBillingInfoRows] = useState<BillingInfoModel[]>(
     []
@@ -504,20 +510,53 @@ const ScrMem0003ContractTab = (props: {
   ] = useState<GridHrefsModel[]>([]);
   const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] = useState(false);
   const [scrCom0038PopupData, setScrCom0038PopupData] =
-    useState<ScrCom0038PopupDataModel>();
+    useState<ScrCom0038PopupModel>(scrCom0038PopupInitialValues);
 
   useEffect(() => {
     const initialize = async (corporationId: string) => {
       // 与信情報取得API
       const request: ScrMem0003GetContractCourseServiceRequest = {
         corporationId: corporationId,
-        limit: 0,
       };
       const response = await ScrMem0003GetContractCourseService(request);
       const contractCourseService =
         convertToContractCourseServiceModel(response);
-      setTvaaContractInfoRows(contractCourseService.tvaaContractInfo);
-      setBikeCountInfoRows(contractCourseService.bikeContractInfo);
+      setTvaaContractInfo(contractCourseService.tvaaContractInfo);
+      setTvaaContractInfoRows(
+        contractCourseService.tvaaContractInfo.map((x) => {
+          return {
+            id: x.id,
+            contractId: x.contractId,
+            contractChangeReservationfFlag: x.contractChangeReservationfFlag,
+            businessBaseId: x.businessBaseId,
+            businessBaseName: x.businessBaseName,
+            billingId: x.billingId,
+            claimMethodKind: x.claimMethodKind,
+            courseName: x.courseName,
+            optionEntryKind: x.optionEntryKind,
+            optionContractFlag: x.optionContractFlag,
+            priceTotal: x.priceTotal,
+          };
+        })
+      );
+      setBikeCountInfo(contractCourseService.bikeContractInfo);
+      setBikeCountInfoRows(
+        contractCourseService.bikeContractInfo.map((x) => {
+          return {
+            id: x.id,
+            contractId: x.contractId,
+            contractChangeReservationfFlag: x.contractChangeReservationfFlag,
+            businessBaseId: x.businessBaseId,
+            businessBaseName: x.businessBaseName,
+            billingId: x.billingId,
+            claimMethodKind: x.claimMethodKind,
+            courseName: x.courseName,
+            optionEntryKind: x.optionEntryKind,
+            optionContractFlag: x.optionContractFlag,
+            priceTotal: x.priceTotal,
+          };
+        })
+      );
       setBillingInfoRows(contractCourseService.billingInfo);
       setAssignmentDocumentDestinationRows(
         contractCourseService.assignmentDocumentDestination
@@ -531,14 +570,17 @@ const ScrMem0003ContractTab = (props: {
       props.chengeScrMem0003Data(scrMem0003Data);
 
       // ツールチップ設定
-      // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
       setTvaaContractInfoTooltips([
         {
           field: 'priceTotal',
-          tooltips: contractCourseService.tvaaContractInfo.map((x) => {
+          tooltips: response.tvaaContractInfo.map((x) => {
+            const textList: string[] = [];
+            x.serviceInfo.map((f) => {
+              textList.push(f.serviceName + '　' + f.servicePrice);
+            });
             return {
               id: x.contractId,
-              text: 'サテロク 6,000円',
+              text: textList.join('\r'),
             };
           }),
         },
@@ -547,10 +589,14 @@ const ScrMem0003ContractTab = (props: {
       setBikeContractInfoTooltips([
         {
           field: 'priceTotal',
-          tooltips: contractCourseService.bikeContractInfo.map((x) => {
+          tooltips: response.bikeContractInfo.map((x) => {
+            const textList: string[] = [];
+            x.serviceInfo.map((f) => {
+              textList.push(f.serviceName + '　' + f.servicePrice);
+            });
             return {
               id: x.contractId,
-              text: 'サテロク 6,000円',
+              text: textList.join('\r'),
             };
           }),
         },
@@ -563,7 +609,13 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.tvaaContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?contractId=' + x.contractId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/bussiness-bases/' +
+                x.businessBaseId +
+                '/contracts/' +
+                x.contractId,
             };
           }),
         },
@@ -572,7 +624,11 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.tvaaContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?billingId=' + x.billingId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/billings/' +
+                x.billingId,
             };
           }),
         },
@@ -584,7 +640,13 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.bikeContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?contractId=' + x.contractId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/bussiness-bases/' +
+                x.businessBaseId +
+                '/contracts/' +
+                x.contractId,
             };
           }),
         },
@@ -593,7 +655,11 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.bikeContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?billingId=' + x.billingId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/billings/' +
+                x.billingId,
             };
           }),
         },
@@ -619,7 +685,11 @@ const ScrMem0003ContractTab = (props: {
             (x) => {
               return {
                 id: x.contractId,
-                href: '-?contractId=' + x.contractId,
+                href:
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/logisticsBaseId/contracts/' +
+                  x.contractId,
               };
             }
           ),
@@ -635,8 +705,9 @@ const ScrMem0003ContractTab = (props: {
       const request = {
         changeHistoryNumber: applicationId,
       };
-      const response = (await memApiClient.post('/get-history-info', request))
-        .data;
+      const response: ScrMem0003RegistrationCorporationInfoRequest = (
+        await memApiClient.post('/get-history-info', request)
+      ).data;
       const contractCourseService =
         convertToContractCourseServiceModel(response);
       setTvaaContractInfoRows(contractCourseService.tvaaContractInfo);
@@ -654,14 +725,17 @@ const ScrMem0003ContractTab = (props: {
       props.chengeScrMem0003Data(scrMem0003Data);
 
       // ツールチップ設定
-      // TODO:詳細設計「イベント詳細定義（画面共通）」に構造変更の主記載のため、サンプル実装
       setTvaaContractInfoTooltips([
         {
           field: 'priceTotal',
-          tooltips: contractCourseService.tvaaContractInfo.map((x) => {
+          tooltips: response.tvaaContractInfo.map((x) => {
+            const textList: string[] = [];
+            x.serviceInfo.map((f) => {
+              textList.push(f.serviceName + '　' + f.servicePrice);
+            });
             return {
               id: x.contractId,
-              text: 'サテロク 6,000円',
+              text: textList.join('\r'),
             };
           }),
         },
@@ -670,10 +744,14 @@ const ScrMem0003ContractTab = (props: {
       setBikeContractInfoTooltips([
         {
           field: 'priceTotal',
-          tooltips: contractCourseService.bikeContractInfo.map((x) => {
+          tooltips: response.bikeContractInfo.map((x) => {
+            const textList: string[] = [];
+            x.serviceInfo.map((f) => {
+              textList.push(f.serviceName + '　' + f.servicePrice);
+            });
             return {
               id: x.contractId,
-              text: 'サテロク 6,000円',
+              text: textList.join('\r'),
             };
           }),
         },
@@ -686,7 +764,13 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.tvaaContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?contractId=' + x.contractId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/bussiness-bases/' +
+                x.businessBaseId +
+                '/contracts/' +
+                x.contractId,
             };
           }),
         },
@@ -695,7 +779,11 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.tvaaContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?billingId=' + x.billingId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/billings/' +
+                x.billingId,
             };
           }),
         },
@@ -707,7 +795,13 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.bikeContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?contractId=' + x.contractId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/bussiness-bases/' +
+                x.businessBaseId +
+                '/contracts/' +
+                x.contractId,
             };
           }),
         },
@@ -716,7 +810,11 @@ const ScrMem0003ContractTab = (props: {
           hrefs: contractCourseService.bikeContractInfo.map((x) => {
             return {
               id: x.contractId,
-              href: '-?billingId=' + x.billingId,
+              href:
+                '/mem/corporations/' +
+                corporationId +
+                '/billings/' +
+                x.billingId,
             };
           }),
         },
@@ -742,7 +840,11 @@ const ScrMem0003ContractTab = (props: {
             (x) => {
               return {
                 id: x.contractId,
-                href: '-?contractId=' + x.contractId,
+                href:
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/logisticsBaseId/contracts/' +
+                  x.contractId,
               };
             }
           ),
@@ -769,11 +871,27 @@ const ScrMem0003ContractTab = (props: {
     };
     const response = await ScrMem0003AddCheckContractInfo(request);
     if (response.errorList.length < 0) {
-      // 請求先詳細遷移
-      navigate('/mem/corporations/' + corporationId + '/billings/');
+      // 契約情報詳細遷移
+      navigate(
+        '/mem/corporations/' +
+          corporationId +
+          '/bussiness-bases/logisticsBaseId/contracts/contractId'
+      );
     } else {
-      // TODO: エラー確認ポップアップを表示
-      setScrCom0038PopupData(response);
+      // エラー確認ポップアップを表示
+      setScrCom0038PopupData({
+        errorList: response.errorList.map((x) => {
+          return {
+            errorMessage: x.errorMessage,
+          };
+        }),
+        warningList: response.warnList.map((x) => {
+          return {
+            warningMessage: x.errorMessage,
+          };
+        }),
+        expirationScreenId: 'SCR-MEM-0003',
+      });
       setIsOpenScrCom0038Popup(true);
     }
   };
@@ -786,22 +904,33 @@ const ScrMem0003ContractTab = (props: {
   /**
    * CSV出力リック時のイベントハンドラ
    */
-  const handleIconOutputCsvClick = () => {
-    console.log('CSV出力');
-  };
-
-  const handleLinkClick = (url: string) => {
-    navigate(url);
+  const handleIconOutputCsvClick = (
+    apiRef: React.MutableRefObject<GridApiPro>
+  ) => {
+    const date = new Date();
+    const year = date.getFullYear().toString().padStart(4, '0');
+    const month = date.getMonth().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const fileName =
+      'SCR-MEM-0003_' +
+      user.employeeId +
+      '_' +
+      year +
+      month +
+      day +
+      hours +
+      minutes +
+      '.csv';
+    exportCsv(fileName, apiRef);
   };
 
   /**
-   * エラー確認ポップアップの確定ボタンクリック時のイベントハンドラ
+   * リンククリック時のイベントハンドラ
    */
-  const handlePopupConfirm = () => {
-    setIsOpenScrCom0038Popup(false);
-    // 契約情報詳細遷移
-    // TODO:パス確認
-    navigate('-?corporationId=' + corporationId);
+  const handleLinkClick = (url: string) => {
+    navigate(url);
   };
 
   /**
@@ -811,16 +940,59 @@ const ScrMem0003ContractTab = (props: {
     setIsOpenScrCom0038Popup(false);
   };
 
+  /**
+   * データグリッドの背景色設定
+   */
+  const getTvaaContractInfoCellClassName = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ): string => {
+    let CellClassName = '';
+    if (params.field === 'priceTotal') {
+      tvaaContractInfo.map((x) => {
+        if (x.id === params.id) {
+          if (x.discountFlag) CellClassName = 'cold';
+        }
+      });
+    }
+    return CellClassName;
+  };
+  const getBikeCountInfoRowsCellClassName = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ): string => {
+    let CellClassName = '';
+    if (params.field === 'priceTotal') {
+      bikeCountInfo.map((x) => {
+        if (x.id === params.id) {
+          if (x.discountFlag) CellClassName = 'cold';
+        }
+      });
+    }
+    return CellClassName;
+  };
+
+  /**
+   * キャンセルボタンクリック時のイベントハンドラ
+   */
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
   return (
     <>
       <MainLayout>
         <MainLayout main>
           <RightBox>
             <MarginBox mt={2} mb={4} ml={2} mr={2} gap={2}>
-              <AddButton onClick={handleIconContractAddClick}>
+              <AddButton
+                onClick={handleIconContractAddClick}
+                disable={isReadOnly[0]}
+              >
                 契約情報追加
               </AddButton>
-              <AddButton onClick={handleIconBillingAddClick}>
+              <AddButton
+                onClick={handleIconBillingAddClick}
+                disable={isReadOnly[0]}
+              >
                 請求先追加
               </AddButton>
             </MarginBox>
@@ -830,9 +1002,13 @@ const ScrMem0003ContractTab = (props: {
             name='【四輪】契約情報'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleIconOutputCsvClick}>
+                <OutputButton
+                  onClick={() =>
+                    handleIconOutputCsvClick(apiRefTvaaContractInfo)
+                  }
+                >
                   CSV出力
-                </AddButton>
+                </OutputButton>
               </MarginBox>
             }
           >
@@ -842,7 +1018,10 @@ const ScrMem0003ContractTab = (props: {
               rows={tvaaContractInfoRows}
               tooltips={tvaaContractInfoTooltips}
               hrefs={tvaaContractInfoHrefs}
+              pagination
               onLinkClick={handleLinkClick}
+              getCellClassName={getTvaaContractInfoCellClassName}
+              apiRef={apiRefTvaaContractInfo}
             />
           </Section>
           {/* 【二輪】契約情報セクション */}
@@ -850,9 +1029,11 @@ const ScrMem0003ContractTab = (props: {
             name='【二輪】契約情報'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleIconOutputCsvClick}>
+                <OutputButton
+                  onClick={() => handleIconOutputCsvClick(apiRefBikeCountInfo)}
+                >
                   CSV出力
-                </AddButton>
+                </OutputButton>
               </MarginBox>
             }
           >
@@ -862,7 +1043,10 @@ const ScrMem0003ContractTab = (props: {
               rows={bikeCountInfoRows}
               tooltips={bikeContractInfoTooltips}
               hrefs={bikeCountInfoHrefs}
+              pagination
               onLinkClick={handleLinkClick}
+              getCellClassName={getBikeCountInfoRowsCellClassName}
+              apiRef={apiRefBikeCountInfo}
             />
           </Section>
           {/* 請求先一覧セクション */}
@@ -870,9 +1054,11 @@ const ScrMem0003ContractTab = (props: {
             name='請求先一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleIconOutputCsvClick}>
+                <OutputButton
+                  onClick={() => handleIconOutputCsvClick(apiRefBillingInfo)}
+                >
                   CSV出力
-                </AddButton>
+                </OutputButton>
               </MarginBox>
             }
           >
@@ -880,7 +1066,9 @@ const ScrMem0003ContractTab = (props: {
               columns={billingInfoColumns}
               rows={billingInfoRows}
               hrefs={billingInfoHrefs}
+              pagination
               onLinkClick={handleLinkClick}
+              apiRef={apiRefBillingInfo}
             />
           </Section>
           {/* 譲渡書類送付先一覧セクション */}
@@ -888,9 +1076,15 @@ const ScrMem0003ContractTab = (props: {
             name='譲渡書類送付先一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleIconOutputCsvClick}>
+                <OutputButton
+                  onClick={() =>
+                    handleIconOutputCsvClick(
+                      apiRefAssignmentDocumentDestination
+                    )
+                  }
+                >
                   CSV出力
-                </AddButton>
+                </OutputButton>
               </MarginBox>
             }
           >
@@ -898,21 +1092,30 @@ const ScrMem0003ContractTab = (props: {
               columns={assignmentDocumentDestinationInfoColumns}
               rows={assignmentDocumentDestinationRows}
               hrefs={assignmentDocumentDestinationHrefs}
+              pagination
               onLinkClick={handleLinkClick}
+              apiRef={apiRefAssignmentDocumentDestination}
             />
           </Section>
+        </MainLayout>
+        {/* bottom */}
+        <MainLayout bottom>
+          <Stack direction='row' alignItems='center'>
+            <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
+          </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* エラー確認ポップアップ */}
-      {/*
-    <ScrCom0038Popup
-      isOpen={isOpenScrCom0038Popup}
-      data={scrCom0032PopupData}
-      handleConfirm={handlePopupConfirm}
-      handleCancel={handlePopupCancel}
-    />
-    */}
+      {isOpenScrCom0038Popup ? (
+        <ScrCom0038Popup
+          isOpen={isOpenScrCom0038Popup}
+          data={scrCom0038PopupData}
+          handleCancel={handlePopupCancel}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };

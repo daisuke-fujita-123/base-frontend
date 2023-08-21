@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
-import { AddButton } from 'controls/Button';
+import { OutputButton } from 'controls/Button';
 import {
   DataGrid,
+  exportCsv,
   GridColDef,
   GridHrefsModel,
   GridTooltipsModel,
@@ -18,6 +19,10 @@ import {
   ScrMem0003GetCorporationInfoRequest,
   ScrMem0003GetCorporationInfoResponse,
 } from 'apis/mem/ScrMem0003Api';
+
+import { AuthContext } from 'providers/AuthProvider';
+
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 請求先一覧列定義
@@ -252,6 +257,8 @@ const ScrMem0003ChangeHistoryTab = () => {
   // router
   const { corporationId } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const apiRef = useGridApiRef();
 
   // state
   const [changeHistoryRows, setChangeHistoryRows] = useState<
@@ -293,13 +300,28 @@ const ScrMem0003ChangeHistoryTab = () => {
           case '法人情報詳細':
             switch (x.tabAllRegistrationName) {
               case '法人情報変更':
-                href = '/mem/corporations/' + corporationId + '#basic';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#basic';
                 break;
               case '与信情報変更':
-                href = '/mem/corporations/' + corporationId + '#credit';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#credit';
                 break;
               case '与信制限変更':
-                href = '/mem/corporations/' + corporationId + '#credit-limit';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#credit-limit';
                 break;
             }
             break;
@@ -307,38 +329,70 @@ const ScrMem0003ChangeHistoryTab = () => {
             switch (x.tabAllRegistrationName) {
               case '基本情報変更':
                 href =
-                  '/mem/corporations/' + corporationId + '/billings//#basic';
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/billings/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#basic';
                 break;
               case '口座情報変更':
-                // TODO: タブ名未定
-                href = '/mem/corporations/' + corporationId + '/billings//#';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/billings/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#bank';
                 break;
             }
             break;
           case '事業拠点詳細':
-            // TODO: URI未定アーキに確認
-            href = '-/#basic';
+            href =
+              '/mem/corporations/' +
+              corporationId +
+              '/bussiness-bases/new/?applicationId=' +
+              x.changeHistoryNumber +
+              '#basic';
             break;
           case '物流拠点詳細':
-            href = '/mem/corporations/' + corporationId + '/logistics-bases/';
+            href =
+              '/mem/corporations/' +
+              corporationId +
+              '/logistics-bases/new?applicationId=' +
+              x.changeHistoryNumber;
             break;
           case '契約情報詳細':
             switch (x.tabAllRegistrationName) {
               case '契約情報変更':
-                // TODO: URI未定アーキに確認
-                href = '-/#basic';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/new/contracts/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#basic';
                 break;
               case 'サービス情報変更':
-                // TODO: タブ名未定 & URI未定アーキに確認
-                href = '-/#';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/new/contracts/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#service-discount';
                 break;
               case '請求・値引値増情報変更':
-                // TODO: タブ名未定 & URI未定アーキに確認
-                href = '-/#';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/new/contracts/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#billing';
                 break;
               case 'ライブ情報変更':
-                // TODO: タブ名未定 & URI未定アーキに確認
-                href = '-/#';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/new/contracts/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#live';
                 break;
             }
             break;
@@ -368,20 +422,32 @@ const ScrMem0003ChangeHistoryTab = () => {
           case '請求先詳細':
             switch (x.tabAllRegistrationName) {
               case '口座情報変更':
-                // TODO: タブ名未定
-                href = '/mem/corporations/' + corporationId + '/billings//#';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/billings/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#bank';
                 break;
             }
             break;
           case '契約情報詳細':
             switch (x.tabAllRegistrationName) {
               case 'サービス情報変更':
-                // TODO: タブ名未定 & URI未定アーキに確認
-                href = '-/#';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/new/contracts/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#service-discount';
                 break;
               case '請求・値引値増情報変更':
-                // TODO: タブ名未定 & URI未定アーキに確認
-                href = '-/#';
+                href =
+                  '/mem/corporations/' +
+                  corporationId +
+                  '/bussiness-bases/new/contracts/new/?applicationId=' +
+                  x.changeHistoryNumber +
+                  '#billing';
                 break;
             }
             break;
@@ -446,8 +512,32 @@ const ScrMem0003ChangeHistoryTab = () => {
   /**
    * CSV出力リック時のイベントハンドラ
    */
-  const handleIconOutputCsvClick = () => {
-    console.log('CSV出力');
+  const handleIconOutputCsvClick = (name: string) => {
+    const date = new Date();
+    const year = date.getFullYear().toString().padStart(4, '0');
+    const month = date.getMonth().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const fileName =
+      'SCR-MEM-0003_' +
+      user.employeeId +
+      '_' +
+      year +
+      month +
+      day +
+      hours +
+      minutes +
+      '.csv';
+    exportCsv(fileName, apiRef);
+    // switch (name) {
+    //   case 'changeHistory':
+    //     exportCsv(changeHistoryRows, fileName);
+    //     break;
+    //   case 'notPermission':
+    //     exportCsv(notPermissionRows, fileName);
+    //     break;
+    // }
   };
 
   return (
@@ -459,9 +549,11 @@ const ScrMem0003ChangeHistoryTab = () => {
             name='変更履歴一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleIconOutputCsvClick}>
+                <OutputButton
+                  onClick={() => handleIconOutputCsvClick('changeHistory')}
+                >
                   CSV出力
-                </AddButton>
+                </OutputButton>
               </MarginBox>
             }
           >
@@ -471,6 +563,7 @@ const ScrMem0003ChangeHistoryTab = () => {
               tooltips={changeHistoryTooltips}
               hrefs={changeHistoryHrefs}
               onLinkClick={handleLinkClick}
+              pagination
             />
           </Section>
           {/* 未承認一覧セクション */}
@@ -478,9 +571,11 @@ const ScrMem0003ChangeHistoryTab = () => {
             name='未承認一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleIconOutputCsvClick}>
+                <OutputButton
+                  onClick={() => handleIconOutputCsvClick('notPermission')}
+                >
                   CSV出力
-                </AddButton>
+                </OutputButton>
               </MarginBox>
             }
           >
@@ -490,6 +585,7 @@ const ScrMem0003ChangeHistoryTab = () => {
               tooltips={notPermissionTooltips}
               hrefs={notPermissionHrefs}
               onLinkClick={handleLinkClick}
+              pagination
             />
           </Section>
         </MainLayout>

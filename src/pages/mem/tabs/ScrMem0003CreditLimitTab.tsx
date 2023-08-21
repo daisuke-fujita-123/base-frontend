@@ -5,10 +5,10 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import ScrCom0032Popup, {
-  ColumnListModel,
+  columnList,
   ScrCom0032PopupModel,
-  SectionListModel,
-} from 'pages/com/popups/ScrCom0032';
+  sectionList,
+} from 'pages/com/popups/ScrCom0032Popup';
 
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
@@ -30,7 +30,7 @@ import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
 import { memApiClient } from 'providers/ApiClient';
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import yup from 'utils/validation/ValidationDefinition';
 
@@ -78,35 +78,10 @@ const initialValues: CreditLimitInfoModel = {
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  errorMessages: [
-    {
-      errorCode: '',
-      errorMessage: '',
-    },
-  ],
-  warningMessages: [
-    {
-      errorCode: '',
-      errorMessage: '',
-    },
-  ],
-  contentsList: {
-    screenName: '',
-    screenId: '',
-    tabName: '',
-    tabId: '',
-    sectionList: [
-      {
-        sectionName: '',
-        columnList: [
-          {
-            columnName: '',
-          },
-        ],
-      },
-    ],
-  },
-  changeExpectDate: new Date(),
+  errorList: [],
+  warningList: [],
+  registrationChangeList: [],
+  changeExpectDate: null,
 };
 
 /**
@@ -127,11 +102,11 @@ const convertToCreditLimitInfoModel = (
 /**
  * 変更した項目から登録・変更内容データへの変換
  */
-const convertToSectionList = (dirtyFields: object): SectionListModel[] => {
+const convertToSectionList = (dirtyFields: object): sectionList[] => {
   const fields = Object.keys(dirtyFields);
-  const sectionList: SectionListModel[] = [];
+  const sectionList: sectionList[] = [];
   sectionDef.forEach((d) => {
-    const columnList: ColumnListModel[] = [];
+    const columnList: columnList[] = [];
     fields.forEach((f) => {
       if (d.fields.includes(f)) {
         columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
@@ -201,7 +176,7 @@ const ScrMem0003CreditLimitTab = (props: {
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   // state
   const [isOpenPopup, setIsOpenPopup] = useState<boolean>(false);
@@ -209,7 +184,9 @@ const ScrMem0003CreditLimitTab = (props: {
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
 
   // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(applicationId === null ? false : true);
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0003') === -1
+  );
   // form
   const methods = useForm<CreditLimitInfoModel>({
     defaultValues: initialValues,
@@ -285,16 +262,18 @@ const ScrMem0003CreditLimitTab = (props: {
   const handleConfirm = () => {
     setIsOpenPopup(true);
     setScrCom0032PopupData({
-      errorMessages: [],
-      warningMessages: [],
-      contentsList: {
-        screenName: '法人情報詳細',
-        screenId: 'SCR-MEM-0003',
-        tabName: '与信制限',
-        tabId: 'B-4',
-        sectionList: convertToSectionList(dirtyFields),
-      },
-      changeExpectDate: new Date(),
+      errorList: [],
+      warningList: [],
+      registrationChangeList: [
+        {
+          screenId: 'SCR-MEM-0003',
+          screenName: '法人情報詳細',
+          tabId: 4,
+          tabName: '与信制限',
+          sectionList: convertToSectionList(dirtyFields),
+        },
+      ],
+      changeExpectDate: user.taskDate,
     });
   };
 
@@ -308,7 +287,7 @@ const ScrMem0003CreditLimitTab = (props: {
     const request = convertFromRegistrationCreditLimitInfo(
       getValues(),
       props.scrMem0003Data,
-      appContext.user,
+      user.employeeId,
       changeMemo
     );
 
@@ -352,7 +331,6 @@ const ScrMem0003CreditLimitTab = (props: {
                       label='自動制限可否'
                       name='automaticLimitFlag'
                       radioValues={automaticLimitFlagRadio}
-                      row={false}
                     />
                   </ControlsStackItem>
                   <ControlsStackItem>
@@ -360,7 +338,6 @@ const ScrMem0003CreditLimitTab = (props: {
                       label='制限状況'
                       name='limitStatusKind'
                       radioValues={limitStatusKindRadio}
-                      row={false}
                     />
                   </ControlsStackItem>
                   <ControlsStackItem>
@@ -375,20 +352,25 @@ const ScrMem0003CreditLimitTab = (props: {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={handleConfirm}>確定</ConfirmButton>
+            <ConfirmButton onClick={handleConfirm} disable={isReadOnly[0]}>
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      {/* 
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
-      */}
+      {isOpenPopup ? (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleRegistConfirm={handlePopupConfirm}
+          handleApprovalConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };

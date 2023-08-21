@@ -5,11 +5,11 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import ScrCom0032Popup, {
-  ColumnListModel,
-  errorMessagesModel,
+  columnList,
+  errorList,
   ScrCom0032PopupModel,
-  SectionListModel,
-} from 'pages/com/popups/ScrCom0032';
+  sectionList,
+} from 'pages/com/popups/ScrCom0032Popup';
 
 import { MarginBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
@@ -27,10 +27,11 @@ import { PostalTextField, TextField } from 'controls/TextField/TextField';
 import { Typography } from 'controls/Typography';
 
 import {
-  errorResult,
-  RegistGuarantor,
-  ScrCom9999GetCodeManagementMasterMultiple,
+  ScrCom9999getCodeManagementMasterMultiple,
   ScrCom9999GetCodeValue,
+} from 'apis/com/ScrCom9999Api';
+import {
+  RegistGuarantor,
   ScrMem0003GetCorporationInfo,
   ScrMem0003GetCorporationInfoRequest,
   ScrMem0003GetCorporationInfoResponse,
@@ -39,14 +40,14 @@ import {
   ScrMem0003InputCheckCorporationInfoRequest,
   ScrMem0003RegistrationCorporationInfo,
   ScrMem0003RegistrationCorporationInfoRequest,
-  ScrMem9999GetCorporationGroup,
 } from 'apis/mem/ScrMem0003Api';
+import { ScrMem9999GetCorporationGroup } from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
 import { comApiClient, memApiClient } from 'providers/ApiClient';
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import { ChangeHistoryDateCheckUtil } from 'utils/ChangeHistoryDateCheckUtil';
 import yup from 'utils/validation/ValidationDefinition';
@@ -444,35 +445,10 @@ const selectValuesInitialValues: SelectValuesModel = {
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  errorMessages: [
-    {
-      errorCode: '',
-      errorMessage: '',
-    },
-  ],
-  warningMessages: [
-    {
-      errorCode: '',
-      errorMessage: '',
-    },
-  ],
-  contentsList: {
-    screenName: '',
-    screenId: '',
-    tabName: '',
-    tabId: '',
-    sectionList: [
-      {
-        sectionName: '',
-        columnList: [
-          {
-            columnName: '',
-          },
-        ],
-      },
-    ],
-  },
-  changeExpectDate: new Date(),
+  errorList: [],
+  warningList: [],
+  registrationChangeList: [],
+  changeExpectDate: null,
 };
 
 /**
@@ -993,29 +969,13 @@ const convertFromCorporationInfoModel = (
   return newScrMem0003Data;
 };
 
-const convertToErrorMessages = (
-  response: errorResult[]
-): errorMessagesModel[] => {
-  const list: errorMessagesModel[] = [];
-  if (response === undefined) {
-    return list;
-  }
-  response.map((x) => {
-    list.push({
-      errorCode: x.errorCode,
-      errorMessage: x.errorMessage,
-    });
-  });
-  return list;
-};
-
 /**
  * 変更した項目から登録・変更内容データへの変換
  */
-const convertToSectionList = (dirtyFields: object): SectionListModel[] => {
+const convertToSectionList = (dirtyFields: object): sectionList[] => {
   const fields = Object.keys(dirtyFields);
-  const sectionList: SectionListModel[] = [];
-  const columnList: ColumnListModel[] = [];
+  const sectionList: sectionList[] = [];
+  const columnList: columnList[] = [];
   sectionDef.forEach((d) => {
     fields.forEach((f) => {
       if (d.fields.includes(f)) {
@@ -1046,8 +1006,7 @@ const ScrMem0003BasicTab = (props: {
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
-  // user情報(businessDateも併せて取得)
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -1066,7 +1025,9 @@ const ScrMem0003BasicTab = (props: {
     useState<boolean>(false);
 
   // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0003') === -1
+  );
   // form
   const methods = useForm<CorporationBasicModel>({
     defaultValues: initialValues,
@@ -1092,7 +1053,7 @@ const ScrMem0003BasicTab = (props: {
         codeIdList: [{ codeId: 'CDE-COM-0017' }, { codeId: 'CDE-COM-0021' }],
       };
       const codeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       const goldSilverMemberKindSelectValues: SelectValue[] = [];
@@ -1154,8 +1115,12 @@ const ScrMem0003BasicTab = (props: {
       const request = {
         changeHistoryNumber: applicationId,
       };
-      const response = (await memApiClient.post('/get-history-info', request))
-        .data;
+      const response = (
+        await memApiClient.post(
+          '/api/mem/scr-mem-9999/get-history-info',
+          request
+        )
+      ).data;
       const corporationBasic = convertToCreditInfoModel(
         response,
         applicationId
@@ -1190,7 +1155,7 @@ const ScrMem0003BasicTab = (props: {
         codeIdList: [{ codeId: 'CDE-COM-0017' }, { codeId: 'CDE-COM-0021' }],
       };
       const codeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       const goldSilverMemberKindSelectValues: SelectValue[] = [];
@@ -1338,7 +1303,10 @@ const ScrMem0003BasicTab = (props: {
         businessDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
       };
       const getChangeDate = (
-        await comApiClient.post('/com/get-change-date', getChangeDateRequest)
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-change-date',
+          getChangeDateRequest
+        )
       ).data;
 
       const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
@@ -1456,32 +1424,41 @@ const ScrMem0003BasicTab = (props: {
         scrMem0003InputCheckCorporationInfoRequest
       );
 
-    const errorMessages: errorMessagesModel[] = convertToErrorMessages(
-      scrMem0010GetMemberResponse.errorList
-    );
+    const errorList: errorList[] = [];
+    scrMem0010GetMemberResponse.errorList.map((x) => {
+      errorList.push({
+        errorCode: x.errorCode,
+        errorMessage: x.errorMessage,
+      });
+    });
     if (
       getValues('corporationFaxNumber') !== '' &&
       getValues('corporationMailAddress') !== ''
     ) {
-      errorMessages.push({
+      errorList.push({
         errorCode: 'MSG-FR-ERR-00058',
         errorMessage: 'FAX、または、アドレスを入力してください',
       });
     }
 
     setScrCom0032PopupData({
-      errorMessages: errorMessages,
-      warningMessages: convertToErrorMessages(
-        scrMem0010GetMemberResponse.warnList
-      ),
-      contentsList: {
-        screenName: '法人情報詳細',
-        screenId: 'SCR-MEM-0003',
-        tabName: '基本情報',
-        tabId: 'B-3',
-        sectionList: convertToSectionList(dirtyFields),
-      },
-      changeExpectDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
+      errorList: errorList,
+      warningList: scrMem0010GetMemberResponse.warnList.map((x) => {
+        return {
+          warningCode: x.errorCode,
+          warningMessage: x.errorMessage,
+        };
+      }),
+      registrationChangeList: [
+        {
+          screenId: 'SCR-MEM-0003',
+          screenName: '法人情報詳細',
+          tabId: 3,
+          tabName: '基本情報',
+          sectionList: convertToSectionList(dirtyFields),
+        },
+      ],
+      changeExpectDate: user.taskDate,
     });
   };
 
@@ -1503,21 +1480,11 @@ const ScrMem0003BasicTab = (props: {
     const request = convertFromCorporationInfoModel(
       getValues(),
       props.scrMem0003Data,
-      appContext.user,
+      user.employeeId,
       // TODO:登録変更メモ
       ''
     );
     await ScrMem0003RegistrationCorporationInfo(request);
-
-    props.chengeTabDisableds({
-      ScrMem0003BasicTab: false,
-      ScrMem0003CreditTab: false,
-      ScrMem0003CreditLimitTab: false,
-      ScrMem0003ContractTab: false,
-      ScrMem0003BaseTab: false,
-      ScrMem0003DealHistoryTab: false,
-      ScrMem0003ChangeHistoryTab: false,
-    });
 
     // 取得データ保持
     props.chengeScrMem0003Data(request);
@@ -1677,12 +1644,7 @@ const ScrMem0003BasicTab = (props: {
             </Section>
             {/* 会員メモ情報セクション */}
             <Section name='会員メモ情報'>
-              <Textarea
-                name='memberMemo'
-                minRows={10}
-                maxRows={30}
-                size='l'
-              ></Textarea>
+              <Textarea name='memberMemo' maxRows={15} size='l'></Textarea>
             </Section>
             {/* 代表者セクション */}
             <Section name='代表者情報'>
@@ -1904,18 +1866,10 @@ const ScrMem0003BasicTab = (props: {
           <FormProvider {...methods}>
             <Grid container height='100%'>
               <Grid item size='s'>
-                {changeHistory.length <= 0 ? (
-                  <RightElementStack>
+                <RightElementStack>
+                  {changeHistory.length <= 0 ? (
                     <></>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                ) : (
-                  <RightElementStack>
+                  ) : (
                     <Stack>
                       <Typography bold>変更予約情報</Typography>
                       <WarningLabel text='変更予約あり' />
@@ -1928,14 +1882,15 @@ const ScrMem0003BasicTab = (props: {
                         表示切替
                       </PrimaryButton>
                     </Stack>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                )}
+                  )}
+                  <MarginBox mb={6}>
+                    <DatePicker
+                      label='変更予定日'
+                      name='changeExpectedDate'
+                      disabled={isReadOnly[0]}
+                    />
+                  </MarginBox>
+                </RightElementStack>
               </Grid>
             </Grid>
           </FormProvider>
@@ -1945,7 +1900,7 @@ const ScrMem0003BasicTab = (props: {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton disable={false} onClick={onClickConfirm}>
+            <ConfirmButton disable={isReadOnly[0]} onClick={onClickConfirm}>
               確定
             </ConfirmButton>
           </Stack>
@@ -1953,24 +1908,31 @@ const ScrMem0003BasicTab = (props: {
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      {/* 
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
-      */}
+      {isOpenPopup ? (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleRegistConfirm={handlePopupConfirm}
+          handleApprovalConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 反映予定日整合性チェック */}
-      <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
-        isChangeHistoryBtn={isChangeHistoryBtn}
-        changeHistory={changeHistory}
-        isOpen={changeHistoryDateCheckisOpen}
-        handleConfirm={handleConfirm}
-      />
+      {changeHistoryDateCheckisOpen ? (
+        <ChangeHistoryDateCheckUtil
+          changeExpectedDate={getValues('changeExpectedDate')}
+          changeHistoryNumber={getValues('changeHistoryNumber')}
+          isChangeHistoryBtn={isChangeHistoryBtn}
+          changeHistory={changeHistory}
+          isOpen={changeHistoryDateCheckisOpen}
+          handleConfirm={handleConfirm}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 import { TabDef, Tabs } from 'layouts/Tabs';
 
@@ -67,20 +67,12 @@ const initialValues: ScrMem0003RegistrationCorporationInfoRequest = {
   limitStatusKind: '',
   limitKind: '',
 
-  tvaaLimitCount: 0,
-  tvaaResponseCount: 0,
   tvaaAcquisitionCount: 0,
   tvaaContractInfo: [],
-  bikeLimitCount: 0,
-  bikeResponseCount: 0,
   bikeAcquisitionCount: 0,
   bikeContractInfo: [],
-  billingLimitCount: 0,
-  billingResponseCount: 0,
   billingAcquisitionCount: 0,
   billingInfo: [],
-  assignmentLimitCount: 0,
-  assignmentResponseCount: 0,
   assignmentAcquisitionCount: 0,
   assignmentDocumentDestinationInfo: [],
   applicationEmployeeId: '',
@@ -106,8 +98,9 @@ export interface TabDisabledsModel {
 const ScrMem0003Page = () => {
   // router
   const location = useLocation();
-
-  const ref = document.referrer;
+  const [searchParams] = useSearchParams();
+  const applicationId = searchParams.get('applicationId');
+  const readonly = searchParams.get('readonly');
 
   const [tabDisableds, setTabDisableds] = useState<TabDisabledsModel>({
     ScrMem0003BasicTab: false,
@@ -159,6 +152,35 @@ const ScrMem0003Page = () => {
       disabled: tabDisableds.ScrMem0003ChangeHistoryTab,
     },
   ];
+
+  // 初期表示処理
+  useEffect(() => {
+    if (applicationId !== null) {
+      setTabDisableds({
+        ScrMem0003BasicTab: false,
+        ScrMem0003CreditTab: false,
+        ScrMem0003CreditLimitTab: false,
+        ScrMem0003ContractTab: false,
+        ScrMem0003BaseTab: true,
+        ScrMem0003DealHistoryTab: true,
+        ScrMem0003ChangeHistoryTab: true,
+      });
+      return;
+    }
+    if (readonly !== null) {
+      setTabDisableds({
+        ScrMem0003BasicTab: true,
+        ScrMem0003CreditTab: false,
+        ScrMem0003CreditLimitTab: true,
+        ScrMem0003ContractTab: true,
+        ScrMem0003BaseTab: true,
+        ScrMem0003DealHistoryTab: true,
+        ScrMem0003ChangeHistoryTab: true,
+      });
+      return;
+    }
+    return;
+  }, []);
 
   const chengeTabDisableds = (tabDisableds: TabDisabledsModel) => {
     setTabDisableds(tabDisableds);

@@ -5,10 +5,12 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import ScrCom0032Popup, {
-  ColumnListModel,
+  columnList,
+  errorList,
   ScrCom0032PopupModel,
-  SectionListModel,
-} from 'pages/com/popups/ScrCom0032';
+  sectionList,
+  warningList,
+} from 'pages/com/popups/ScrCom0032Popup';
 
 import { MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
@@ -30,6 +32,7 @@ import { Select } from 'controls/Select/Select';
 import { PriceTextField, TextField } from 'controls/TextField/TextField';
 import { Typography } from 'controls/Typography';
 
+import { ScrCom9999GetChangeDate } from 'apis/com/ScrCom9999Api';
 import {
   ScrMem0003GetCreditInfo,
   ScrMem0003GetCreditInfoRequest,
@@ -42,7 +45,7 @@ import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
 import { comApiClient, memApiClient } from 'providers/ApiClient';
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 import yup from 'utils/validation/ValidationDefinition';
@@ -153,35 +156,10 @@ const initialValues: CreditInfoModel = {
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  errorMessages: [
-    {
-      errorCode: '',
-      errorMessage: '',
-    },
-  ],
-  warningMessages: [
-    {
-      errorCode: '',
-      errorMessage: '',
-    },
-  ],
-  contentsList: {
-    screenName: '',
-    screenId: '',
-    tabName: '',
-    tabId: '',
-    sectionList: [
-      {
-        sectionName: '',
-        columnList: [
-          {
-            columnName: '',
-          },
-        ],
-      },
-    ],
-  },
-  changeExpectDate: new Date(),
+  errorList: [],
+  warningList: [],
+  registrationChangeList: [],
+  changeExpectDate: null,
 };
 
 /**
@@ -294,11 +272,11 @@ const convertToScrMem0003DataModel = (
 /**
  * 変更した項目から登録・変更内容データへの変換
  */
-const convertToSectionList = (dirtyFields: object): SectionListModel[] => {
+const convertToSectionList = (dirtyFields: object): sectionList[] => {
   const fields = Object.keys(dirtyFields);
-  const sectionList: SectionListModel[] = [];
+  const sectionList: sectionList[] = [];
   sectionDef.forEach((d) => {
-    const columnList: ColumnListModel[] = [];
+    const columnList: columnList[] = [];
     fields.forEach((f) => {
       if (d.fields.includes(f)) {
         columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
@@ -376,7 +354,7 @@ const ScrMem0003CreditTab = (props: {
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   //state
   const [changeHistory, setChangeHistory] = useState<any>([]);
@@ -392,7 +370,10 @@ const ScrMem0003CreditTab = (props: {
     useState<boolean>(false);
 
   // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0003') === -1
+  );
+
   // form
   const methods = useForm<CreditInfoModel>({
     defaultValues: initialValues,
@@ -438,22 +419,18 @@ const ScrMem0003CreditTab = (props: {
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
         tabId: 'B-4',
-        getKeyValue: corporationId,
-        businessDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
+        masterId: corporationId,
+        businessDate: user.taskDate,
       };
 
-      const getChangeDate = (
-        await comApiClient.post('/com/get-change-date', getChangeDateRequest)
-      ).data;
+      const getChangeDate = await ScrCom9999GetChangeDate(getChangeDateRequest);
 
-      const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
-        (e: { changeHistoryNumber: number; changeExpectDate: Date }) => {
-          return {
-            value: e.changeHistoryNumber,
-            displayValue: new Date(e.changeExpectDate).toLocaleDateString(),
-          };
-        }
-      );
+      const chabngeHistory = getChangeDate.changeExpectDateInfo.map((x) => {
+        return {
+          value: x.changeHistoryNumber,
+          displayValue: new Date(x.changeExpectDate).toLocaleDateString(),
+        };
+      });
       setChangeHistory(chabngeHistory);
     };
 
@@ -496,7 +473,10 @@ const ScrMem0003CreditTab = (props: {
       };
 
       const getChangeDate = (
-        await comApiClient.post('/com/get-change-date', getChangeDateRequest)
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-change-date',
+          getChangeDateRequest
+        )
       ).data;
 
       const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
@@ -606,16 +586,18 @@ const ScrMem0003CreditTab = (props: {
 
     setIsOpenPopup(true);
     setScrCom0032PopupData({
-      errorMessages: errorList,
-      warningMessages: [],
-      contentsList: {
-        screenName: '法人情報詳細',
-        screenId: 'SCR-MEM-0003',
-        tabName: '与信情報',
-        tabId: 'B-4',
-        sectionList: convertToSectionList(dirtyFields),
-      },
-      changeExpectDate: new Date(),
+      errorList: errorList,
+      warningList: [],
+      registrationChangeList: [
+        {
+          screenId: 'SCR-MEM-0003',
+          screenName: '法人情報詳細',
+          tabId: 4,
+          tabName: '与信情報',
+          sectionList: convertToSectionList(dirtyFields),
+        },
+      ],
+      changeExpectDate: getValues('changeExpectedDate'),
     });
   };
 
@@ -630,23 +612,13 @@ const ScrMem0003CreditTab = (props: {
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
   const handlePopupConfirm = async (changeMemo: string) => {
-    props.chengeTabDisableds({
-      ScrMem0003BasicTab: false,
-      ScrMem0003CreditTab: false,
-      ScrMem0003CreditLimitTab: false,
-      ScrMem0003ContractTab: false,
-      ScrMem0003BaseTab: false,
-      ScrMem0003DealHistoryTab: false,
-      ScrMem0003ChangeHistoryTab: false,
-    });
-
     setIsOpenPopup(false);
 
     // 法人基本情報変更申請
     const request = convertFromRegistrationCreditInfoModel(
       getValues(),
       props.scrMem0003Data,
-      appContext.user,
+      user.employeeId,
       changeMemo
     );
     const response = await ScrMem0003RegistrationCreditInfo(request);
@@ -760,10 +732,10 @@ const ScrMem0003CreditTab = (props: {
           <FormProvider {...methods}>
             <Grid container height='100%'>
               <Grid item size='s'>
-                {changeHistory.length <= 0 ? (
-                  <></>
-                ) : (
-                  <RightElementStack>
+                <RightElementStack>
+                  {changeHistory.length <= 0 ? (
+                    <></>
+                  ) : (
                     <Stack>
                       <Typography bold>変更予約情報</Typography>
                       <WarningLabel text='変更予約あり' />
@@ -776,14 +748,15 @@ const ScrMem0003CreditTab = (props: {
                         表示切替
                       </PrimaryButton>
                     </Stack>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                )}
+                  )}
+                  <MarginBox mb={6}>
+                    <DatePicker
+                      label='変更予定日'
+                      name='changeExpectedDate'
+                      disabled={isReadOnly[0]}
+                    />
+                  </MarginBox>
+                </RightElementStack>
               </Grid>
             </Grid>
           </FormProvider>
@@ -793,30 +766,39 @@ const ScrMem0003CreditTab = (props: {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={onClickConfirm}>確定</ConfirmButton>
+            <ConfirmButton onClick={onClickConfirm} disable={isReadOnly[0]}>
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      {/* 
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
-      */}
+      {isOpenPopup ? (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleRegistConfirm={handlePopupConfirm}
+          handleApprovalConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 反映予定日整合性チェック */}
-      <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
-        isChangeHistoryBtn={isChangeHistoryBtn}
-        changeHistory={changeHistory}
-        isOpen={changeHistoryDateCheckisOpen}
-        handleConfirm={handleConfirm}
-      />
+      {changeHistoryDateCheckisOpen ? (
+        <ChangeHistoryDateCheckUtil
+          changeExpectedDate={getValues('changeExpectedDate')}
+          changeHistoryNumber={getValues('changeHistoryNumber')}
+          isChangeHistoryBtn={isChangeHistoryBtn}
+          changeHistory={changeHistory}
+          isOpen={changeHistoryDateCheckisOpen}
+          handleConfirm={handleConfirm}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };

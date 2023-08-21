@@ -4,13 +4,27 @@ import { useParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 
+import ScrCom0038Popup, {
+  ScrCom0038PopupModel,
+} from 'pages/com/popups/ScrCom0038Popup';
+
 import { CenterBox, MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { ColStack, RowStack } from 'layouts/Stack';
+import { ColStack, RowStack, Stack } from 'layouts/Stack';
 
-import { AddButton, AddIconButton, SearchButton } from 'controls/Button';
-import { DataGrid, GridColDef, GridHrefsModel } from 'controls/Datagrid';
+import {
+  AddButton,
+  CancelButton,
+  OutputButton,
+  SearchButton,
+} from 'controls/Button';
+import {
+  DataGrid,
+  exportCsv,
+  GridColDef,
+  GridHrefsModel,
+} from 'controls/Datagrid';
 import { Dialog } from 'controls/Dialog';
 import { ContentsDivider } from 'controls/Divider';
 import { Select, SelectValue } from 'controls/Select';
@@ -20,6 +34,8 @@ import { SerchLabelText } from 'controls/Typography';
 import {
   ScrCom9999GetCodeManagementMaster,
   ScrCom9999GetCodeValue,
+} from 'apis/com/ScrCom9999Api';
+import {
   ScrMem0003AddCheckLogisticsBase,
   ScrMem0003AddCheckLogisticsBaseRequest,
   ScrMem0003SearchBusinessBase,
@@ -28,19 +44,25 @@ import {
   ScrMem0003SearchLogisticsBase,
   ScrMem0003SearchLogisticsBaseRequest,
   ScrMem0003SearchLogisticsBaseResponse,
+} from 'apis/mem/ScrMem0003Api';
+import {
   ScrMem9999GetBill,
   ScrMem9999GetCodeValue,
   ScrMem9999GetEmployeeFromDistrict,
   ScrMem9999GetLogisticsBaseRepresentativeContract,
-} from 'apis/mem/ScrMem0003Api';
+} from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
+import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
 import yup from 'utils/validation/ValidationDefinition';
+
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 
 /**
  * 検索条件データモデル
@@ -404,30 +426,6 @@ interface BusinessBaseModel {
 }
 
 /**
- * エラー確認ポップアップモデル
- */
-interface ScrCom0038PopupDataModel {
-  // エラー内容リスト
-  errorList: [
-    {
-      // エラーコード
-      errorCode: string;
-      // エラーメッセージ
-      errorMessage: string;
-    }
-  ];
-  // ワーニング内容リスト
-  warnList: [
-    {
-      // エラーコード
-      errorCode: string;
-      // エラーメッセージ
-      errorMessage: string;
-    }
-  ];
-}
-
-/**
  * 事業拠点一覧モデルデータ
  */
 const businessBaseRows: BusinessBaseModel[] = [
@@ -446,6 +444,15 @@ const businessBaseRows: BusinessBaseModel[] = [
     changeReservationfFlag: '',
   },
 ];
+
+/**
+ * 登録内容確認ポップアップ初期データ
+ */
+const scrCom0038PopupInitialValues: ScrCom0038PopupModel = {
+  errorList: [],
+  warningList: [],
+  expirationScreenId: '',
+};
 
 const convertFromlogisticsBase = (
   request: SearchModel
@@ -574,6 +581,9 @@ const ScrMem0003BaseTab = () => {
   const navigate = useNavigate();
   const { corporationId } = useParams();
   const { getMessage } = useContext(MessageContext);
+  const { user } = useContext(AuthContext);
+  const apiRefLogisticsBase = useGridApiRef();
+  const apiRefBusinessBase = useGridApiRef();
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -598,18 +608,20 @@ const ScrMem0003BaseTab = () => {
   const [isOpenScrCom0038Popup, setIsOpenScrCom0038Popup] =
     useState<boolean>(false);
   const [scrCom0038PopupData, setScrCom0038PopupData] =
-    useState<ScrCom0038PopupDataModel>();
+    useState<ScrCom0038PopupModel>(scrCom0038PopupInitialValues);
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
 
   // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0003') === -1
+  );
 
   // form
   const methods = useForm<SearchModel>({
     defaultValues: SearchLogisticsBaseinitialValues,
     resolver: yupResolver(yup.object(validationSchama)),
-    context: isReadOnly,
+    context: true,
   });
   const { getValues } = methods;
 
@@ -620,14 +632,15 @@ const ScrMem0003BaseTab = () => {
       const getCodeManagementMasterRequest = { codeId: 'CDE-MEM-1026' };
       const getCodeManagementMasterResponse =
         await ScrCom9999GetCodeManagementMaster(getCodeManagementMasterRequest);
-      const usePurposeSelectValues = getCodeManagementMasterResponse.list.map(
-        (x) => {
-          return {
-            value: x.codeValue,
-            displayValue: x.codeName,
-          };
-        }
-      );
+      const usePurposeSelectValues =
+        getCodeManagementMasterResponse.searchGetCodeManagementMasterListbox.map(
+          (x) => {
+            return {
+              value: x.codeValue,
+              displayValue: x.codeName,
+            };
+          }
+        );
 
       const getEmployeeFromDistrictRequest = { corporationId: corporationId };
       const getEmployeeFromDistrictResponse =
@@ -652,26 +665,34 @@ const ScrMem0003BaseTab = () => {
       const getCodeValueResponse = await ScrMem9999GetCodeValue(
         getCodeValueRequest
       );
-      const regionCodeSelectValues =
-        getCodeValueResponse.resultList[0].codeValueList.map((x) => {
-          return {
-            value: x.codeValue,
-            displayValue: x.codeValue + '　' + x.codeValueName,
-          };
-        });
+      const regionCodeSelectValues: SelectValue[] = [];
+      getCodeValueResponse.resultList.map((x) => {
+        if (x.entityName === 'region_code_master') {
+          x.codeValueList.map((f) => {
+            regionCodeSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeValue + '　' + f.codeValueName,
+            });
+          });
+        }
+      });
       const comGetCodeValueRequest = {
         entityList: [{ entityName: 'prefecture_master' }],
       };
       const comGetCodeValueResponse = await ScrCom9999GetCodeValue(
         comGetCodeValueRequest
       );
-      const prefectureCodeSelectValues =
-        comGetCodeValueResponse.resultList[0].codeValueList.map((x) => {
-          return {
-            value: x.codeValue,
-            displayValue: x.codeValueName,
-          };
-        });
+      const prefectureCodeSelectValues: SelectValue[] = [];
+      comGetCodeValueResponse.resultList.map((x) => {
+        if (x.entityName === 'prefecture_master') {
+          x.codeValueList.map((f) => {
+            prefectureCodeSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeValue + '　' + f.codeValueName,
+            });
+          });
+        }
+      });
 
       const getLogisticsBaseRepresentativeContractRequest = {
         corporationId: corporationId,
@@ -698,8 +719,8 @@ const ScrMem0003BaseTab = () => {
       const getBillResponse = await ScrMem9999GetBill(getBillRequest);
       const contractIdSelectValues = getBillResponse.list.map((x) => {
         return {
-          value: x.billId,
-          displayValue: x.billId,
+          value: x,
+          displayValue: x,
         };
       });
 
@@ -798,7 +819,70 @@ const ScrMem0003BaseTab = () => {
    * Sectionを閉じた際のラベル作成
    */
   const logisticsBaseSerchLabels = logisticsBaseSerchData.map((val, index) => {
-    const nameVal = getValues(val.name);
+    let nameVal = getValues(val.name);
+
+    if (val.name === 'usePurpose') {
+      const nameValues: string[] = [];
+      selectValues.usePurposeSelectValues.filter((x) => {
+        if (typeof nameVal !== 'string') {
+          nameVal.map((f) => {
+            if (x.value === f) {
+              nameValues.push(x.displayValue);
+            }
+          });
+        }
+      });
+      nameVal = nameValues.join(',');
+    }
+
+    if (val.name === 'logisticsBaseTvaaSalesStaffId') {
+      const filter = selectValues.tvaaSalesStaffIdSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
+    if (val.name === 'logisticsBaseBikeSalesStaffId') {
+      const filter = selectValues.bikeSalesStaffIdSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
+    if (val.name === 'logisticsBasePrefectureCode') {
+      const filter = selectValues.prefectureCodeSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
+    if (val.name === 'regionCode') {
+      const filter = selectValues.regionCodeSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
+    if (val.name === 'logisticsBaseRepresentativeContractId') {
+      const filter =
+        selectValues.logisticsBaseRepresentativeContractIdSelectValues.filter(
+          (x) => {
+            return nameVal === x.value;
+          }
+        );
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
     return (
       nameVal && <SerchLabelText key={index} label={val.label} name={nameVal} />
     );
@@ -808,7 +892,44 @@ const ScrMem0003BaseTab = () => {
    * Sectionを閉じた際のラベル作成
    */
   const businessBaseSerchLabels = businessBaseSerchData.map((val, index) => {
-    const nameVal = getValues(val.name);
+    let nameVal = getValues(val.name);
+
+    if (val.name === 'businessBaseTvaaSalesStaffId') {
+      const filter = selectValues.tvaaSalesStaffIdSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
+    if (val.name === 'businessBaseBikeSalesStaffId') {
+      const filter = selectValues.bikeSalesStaffIdSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
+    if (val.name === 'businessBasePrefectureCode') {
+      const filter = selectValues.prefectureCodeSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
+    if (val.name === 'contractId') {
+      const filter = selectValues.contractIdSelectValues.filter((x) => {
+        return nameVal === x.value;
+      });
+      filter.map((x) => {
+        nameVal = x.displayValue;
+      });
+    }
+
     return (
       nameVal && <SerchLabelText key={index} label={val.label} name={nameVal} />
     );
@@ -817,9 +938,26 @@ const ScrMem0003BaseTab = () => {
   /**
    * CSV出力リック時のイベントハンドラ
    */
-  const handleIconOutputCsvClick = () => {
-    // TODO: アーキのCSV実装待ち
-    console.log('CSV出力');
+  const handleIconOutputCsvClick = (
+    apiRef: React.MutableRefObject<GridApiPro>
+  ) => {
+    const date = new Date();
+    const year = date.getFullYear().toString().padStart(4, '0');
+    const month = date.getMonth().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const fileName =
+      'SCR-MEM-0003_' +
+      user.employeeId +
+      '_' +
+      year +
+      month +
+      day +
+      hours +
+      minutes +
+      '.csv';
+    exportCsv(fileName, apiRef);
   };
 
   /**
@@ -833,32 +971,35 @@ const ScrMem0003BaseTab = () => {
       corporationId: corporationId,
     };
     const response = await ScrMem0003AddCheckLogisticsBase(request);
-    if (response.errorList.length < 0) {
+    if (response.errorList.length < 0 || response.warnList.length < 0) {
       navigate(
         '/mem/corporations/:corporationId/logistics-bases/' + corporationId
       );
     } else {
-      // TODO: エラー確認ポップアップを表示
-      setScrCom0038PopupData(response);
+      // エラー確認ポップアップを表示
+      setScrCom0038PopupData({
+        errorList: response.errorList.map((x) => {
+          return {
+            errorMessage: x.errorMessage,
+          };
+        }),
+        warningList: response.warnList.map((x) => {
+          return {
+            warningMessage: x.errorMessage,
+          };
+        }),
+        expirationScreenId: 'SCR-MEM-0003',
+      });
       setIsOpenScrCom0038Popup(true);
     }
   };
 
+  /**
+   * 追加（事業拠点一覧）ボタンクリック時のイベントハンドラ
+   */
   const handleIconBusinessBaseAddClick = () => {
     // 事業拠点詳細遷移
-    // TODO:パス確認
-    navigate('-?corporationId=' + corporationId);
-  };
-
-  /**
-   * エラー確認ポップアップの確定ボタンクリック時のイベントハンドラ
-   */
-  const handlePopupConfirm = () => {
-    setIsOpenScrCom0038Popup(false);
-    // 物流拠点詳細遷移
-    navigate(
-      '/mem/corporations/:corporationId/logistics-bases/' + corporationId
-    );
+    navigate('/mem/corporations/' + corporationId + '/bussiness-bases/new');
   };
 
   /**
@@ -866,6 +1007,13 @@ const ScrMem0003BaseTab = () => {
    */
   const handlePopupCancel = () => {
     setIsOpenScrCom0038Popup(false);
+  };
+
+  /**
+   * キャンセルボタンクリック時のイベントハンドラ
+   */
+  const handleCancel = () => {
+    navigate(-1);
   };
 
   return (
@@ -958,11 +1106,21 @@ const ScrMem0003BaseTab = () => {
                 name='検索結果'
                 decoration={
                   <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                    <AddButton onClick={handleIconOutputCsvClick}>
+                    <OutputButton
+                      onClick={() =>
+                        handleIconOutputCsvClick(apiRefLogisticsBase)
+                      }
+                      disable={logisticsBaseSearchResult.length >= 0}
+                    >
                       CSV出力
+                    </OutputButton>
+                    {/* 追加（物流拠点一覧） */}
+                    <AddButton
+                      onClick={handleIconLogisticsBaseAddClick}
+                      disable={isReadOnly[0]}
+                    >
+                      追加
                     </AddButton>
-                    {/* 追加（事業拠点一覧） */}
-                    <AddIconButton onClick={handleIconBusinessBaseAddClick} />
                   </MarginBox>
                 }
               >
@@ -970,7 +1128,9 @@ const ScrMem0003BaseTab = () => {
                   columns={logisticsBaseColumns}
                   rows={logisticsBaseSearchResult}
                   hrefs={logisticsBaseHrefs}
+                  pagination
                   onLinkClick={handleLinkClick}
+                  apiRef={apiRefLogisticsBase}
                 />
               </Section>
             </Section>
@@ -1039,35 +1199,70 @@ const ScrMem0003BaseTab = () => {
                 </CenterBox>
               </Section>
               {/* 検索結果セクション */}
-              <Section name='検索結果'>
+              <Section
+                name='検索結果'
+                decoration={
+                  <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                    <OutputButton
+                      onClick={() =>
+                        handleIconOutputCsvClick(apiRefBusinessBase)
+                      }
+                      disable={businessBaseSearchResult.length >= 0}
+                    >
+                      CSV出力
+                    </OutputButton>
+                    {/* 追加（事業拠点一覧） */}
+                    <AddButton
+                      onClick={handleIconBusinessBaseAddClick}
+                      disable={isReadOnly[0]}
+                    >
+                      追加
+                    </AddButton>
+                  </MarginBox>
+                }
+              >
                 <DataGrid
                   columns={businessBaseColumns}
                   rows={businessBaseSearchResult}
                   hrefs={businessBaseHrefs}
+                  pagination
                   onLinkClick={handleLinkClick}
+                  apiRef={apiRefBusinessBase}
                 />
               </Section>
             </Section>
           </FormProvider>
         </MainLayout>
+
+        {/* bottom */}
+        <MainLayout bottom>
+          <Stack direction='row' alignItems='center'>
+            <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
+          </Stack>
+        </MainLayout>
       </MainLayout>
 
       {/* エラー確認ポップアップ */}
-      {/*
-      <ScrCom0038Popup
-        isOpen={isOpenScrCom0038Popup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
-      */}
+      {isOpenScrCom0038Popup ? (
+        <ScrCom0038Popup
+          isOpen={isOpenScrCom0038Popup}
+          data={scrCom0038PopupData}
+          handleCancel={handlePopupCancel}
+        />
+      ) : (
+        ''
+      )}
 
       {/* ダイアログ */}
-      <Dialog
-        open={handleDialog}
-        title={title}
-        buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
-      />
+      {handleDialog ? (
+        <Dialog
+          open={handleDialog}
+          title={title}
+          buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };
