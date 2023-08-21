@@ -22,6 +22,8 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+
 /**
  * 検索条件列定義
  */
@@ -118,6 +120,9 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
 
+  // CSV
+  const apiRef = useGridApiRef();
+
   /**
    * 初期表示
    */
@@ -171,7 +176,7 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv(searchResult, 'ScrCom0013CourceTab.csv');
+    exportCsv('ScrCom0013CourceTab.csv', apiRef);
   };
 
   return (

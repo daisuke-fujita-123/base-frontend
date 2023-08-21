@@ -1,4 +1,4 @@
-import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom00032Popup';
+import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032Popup';
 
 import { comApiClient } from 'providers/ApiClient';
 
@@ -107,7 +107,7 @@ export interface CommissionInfo {
   // 利用フラグ
   utilizationFlg: boolean;
   // 変更予約
-  changeReserve: string;
+  changeReserve: boolean;
 }
 
 // SCR-COM-0013-0004：商品管理表示API(手数料情報表示） リクエスト
@@ -363,11 +363,11 @@ export interface ScrCom0013chkDiscountRequest {
   /** 値引値増情報リスト */
   discountInfoList: discountInfoList[];
   /** 登録対象リスト */
-  registTargetedList: string[];
+  registTargetedList: registTargetedList[];
   /** 更新対象リスト */
-  updateTargetedList: string[];
+  updateTargetedList: updateTargetedList[];
   /** 削除対象リスト */
-  deleteTargetedList: string[];
+  deleteTargetedList: deleteTargetedList[];
 }
 
 // SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
@@ -383,46 +383,46 @@ export interface discountInfoList {
 }
 
 // SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
-// export interface registTargetedList {
-//   // キャンペーンコード
-//   campaignCd: string;
-// }
+export interface registTargetedList {
+  // キャンペーンコード
+  campaignCd: string;
+}
 
 // SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
-// export interface updateTargetedList {
-//   // キャンペーンコード
-//   campaignCd: string;
-// }
+export interface updateTargetedList {
+  // キャンペーンコード
+  campaignCd: string;
+}
 
 // SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
-// export interface deleteTargetedList {
-//   // キャンペーンコード
-//   campaignCd: string;
+export interface deleteTargetedList {
+  // キャンペーンコード
+  campaignCd: string;
+}
+
+// // SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス
+// export interface ScrCom0013chkDiscountResponse {
+//   /** エラー内容リスト */
+//   errorList: errorList[];
+//   /** ワーニング内容リスト */
+//   warnList: warnList[];
 // }
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス
-export interface ScrCom0013chkDiscountResponse {
-  /** エラー内容リスト */
-  errorList: errorList[];
-  /** ワーニング内容リスト */
-  warnList: warnList[];
-}
+// // SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス リスト行
+// export interface errorList {
+//   /** エラーコード */
+//   errorCode: string;
+//   /** エラーメッセージ */
+//   errorMessage: string;
+// }
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス リスト行
-export interface errorList {
-  /** エラーコード */
-  errorCode: string;
-  /** エラーメッセージ */
-  errorMessage: string;
-}
-
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス リスト行
-export interface warnList {
-  /** ワーニングコード */
-  warnCode: string;
-  /** ワーニングメッセージ */
-  warnMessage: string;
-}
+// // SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス リスト行
+// export interface warnList {
+//   /** ワーニングコード */
+//   warnCode: string;
+//   /** ワーニングメッセージ */
+//   warnMessage: string;
+// }
 
 // SCR-COM-0013-0010: 値引値増情報登録更新API リクエスト
 export interface ScrCom0013MergeDiscountRequest {
@@ -431,11 +431,11 @@ export interface ScrCom0013MergeDiscountRequest {
   /** オプション値引値増情報 */
   optionDiscountInfo: OptionDiscountInfo[];
   /** 登録対象リスト */
-  registTargetedList: string[];
+  registTargetedList: registTargetedList[];
   /** 更新対象リスト */
-  updateTargetedList: string[];
+  updateTargetedList: updateTargetedList[];
   /** 削除対象リスト */
-  deleteTargetedList: string[];
+  deleteTargetedList: deleteTargetedList[];
   /** 申請従業員ID */
   applicationEmployeeId: string;
   /** 登録変更メモ */
@@ -497,7 +497,7 @@ export const ScrCom0013DisplayComoditymanagementCourse = async (
   request: ScrCom0013DisplayComoditymanagementCourseRequest
 ): Promise<ScrCom0013DisplayComoditymanagementCourseResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0013/display-comoditymanagement_course',
+    '/com/scr-com-0013/display-comoditymanagement_course',
     request
   );
   return response.data;
@@ -508,7 +508,7 @@ export const ScrCom0013DisplayComoditymanagementService = async (
   request: ScrCom0013DisplayComoditymanagementServiceRequest
 ): Promise<ScrCom0013DisplayComoditymanagementServiceResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0013/display-comoditymanagement-service',
+    '/com/scr-com-0013/display-comoditymanagement-service',
     request
   );
   return response.data;
@@ -570,7 +570,7 @@ export const ScrCom0013MergeService = async (
 // SCR-COM-0013-0009: 値引値増情報入力チェックAPI
 export const ScrCom0013chkDiscount = async (
   request: ScrCom0013chkDiscountRequest
-): Promise<ScrCom0013chkDiscountResponse> => {
+): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
     '/scr-com-0013/chk-discount',
     request

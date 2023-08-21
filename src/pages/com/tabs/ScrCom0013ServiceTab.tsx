@@ -40,9 +40,10 @@ import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 import ScrCom0032Popup, {
   ScrCom0032PopupModel,
-} from '../popups/ScrCom00032Popup';
+} from '../popups/ScrCom0032Popup';
 import ScrCom0033Popup, {
   ScrCom0033PopupModel,
 } from '../popups/ScrCom0033Popup';
@@ -207,6 +208,9 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
 
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
+
+  // CSV
+  const apiRef = useGridApiRef();
 
   // popup
   // 登録内容確認ポップアップ
@@ -535,7 +539,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv(searchResult, 'ScrCom0013ServiceTab.csv');
+    exportCsv('ScrCom0013ServiceTab.csv', apiRef);
   };
 
   /**
@@ -704,37 +708,42 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
               columns={searchResultColumns}
               rows={searchResult}
               resolver={validationSchema}
-              // TODO: 履歴表示の場合に入力欄は非活性
-              // 編集権限がない状態での表示は入力欄は非活性
+              // 編集権限がない状態での表示、または履歴表示の場合の入力欄は非活性
               getCellDisabled={(params) => {
                 if (
-                  params.field === 'serviceName' &&
-                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (params.field === 'serviceName' &&
+                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  params.field === 'responsibleCategory' &&
-                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (params.field === 'responsibleCategory' &&
+                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  params.field === 'targetServiceDivision' &&
-                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (params.field === 'targetServiceDivision' &&
+                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  params.field === 'cooperationInfoServiceFlg' &&
-                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (params.field === 'cooperationInfoServiceFlg' &&
+                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  params.field === 'multiContractPossibleFlg' &&
-                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (params.field === 'multiContractPossibleFlg' &&
+                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  params.field === 'changeReserve' &&
-                  user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (params.field === 'changeReserve' &&
+                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  props.changeHisoryNumber === ''
                 )
                   return true;
                 return false;
@@ -802,7 +811,7 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
           isOpen={isOpenScrCom0032Popup}
           data={scrCom0032PopupData}
           handleRegistConfirm={handleRegistConfirm}
-          // 本機能ではこっちのみを使用
+          // 本機能ではこちらのみを使用
           handleApprovalConfirm={handleApprovalConfirm}
           handleCancel={handlePopupCancel}
         />
