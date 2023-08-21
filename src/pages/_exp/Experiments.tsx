@@ -26,6 +26,7 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { _expApiClient } from 'providers/ApiClient';
 import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
 
@@ -270,6 +271,7 @@ const convertToSelectValues = (response: any[]): SelectValue[] => {
 const Experiments = () => {
   // context
   const { showDialog, saveState, loadState } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   // router
   const navigate = useNavigate();
@@ -288,40 +290,55 @@ const Experiments = () => {
     context: false,
     resolver: yupResolver(yup.object(searchConditionSchema)),
   });
+  const { getValues, setValue, reset, watch, trigger } = methods;
 
   // ref
   const apiRef = useGridApiRef();
 
+  const fetch = async () => {
+    try {
+      const countries = await _expApiClient.get('/_exp/countries');
+      const states = await _expApiClient.get('/_exp/states');
+      const cities = await _expApiClient.get('/_exp/cities');
+      const streets = await _expApiClient.get('/_exp/streets');
+      const data = await _expApiClient.get('/_exp/data');
+      setSelectValues({
+        countries: convertToSelectValues(countries.data),
+        states: convertToSelectValues(states.data),
+        cities: convertToSelectValues(cities.data),
+        streets: convertToSelectValues(streets.data),
+      });
+      reset({
+        ...getValues(),
+        ...data.data,
+        radio1: '2',
+        radio2: 2,
+        select1: '2',
+        select2: 2,
+        check1: true,
+        check2: true,
+      });
+      setValue('check1', true);
+      console.log('initialized');
+    } catch (error) {
+      console.debug(error);
+    }
+  };
+
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const countries = await _expApiClient.get('/_exp/countries');
-        const states = await _expApiClient.get('/_exp/states');
-        const cities = await _expApiClient.get('/_exp/cities');
-        const streets = await _expApiClient.get('/_exp/streets');
-        const data = await _expApiClient.get('/_exp/data');
-        setSelectValues({
-          countries: convertToSelectValues(countries.data),
-          states: convertToSelectValues(states.data),
-          cities: convertToSelectValues(cities.data),
-          streets: convertToSelectValues(streets.data),
-        });
-        methods.reset({
-          ...methods.getValues(),
-          ...data.data,
-          radio1: '2',
-          radio2: 2,
-          select1: '2',
-          select2: 2,
-          check1: true,
-          check2: true,
-        });
-      } catch (error) {
-        console.debug(error);
-      }
-    };
     fetch();
-  }, [methods]);
+  }, []);
+
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if (name === undefined) {
+        console.log('changed by reset()');
+      } else {
+        console.log('changed by setValue(): name = ' + name);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Sectionの開閉処理
   const sectionRef = useRef<SectionClose>();
@@ -352,8 +369,8 @@ const Experiments = () => {
 
   const handleUpdateClick = async () => {
     // apiRef.current.updateRows([{ id: 1 }, { id: 9999 }]);
-    await methods.trigger();
-    console.log(methods.getValues());
+    await trigger();
+    console.log(getValues());
     console.log(datalist);
     if (methods.formState.isValid) {
       console.log('input is valied');

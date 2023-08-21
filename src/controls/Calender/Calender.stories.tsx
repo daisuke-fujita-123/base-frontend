@@ -1,9 +1,12 @@
+import { ThemeProvider } from '@emotion/react';
 import { ComponentMeta } from '@storybook/react';
 import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
+
+import { theme } from 'controls/theme';
 
 import { getDaysInMonth } from 'date-fns';
 import { Calender, CalenderItemDef } from './Calender';
@@ -114,6 +117,10 @@ export const Example = () => {
     return undefined;
   };
 
+  const handleGetCellDisabled = (date: Date): boolean => {
+    return date.getDate() < 5;
+  };
+
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       // inputフィールドの変更のみを処理するサンプル
@@ -131,14 +138,17 @@ export const Example = () => {
 
   return (
     <>
-      <FormProvider {...methods}>
-        <Calender
-          name='calender'
-          yearmonth={yearmonth}
-          itemDef={itemDef}
-          getCellBackground={handleGetCellBackground}
-        />
-      </FormProvider>
+      <ThemeProvider theme={theme}>
+        <FormProvider {...methods}>
+          <Calender
+            name='calender'
+            yearmonth={yearmonth}
+            itemDef={itemDef}
+            getCellBackground={handleGetCellBackground}
+            getCellDisabled={handleGetCellDisabled}
+          />
+        </FormProvider>
+      </ThemeProvider>
     </>
   );
 };
