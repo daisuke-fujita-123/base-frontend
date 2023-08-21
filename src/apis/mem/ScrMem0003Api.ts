@@ -1,4 +1,4 @@
-import { comApiClient, memApiClient } from 'providers/ApiClient';
+import { memApiClient } from 'providers/ApiClient';
 
 /**
  * 基本情報タブ
@@ -200,12 +200,12 @@ export interface NotPermission {
   approvalSettingEmployeeName4: string;
 }
 
-/** 法人基本情報取得API */
+/** API-MEM-0003-0001: 法人基本情報取得API */
 export const ScrMem0003GetCorporationInfo = async (
   request: ScrMem0003GetCorporationInfoRequest
 ): Promise<ScrMem0003GetCorporationInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/get-corporation-info',
+    '/api/mem/scr-mem-0003/get-corporation-info',
     request
   );
   return response.data;
@@ -217,33 +217,12 @@ export interface ScrMem0003GetNewCorporationIdResponse {
   corporationId: string;
 }
 
-/** 法人ID新規採番API */
+/** API-MEM-0003-0031: 法人ID新規採番API */
 export const ScrMem0003GetNewCorporationId =
   async (): Promise<ScrMem0003GetNewCorporationIdResponse> => {
     const response = await memApiClient.post(
-      '/scr-mem-0003/get-new-corporation-id'
+      '/api/mem/scr-mem-0003/get-new-corporation-id'
     );
-    return response.data;
-  };
-
-/** 法人グループ取得APIレスポンス */
-export interface ScrMem9999GetCorporationGroupResponse {
-  // 法人グループリスト
-  corporationGroupList: corporationGroupList[];
-}
-
-/** 法人グループリスト */
-export interface corporationGroupList {
-  // 法人グループID
-  corporationGroupId: string;
-  // 法人グループ名
-  corporationGroupName: string;
-}
-
-/** 法人グループ取得API */
-export const ScrMem9999GetCorporationGroup =
-  async (): Promise<ScrMem9999GetCorporationGroupResponse> => {
-    const response = await memApiClient.post('/scr/get-corporation-group');
     return response.data;
   };
 
@@ -284,12 +263,12 @@ export interface errorResult {
   detail: string;
 }
 
-/** 法人基本情報入力チェックAPI */
+/** API-MEM-0003-0005: 法人基本情報入力チェックAPI */
 export const ScrMem0003InputCheckCorporationInfo = async (
   request: ScrMem0003InputCheckCorporationInfoRequest
 ): Promise<ScrMem0003InputCheckCorporationInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/input-check-corporation-info',
+    '/api/mem/scr-mem-0003/input-check-corporation-info',
     request
   );
   return response.data;
@@ -394,34 +373,18 @@ export interface ScrMem0003RegistrationCorporationInfoRequest {
   // 制限種別
   limitKind: string;
 
-  //  四輪】制限件数
-  tvaaLimitCount: number;
-  // 【四輪】返却件数
-  tvaaResponseCount: number;
   // 【四輪】取得件数
   tvaaAcquisitionCount: number;
   // 【四輪】契約情報一覧
   tvaaContractInfo: RegistContractInfo[];
-  // 【二輪】制限件数
-  bikeLimitCount: number;
-  // 【二輪】返却件数
-  bikeResponseCount: number;
   // 【二輪】取得件数
   bikeAcquisitionCount: number;
   // 【二輪】契約情報一覧
   bikeContractInfo: RegistContractInfo[];
-  // 請求先一覧制限件数
-  billingLimitCount: number;
-  // 請求先一覧返却件数
-  billingResponseCount: number;
   // 請求先一覧取得件数
   billingAcquisitionCount: number;
   // 請求先一覧
   billingInfo: RegistBillingInfo[];
-  // 譲渡書類送付先一覧制限件数
-  assignmentLimitCount: number;
-  // 譲渡書類送付先一覧返却件数
-  assignmentResponseCount: number;
   // 譲渡書類送付先一覧取得件数
   assignmentAcquisitionCount: number;
   // 譲渡書類送付先一覧
@@ -491,22 +454,20 @@ interface RegistContractInfo {
   optionEntryKind: string;
   // オプション契約
   optionContractFlag: boolean;
-  // 入会金
-  admissionPrice: number;
-  // コース定価
+  // 会費合計
   courselistPrice: number;
-  // 会員別会費_値引値増金額区分
-  memberDistinctionDiscountPriceKind: string;
-  // 会員別会費_値引値増金額
-  memberDistinctionDiscountPrice: number;
-  // コース別サービス定価
-  courseDistinctionListPrice: number;
-  // 契約本数
-  contractCount: number;
-  // コース別オプション会費_値引値増金額区分
-  courseDistinctionDiscountPriceKind: string;
-  // コース別オプション会費_値引値増金額
-  courseDistinctionDiscountPrice: number;
+  // 値引値増有無
+  discountFlag: boolean;
+  // サービス情報
+  serviceInfo: ServiceInfo[];
+}
+
+// サービス情報
+export interface ServiceInfo {
+  // サービス名
+  serviceName: string;
+  // サービス会費
+  servicePrice: number;
 }
 
 /** 請求先一覧 */
@@ -559,12 +520,12 @@ interface RegistAssignmentDocumentDestinationInfo {
   changeReservationfFlag: boolean;
 }
 
-/** 法人基本情報登録API */
+/** API-MEM-0003-0025: 法人基本情報登録API */
 export const ScrMem0003RegistrationCorporationInfo = async (
   request: ScrMem0003RegistrationCorporationInfoRequest
 ): Promise<null> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/registration-corporation-info',
+    '/api/mem/scr-mem-0003/registration-corporation-info',
     request
   );
   return null;
@@ -607,23 +568,23 @@ export interface ScrMem0003GetCreditInfoResponse {
   paymentExtensionDealAmount: number;
 }
 
-/** 与信情報取得API */
+/** API-MEM-0003-0002: 与信情報取得API */
 export const ScrMem0003GetCreditInfo = async (
   request: ScrMem0003GetCreditInfoRequest
 ): Promise<ScrMem0003GetCreditInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/get-credit-info',
+    '/api/mem/scr-mem-0003/get-credit-info',
     request
   );
   return response.data;
 };
 
-/** 与信情報登録申請API */
+/** API-MEM-0003-0026: 与信情報登録申請API */
 export const ScrMem0003RegistrationCreditInfo = async (
   request: ScrMem0003RegistrationCorporationInfoRequest
 ): Promise<null> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/registration-credit-info',
+    '/api/mem/scr-mem-0003/registration-credit-info',
     request
   );
   return null;
@@ -649,23 +610,23 @@ export interface ScrMem0003GetCreditLimitInfoResponse {
   limitKind: string;
 }
 
-/** 与信制限取得API */
+/** API-MEM-0003-0003: 与信制限取得API */
 export const ScrMem0003GetCreditLimitInfo = async (
   request: ScrMem0003GetCreditLimitInfoRequest
 ): Promise<ScrMem0003GetCreditLimitInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/get-credit-limit-info',
+    '/api/mem/scr-mem-0003/get-credit-limit-info',
     request
   );
   return response.data;
 };
 
-/** 与信制限登録API */
+/** API-MEM-0003-0027: 与信制限登録API */
 export const ScrMem0003RegistrationCreditLimitInfo = async (
   request: ScrMem0003RegistrationCorporationInfoRequest
 ): Promise<null> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/registration-credit-limit-info',
+    '/api/mem/scr-mem-0003/registration-credit-limit-info',
     request
   );
   return null;
@@ -679,34 +640,16 @@ export const ScrMem0003RegistrationCreditLimitInfo = async (
 export interface ScrMem0003GetContractCourseServiceRequest {
   // 法人ID
   corporationId: string;
-  // 制限件数
-  limit: number;
 }
 
 /** 法人契約コース・サービス一覧取得APIレスポンス */
 export interface ScrMem0003GetContractCourseServiceResponse {
-  //  四輪】制限件数
-  tvaaLimitCount: number;
-  // 【四輪】返却件数
-  tvaaResponseCount: number;
   // 【四輪】取得件数
   tvaaAcquisitionCount: number;
-  // 【二輪】制限件数
-  bikeLimitCount: number;
-  // 【二輪】返却件数
-  bikeResponseCount: number;
   // 【二輪】取得件数
   bikeAcquisitionCount: number;
-  // 請求先一覧制限件数
-  billingLimitCount: number;
-  // 請求先一覧返却件数
-  billingResponseCount: number;
   // 請求先一覧取得件数
   billingAcquisitionCount: number;
-  // 譲渡書類送付先一覧制限件数
-  assignmentLimitCount: number;
-  // 譲渡書類送付先一覧返却件数
-  assignmentResponseCount: number;
   // 譲渡書類送付先一覧取得件数
   assignmentAcquisitionCount: number;
   // 【四輪】契約情報一覧
@@ -739,22 +682,20 @@ export interface ContractInfo {
   optionEntryKind: string;
   // オプション契約
   optionContractFlag: boolean;
-  // 入会金
-  admissionPrice: number;
-  // コース定価
+  // 会費合計
   courselistPrice: number;
-  // 会員別会費_値引値増金額区分
-  memberDistinctionDiscountPriceKind: string;
-  // 会員別会費_値引値増金額
-  memberDistinctionDiscountPrice: number;
-  // コース別サービス定価
-  courseDistinctionListPrice: number;
-  // 契約本数
-  contractCount: number;
-  // コース別オプション会費_値引値増金額区分
-  courseDistinctionDiscountPriceKind: string;
-  // コース別オプション会費_値引値増金額
-  courseDistinctionDiscountPrice: number;
+  // 値引値増有無
+  discountFlag: boolean;
+  // サービス情報
+  serviceInfo: ServiceInfo[];
+}
+
+// サービス情報
+export interface ServiceInfo {
+  // サービス名
+  serviceName: string;
+  // サービス会費
+  servicePrice: number;
 }
 
 /** 請求先一覧 */
@@ -807,12 +748,12 @@ export interface AssignmentDocumentDestinationInfo {
   changeReservationfFlag: boolean;
 }
 
-/** 法人契約コース・サービス一覧取得API */
+/** API-MEM-0003-0004: 法人契約コース・サービス一覧取得API */
 export const ScrMem0003GetContractCourseService = async (
   request: ScrMem0003GetContractCourseServiceRequest
 ): Promise<ScrMem0003GetContractCourseServiceResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/get-contract-course-service',
+    '/api/mem/scr-mem-0003/get-contract-course-service',
     request
   );
   return response.data;
@@ -846,12 +787,12 @@ export interface ScrMem0003AddCheckContractInfoResponse {
   ];
 }
 
-/** 契約情報追加チェックAPI */
+/** API-MEM-0003-0007: 契約情報追加チェックAPI */
 export const ScrMem0003AddCheckContractInfo = async (
   request: ScrMem0003AddCheckContractInfoRequest
 ): Promise<ScrMem0003AddCheckContractInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/add-check-contract-info',
+    '/api/mem/scr-mem-0003/add-check-contract-info',
     request
   );
   return response.data;
@@ -889,12 +830,12 @@ export interface ScrMem0003AddCheckLogisticsBaseResponse {
   ];
 }
 
-/** 物流拠点追加チェックAPI */
+/** API-MEM-0003-0012: 物流拠点追加チェックAPI */
 export const ScrMem0003AddCheckLogisticsBase = async (
   request: ScrMem0003AddCheckLogisticsBaseRequest
 ): Promise<ScrMem0003AddCheckLogisticsBaseResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/add-check-logistics-base',
+    '/api/mem/scr-mem-0003/add-check-logistics-base',
     request
   );
   return response.data;
@@ -986,12 +927,12 @@ export interface LogisticsBase {
   changeReservationfFlag: boolean;
 }
 
-/** 物流拠点一覧取得API */
+/** API-MEM-0003-0014: 物流拠点一覧取得API */
 export const ScrMem0003SearchLogisticsBase = async (
   request: ScrMem0003SearchLogisticsBaseRequest
 ): Promise<ScrMem0003SearchLogisticsBaseResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/search-logistics-base',
+    '/api/mem/scr-mem-0003/search-logistics-base',
     request
   );
   return response.data;
@@ -1065,12 +1006,12 @@ export interface BusinessBase {
   changeReservationfFlag: boolean;
 }
 
-/** 事業拠点一覧取得API */
+/** API-MEM-0003-0016: 事業拠点一覧取得API */
 export const ScrMem0003SearchBusinessBase = async (
   request: ScrMem0003SearchBusinessBaseRequest
 ): Promise<ScrMem0003SearchBusinessBaseResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/search-business-base',
+    '/api/mem/scr-mem-0003/search-business-base',
     request
   );
   return response.data;
@@ -1172,12 +1113,12 @@ export interface AuctionDealHistory {
   day15ArrearsCount: number;
 }
 
-/** オークション取引履歴取得API */
+/** API-MEM-0003-0018: オークション取引履歴取得API */
 export const ScrMem0003SearchAuctionDealHistory = async (
   request: ScrMem0003SearchAuctionDealHistoryRequest
 ): Promise<ScrMem0003SearchAuctionDealHistoryResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/search-auction-deal-history',
+    '/api/mem/scr-mem-0003/search-auction-deal-history',
     request
   );
   return response.data;
@@ -1253,12 +1194,12 @@ export interface BillingDealHistory {
   day15ArrearsCount: number;
 }
 
-/** 一般請求取引履歴取得API */
+/** API-MEM-0003-0020: 一般請求取引履歴取得API */
 export const ScrMem0003SearchBillingDealHistory = async (
   request: ScrMem0003SearchBillingDealHistoryRequest
 ): Promise<ScrMem0003SearchBillingDealHistoryResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/search-billing-deal-history',
+    '/api/mem/scr-mem-0003/search-billing-deal-history',
     request
   );
   return response.data;
@@ -1308,248 +1249,14 @@ export interface ProxyBillingHistory {
   transferProcessResult: string;
 }
 
-/** 代行請求履歴取得API */
+/** API-MEM-0003-0022: 代行請求履歴取得API */
 export const ScrMem0003SearchProxyBillingHistory = async (
   request: ScrMem0003SearchProxyBillingHistoryRequest
 ): Promise<ScrMem0003SearchProxyBillingHistoryResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0003/search-proxy-billing-history',
+    '/api/mem/scr-mem-0003/search-proxy-billing-history',
     request
   );
-  return response.data;
-};
-
-/**
- * 共通
- */
-
-/** コード値取得API（コード管理マスタ以外）リクエスト */
-export interface GetCodeValueRequest {
-  // エンティティリスト
-  entityList: EntityList[];
-}
-
-export interface EntityList {
-  // エンティティ名
-  entityName: string;
-}
-
-/** コード値取得API（コード管理マスタ以外）レスポンス */
-export interface GetCodeValueResponse {
-  // 結果リスト
-  resultList: ResultList[];
-}
-
-export interface ResultList {
-  // エンティティ名
-  entityName: string;
-  // コード値リスト
-  codeValueList: CodeValueList[];
-}
-
-export interface CodeValueList {
-  // コード値
-  codeValue: string;
-  // コード値名称
-  codeValueName: string;
-  // コード値名称カナ
-  codeValueNameKana: string;
-}
-
-/** コード値取得API（コード管理マスタ以外） */
-export const ScrMem9999GetCodeValue = async (
-  request: GetCodeValueRequest
-): Promise<GetCodeValueResponse> => {
-  const response = await memApiClient.post('/scr/get-code-value', request);
-  return response.data;
-};
-
-/** 共通コード値取得API（コード管理マスタ以外） */
-export const ScrCom9999GetCodeValue = async (
-  request: GetCodeValueRequest
-): Promise<GetCodeValueResponse> => {
-  const response = await comApiClient.post('/com/scr/get-code-value', request);
-  return response.data;
-};
-
-/** コード管理マスタ情報取得APIリクエスト */
-export interface ScrCom9999GetCodeManagementMasterRequest {
-  // コードID
-  codeId: string;
-}
-
-/** コード管理マスタ情報取得APIレスポンス */
-export interface ScrCom9999GetCodeManagementMasterResponse {
-  // リスト
-  list: List[];
-}
-
-export interface List {
-  // コード値
-  codeValue: string;
-  // コード名
-  codeName: string;
-}
-
-/** コード管理マスタ情報取得API */
-export const ScrCom9999GetCodeManagementMaster = async (
-  request: ScrCom9999GetCodeManagementMasterRequest
-): Promise<ScrCom9999GetCodeManagementMasterResponse> => {
-  const response = await comApiClient.post(
-    '/com/scr-com-9999/get-code-management-master',
-    request
-  );
-  return response.data;
-};
-
-/** コード管理マスタ情報取得API（複数取得）リクエスト */
-export interface ScrCom9999GetCodeManagementMasterMultipleRequest {
-  // コードIDリスト
-  codeIdList: codeIdList[];
-}
-
-export interface codeIdList {
-  // コードID
-  codeId: string;
-}
-
-/** コード管理マスタ情報取得API（複数取得）レスポンス */
-export interface ScrCom9999GetCodeManagementMasterMultipleResponse {
-  // 結果リスト
-  resultList: resultList[];
-}
-
-export interface resultList {
-  // コードID
-  codeId: string;
-  // コード値リスト
-  codeValueList: codeValueList[];
-}
-
-export interface codeValueList {
-  // コード値
-  codeValue: string;
-  // コード名称
-  codeName: string;
-}
-
-/** コード管理マスタ情報取得API（複数取得） */
-export const ScrCom9999GetCodeManagementMasterMultiple = async (
-  request: ScrCom9999GetCodeManagementMasterMultipleRequest
-): Promise<ScrCom9999GetCodeManagementMasterMultipleResponse> => {
-  const response = await comApiClient.post(
-    '/com/scr-com-9999/get-code-management-master-multiple',
-    request
-  );
-  return response.data;
-};
-
-/** 営業担当情報取得API（物流拠点マスタ）リクエスト */
-export interface ScrMem9999GetEmployeeFromDistrictRequest {
-  // 法人ID
-  corporationId: string;
-}
-
-/** 営業担当情報取得API（物流拠点マスタ）レスポンス */
-export interface ScrMem9999GetEmployeeFromDistrictResponse {
-  // 四輪営業担当情報
-  tvaaSalesInfo: SalesInfo[];
-  // 二輪営業担当情報
-  bikeSalesInfo: SalesInfo[];
-}
-
-export interface SalesInfo {
-  // 営業担当ID
-  salesId: string;
-  // 営業担当名
-  salesName: string;
-}
-
-/** 営業担当情報取得API（物流拠点マスタ） */
-export const ScrMem9999GetEmployeeFromDistrict = async (
-  request: ScrMem9999GetEmployeeFromDistrictRequest
-): Promise<ScrMem9999GetEmployeeFromDistrictResponse> => {
-  const response = await memApiClient.post(
-    '/scr/get-employee-from-district',
-    request
-  );
-  return response.data;
-};
-
-/** 物流拠点代表契約ID取得APIリクエスト */
-export interface ScrMem9999GetLogisticsBaseRepresentativeContractRequest {
-  // 法人ID
-  corporationId: string;
-}
-
-/** 物流拠点代表契約ID取得APIレスポンス */
-export interface ScrMem9999GetLogisticsBaseRepresentativeContractResponse {
-  // 物流拠点代表契約IDリスト
-  logisticsBaseRepresentativeContractIdList: string[];
-}
-
-/** 物流拠点代表契約ID取得API */
-export const ScrMem9999GetLogisticsBaseRepresentativeContract = async (
-  request: ScrMem9999GetLogisticsBaseRepresentativeContractRequest
-): Promise<ScrMem9999GetLogisticsBaseRepresentativeContractResponse> => {
-  const response = await memApiClient.post(
-    '/scr/get-logistics-base-representative-contract',
-    request
-  );
-  return response.data;
-};
-
-/** 請求先契約情報取得APIリクエスト */
-export interface ScrMem9999GetBillingContractRequest {
-  // 法人ID
-  corporationId: string;
-  // 業務日付
-  businessDate: Date;
-}
-
-/** 請求先契約情報取得APIレスポンス */
-export interface ScrMem9999GetBillingContractResponse {
-  // 契約IDリスト
-  contractIdList: string[];
-}
-
-/** 請求先契約情報取得API */
-export const ScrMem9999GetBillingContract = async (
-  request: ScrMem9999GetBillingContractRequest
-): Promise<ScrMem9999GetBillingContractResponse> => {
-  const response = await memApiClient.post(
-    '/scr/get-billing-contract',
-    request
-  );
-  return response.data;
-};
-
-/** 請求先情報取得APIリクエスト */
-export interface ScrMem9999GetBillRequest {
-  // 法人ID
-  corporationId: string;
-  // ソートキー
-  sortKey: string;
-  // ソート方向
-  sortDirection: string;
-}
-
-/** 請求先情報取得APIレスポンス */
-export interface ScrMem9999GetBillResponse {
-  // リスト
-  list: list[];
-}
-
-export interface list {
-  // 請求先ID
-  billId: string;
-}
-
-/** 請求先情報取得API */
-export const ScrMem9999GetBill = async (
-  request: ScrMem9999GetBillRequest
-): Promise<ScrMem9999GetBillResponse> => {
-  const response = await memApiClient.post('/scr/get-bill', request);
   return response.data;
 };
 
