@@ -188,7 +188,7 @@ interface ApprvlList {
   approvalKindId: string;
 }
 
-// TODO: API-COM-0029-0004: 承認権限登録API
+// API-COM-0029-0004: 承認権限登録API
 export const registApprovalPermission = async (
   request: ScrCom0029RegistApprovalPermissionRequest
 ): Promise<ScrCom0032PopupModel> => {
