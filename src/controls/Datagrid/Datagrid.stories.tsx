@@ -6,7 +6,9 @@ import { ObjectSchema } from 'yup';
 
 import { Button } from 'controls/Button';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { theme } from 'controls/theme';
 
+import { ThemeProvider } from '@mui/material';
 import { GridRowsProp } from '@mui/x-data-grid';
 import {
   GridRenderCellParams,
@@ -157,7 +159,7 @@ export const Example = () => {
       field: 'fromto',
       cellType: 'fromto',
       headerName: 'FromTo',
-      size: 'l',
+      width: 500,
     },
   ];
 
@@ -182,7 +184,7 @@ export const Example = () => {
       corporationName: '法人2',
       corporationGroupName: '法人グループ2',
       representativeName: '代表者2',
-      input1: 'Input 1',
+      input1: undefined,
       input2: 'Input 2',
       select: '1',
       radio: '1',
@@ -198,7 +200,7 @@ export const Example = () => {
       representativeName: '代表者3',
       input1: 'Input 1',
       input2: 'Input 2',
-      select: '1',
+      select: undefined,
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
@@ -213,7 +215,7 @@ export const Example = () => {
       input1: 'Input 1',
       input2: 'Input 2',
       select: '1',
-      radio: '1',
+      radio: undefined,
       checkbox: true,
       datepicker: '2020/01/01',
       fromto: ['2020/01/02', '2020/01/03'],
@@ -228,7 +230,7 @@ export const Example = () => {
       input2: 'Input 2',
       select: '1',
       radio: '1',
-      checkbox: true,
+      checkbox: undefined,
       datepicker: '2020/01/01',
       fromto: ['2020/01/02', '2020/01/03'],
     },
@@ -259,13 +261,15 @@ export const Example = () => {
 
   return (
     <>
-      <Button onClick={handleOnClick}>log</Button>
-      <DataGrid
-        columns={columns}
-        rows={rows}
-        resolver={validationSchema}
-        getSelectValues={handleGetSelectValues}
-      />
+      <ThemeProvider theme={theme}>
+        <Button onClick={handleOnClick}>log</Button>
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          resolver={validationSchema}
+          getSelectValues={handleGetSelectValues}
+        />
+      </ThemeProvider>
     </>
   );
 };
@@ -315,12 +319,14 @@ export const HeaderRow = () => {
 
   return (
     <>
-      <DataGrid
-        columns={columns}
-        rows={rows}
-        showHeaderRow
-        headerRow={headerRow}
-      />
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          showHeaderRow
+          headerRow={headerRow}
+        />
+      </ThemeProvider>
     </>
   );
 };
@@ -434,15 +440,17 @@ export const UpdatableHeaderRow = () => {
 
   return (
     <>
-      <DataGrid
-        columns={columns}
-        rows={rows}
-        controlled={false}
-        showHeaderRow
-        headerRow={headerRow}
-        apiRef={apiRef}
-        headerApiRef={headerApiRef}
-      />
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          controlled={false}
+          showHeaderRow
+          headerRow={headerRow}
+          apiRef={apiRef}
+          headerApiRef={headerApiRef}
+        />
+      </ThemeProvider>
     </>
   );
 };
