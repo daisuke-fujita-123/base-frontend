@@ -50,14 +50,20 @@ export interface CalenderProps<T extends FieldValues> {
   getCellBackground?: (
     date: Date,
     field: string,
-    value: string | number
+    value?: string | number
   ) => string | undefined;
+  getCellDisabled?: (
+    date: Date,
+    field: string,
+    value?: string | number
+  ) => boolean;
 }
 
 const dayOfWeeks = ['日', '月', '火', '水', '木', '金', '土'];
 
 export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
-  const { name, yearmonth, itemDef, getCellBackground } = props;
+  const { name, yearmonth, itemDef, getCellBackground, getCellDisabled } =
+    props;
 
   // state
   const [errors, setErrors] = useState<any>({});
@@ -169,6 +175,11 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                           {...register(
                             `${name}.${data.date.getDate() - 1}.${def.field}`
                           )}
+                          disabled={
+                            data.date &&
+                            getCellDisabled &&
+                            getCellDisabled(data.date, def.field)
+                          }
                         />
                       )}
                       {data.date && def.type === 'select' && (
@@ -179,7 +190,16 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                           control={control}
                           render={({ field, fieldState }) => (
                             <>
-                              <Select {...field} size='small' fullWidth>
+                              <Select
+                                {...field}
+                                size='small'
+                                fullWidth
+                                disabled={
+                                  data.date &&
+                                  getCellDisabled &&
+                                  getCellDisabled(data.date, def.field)
+                                }
+                              >
                                 {def.selectValues?.map((x: any, i: number) => (
                                   <MenuItem key={i} value={x.value}>
                                     {x.displayValue}
@@ -208,7 +228,16 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                               control={control}
                               render={({ field, fieldState }) => (
                                 <>
-                                  <Select {...field} size='small' fullWidth>
+                                  <Select
+                                    {...field}
+                                    size='small'
+                                    fullWidth
+                                    disabled={
+                                      data.date &&
+                                      getCellDisabled &&
+                                      getCellDisabled(data.date, def.field)
+                                    }
+                                  >
                                     {x.selectValues?.map(
                                       (x: any, i: number) => (
                                         <MenuItem key={i} value={x.value}>
