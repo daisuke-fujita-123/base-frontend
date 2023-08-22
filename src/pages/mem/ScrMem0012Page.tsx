@@ -37,28 +37,32 @@ import { Typography } from 'controls/Typography';
 
 import {
   ScrCom9999GetAddressInfo,
-  ScrCom9999GetCodeManagementMasterMultiple,
+  ScrCom9999GetChangeDate,
+  ScrCom9999getCodeManagementMasterMultiple,
   ScrCom9999GetCodeValue,
-  ScrCom9999GetHistoryInfo,
   ScrCom9999GetStaff,
+} from 'apis/com/ScrCom9999Api';
+import {
   ScrMem0012GetDistrictStaffName,
   ScrMem0012GetLogisticsBaseBasicInfo,
   ScrMem0012GetLogisticsBaseBasicInfoResponse,
   ScrMem0012InputCheckLogisticsBaseInfo,
   ScrMem0012RegistrationLogisticsBase,
   ScrMem0012RegistrationLogisticsBaseRequest,
+  ScrMem9999GetHistoryInfo,
+  ScrMem9999GetHistoryInfoResponse,
+} from 'apis/mem/ScrMem0012Api';
+import {
   ScrMem9999GetCodeValue,
   ScrMem9999GetCorpBasicInfo,
   ScrMem9999GetCorpBasicInfoResponse,
-  ScrMem9999GetHistoryInfo,
-  ScrMem9999GetHistoryInfoResponse,
   ScrMem9999GetLogisticsBaseRepresentativeContract,
-} from 'apis/mem/ScrMem0012Api';
+} from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
@@ -676,24 +680,7 @@ const sectionDef = [
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
   errorList: [],
   warningList: [],
-  registrationChangeList: [
-    {
-      screenId: '',
-      screenName: '',
-      tabId: '',
-      tabName: '',
-      sectionList: [
-        {
-          sectionName: '',
-          columnList: [
-            {
-              columnName: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  registrationChangeList: [],
   changeExpectDate: '',
 };
 
@@ -971,6 +958,7 @@ const convertToSectionList = (dirtyFields: object): sectionList[] => {
 const convertFromRegistrationLogisticsBase = (
   basicInfoModel: BasicInfoModel,
   user: string,
+  businessDate: string,
   registrationChangeMemo: string
 ): ScrMem0012RegistrationLogisticsBaseRequest => {
   return {
@@ -1060,7 +1048,7 @@ const convertFromRegistrationLogisticsBase = (
     bikeListOutputKind: basicInfoModel.bikeListOutputKind,
     transferSalesAreaCode: basicInfoModel.transferSalesAreaCode,
     applicationEmployeeId: user,
-    businessDate: new Date(),
+    businessDate: new Date(businessDate),
     registrationChangeMemo: registrationChangeMemo,
     screenId: 'SCR-MEM-0012',
     changeExpectDate: new Date(basicInfoModel.changeExpectedDate),
@@ -1076,7 +1064,8 @@ const ScrMem0012Page = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
-  const { appContext } = useContext(AppContext);
+  const readOnly = searchParams.get('readOnly');
+  const { user } = useContext(AuthContext);
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -1092,7 +1081,13 @@ const ScrMem0012Page = () => {
     useState<boolean>(false);
 
   // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
+  const readOnlyFlag: boolean =
+    readOnly === null ? false : readOnly === 'true' ? true : false;
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0012') === -1
+      ? true
+      : readOnlyFlag
+  );
   // form
   const methods = useForm<BasicInfoModel>({
     defaultValues: initialValues,
@@ -1150,7 +1145,7 @@ const ScrMem0012Page = () => {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -1303,7 +1298,7 @@ const ScrMem0012Page = () => {
       // 従業員情報取得API（営業担当）
       const getSalesStaffRequest = {
         employeeId: '',
-        businessDate: new Date(),
+        businessDate: new Date(user.taskDate),
         salesStaffFlag: true,
         inspectorFlag: false,
       };
@@ -1320,7 +1315,7 @@ const ScrMem0012Page = () => {
       // 従業員情報取得API（検査員）
       const getInspectorStaffRequest = {
         employeeId: '',
-        businessDate: new Date(),
+        businessDate: new Date(user.taskDate),
         salesStaffFlag: false,
         inspectorFlag: true,
       };
@@ -1359,11 +1354,11 @@ const ScrMem0012Page = () => {
       // 変更予定日取得API
       const getHistoryInfoRequest = {
         screenId: 'SCR-MEM-0012',
-        tabId: 20,
+        tabId: 'B-20',
         masterId: corporationId,
-        businessDate: new Date(),
+        businessDate: user.taskDate,
       };
-      const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
+      const getHistoryInfoResponse = await ScrCom9999GetChangeDate(
         getHistoryInfoRequest
       );
       setChangeHistory(
@@ -1404,7 +1399,7 @@ const ScrMem0012Page = () => {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -1557,7 +1552,7 @@ const ScrMem0012Page = () => {
       // 従業員情報取得API（営業担当）
       const getSalesStaffRequest = {
         employeeId: '',
-        businessDate: new Date(),
+        businessDate: new Date(user.taskDate),
         salesStaffFlag: true,
         inspectorFlag: false,
       };
@@ -1574,7 +1569,7 @@ const ScrMem0012Page = () => {
       // 従業員情報取得API（検査員）
       const getInspectorStaffRequest = {
         employeeId: '',
-        businessDate: new Date(),
+        businessDate: new Date(user.taskDate),
         salesStaffFlag: false,
         inspectorFlag: true,
       };
@@ -1638,7 +1633,7 @@ const ScrMem0012Page = () => {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -1791,7 +1786,7 @@ const ScrMem0012Page = () => {
       // 従業員情報取得API（営業担当）
       const getSalesStaffRequest = {
         employeeId: '',
-        businessDate: new Date(),
+        businessDate: new Date(user.taskDate),
         salesStaffFlag: true,
         inspectorFlag: false,
       };
@@ -1808,7 +1803,7 @@ const ScrMem0012Page = () => {
       // 従業員情報取得API（検査員）
       const getInspectorStaffRequest = {
         employeeId: '',
-        businessDate: new Date(),
+        businessDate: new Date(user.taskDate),
         salesStaffFlag: false,
         inspectorFlag: true,
       };
@@ -2053,7 +2048,7 @@ const ScrMem0012Page = () => {
     ) {
       errorList.push({
         errorCode: 'MSG-FR-ERR-00058',
-        errorMessages: ['FAX、または、アドレスを入力してください'],
+        errorMessage: 'FAX、または、アドレスを入力してください',
       });
     }
 
@@ -2064,12 +2059,12 @@ const ScrMem0012Page = () => {
     ) {
       errorList.push({
         errorCode: 'MSG-FR-ERR-00055',
-        errorMessages: ['営業（四輪）は上から順に入力してください'],
+        errorMessage: '営業（四輪）は上から順に入力してください',
       });
     } else if (values.tvaaSalesId2 === '' && values.tvaaSalesId3 !== '') {
       errorList.push({
         errorCode: 'MSG-FR-ERR-00055',
-        errorMessages: ['営業（四輪）は上から順に入力してください'],
+        errorMessage: '営業（四輪）は上から順に入力してください',
       });
     }
 
@@ -2080,12 +2075,12 @@ const ScrMem0012Page = () => {
     ) {
       errorList.push({
         errorCode: 'MSG-FR-ERR-00056',
-        errorMessages: ['営業（二輪）は上から順に入力してください'],
+        errorMessage: '営業（二輪）は上から順に入力してください',
       });
     } else if (values.bikeSalesId2 === '' && values.bikeSalesId3 !== '') {
       errorList.push({
         errorCode: 'MSG-FR-ERR-00056',
-        errorMessages: ['営業（二輪）は上から順に入力してください'],
+        errorMessage: '営業（二輪）は上から順に入力してください',
       });
     }
 
@@ -2103,9 +2098,8 @@ const ScrMem0012Page = () => {
       ) {
         errorList.push({
           errorCode: 'MSG-FR-ERR-00057',
-          errorMessages: [
+          errorMessage:
             '二輪連携用情報がコピー元と一致しませんので物流拠点コピーを解除してください',
-          ],
         });
       }
     }
@@ -2137,7 +2131,7 @@ const ScrMem0012Page = () => {
         {
           screenId: 'SCR-MEM-0012',
           screenName: '物流拠点詳細',
-          tabId: 'B-20',
+          tabId: 20,
           tabName: '',
           sectionList: convertToSectionList(dirtyFields),
         },
@@ -2165,7 +2159,8 @@ const ScrMem0012Page = () => {
     const registrationLogisticsBaseRequest =
       convertFromRegistrationLogisticsBase(
         getValues(),
-        appContext.user.id,
+        user.employeeId,
+        user.taskDate,
         registrationChangeMemo
       );
     await ScrMem0012RegistrationLogisticsBase(registrationLogisticsBaseRequest);
@@ -2181,23 +2176,45 @@ const ScrMem0012Page = () => {
             <Section name='法人情報'>
               <RowStack>
                 <ColStack>
-                  <TextField label='法人ID' name='corporationId' readonly />
-                  <TextField label='住所' name='address' readonly size='l' />
-                  <TextField
-                    label='TEL'
-                    name='corporationPhoneNumber'
-                    readonly
-                  />
-                </ColStack>
-                <ColStack>
-                  <TextField label='法人名' name='corporationName' readonly />
-                  <MarginBox mt={17}>
-                    <TextField
-                      label='FAX'
-                      name='corporationFaxNumber'
-                      readonly
-                    />
-                  </MarginBox>
+                  <RowStack>
+                    <ColStack>
+                      <TextField label='法人ID' name='corporationId' readonly />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='法人名'
+                        name='corporationName'
+                        readonly
+                        size='m'
+                      />
+                    </ColStack>
+                  </RowStack>
+                  <RowStack>
+                    <ColStack>
+                      <TextField
+                        label='住所'
+                        name='address'
+                        readonly
+                        size='l'
+                      />
+                    </ColStack>
+                  </RowStack>
+                  <RowStack>
+                    <ColStack>
+                      <TextField
+                        label='TEL'
+                        name='corporationPhoneNumber'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='FAX'
+                        name='corporationFaxNumber'
+                        readonly
+                      />
+                    </ColStack>
+                  </RowStack>
                 </ColStack>
               </RowStack>
             </Section>
@@ -2246,6 +2263,7 @@ const ScrMem0012Page = () => {
                         { value: 0, displayValue: '表示無' },
                         { value: 1, displayValue: '表示有' },
                       ]}
+                      disabled={isReadOnly[0]}
                     ></Radio>
                     <TextField
                       name='logisticsBaseClientDisplayName'
@@ -2277,13 +2295,13 @@ const ScrMem0012Page = () => {
                     label='市区町村'
                     name='logisticsBaseMunicipalities'
                     required
-                    size='m'
+                    size='s'
                   />
                   <TextField
                     label='番地・号・建物名など'
                     name='logisticsBaseAddressBuildingName'
                     required
-                    size='m'
+                    size='s'
                   />
                   <TextField
                     label='TEL'
@@ -2294,7 +2312,7 @@ const ScrMem0012Page = () => {
                   <TextField
                     label='メールアドレス'
                     name='logisticsBaseMailAddress'
-                    size='m'
+                    size='s'
                   />
                 </ColStack>
                 <ColStack>
@@ -2478,7 +2496,7 @@ const ScrMem0012Page = () => {
                   <TextField
                     label='二輪車両引取先市区町村'
                     name='bikePickUpMunicipalities'
-                    size='m'
+                    size='l'
                     disabled={getValues(
                       'bikePickUpLogisticsBaseInformationSynchronizationFlag'
                     )}
@@ -2486,7 +2504,7 @@ const ScrMem0012Page = () => {
                   <TextField
                     label='二輪車両引取先番地・号・建物名など'
                     name='bikePickUpAddressBuildingName'
-                    size='m'
+                    size='l'
                     disabled={getValues(
                       'bikePickUpLogisticsBaseInformationSynchronizationFlag'
                     )}
@@ -2597,13 +2615,13 @@ const ScrMem0012Page = () => {
                   <TextField
                     label='クレーム担当（四輪）'
                     name='tvaaClaimStaff'
-                    size='m'
+                    size='l'
                     readonly
                   />
                   <TextField
                     label='クレーム担当（二輪）'
                     name='bikeClaimStaff'
-                    size='m'
+                    size='l'
                     readonly
                   />
                 </ColStack>
@@ -2640,18 +2658,8 @@ const ScrMem0012Page = () => {
           <FormProvider {...methods}>
             <Grid container height='100%'>
               <Grid item size='s'>
-                {changeHistory.length <= 0 ? (
-                  <RightElementStack>
-                    <></>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                ) : (
-                  <RightElementStack>
+                <RightElementStack>
+                  {changeHistory.length >= 0 ? (
                     <Stack>
                       <Typography bold>変更予約情報</Typography>
                       <WarningLabel text='変更予約あり' />
@@ -2664,14 +2672,17 @@ const ScrMem0012Page = () => {
                         表示切替
                       </PrimaryButton>
                     </Stack>
-                    <BottomBox>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </BottomBox>
-                  </RightElementStack>
-                )}
+                  ) : (
+                    ''
+                  )}
+                  <BottomBox>
+                    <DatePicker
+                      label='変更予定日'
+                      name='changeExpectedDate'
+                      disabled={isReadOnly[0]}
+                    />
+                  </BottomBox>
+                </RightElementStack>
               </Grid>
             </Grid>
           </FormProvider>
@@ -2680,29 +2691,42 @@ const ScrMem0012Page = () => {
         {/* bottom */}
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
-            <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={onClickConfirm}>確定</ConfirmButton>
+            <CancelButton onClick={handleCancel} disable={readOnly !== null}>
+              キャンセル
+            </CancelButton>
+            <ConfirmButton onClick={onClickConfirm} disable={isReadOnly[0]}>
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      <ScrCom00032Popup
-        isOpen={scrCom00032PopupIsOpen}
-        data={scrCom0032PopupData}
-        handleCancel={scrCom00032PopupHandleCancel}
-        handleConfirm={scrCom00032PopupHandleConfirm}
-      />
+      {scrCom00032PopupIsOpen ? (
+        <ScrCom00032Popup
+          isOpen={scrCom00032PopupIsOpen}
+          data={scrCom0032PopupData}
+          handleCancel={scrCom00032PopupHandleCancel}
+          handleRegistConfirm={scrCom00032PopupHandleConfirm}
+          handleApprovalConfirm={scrCom00032PopupHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 反映予定日整合性チェック */}
-      <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
-        isChangeHistoryBtn={isChangeHistoryBtn}
-        changeHistory={changeHistory}
-        isOpen={changeHistoryDateCheckIsOpen}
-        handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
-      />
+      {changeHistoryDateCheckIsOpen ? (
+        <ChangeHistoryDateCheckUtil
+          changeExpectedDate={getValues('changeExpectedDate')}
+          changeHistoryNumber={getValues('changeHistoryNumber')}
+          isChangeHistoryBtn={isChangeHistoryBtn}
+          changeHistory={changeHistory}
+          isOpen={changeHistoryDateCheckIsOpen}
+          handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };
