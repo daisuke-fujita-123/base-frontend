@@ -51,7 +51,10 @@ import {
   ScrMem9999GetHistoryBillingInfoInfoResponse,
   ScrMem9999GetHistoryInfo,
 } from 'apis/mem/ScrMem0008Api';
-import { ScrMem9999GetBusinessInfo } from 'apis/mem/ScrMem9999Api';
+import {
+  ScrMem9999GetBusinessInfo,
+  ScrMem9999GetCorpBasicInfo,
+} from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
@@ -798,11 +801,70 @@ const ScrMem0008BasicTab = (props: {
       });
     };
 
+    const newInitialize = async (corporationId: string) => {
+      // 法人基本情報取得
+      const getCorpBasicInfoRequest = {
+        corporationId: corporationId,
+      };
+      const getCorpBasicInfoResponse = await ScrMem9999GetCorpBasicInfo(
+        getCorpBasicInfoRequest
+      );
+      const billingInfo = initialValues;
+      billingInfo.corporationId = getCorpBasicInfoResponse.corporationId;
+      billingInfo.corporationName = getCorpBasicInfoResponse.corporationName;
+      reset(billingInfo);
+
+      const selectValues = selectValuesInitialValues;
+      // 共通管理コード値取得API（コード管理マスタ以外）
+      const getCodeValueRequest = {
+        entityList: [{ entityName: 'prefecture_master' }],
+      };
+      const getCodeValueResponse = await ScrCom9999GetCodeValue(
+        getCodeValueRequest
+      );
+      getCodeValueResponse.resultList.map((x) => {
+        if (x.entityName === 'prefecture_master') {
+          x.codeValueList.map((f) => {
+            selectValues.prefectureCodeSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeValueName,
+            });
+          });
+        }
+      });
+
+      // 事業拠点一覧取得機能API
+      const getBusinessInfoRequest = {
+        corporationId: corporationId,
+        businessBaseId: '',
+      };
+      const getBusinessInfoResponse = await ScrMem9999GetBusinessInfo(
+        getBusinessInfoRequest
+      );
+      getBusinessInfoResponse.businessInfo.map((x) => {
+        selectValues.originBusinessSelectValues.push({
+          value: x.businessBaseId,
+          displayValue: x.businessBaseName,
+        });
+      });
+
+      setSelectValues({
+        originBusinessSelectValues: selectValues.originBusinessSelectValues,
+        prefectureCodeSelectValues: selectValues.prefectureCodeSelectValues,
+      });
+
+      props.chengeTabDisableds({
+        ScrMem0008BasicTab: false,
+        ScrMem0008BankTab: true,
+      });
+    };
+
     if (corporationId === undefined || corporationId === 'new') {
       return;
     }
 
     if (billingId === undefined || billingId === 'new') {
+      newInitialize(corporationId);
       return;
     }
 
