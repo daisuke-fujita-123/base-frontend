@@ -1,6 +1,8 @@
 import { ComponentStoryObj } from '@storybook/react';
 import React from 'react';
 
+import { RowStack } from 'layouts/Stack';
+
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
@@ -10,9 +12,15 @@ import {
   AddIconButton,
   Button,
   CancelButton,
+  ConfirmButton,
   DeleteButton,
+  InfoButton,
   LogoutButton,
+  MailButton,
+  OutputButton,
   PrimaryButton,
+  PrintButton,
+  RegisterButton,
   SearchButton,
 } from './Button';
 
@@ -56,33 +64,86 @@ export const Example = () => {
   };
   return (
     <ThemeProvider theme={theme}>
-      <Button
-        disable={false}
-        type='button'
-        variant='outlined'
-        onClick={onClickFunction}
-      >
-        確定
-      </Button>
-      <AddButton disable={false} onClick={onClickFunction}>
-        契約情報追加
-      </AddButton>
-      <SearchButton disable={false} onClick={onClickFunction}>
-        検索
-      </SearchButton>
-      <DeleteButton disable={false} onClick={onClickFunction}>
-        削除
-      </DeleteButton>
-      <CancelButton disable={false} onClick={onClickFunction}>
-        キャンセル
-      </CancelButton>
-      <LogoutButton disable={false} onClick={onClickFunction}>
-        ログアウト
-      </LogoutButton>
-      <AddIconButton></AddIconButton>
-      <PrimaryButton onClick={onClickFunction} size='small'>
-        small
-      </PrimaryButton>
+      SAMPLE
+      <RowStack>
+        <AddButton disable={false} onClick={onClickFunction}>
+          契約情報追加
+        </AddButton>
+        <OutputButton disable={false} onClick={onClickFunction}>
+          CSV出力
+        </OutputButton>
+        <PrintButton disable={false} onClick={onClickFunction}>
+          印刷
+        </PrintButton>
+        <MailButton disable={false} onClick={onClickFunction}>
+          メール
+        </MailButton>
+        <RegisterButton disable={false} onClick={onClickFunction}>
+          一括登録
+        </RegisterButton>
+        <SearchButton disable={false} onClick={onClickFunction}>
+          検索
+        </SearchButton>
+        <DeleteButton disable={false} onClick={onClickFunction}>
+          削除
+        </DeleteButton>
+        <DeleteButton disable={false} onClick={onClickFunction} size='large'>
+          削除（大）
+        </DeleteButton>
+        <CancelButton disable={false} onClick={onClickFunction}>
+          キャンセル
+        </CancelButton>
+        <ConfirmButton onClick={onClickFunction}>確定</ConfirmButton>
+        <LogoutButton disable={false} onClick={onClickFunction}>
+          ログアウト
+        </LogoutButton>
+        <PrimaryButton onClick={onClickFunction} size='small'>
+          small
+        </PrimaryButton>
+        <AddIconButton></AddIconButton>
+        <InfoButton></InfoButton>
+      </RowStack>
+      DISABLE
+      <RowStack>
+        <AddButton disable={true} onClick={onClickFunction}>
+          契約情報追加
+        </AddButton>
+        <OutputButton disable={true} onClick={onClickFunction}>
+          CSV出力
+        </OutputButton>
+        <PrintButton disable={true} onClick={onClickFunction}>
+          印刷
+        </PrintButton>
+        <MailButton disable={true} onClick={onClickFunction}>
+          メール
+        </MailButton>
+        <RegisterButton disable={true} onClick={onClickFunction}>
+          一括登録
+        </RegisterButton>
+        <SearchButton disable={true} onClick={onClickFunction}>
+          検索
+        </SearchButton>
+        <DeleteButton disable={true} onClick={onClickFunction}>
+          削除
+        </DeleteButton>
+        <DeleteButton disable={true} onClick={onClickFunction} size='large'>
+          削除（大）
+        </DeleteButton>
+        <CancelButton disable={true} onClick={onClickFunction}>
+          キャンセル
+        </CancelButton>
+        <ConfirmButton disable={true} onClick={onClickFunction}>
+          確定
+        </ConfirmButton>
+        <LogoutButton disable={true} onClick={onClickFunction}>
+          ログアウト
+        </LogoutButton>
+        <PrimaryButton onClick={onClickFunction} disable={true} size='small'>
+          small
+        </PrimaryButton>
+        <AddIconButton disable={true}></AddIconButton>
+        <InfoButton disable={true}></InfoButton>
+      </RowStack>
     </ThemeProvider>
   );
 };

@@ -1,7 +1,7 @@
 import React, { FormEventHandler, ReactNode } from 'react';
 
 import { theme } from 'controls/theme';
-import { ErrorSubTitle, WarningSubTitle } from 'controls/Typography';
+import { ErrorSubTitle, SubTitle, WarningSubTitle } from 'controls/Typography';
 
 import { styled } from '@mui/material';
 import { default as BoxMui } from '@mui/material/Box';
@@ -64,6 +64,7 @@ interface StyledBoxProps {
   children: ReactNode;
   transparent?: boolean;
   disable?: boolean;
+  onClick?: () => void;
 }
 
 export const ContentsBox = (props: StyledBoxProps) => {
@@ -81,15 +82,16 @@ const StyledWarningBoxOutside = styled(BoxMui)({
   background: theme.palette.warning.light,
   padding: theme.spacing(4),
   color: theme.palette.warning.main,
-  margin: `${theme.spacing(4)} ${theme.spacing(4)}  0px`,
+  marginBottom: theme.spacing(4),
 });
 
 export const WarningBox = (props: StyledBoxProps) => {
-  const { children, title } = props;
+  const { children, title, onClick } = props;
   return (
     <>
       <StyledWarningBoxOutside>
-        <WarningSubTitle>{title}</WarningSubTitle>
+        <WarningSubTitle onClick={onClick}>{title}</WarningSubTitle>
+        <div style={{ marginBottom: 20 }}></div>
         {children}
       </StyledWarningBoxOutside>
     </>
@@ -100,17 +102,37 @@ const StyledErrorBoxOutside = styled(BoxMui)({
   background: theme.palette.error.light,
   padding: theme.spacing(4),
   color: theme.palette.error.main,
-  margin: `${theme.spacing(4)} ${theme.spacing(4)}  0px`,
+  marginBottom: theme.spacing(4),
 });
 
 export const ErrorBox = (props: StyledBoxProps) => {
-  const { children, title } = props;
+  const { children, title, onClick } = props;
   return (
     <>
       <StyledErrorBoxOutside>
-        <ErrorSubTitle>{title}</ErrorSubTitle>
+        <ErrorSubTitle onClick={onClick}>{title}</ErrorSubTitle>
+        <div style={{ marginBottom: 20 }}></div>
         {children}
       </StyledErrorBoxOutside>
+    </>
+  );
+};
+
+const StyledContentsOutside = styled(BoxMui)({
+  background: `1px solid  transparent`,
+  padding: theme.spacing(4),
+  marginBottom: theme.spacing(4),
+});
+
+export const ContentsOutsideBox = (props: StyledBoxProps) => {
+  const { children, title } = props;
+  return (
+    <>
+      <StyledContentsOutside>
+        <SubTitle>{title}</SubTitle>
+        <div style={{ marginBottom: 20 }}></div>
+        {children}
+      </StyledContentsOutside>
     </>
   );
 };

@@ -1,7 +1,9 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
-import { FromTo } from './FromTo';
 import React from 'react';
+
 import { TextField } from '@mui/material';
+import { FromTo } from './FromTo';
+
 export default {
   component: FromTo,
   parameters: { controls: { expanded: true } },
@@ -22,15 +24,30 @@ export default {
     },
   },
 } as ComponentMeta<typeof FromTo>;
-const ChildrenSample = [<TextField key={1}></TextField>, <TextField key={2}></TextField>];
+const ChildrenSample = [
+  <TextField key={1}></TextField>,
+  <TextField key={2}></TextField>,
+];
 export const Index: ComponentStoryObj<typeof FromTo> = {
-  args: { children: ChildrenSample, label: 'ラベルサンプル', labelPosition: 'column', variant: 'h3' },
+  args: {
+    children: ChildrenSample,
+    label: 'ラベルサンプル',
+    labelPosition: 'column',
+    variant: 'h3',
+  },
 };
 export const Example = () => {
   return (
-    <FromTo label='サンプルラベル' labelPosition='row' variant='h3'>
-      <TextField></TextField>
-      <TextField></TextField>
-    </FromTo>
+    <>
+      <FromTo label='サンプルラベル' labelPosition='row' variant='h3'>
+        <TextField></TextField>
+        <TextField></TextField>
+      </FromTo>
+      <FromTo label='サンプルラベル2' variant='h3' required>
+        <TextField></TextField>
+        <TextField></TextField>
+      </FromTo>
+    </>
   );
 };
+

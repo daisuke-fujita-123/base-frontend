@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
+import { Button } from 'controls/Button';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
@@ -42,12 +43,14 @@ export default {
 };
 
 // react-hook-formを使う場合は、template内で呼び出してから使う。
-interface SampleInput {
-  name: Date;
+interface DataPickerExampleModel {
+  date1: string;
+  date2: string;
 }
 
 const schema = yup.object({
-  name: yup.string().required('入力してください'),
+  date1: yup.string().date().max(10).label('data1'),
+  date2: yup.string().date().max(10).label('data2'),
 });
 
 // TDOO クラッシュ原因の特定
@@ -74,22 +77,36 @@ const schema = yup.object({
 // };
 
 export const Example = () => {
-  const isReadOnly = useState<boolean>(false);
-  const methods = useForm<SampleInput>({
+  const methods = useForm<DataPickerExampleModel>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
+    defaultValues: {
+      date1: '2020/01/01',
+      date2: '2021/02/03',
+    },
     resolver: yupResolver(schema),
-    context: isReadOnly,
+    context: true,
   });
+
+  const handleOnClick = () => {
+    console.log(methods.getValues());
+    console.log(methods.formState.errors);
+  };
+
+  useEffect(() => {
+    console.log(methods.formState.errors);
+  }, [methods.formState]);
+
   return (
     <FormProvider {...methods}>
+      <Button onClick={handleOnClick}>log</Button>
       <ThemeProvider theme={theme}>
+        <DatePicker label='DatePicker' name='date1' />
         <DatePicker
-          label='サンプル日程'
-          required={true}
-          name='name'
-          disabled={false}
-          wareki={true}
+          label='DatePicker（和暦付き）'
+          name='date2'
+          withWareki
+          size='m'
         />
       </ThemeProvider>
     </FormProvider>
