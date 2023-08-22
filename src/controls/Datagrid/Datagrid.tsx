@@ -8,6 +8,7 @@ import {
   GridCheckboxCell,
   GridCustomizableRadiioCell,
   GridDatepickerCell,
+  GridFromtoCell,
   GridInputCell,
   GridRadioCell,
   GridSelectCell,
@@ -28,16 +29,18 @@ import { theme } from 'controls/theme';
 import SortAsc from 'icons/content_sort_ascend.png';
 import SortDesc from 'icons/content_sort_descend.png';
 
-import { Box, styled, Tooltip } from '@mui/material';
+import { Box, Stack, styled, Tooltip } from '@mui/material';
 import {
   DataGridPro as MuiDataGridPro,
   DataGridProProps,
   GridColDef as MuiGridColDef,
+  GridColumnHeaderParams,
   GridRenderCellParams,
   GridRowsProp,
   GridValidRowModel,
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
+import Encoding from 'encoding-japanese';
 import saveAs from 'file-saver';
 import Papa from 'papaparse';
 
@@ -92,6 +95,10 @@ export type GridColDef = MuiGridColDef & {
    */
   size?: 'ss' | 's' | 'm' | 'l';
   /**
+   * required
+   */
+  required?: boolean;
+  /**
    * cellType
    */
   cellType?:
@@ -101,6 +108,7 @@ export type GridColDef = MuiGridColDef & {
     | 'radio'
     | 'checkbox'
     | 'datepicker'
+    | 'fromto'
     | 'link'
     | 'button'
     | any[];
@@ -198,10 +206,18 @@ export interface DataGridProps extends DataGridProProps {
    * @returns
    */
   onLinkClick?: (url: string) => void; // add, cellType = 'link'
-
+  /**
+   * onCellHelperButtonClick
+   */
   onCellHelperButtonClick?: (firld: string, row: number) => void; // add, cellOptionalButton
-
+  /**
+   * getCellDisabled
+   */
   getCellDisabled?: (params: any) => boolean;
+  /**
+   * getSelectValues
+   */
+  getSelectValues?: (params: any) => any[];
 }
 
 /**
@@ -259,6 +275,7 @@ export const DataGrid = (props: DataGridProps) => {
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
     getCellDisabled,
+    getSelectValues,
     apiRef,
   } = props;
 
@@ -281,7 +298,6 @@ export const DataGrid = (props: DataGridProps) => {
           appendErrorToInvalids(invalids, err.inner, row.id);
         }
       }
-      console.log(invalids);
       setInvalids([...invalids]);
     }
 
@@ -298,11 +314,14 @@ export const DataGrid = (props: DataGridProps) => {
     onCellHelperButtonClick && onCellHelperButtonClick(params.field, params.id);
   };
 
+  // heander
   const handleProcessRowUpdate = (newRow: any, oldRow: any) => {
     return newRow;
   };
 
   const generateInputCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
@@ -311,6 +330,7 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
+          width={params.colDef.width - 10}
           helperText={params.colDef.cellHelperText}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
@@ -323,6 +343,11 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateSelectCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
+    const selectValues = getSelectValues
+      ? getSelectValues(params)
+      : params.colDef.selectValues;
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
@@ -331,8 +356,9 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
-          selectValues={params.colDef.selectValues}
+          selectValues={selectValues}
           controlled={controlled}
+          width={params.colDef.width - 10}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
         />
@@ -344,6 +370,8 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateRadioCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
@@ -354,6 +382,7 @@ export const DataGrid = (props: DataGridProps) => {
           field={params.field}
           radioValues={params.colDef.radioValues}
           controlled={controlled}
+          width={params.colDef.width - 10}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
         />
@@ -365,6 +394,8 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateCustomizableRadioCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
@@ -385,6 +416,8 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateCheckboxCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
@@ -402,6 +435,8 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateDatepickerCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
@@ -420,39 +455,79 @@ export const DataGrid = (props: DataGridProps) => {
     );
   };
 
-  const generateMultiInputCell = (params: any) => {
-    const cellTypes = params.colDef.cellType;
+  const generateFromtoCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
     return (
       <>
-        {cellTypes.map((x: any, i: number) => {
-          if (x.type === 'input') {
-            return (
-              <GridInputCell
-                key={i}
-                id={params.id}
-                value={params.value[i]}
-                field={[params.field, i]}
-                helperText={x.helperText}
-                onRowValueChange={handleRowValueChange}
-              />
-            );
-          }
-          if (x.type === 'select') {
-            return (
-              <GridSelectCell
-                key={i}
-                id={params.id}
-                value={params.value[i]}
-                field={[params.field, i]}
-                selectValues={x.selectValues}
-                controlled={controlled}
-                onRowValueChange={handleRowValueChange}
-              />
-            );
-          }
-          return <>invalid cellType</>;
-        })}
+        <GridFromtoCell
+          id={params.id}
+          value={params.value}
+          field={params.field}
+          width={params.colDef.width - 10}
+          disabled={disabled || cellDisabled}
+          onRowValueChange={handleRowValueChange}
+        />
+        {params.colDef.cellOptionalButton === 'info' && (
+          <InfoButton onClick={handleClick} />
+        )}
+      </>
+    );
+  };
+
+  const generateMultiInputCell = (params: any) => {
+    if (params.value === undefined) return <></>;
+
+    const cellTypes = params.colDef.cellType;
+    const stackWidth = params.colDef.width - 10;
+    const elementWidth =
+      (stackWidth - 20 * (cellTypes.length - 1)) / cellTypes.length;
+
+    return (
+      <>
+        <Stack
+          style={{ width: stackWidth, height: 16 }}
+          direction='row'
+          justifyContent='space-evenly'
+          // divider={<Divider orientation='vertical' flexItem />}
+        >
+          {cellTypes.map((x: any, i: number) => {
+            if (x.type === 'input') {
+              return (
+                <GridInputCell
+                  key={i}
+                  id={params.id}
+                  value={params.value[i]}
+                  field={[params.field, i]}
+                  width={
+                    x.helperText === undefined
+                      ? elementWidth
+                      : elementWidth - 40
+                  }
+                  helperText={x.helperText}
+                  onRowValueChange={handleRowValueChange}
+                />
+              );
+            }
+            if (x.type === 'select') {
+              return (
+                <GridSelectCell
+                  key={i}
+                  id={params.id}
+                  value={params.value[i]}
+                  field={[params.field, i]}
+                  selectValues={x.selectValues}
+                  controlled={controlled}
+                  width={elementWidth}
+                  onRowValueChange={handleRowValueChange}
+                />
+              );
+            }
+            return <>invalid cellType</>;
+          })}
+        </Stack>
       </>
     );
   };
@@ -509,6 +584,9 @@ export const DataGrid = (props: DataGridProps) => {
     if (value.cellType === 'datepicker') {
       renderCell = generateDatepickerCell;
     }
+    if (value.cellType === 'fromto') {
+      renderCell = generateFromtoCell;
+    }
     if (value.cellType === 'link') {
       renderCell = generateLinkCell;
     }
@@ -519,10 +597,21 @@ export const DataGrid = (props: DataGridProps) => {
       renderCell = generateMultiInputCell;
     }
 
+    let renderHeader = value.renderHeader;
+    if (value.required) {
+      renderHeader = (params: GridColumnHeaderParams) => (
+        <strong>
+          {params.colDef.headerName}
+          <span style={{ color: '#ff0000' }}> *</span>
+        </strong>
+      );
+    }
+
     return {
       ...value,
       width: width,
       renderCell: renderCell,
+      renderHeader: renderHeader,
     };
   });
 
@@ -571,7 +660,7 @@ export const DataGrid = (props: DataGridProps) => {
             },
           }}
           /** size */
-          columnHeaderHeight={28}
+          columnHeaderHeight={35}
           rowHeight={30}
           autoHeight={height === undefined}
           /** sorting */
@@ -610,26 +699,46 @@ export const DataGrid = (props: DataGridProps) => {
   );
 };
 
-export const exportCsv = (data: any[], filename: string) => {
+export const exportCsv = (
+  filename: string,
+  apiRef: React.MutableRefObject<GridApiPro>
+) => {
+  const colDef = apiRef.current.getAllColumns();
+  const rowIds = apiRef.current.getAllRowIds();
+
   // DataGridのid列の除外、囲み文字の追加
-  const transformed = data.map((line) => {
-    delete line.id;
-    Object.keys(line).forEach((key) => {
-      const value = line[key];
-      line[key] = `"${value}"`;
+  const data = rowIds.map((x) => {
+    const row = apiRef.current.getRow(x);
+    delete row.id;
+    Object.keys(row).forEach((key) => {
+      const value = row[key];
+      row[key] = `"${value}"`;
     });
-    return line;
+    return row;
   });
 
-  const csv = Papa.unparse(transformed, {
+  // CSVの文字列を生成
+  const header =
+    colDef
+      .map((x) => {
+        return `"${x.headerName}"`;
+      })
+      .join(',') + '\r\n';
+  const rows = Papa.unparse(data, {
     delimiter: ',',
     newline: '\r\n',
     quoteChar: '',
     escapeChar: '',
-    header: true,
+    header: false,
   });
 
-  const blob = new Blob([csv]);
+  // 文字コードをUnicodeからShift-JISに変換
+  const unicode = Encoding.stringToCode(header + rows);
+  const sjis = Encoding.convert(unicode, { from: 'UNICODE', to: 'SJIS' });
+
+  // ダウンロード処理
+  const u8a = new Uint8Array(sjis);
+  const blob = new Blob([u8a]);
   saveAs(blob, filename);
 };
 
