@@ -1214,23 +1214,31 @@ const ScrMem0010BasicTab = () => {
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={scrCom00032PopupIsOpen}
-        data={scrCom0032PopupData}
-        handleRegistConfirm={handlePopupConfirm}
-        handleApprovalConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
+      {scrCom00032PopupIsOpen ? (
+        <ScrCom0032Popup
+          isOpen={scrCom00032PopupIsOpen}
+          data={scrCom0032PopupData}
+          handleRegistConfirm={handlePopupConfirm}
+          handleApprovalConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 反映予定日整合性チェック */}
-      <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
-        isChangeHistoryBtn={isChangeHistoryBtn}
-        changeHistory={changeHistory}
-        isOpen={changeHistoryDateCheckIsOpen}
-        handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
-      />
+      {changeHistoryDateCheckIsOpen ? (
+        <ChangeHistoryDateCheckUtil
+          changeExpectedDate={getValues('changeExpectedDate')}
+          changeHistoryNumber={getValues('changeHistoryNumber')}
+          isChangeHistoryBtn={isChangeHistoryBtn}
+          changeHistory={changeHistory}
+          isOpen={changeHistoryDateCheckIsOpen}
+          handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };
