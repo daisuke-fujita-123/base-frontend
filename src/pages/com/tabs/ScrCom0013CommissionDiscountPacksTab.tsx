@@ -6,7 +6,7 @@ import yup from 'utils/yup';
 import { MarginBox, RightBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { RowStack, Stack } from 'layouts/Stack';
+import { Stack } from 'layouts/Stack';
 
 import { AddButton, ConfirmButton } from 'controls/Button';
 import {
@@ -16,9 +16,11 @@ import {
   GridHrefsModel,
 } from 'controls/Datagrid';
 import { SelectValue } from 'controls/Select';
+import { Typography } from 'controls/Typography';
 
 import {
   deleteTargetedList,
+  registrationRequest,
   registTargetedList,
   ScrCom0013chkDiscount,
   ScrCom0013chkDiscountRequest,
@@ -47,6 +49,7 @@ import {
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
+import { comApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
@@ -261,7 +264,7 @@ interface searchOptionResultRowModel {
 }
 
 /**
- * 会費セクション-手数料値引値増 検索結果行データモデル
+ * 手数料セクション-手数料値引値増 検索結果行データモデル
  */
 interface searchCommissionResultRowModel {
   // internalId
@@ -547,6 +550,7 @@ const convertToTraCodeValueSelectValueModel = (
  */
 const ScrCom0013CommissionDiscountPacksTab = (props: {
   changeHisoryNumber: string;
+  setGoodsBaseValue: (goodsBase: registrationRequest) => void;
 }) => {
   /**
    * state
@@ -688,7 +692,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'radio',
       radioValues: [{ value: 'firstExclusionFlgRadioValue' }],
-      // TODO: セット対象コースが選択されている場合、活性。選択されていない場合、非活性とし内容をクリアする(フォーカスアウト)
+      // TODO: セット対象コースが選択されている場合、活性。選択されてない状態でフォーカスアウトした場合、非活性とし内容をクリア
     },
     {
       field: 'contractQuantityHighLimit',
@@ -822,7 +826,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'radio',
       radioValues: [{ value: 'firstExclusionFlgRadioValue' }],
-      // TODO: セット対象コースが選択されている場合、活性。選択されてない状態でフォーカスアウトした場合、非活性とし内容をクリア
+      // TODO: サービス名が選択されている場合、活性。選択されてない状態でフォーカスアウトした場合、非活性とし内容をクリア
     },
     {
       field: 'contractQuantityHighLimit',
@@ -949,7 +953,9 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   /**
    * 初期表示
    */
+
   useEffect(() => {
+    // 現在情報の表示
     const initialize = async () => {
       // API-COM-9999-0010: コード管理マスタリストボックス情報取得API
       const getCodeManagementMasterListboxRequest: ScrCom9999GetCodeManagementMasterRequest =
@@ -1044,8 +1050,114 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       setHrefs(hrefs);
     };
 
+    // 履歴表示
+    const historyInitialize = async (changeHisoryNumber: string) => {
+      /** API-COM-9999-0025: 変更履歴情報取得API */
+      const request = {
+        changeHistoryNumber: changeHisoryNumber,
+      };
+      const response = (
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-history-info',
+          request
+        )
+      ).data;
+      const commissionBasic = convertToHistoryBasicInfoModel(response);
+      const commissionOption = convertToHistoryOptionInfoModel(response);
+      const commission = convertToHistoryCommissionInfoModel(response);
+      // 画面にデータを設定
+      reset(commissionBasic);
+      reset(commissionOption);
+      reset(commission);
+      props.setGoodsBaseValue(response);
+    };
+
+    // 変更履歴番号を受け取っていたら履歴表示
+    if (props.changeHisoryNumber !== null) {
+      historyInitialize(props.changeHisoryNumber);
+      return;
+    }
+
     initialize();
   }, []);
+
+  /**
+   * 変更履歴情報取得APIから基本値引値増データモデルへの変換
+   */
+  const convertToHistoryBasicInfoModel = (
+    response: registrationRequest
+  ): searchBasicResultRowModel => {
+    return {
+      id: response.basicCampaignCd,
+      campaignCd: response.basicCampaignCd,
+      campaignName: response.basicCampaignName,
+      membershipFeeType: response.basicMembershipFeeType,
+      discountDivision: response.basicDiscountDivision,
+      discountAmount: response.basicDiscountAmount,
+      courseId: response.basicCourseId,
+      firstExclusionFlg: response.basicFirstExclusionFlg,
+      contractQuantityLowLimit: response.basicContractQuantityLowLimit,
+      contractQuantityHighLimit: response.basicContractQuantityHighLimit,
+      LimitStartDate: response.basicLimitStartDate,
+      dummy: '～',
+      LimitEndDate: response.basicLimitEndDate,
+      approvalDocumentId: response.basicApprovalDocumentId,
+      utilizationFlg: response.basicUtilizationFlg,
+      commodityCrameCd: response.basicCommodityCrameCd,
+      fromToRadio: '',
+      ContractAfterMonth: response.basicContractAfterMonth,
+      numberOfMonthsFromContractDateRadio:
+        response.basicNumberOfMonthsFromContractDateRadio,
+    };
+  };
+
+  /**
+   * 変更履歴情報取得APIからオプション値引値増データモデルへの変換
+   */
+  const convertToHistoryOptionInfoModel = (
+    response: registrationRequest
+  ): searchOptionResultRowModel => {
+    return {
+      id: response.optionCampaignCd,
+      campaignCd: response.optionCampaignCd,
+      campaignName: response.optionCampaignName,
+      membershipFeeType: response.optionMembershipFeeType,
+      discountDivision: response.optionDiscountDivision,
+      discountAmount: response.optionDiscountAmount,
+      serviceId: response.optionServiceId,
+      firstExclusionFlg: response.optionFirstExclusionFlg,
+      contractQuantityLowLimit: response.optionContractQuantityLowLimit,
+      contractQuantityHighLimit: response.optionContractQuantityHighLimit,
+      LimitStartDate: response.optionLimitStartDate,
+      dummy: '～',
+      LimitEndDate: response.optionLimitEndDate,
+      approvalDocumentId: response.optionApprovalDocumentId,
+      utilizationFlg: response.optionUtilizationFlg,
+      commodityCrameCd: response.optionCommodityCrameCd,
+      fromToRadio: '',
+      ContractAfterMonth: response.optionContractAfterMonth,
+      numberOfMonthsFromContractDateRadio: '',
+    };
+  };
+
+  /**
+   * 変更履歴情報取得APIから手数料データモデルへの変換
+   */
+  const convertToHistoryCommissionInfoModel = (
+    response: registrationRequest
+  ): searchCommissionResultRowModel => {
+    return {
+      id: response.commissionDiscountPackId,
+      commissionDiscountPackId: response.commissionDiscountPackId,
+      packName: response.packName,
+      memberServiceType: response.memberServiceType,
+      calcurationDocType: response.calcurationDocType,
+      validityStartDate: response.validityStartDate,
+      validityEndDate: response.validityEndDate,
+      utilizationFlg: response.commissionDiscountPacksCommissionUtilizationFlg,
+      changeReserve: response.commissionDiscountPacksCommissionChangeReserve,
+    };
+  };
 
   /**
    * リンククリック時のイベントハンドラ
@@ -1467,9 +1579,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
 
   /**
    * 登録内容申請ポップアップの確定ボタンクリック→ダイアログOK時のイベントハンドラ
-   * 登録内容申請ポップアップのキャンセルボタンクリック→ダイアログOK時のイベントハンドラ
    */
-  const handleConfirmOrCancel = (
+  const handleApplicationPopupConfirm = (
     // 従業員ID1
     employeeId1: string,
     // 従業員名1
@@ -1525,6 +1636,10 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     ScrCom0013MergeDiscount(mergeDiscountRequest);
   };
 
+  const handleApplicationPopupCancel = () => {
+    setIsOpenApplicationPopup(false);
+  };
+
   return (
     <>
       <MainLayout>
@@ -1547,100 +1662,109 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               </MarginBox>
             }
           >
-            <RowStack>
-              {/* <InputLayout
-                label='基本値引値増'
-                size='xl'
-                // required
-              ></InputLayout> */}
-            </RowStack>
+            <Typography variant='h6'>基本値引値増</Typography>
             <DataGrid
               pagination={true}
               columns={searchBasicResultColumns}
               rows={addedBasicSearchResult}
               // DataGridのヘッダーを2列定義する設定
               columnGroupingModel={basicColumnGroups}
-              // 編集権限なしの場合にcampaignCd以外の入力部分全てのカラムを非活性にする
-              // TODO: 履歴表示の場合にも同様の分岐を行う
+              // 編集権限なし/履歴表示の場合にcampaignCd以外の入力部分全てのカラムを非活性にする
               getCellDisabled={(params) => {
                 if (
                   params.field === 'campaignName' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'membershipFeeType' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountDivision' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountAmount' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'courseId' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'firstExclusionFlg' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityHighLimit' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityLowLimit' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'fromToRadio' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitStartDate' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitEndDate' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'numberOfMonthsFromContractDateRadio' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'ContractAfterMonth' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'approvalDocumentsId' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'utilizationFlg' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'commodityCrameCd' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 return false;
@@ -1661,100 +1785,109 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
                 </AddButton>
               </MarginBox>
             </RightBox>
-            <RowStack>
-              {/* <InputLayout
-                label='オプション値引値増'
-                size='xl'
-                // required
-              ></InputLayout> */}
-            </RowStack>
+            <Typography variant='h6'>オプション値引値増</Typography>
             <DataGrid
               pagination={true}
               columns={searchOptionResultColumns}
               rows={addedOptionSearchResult}
               // DataGridのヘッダーを2列定義する設定
               columnGroupingModel={optionColumnGroups}
-              // 編集権限なしの場合にcampaignCd以外の入力部分全てのカラムを非活性にする
-              // TODO: 履歴表示の場合にも同様の分岐を行う
+              // 編集権限なし/履歴表示の場合にcampaignCd以外の入力部分全てのカラムを非活性にする
               getCellDisabled={(params) => {
                 if (
                   params.field === 'campaignName' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'membershipFeeType' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountDivision' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountAmount' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'courseId' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'firstExclusionFlg' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityHighLimit' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityLowLimit' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'fromToRadio' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitStartDate' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitEndDate' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'numberOfMonthsFromContractDateRadio' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'ContractAfterMonth' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'approvalDocumentsId' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'utilizationFlg' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'commodityCrameCd' &&
-                  !user.editPossibleScreenIdList.includes('SCR-COM-0013')
+                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
+                    props.changeHisoryNumber !== '')
                 )
                   return true;
                 return false;
@@ -1808,7 +1941,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
           isOpen={isOpenPopup}
           data={scrCom0032PopupData}
           handleRegistConfirm={handleRegistConfirm}
-          // 本機能ではこちらの未使用する
+          // 本機能ではこちらのみ使用する
           handleApprovalConfirm={handleApprovalConfirm}
           handleCancel={handlePopupCancel}
         />
@@ -1819,7 +1952,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         <ScrCom0033Popup
           isOpen={isOpenApplicationPopup}
           data={scrCom0033PopupData}
-          handleConfirmOrCancel={handleConfirmOrCancel}
+          handleConfirm={handleApplicationPopupConfirm}
+          handleCancel={handleApplicationPopupCancel}
         />
       )}
     </>

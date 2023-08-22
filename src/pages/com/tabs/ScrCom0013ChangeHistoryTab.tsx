@@ -65,7 +65,7 @@ const changeHistorySearchResultColumns: GridColDef[] = [
   {
     field: 'lastApproverId',
     headerName: '最終承認者ID/最終承認者名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'lastApproveDate',

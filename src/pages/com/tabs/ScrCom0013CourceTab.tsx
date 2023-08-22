@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { FormProvider } from 'react-hook-form';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -13,13 +14,16 @@ import {
 } from 'controls/Datagrid';
 
 import {
+  registrationRequest,
   ScrCom0013DisplayComoditymanagementCourse,
   ScrCom0013DisplayComoditymanagementCourseRequest,
   ScrCom0013DisplayComoditymanagementCourseResponse,
 } from 'apis/com/ScrCom0013Api';
 
+import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
+import { comApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
@@ -57,7 +61,7 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'reflectionSchedule',
     headerName: '反映予定日',
-    size: 'm',
+    size: 'l',
   },
 ];
 
@@ -109,7 +113,10 @@ const convertToSearchResultRowModel = (
  * SCR-COM-0013 商品管理画面 コースタブ
  * @returns
  */
-const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
+const ScrCom0013CourceTab = (props: {
+  changeHisoryNumber: string;
+  setGoodsBaseValue: (goodsBase: registrationRequest) => void;
+}) => {
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
@@ -123,10 +130,21 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
   // CSV
   const apiRef = useGridApiRef();
 
+  // form
+  const methods = useForm<SearchResultRowModel>({});
+  const {
+    formState: { dirtyFields, errors },
+    setValue,
+    getValues,
+    reset,
+    watch,
+  } = methods;
+
   /**
    * 初期表示
    */
   useEffect(() => {
+    // 現在情報の表示
     const initialize = async () => {
       // SCR-COM-0013-0001: 商品管理表示API(コース情報表示）
       const displayComoditymanagementCourseRequest: ScrCom0013DisplayComoditymanagementCourseRequest =
@@ -155,8 +173,50 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
       });
       setHrefs(hrefs);
     };
+
+    // 履歴表示
+    const historyInitialize = async (changeHisoryNumber: string) => {
+      /** API-COM-9999-0025: 変更履歴情報取得API */
+      const request = {
+        changeHistoryNumber: changeHisoryNumber,
+      };
+      const response = (
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-history-info',
+          request
+        )
+      ).data;
+      const courceBasic = convertToHistoryInfoModel(response);
+      // 画面にデータを設定
+      reset(courceBasic);
+      props.setGoodsBaseValue(response);
+    };
+
+    // 変更履歴番号を受け取っていたら履歴表示
+    if (props.changeHisoryNumber !== null) {
+      historyInitialize(props.changeHisoryNumber);
+      return;
+    }
+
     initialize();
   }, []);
+
+  /**
+   * 変更履歴情報取得APIから基本情報データモデルへの変換
+   */
+  const convertToHistoryInfoModel = (
+    response: registrationRequest
+  ): SearchResultRowModel => {
+    return {
+      id: response.courceId,
+      courceId: response.courceId,
+      courceName: response.courceName,
+      cooperationTargetService: response.cooperationTargetService,
+      utilizationFlg: response.courceUtilizationFlg,
+      reservationExistence: response.reservationExistence,
+      reflectionSchedule: response.reflectionSchedule,
+    };
+  };
 
   /**
    * リンククリック時のイベントハンドラ
@@ -184,29 +244,31 @@ const ScrCom0013CourceTab = (props: { changeHisoryNumber: string }) => {
       <MainLayout>
         {/* main */}
         <MainLayout main>
-          <Section
-            name='コース一覧'
-            decoration={
-              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
-                {/* 履歴表示の場合 追加ボタン非活性 */}
-                <AddButton
-                  onClick={handleIconAddClick}
-                  disable={props.changeHisoryNumber === '' ? true : false}
-                >
-                  追加
-                </AddButton>
-              </MarginBox>
-            }
-          >
-            <DataGrid
-              pagination={true}
-              columns={searchResultColumns}
-              rows={searchResult}
-              hrefs={hrefs}
-              onLinkClick={handleLinkClick}
-            />
-          </Section>
+          <FormProvider {...methods}>
+            <Section
+              name='コース一覧'
+              decoration={
+                <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                  <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
+                  {/* 履歴表示の場合 追加ボタン非活性 */}
+                  <AddButton
+                    onClick={handleIconAddClick}
+                    disable={props.changeHisoryNumber === '' ? true : false}
+                  >
+                    追加
+                  </AddButton>
+                </MarginBox>
+              }
+            >
+              <DataGrid
+                pagination={true}
+                columns={searchResultColumns}
+                rows={searchResult}
+                hrefs={hrefs}
+                onLinkClick={handleLinkClick}
+              />
+            </Section>
+          </FormProvider>
         </MainLayout>
       </MainLayout>
     </>

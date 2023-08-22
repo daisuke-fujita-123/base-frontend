@@ -16,6 +16,7 @@ import { Select, SelectValue } from 'controls/Select';
 import { Typography } from 'controls/Typography';
 
 import {
+  registrationRequest,
   ScrCom0013chkService,
   ScrCom0013DisplayComoditymanagementService,
   ScrCom0013DisplayComoditymanagementServiceRequest,
@@ -36,6 +37,7 @@ import {
 
 import { useForm } from 'hooks/useForm';
 
+import { comApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
@@ -186,7 +188,10 @@ const validationSchema: ObjectSchema<any> = yup.object({
  * SCR-COM-0013 商品管理画面 サービスタブ
  * @returns
  */
-const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
+const ScrCom0013ServiceTab = (props: {
+  changeHisoryNumber: string;
+  setGoodsBaseValue: (goodsBase: registrationRequest) => void;
+}) => {
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -355,46 +360,11 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
     });
   };
 
-  // /**
-  //  * 変更した項目から登録・変更内容データへの変換
-  //  */
-  // const convertToRegistrationChangeList = (
-  //   dirtyFields: object
-  // ): registrationChangeList[] => {
-  //   // 変更を検知するフィールドのキー名リスト
-  //   const fields = Object.keys(dirtyFields);
-  //   // 返却する変更リスト
-  //   const registrationChangeList: registrationChangeList[] = [];
-  //   // 一時カラムリスト
-  //   const tempColumnList: { columnName: string }[] = [];
-
-  //   // 変更したキー名をカラムリストに設定
-  //   fields.forEach((f) => {
-  //     tempColumnList.push({
-  //       columnName: f,
-  //     });
-  //   });
-
-  //   // 変更リストとして値を設定して返却
-  //   registrationChangeList.push({
-  //     screenId: SCR_COM_0013,
-  //     screenName: '商品管理',
-  //     tabId: 2,
-  //     tabName: '',
-  //     sectionList: [
-  //       {
-  //         sectionName: 'サービステーブル一覧',
-  //         columnList: tempColumnList,
-  //       },
-  //     ],
-  //   });
-  //   return registrationChangeList;
-  // };
-
   /**
    * 初期表示
    */
   useEffect(() => {
+    // 現在情報の表示
     const initialize = async () => {
       // SCR-COM-0013-0002：商品管理表示API(サービス情報表示）
       const displayComoditymanagementServiceRequest: ScrCom0013DisplayComoditymanagementServiceRequest =
@@ -467,8 +437,53 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
           ),
       });
     };
+
+    // 履歴表示
+    const historyInitialize = async (changeHisoryNumber: string) => {
+      /** API-COM-9999-0025: 変更履歴情報取得API */
+      const request = {
+        changeHistoryNumber: changeHisoryNumber,
+      };
+      const response = (
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-history-info',
+          request
+        )
+      ).data;
+      const serviceBasic = convertToHistoryInfoModel(response);
+      // 画面にデータを設定
+      reset(serviceBasic);
+      props.setGoodsBaseValue(response);
+    };
+
+    // 変更履歴番号を受け取っていたら履歴表示
+    if (props.changeHisoryNumber !== null) {
+      historyInitialize(props.changeHisoryNumber);
+      return;
+    }
+
     initialize();
   }, []);
+
+  /**
+   * 変更履歴情報取得APIから基本情報データモデルへの変換
+   */
+  const convertToHistoryInfoModel = (
+    response: registrationRequest
+  ): SearchResultRowModel => {
+    return {
+      id: response.serviceId,
+      serviceId: response.serviceId,
+      serviceName: response.serviceName,
+      responsibleCategory: response.responsibleCategory,
+      targetServiceDivision: response.targetServiceDivision,
+      cooperationInfoServiceFlg: response.cooperationInfoServiceFlg,
+      multiContractPossibleFlg: response.multiContractPossibleFlg,
+      utilizationFlg: response.serviceUtilizationFlg,
+      changeBfrTimestamp: response.changeBfrTimestamp,
+      changeReserve: response.serviceChangeReserve,
+    };
+  };
 
   /**
    *  API-COM-9999-0010: コード管理マスタリストボックス情報取得API レスポンスから SelectValueモデルへの変換
@@ -627,9 +642,8 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
 
   /**
    * 登録内容申請ポップアップの確定ボタンクリック→ダイアログOK時のイベントハンドラ
-   * 登録内容申請ポップアップのキャンセルボタンクリック→ダイアログOK時のイベントハンドラ
    */
-  const handleConfirmOrCancel = (
+  const handlePopupConfirm = (
     // 従業員ID1
     employeeId1: string,
     // 従業員名1
@@ -704,7 +718,6 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
           >
             <DataGrid
               pagination={true}
-              width={1200}
               columns={searchResultColumns}
               rows={searchResult}
               resolver={validationSchema}
@@ -822,7 +835,8 @@ const ScrCom0013ServiceTab = (props: { changeHisoryNumber: string }) => {
         <ScrCom0033Popup
           isOpen={isOpenScrCom0033Popup}
           data={scrCom0033PopupData}
-          handleConfirmOrCancel={handleConfirmOrCancel}
+          handleConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
         />
       )}
 
