@@ -117,6 +117,9 @@ const ScrCom0023Page = () => {
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
 
+  // CSV
+  const apiRef = useGridApiRef();
+
   /**
    * ライブ会場一覧取得APIレスポンスから検索結果モデルへの変換
    */
@@ -207,7 +210,7 @@ const ScrCom0023Page = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv(searchResult, 'ScrCom0023.csv');
+    exportCsv('ScrCom0023.csv');
   };
 
   return (
