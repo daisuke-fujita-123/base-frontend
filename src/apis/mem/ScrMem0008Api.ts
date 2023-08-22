@@ -138,12 +138,12 @@ export interface AccountType3 {
   accountNameKana: string;
 }
 
-/** 請求先一覧取得機能API */
+/** API-MEM-0008-0001: 請求先一覧取得機能API */
 export const ScrMem0008GetBillingInfo = async (
   request: ScrMem0008GetBillingInfoRequest
 ): Promise<ScrMem0008GetBillingInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0008/get-billing-info',
+    '/api/mem/scr-mem-0010/get-businessbase',
     request
   );
   return response.data;
@@ -231,11 +231,14 @@ export interface ScrMem9999GetHistoryBillingInfoInfoResponse {
   memberMemo: string;
 }
 
-/** 変更履歴情報取得API（基本情報） */
+/** API-MEM-9999-0015: 変更履歴情報取得API（基本情報） */
 export const ScrMem9999GetHistoryInfo = async (
   request: ScrMem9999GetHistoryInfoRequest
 ): Promise<ScrMem9999GetHistoryBillingInfoInfoResponse> => {
-  const response = await memApiClient.post('/get-history-info', request);
+  const response = await memApiClient.post(
+    '/api/mem/scr-mem-9999/get-history-info',
+    request
+  );
   return response.data;
 };
 
@@ -251,11 +254,14 @@ export interface ScrMem9999GetHistorybankInfoInfoResponse {
   accountType4: AccountType;
 }
 
-/** 変更履歴情報取得API（口座情報） */
+/** API-MEM-9999-0015: 変更履歴情報取得API（口座情報） */
 export const ScrMem9999GetBankHistoryInfo = async (
   request: ScrMem9999GetHistoryInfoRequest
 ): Promise<ScrMem9999GetHistorybankInfoInfoResponse> => {
-  const response = await memApiClient.post('/get-history-info', request);
+  const response = await memApiClient.post(
+    '/api/mem/scr-mem-9999/get-history-info',
+    request
+  );
   return response.data;
 };
 
@@ -343,12 +349,12 @@ export interface ScrMem0008RegistrationBillingInfoRequest {
   changeExpectDate: Date;
 }
 
-/** 請求先基本情報登録API */
+/** API-MEM-0008-0005: 請求先基本情報登録API */
 export const ScrMem0008RegistrationBillingInfo = async (
   request: ScrMem0008RegistrationBillingInfoRequest
 ): Promise<null> => {
   const response = await memApiClient.post(
-    '/scr-mem-0008/registration-billing-info',
+    '/api/mem/scr-mem-0003/registration-billing-info',
     request
   );
   return null;
@@ -394,12 +400,12 @@ export interface ScrMem0008ApplyRegistrationBankInfoRequest {
   tabId: string;
 }
 
-/** 口座情報登録申請API */
+/** API-MEM-0008-0006: 口座情報登録申請API */
 export const ScrMem0008ApplyRegistrationBankInfo = async (
   request: ScrMem0008ApplyRegistrationBankInfoRequest
 ): Promise<null> => {
   const response = await memApiClient.post(
-    '/scr-mem-0008/apply-registration-bank-info',
+    '/api/mem/scr-mem-0003/apply-registration-bank-info',
     request
   );
   return null;
