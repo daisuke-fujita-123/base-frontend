@@ -18,6 +18,8 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+
 /**
  * 検索条件列定義
  */
@@ -210,7 +212,7 @@ const ScrCom0023Page = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv('ScrCom0023.csv');
+    exportCsv('ScrCom0023.csv', apiRef);
   };
 
   return (
