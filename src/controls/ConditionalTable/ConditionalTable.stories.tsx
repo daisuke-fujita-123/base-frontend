@@ -11,9 +11,9 @@ import { theme } from 'controls/theme';
 import { ThemeProvider } from '@mui/material';
 import {
   ConditionalTable,
+  ConditionModel,
   DeepKey,
   PricingTable,
-  SearchConditionProps,
 } from './ConditionalTable';
 
 export default {
@@ -123,7 +123,7 @@ export const Example = () => {
     return getItems.find((val) => val.value === select) ?? null;
   };
 
-  const initialVal: SearchConditionProps = {
+  const initialVal: ConditionModel = {
     conditionType: '',
     condition: [
       {
@@ -132,17 +132,17 @@ export const Example = () => {
       },
     ],
   };
-  const [rows, setRows] = useState<SearchConditionProps[]>([initialVal]);
+  const [rows, setRows] = useState<ConditionModel[]>([initialVal]);
 
   // 値の変更を検知する
   const handleChange = (
     val: string | number,
-    changeVal: DeepKey<SearchConditionProps>,
+    changeVal: DeepKey<ConditionModel>,
     indexRow: number,
     indexCol?: number
   ) => {
-    const newArray: SearchConditionProps[] = rows.map(
-      (row: SearchConditionProps, rowIndex: number) => {
+    const newArray: ConditionModel[] = rows.map(
+      (row: ConditionModel, rowIndex: number) => {
         if (changeVal === 'conditionType' && typeof val === 'string') {
           if (rowIndex === indexRow) {
             return { ...row, [changeVal]: val };
@@ -170,7 +170,7 @@ export const Example = () => {
     setRows(newArray);
   };
 
-  const handleSetItem = (sortValues: SearchConditionProps[]) => {
+  const handleSetItem = (sortValues: ConditionModel[]) => {
     setRows(sortValues);
   };
 

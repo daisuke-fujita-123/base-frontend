@@ -60,7 +60,8 @@ const StyledTab = styled(Tab)({
   fontSize: theme.spacing(4),
   height: 40,
   minHeight: 40,
-  width: 136,
+  minWidth: 136,
+  whiteSpace: 'nowrap',
   border: `1px solid  ${theme.palette.tab?.border}`,
   marginRight: theme.spacing(1),
   '&:hover': {
