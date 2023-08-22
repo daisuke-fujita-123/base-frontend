@@ -7,6 +7,7 @@ import { Section } from 'layouts/Section';
 import { AddButton } from 'controls/Button';
 import {
   DataGrid,
+  exportCsv,
   GridColDef,
   GridHrefsModel,
   GridTooltipsModel,
@@ -182,7 +183,7 @@ const ScrCom0007ChangeHistoryTab = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    // exportCsv('ScrCom0007ChangeHistoryTab.csv', apiRef);
+    exportCsv('ScrCom0007ChangeHistoryTab.csv', apiRef);
   };
 
   return (
