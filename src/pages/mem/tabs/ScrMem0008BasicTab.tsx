@@ -34,7 +34,7 @@ import { Link } from 'controls/Link';
 import { Radio } from 'controls/Radio';
 import { Select, SelectValue } from 'controls/Select';
 import { Textarea } from 'controls/Textarea';
-import { PriceTextField, TextField } from 'controls/TextField';
+import { PostalTextField, PriceTextField, TextField } from 'controls/TextField';
 import { Typography } from 'controls/Typography';
 
 import {
@@ -42,19 +42,21 @@ import {
   ScrCom9999GetChangeDate,
   ScrCom9999GetChangeDateRequest,
   ScrCom9999GetCodeValue,
+} from 'apis/com/ScrCom9999Api';
+import {
   ScrMem0008GetBillingInfo,
   ScrMem0008GetBillingInfoResponse,
   ScrMem0008RegistrationBillingInfo,
   ScrMem0008RegistrationBillingInfoRequest,
-  ScrMem9999GetBusinessInfo,
   ScrMem9999GetHistoryBillingInfoInfoResponse,
   ScrMem9999GetHistoryInfo,
 } from 'apis/mem/ScrMem0008Api';
+import { ScrMem9999GetBusinessInfo } from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
@@ -309,24 +311,7 @@ const initialValues: BillingInfoModel = {
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
   errorList: [],
   warningList: [],
-  registrationChangeList: [
-    {
-      screenId: '',
-      screenName: '',
-      tabId: '',
-      tabName: '',
-      sectionList: [
-        {
-          sectionName: '',
-          columnList: [
-            {
-              columnName: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  registrationChangeList: [],
   changeExpectDate: '',
 };
 
@@ -634,9 +619,9 @@ const ScrMem0008BasicTab = (props: {
   // router
   const { corporationId, billingId } = useParams();
   const navigate = useNavigate();
-  const { appContext } = useContext(AppContext);
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
+  const { user } = useContext(AuthContext);
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -653,7 +638,9 @@ const ScrMem0008BasicTab = (props: {
     useState<boolean>(false);
 
   // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0008') === -1
+  );
   // form
   const methods = useForm<BillingInfoModel>({
     defaultValues: initialValues,
@@ -698,10 +685,9 @@ const ScrMem0008BasicTab = (props: {
       // 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: 'SCR-MEM-0008',
-        tabId: 13,
+        tabId: 'B-13',
         masterId: corporationId + ',' + billingId,
-        // TODO:業務日付アーキ対応待ち
-        businessDate: new Date(),
+        businessDate: user.taskDate,
       };
       const getChangeDateResponse = await ScrCom9999GetChangeDate(
         getChangeDateRequest
@@ -869,29 +855,6 @@ const ScrMem0008BasicTab = (props: {
         );
         return;
       }
-      if (name === 'billingZipCode') {
-        if (value.billingZipCode?.length === 8) {
-          // 住所情報取得
-          const getAddressInfoRequest = {
-            zipCode: value.billingZipCode,
-          };
-          const getBusinessInfoResponse = await ScrCom9999GetAddressInfo(
-            getAddressInfoRequest
-          );
-          setValue(
-            'billingPrefectureCode',
-            getBusinessInfoResponse.prefectureCode
-          );
-          setValue(
-            'billingMunicipalities',
-            getBusinessInfoResponse.municipalities
-          );
-          setValue(
-            'billingAddressBuildingName',
-            getBusinessInfoResponse.townOrStreetName
-          );
-        }
-      }
     });
     return () => subscription.unsubscribe();
   }, [watch]);
@@ -935,7 +898,9 @@ const ScrMem0008BasicTab = (props: {
   /**
    * 確定ボタンクリック時のイベントハンドラ
    */
-  const onClickConfirm = () => {
+  const onClickConfirm = async () => {
+    await methods.trigger();
+    if (!methods.formState.isValid) return;
     // 反映予定日整合性チェック
     setChangeHistoryDateCheckIsOpen(true);
   };
@@ -963,9 +928,8 @@ const ScrMem0008BasicTab = (props: {
     ) {
       errorMessages.push({
         errorCode: 'MSG-FR-ERR-00060',
-        errorMessages: [
+        errorMessage:
           '四輪の即時出金限度金額と即時出金対象譲渡書類未到達限度金額が正しくありません',
-        ],
       });
     }
 
@@ -982,9 +946,8 @@ const ScrMem0008BasicTab = (props: {
     ) {
       errorMessages.push({
         errorCode: 'MSG-FR-ERR-00061',
-        errorMessages: [
+        errorMessage:
           '二輪の即時出金限度金額と即時出金対象譲渡書類未到達限度金額が正しくありません',
-        ],
       });
     }
 
@@ -995,7 +958,7 @@ const ScrMem0008BasicTab = (props: {
         {
           screenId: 'SCR-MEM-0008',
           screenName: '請求先詳細',
-          tabId: 'B-13',
+          tabId: 13,
           tabName: '基本情報',
           sectionList: convertToSectionList(dirtyFields),
         },
@@ -1024,10 +987,29 @@ const ScrMem0008BasicTab = (props: {
     const registrationBillingInfoRequest = convertFromCorporationInfoModel(
       getValues(),
       contractRow,
-      appContext.user.id,
+      user.employeeId,
       registrationChangeMemo
     );
     await ScrMem0008RegistrationBillingInfo(registrationBillingInfoRequest);
+  };
+
+  /**
+   * 郵便番号フォーカスアウト時のイベントハンドラ
+   */
+  const onBlur = async () => {
+    // 住所情報取得
+    const getAddressInfoRequest = {
+      zipCode: getValues('billingZipCode'),
+    };
+    const getBusinessInfoResponse = await ScrCom9999GetAddressInfo(
+      getAddressInfoRequest
+    );
+    setValue('billingPrefectureCode', getBusinessInfoResponse.prefectureCode);
+    setValue('billingMunicipalities', getBusinessInfoResponse.municipalities);
+    setValue(
+      'billingAddressBuildingName',
+      getBusinessInfoResponse.townOrStreetName
+    );
   };
 
   const flagRadio = [
@@ -1052,7 +1034,11 @@ const ScrMem0008BasicTab = (props: {
                     selectValues={selectValues.originBusinessSelectValues}
                     blankOption
                   />
-                  <TextField label='郵便番号' name='billingZipCode' />
+                  <PostalTextField
+                    label='郵便番号'
+                    name='billingZipCode'
+                    onBlur={onBlur}
+                  />
                   <Select
                     label='都道府県'
                     name='billingPrefectureCode'
@@ -1112,26 +1098,31 @@ const ScrMem0008BasicTab = (props: {
                     label='即払可否'
                     name='tvaaImmediatePaymentFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='書類先出し'
                     name='tvaaDocumentAdvanceFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='延滞金の自動発生可否フラグ'
                     name='tvaaArrearsPriceAutomaticOccurrenceFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='相殺要否'
                     name='tvaaOffsettingFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='オークション参加制限可否'
                     name='tvaaAuctionEntryLimitFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <InputLayout label='督促状発行' size='s'>
                     <InputRowStack>
@@ -1165,26 +1156,31 @@ const ScrMem0008BasicTab = (props: {
                     label='即払可否'
                     name='bikeImmediatePaymentFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='書類先出し'
                     name='bikeDocumentAdvanceFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='延滞金の自動発生可否フラグ'
                     name='bikeArrearsPriceAutomaticOccurrenceFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='相殺要否'
                     name='bikeOffsettingFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='オークション参加制限可否'
                     name='bikeAuctionEntryLimitFlag'
                     radioValues={flagRadio}
+                    disabled={isReadOnly[0]}
                   />
                   <InputLayout label='督促状発行' size='s'>
                     <InputRowStack>
@@ -1224,18 +1220,8 @@ const ScrMem0008BasicTab = (props: {
           <FormProvider {...methods}>
             <Grid container height='100%'>
               <Grid item size='s'>
-                {changeHistory.length <= 0 ? (
-                  <RightElementStack>
-                    <></>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                ) : (
-                  <RightElementStack>
+                <RightElementStack>
+                  {changeHistory.length <= 0 ? (
                     <Stack>
                       <Typography bold>変更予約情報</Typography>
                       <WarningLabel text='変更予約あり' />
@@ -1248,14 +1234,17 @@ const ScrMem0008BasicTab = (props: {
                         表示切替
                       </PrimaryButton>
                     </Stack>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                )}
+                  ) : (
+                    ''
+                  )}
+                  <MarginBox mb={6}>
+                    <DatePicker
+                      label='変更予定日'
+                      name='changeExpectedDate'
+                      disabled={isReadOnly[0]}
+                    />
+                  </MarginBox>
+                </RightElementStack>
               </Grid>
             </Grid>
           </FormProvider>
@@ -1265,28 +1254,39 @@ const ScrMem0008BasicTab = (props: {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={onClickConfirm}>確定</ConfirmButton>
+            <ConfirmButton onClick={onClickConfirm} disable={isReadOnly[0]}>
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      <ScrCom00032Popup
-        isOpen={scrCom00032PopupIsOpen}
-        data={scrCom0032PopupData}
-        handleCancel={scrCom00032PopupHandleCancel}
-        handleConfirm={scrCom00032PopupHandleConfirm}
-      />
+      {scrCom00032PopupIsOpen ? (
+        <ScrCom00032Popup
+          isOpen={scrCom00032PopupIsOpen}
+          data={scrCom0032PopupData}
+          handleCancel={scrCom00032PopupHandleCancel}
+          handleRegistConfirm={scrCom00032PopupHandleConfirm}
+          handleApprovalConfirm={scrCom00032PopupHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 反映予定日整合性チェック */}
-      <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
-        isChangeHistoryBtn={isChangeHistoryBtn}
-        changeHistory={changeHistory}
-        isOpen={changeHistoryDateCheckIsOpen}
-        handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
-      />
+      {changeHistoryDateCheckIsOpen ? (
+        <ChangeHistoryDateCheckUtil
+          changeExpectedDate={getValues('changeExpectedDate')}
+          changeHistoryNumber={getValues('changeHistoryNumber')}
+          isChangeHistoryBtn={isChangeHistoryBtn}
+          changeHistory={changeHistory}
+          isOpen={changeHistoryDateCheckIsOpen}
+          handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };

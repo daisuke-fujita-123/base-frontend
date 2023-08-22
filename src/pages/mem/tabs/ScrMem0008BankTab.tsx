@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
 
 import ScrCom00032Popup, {
   columnList,
@@ -12,7 +12,6 @@ import ScrCom00032Popup, {
 } from 'pages/com/popups/ScrCom0032Popup';
 import ScrCom0033Popup, {
   ScrCom0033PopupModel,
-  SelectValuesModel,
 } from 'pages/com/popups/ScrCom0033Popup';
 
 import { MarginBox } from 'layouts/Box';
@@ -20,7 +19,7 @@ import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { RightElementStack, RowStack, Stack } from 'layouts/Stack';
+import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 
 import { CancelButton, ConfirmButton, PrimaryButton } from 'controls/Button';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
@@ -30,21 +29,23 @@ import { Select, SelectValue } from 'controls/Select';
 import { Typography } from 'controls/Typography';
 
 import {
+  ScrCom9999GetBranchMaster,
+  ScrCom9999GetCodeValue,
+} from 'apis/com/ScrCom9999Api';
+import {
   AccountType,
   AccountType3,
-  ScrCom9999GetCodeValue,
   ScrMem0008ApplyRegistrationBankInfo,
   ScrMem0008ApplyRegistrationBankInfoRequest,
   ScrMem0008GetBillingInfo,
   ScrMem9999GetBankHistoryInfo,
-  ScrMem9999GetBranchMaster,
 } from 'apis/mem/ScrMem0008Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
 import { comApiClient } from 'providers/ApiClient';
-import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
@@ -75,14 +76,14 @@ const accountType1Columns: GridColDef[] = [
     headerName: '銀行名',
     cellType: 'select',
     selectValues: [{ value: '', displayValue: '' }],
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'branchCode',
     headerName: '支店名',
     cellType: 'select',
     selectValues: [{ value: '', displayValue: '' }],
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'accountNumber',
@@ -98,13 +99,13 @@ const accountType1Columns: GridColDef[] = [
       { value: '1', displayValue: '普通' },
       { value: '2', displayValue: '当座' },
     ],
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'accountNameKana',
     headerName: '口座名義',
     cellType: 'input',
-    size: 'm',
+    size: 'l',
   },
 ];
 
@@ -114,14 +115,14 @@ const accountType2Columns: GridColDef[] = [
     headerName: '銀行名',
     cellType: 'select',
     selectValues: [{ value: '', displayValue: '' }],
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'branchCode',
     headerName: '支店名',
     cellType: 'select',
     selectValues: [{ value: '', displayValue: '' }],
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'accountNumber',
@@ -137,13 +138,13 @@ const accountType2Columns: GridColDef[] = [
       { value: '1', displayValue: '普通' },
       { value: '2', displayValue: '当座' },
     ],
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'accountNameKana',
     headerName: '口座名義',
     cellType: 'input',
-    size: 'm',
+    size: 'l',
   },
 ];
 
@@ -156,12 +157,12 @@ const accountType3Columns: GridColDef[] = [
   {
     field: 'bankName',
     headerName: '銀行名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'branchName',
     headerName: '支店名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'accountNumber',
@@ -176,12 +177,12 @@ const accountType3Columns: GridColDef[] = [
       { value: '1', displayValue: '普通' },
       { value: '2', displayValue: '当座' },
     ],
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'accountNameKana',
     headerName: '口座名義',
-    size: 'm',
+    size: 'l',
   },
 ];
 
@@ -189,12 +190,12 @@ const accountType4Columns: GridColDef[] = [
   {
     field: 'bankName',
     headerName: '銀行名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'branchName',
     headerName: '支店名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'accountNumber',
@@ -209,12 +210,12 @@ const accountType4Columns: GridColDef[] = [
       { value: '1', displayValue: '普通' },
       { value: '2', displayValue: '当座' },
     ],
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'accountNameKana',
     headerName: '口座名義',
-    size: 'm',
+    size: 'l',
   },
 ];
 
@@ -265,7 +266,13 @@ interface AccountType4RowModel {
 /**
  * バリデーションスキーマ
  */
-const validationSchama = {};
+const validationSchema: ObjectSchema<any> = yup.object({
+  bankCode: yup.string().required().label('銀行名'),
+  branchCode: yup.string().required().label('支店名'),
+  accountNumber: yup.string().required().max(7).half().label('口座番号'),
+  accountKind: yup.string().required().label('種別'),
+  accountNameKana: yup.string().required().max(40).half().label('口座名義'),
+});
 
 /**
  * 登録内容確認ポップアップ初期データ
@@ -273,24 +280,7 @@ const validationSchama = {};
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
   errorList: [],
   warningList: [],
-  registrationChangeList: [
-    {
-      screenId: '',
-      screenName: '',
-      tabId: '',
-      tabName: '',
-      sectionList: [
-        {
-          sectionName: '',
-          columnList: [
-            {
-              columnName: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  registrationChangeList: [],
   changeExpectDate: '',
 };
 
@@ -299,14 +289,8 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
  */
 const scrCom0033PopupInitialValues: ScrCom0033PopupModel = {
   screenId: '',
-  tabId: '',
-  allRegistrationId: '',
-  masterId: '',
-  registChangeMemo: '',
-  changeExpectDate: '',
-  applicationMoney: '',
-  applicationId: '',
-  programId: '',
+  tabId: 0,
+  applicationMoney: 0,
 };
 
 /**
@@ -367,8 +351,12 @@ const convertFromBankInfo = (
   billingId: string,
   bankInfoModel: BankInfoModel,
   user: string,
-  selectValues: SelectValuesModel,
-  applicationComment: string
+  applicationComment: string,
+  employeeId1: string,
+  employeeMailAddress1: string,
+  employeeId2: string,
+  employeeId3: string,
+  employeeId4: string
 ): ScrMem0008ApplyRegistrationBankInfoRequest => {
   return {
     changeHistoryNumber: Number(bankInfoModel.changeHistoryNumber),
@@ -431,11 +419,11 @@ const convertFromBankInfo = (
     },
     applicationEmployeeId: user,
     registrationChangeMemo: '',
-    firstApproverId: '',
-    firstApproverMailAddress: '',
-    secondApproverId: '',
-    thirdApproverId: '',
-    fourthApproverId: '',
+    firstApproverId: employeeId1,
+    firstApproverMailAddress: employeeMailAddress1,
+    secondApproverId: employeeId2,
+    thirdApproverId: employeeId3,
+    fourthApproverId: employeeId4,
     applicationComment: applicationComment,
     changeExpectDate: bankInfoModel.changeExpectedDate,
     screenId: 'SCR-MEM-0008',
@@ -540,9 +528,9 @@ const ScrMem0008BankTab = (props: {
   // router
   const { corporationId, billingId } = useParams();
   const navigate = useNavigate();
-  const { appContext } = useContext(AppContext);
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
+  const { user } = useContext(AuthContext);
 
   // state
   const [accountType1Row, setAccountType1Row] = useState<
@@ -571,12 +559,12 @@ const ScrMem0008BankTab = (props: {
     useState<boolean>(false);
 
   // コンポーネントを読み取り専用に変更するフラグ
-  const isReadOnly = useState<boolean>(false);
-
+  const isReadOnly = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0008') === -1
+  );
   // form
   const methods = useForm<BankInfoModel>({
     defaultValues: accountType1RowInitialValues,
-    resolver: yupResolver(yup.object(validationSchama)),
     context: isReadOnly,
   });
   const {
@@ -692,10 +680,11 @@ const ScrMem0008BankTab = (props: {
       const accountType1branchSelectValues: SelectValue[] = [];
       const getAccountType1BranchMasterRequest = {
         bankCode: accountType1.bankCode,
+        businessDate: user.taskDate,
       };
       const getAccountType1BranchMasterResponse =
-        await ScrMem9999GetBranchMaster(getAccountType1BranchMasterRequest);
-      getAccountType1BranchMasterResponse.list.map((x) => {
+        await ScrCom9999GetBranchMaster(getAccountType1BranchMasterRequest);
+      getAccountType1BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType1branchSelectValues.push({
           value: x.branchCode,
           displayValue: x.branchCode + '　' + x.branchName,
@@ -707,10 +696,11 @@ const ScrMem0008BankTab = (props: {
       const accountType2branchSelectValues: SelectValue[] = [];
       const getAccountType2BranchMasterRequest = {
         bankCode: accountType2.bankCode,
+        businessDate: user.taskDate,
       };
       const getAccountType2BranchMasterResponse =
-        await ScrMem9999GetBranchMaster(getAccountType2BranchMasterRequest);
-      getAccountType2BranchMasterResponse.list.map((x) => {
+        await ScrCom9999GetBranchMaster(getAccountType2BranchMasterRequest);
+      getAccountType2BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType2branchSelectValues.push({
           value: x.branchCode,
           displayValue: x.branchCode + '　' + x.branchName,
@@ -726,7 +716,10 @@ const ScrMem0008BankTab = (props: {
         businessDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
       };
       const getChangeDate = (
-        await comApiClient.post('/com/get-change-date', getChangeDateRequest)
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-change-date',
+          getChangeDateRequest
+        )
       ).data;
 
       const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
@@ -841,10 +834,11 @@ const ScrMem0008BankTab = (props: {
       const accountType1branchSelectValues: SelectValue[] = [];
       const getAccountType1BranchMasterRequest = {
         bankCode: accountType1.bankCode,
+        businessDate: user.taskDate,
       };
       const getAccountType1BranchMasterResponse =
-        await ScrMem9999GetBranchMaster(getAccountType1BranchMasterRequest);
-      getAccountType1BranchMasterResponse.list.map((x) => {
+        await ScrCom9999GetBranchMaster(getAccountType1BranchMasterRequest);
+      getAccountType1BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType1branchSelectValues.push({
           value: x.branchCode,
           displayValue: x.branchCode + '　' + x.branchName,
@@ -856,10 +850,11 @@ const ScrMem0008BankTab = (props: {
       const accountType2branchSelectValues: SelectValue[] = [];
       const getAccountType2BranchMasterRequest = {
         bankCode: accountType2.bankCode,
+        businessDate: user.taskDate,
       };
       const getAccountType2BranchMasterResponse =
-        await ScrMem9999GetBranchMaster(getAccountType2BranchMasterRequest);
-      getAccountType2BranchMasterResponse.list.map((x) => {
+        await ScrCom9999GetBranchMaster(getAccountType2BranchMasterRequest);
+      getAccountType2BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType2branchSelectValues.push({
           value: x.branchCode,
           displayValue: x.branchCode + '　' + x.branchName,
@@ -886,24 +881,45 @@ const ScrMem0008BankTab = (props: {
   /**
    * 銀行変更時のイベントハンドラ
    */
-  const onChangeSelect = async (bankCode: string, name: string) => {
-    // 支店名情報取得
-    const branchSelectValues: SelectValue[] = [];
-    const getBranchMasterRequest = {
-      bankCode: bankCode,
-    };
-    const getBranchMasterResponse = await ScrMem9999GetBranchMaster(
-      getBranchMasterRequest
-    );
-    getBranchMasterResponse.list.map((x) => {
-      branchSelectValues.push({
-        value: x.branchCode,
-        displayValue: x.branchCode + '　' + x.branchName,
+  const onRowValueChangeAccountType1 = async (row: any) => {
+    if (row.bankCode.length === 4) {
+      // 支店名情報取得
+      const branchSelectValues: SelectValue[] = [];
+      const getBranchMasterRequest = {
+        bankCode: row.bankCode,
+        businessDate: user.taskDate,
+      };
+      const getBranchMasterResponse = await ScrCom9999GetBranchMaster(
+        getBranchMasterRequest
+      );
+      getBranchMasterResponse.searchGetBranchMaster.map((x) => {
+        branchSelectValues.push({
+          value: x.branchCode,
+          displayValue: x.branchCode + '　' + x.branchName,
+        });
       });
-    });
-    if (name === 'accountType1') {
       accountType1Columns[1].selectValues = branchSelectValues;
-    } else {
+      accountType1Row[0].bankCode = branchSelectValues[0].value.toString();
+    }
+  };
+
+  const onRowValueChangeAccountType2 = async (row: any) => {
+    if (row.bankCode.length === 4) {
+      // 支店名情報取得
+      const branchSelectValues: SelectValue[] = [];
+      const getBranchMasterRequest = {
+        bankCode: row.bankCode,
+        businessDate: user.taskDate,
+      };
+      const getBranchMasterResponse = await ScrCom9999GetBranchMaster(
+        getBranchMasterRequest
+      );
+      getBranchMasterResponse.searchGetBranchMaster.map((x) => {
+        branchSelectValues.push({
+          value: x.branchCode,
+          displayValue: x.branchCode + '　' + x.branchName,
+        });
+      });
       accountType2Columns[1].selectValues = branchSelectValues;
     }
   };
@@ -990,11 +1006,12 @@ const ScrMem0008BankTab = (props: {
     const accountType1branchSelectValues: SelectValue[] = [];
     const getAccountType1BranchMasterRequest = {
       bankCode: accountType1.bankCode,
+      businessDate: user.taskDate,
     };
-    const getAccountType1BranchMasterResponse = await ScrMem9999GetBranchMaster(
+    const getAccountType1BranchMasterResponse = await ScrCom9999GetBranchMaster(
       getAccountType1BranchMasterRequest
     );
-    getAccountType1BranchMasterResponse.list.map((x) => {
+    getAccountType1BranchMasterResponse.searchGetBranchMaster.map((x) => {
       accountType1branchSelectValues.push({
         value: x.branchCode,
         displayValue: x.branchCode + '　' + x.branchName,
@@ -1006,11 +1023,12 @@ const ScrMem0008BankTab = (props: {
     const accountType2branchSelectValues: SelectValue[] = [];
     const getAccountType2BranchMasterRequest = {
       bankCode: accountType2.bankCode,
+      businessDate: user.taskDate,
     };
-    const getAccountType2BranchMasterResponse = await ScrMem9999GetBranchMaster(
+    const getAccountType2BranchMasterResponse = await ScrCom9999GetBranchMaster(
       getAccountType2BranchMasterRequest
     );
-    getAccountType2BranchMasterResponse.list.map((x) => {
+    getAccountType2BranchMasterResponse.searchGetBranchMaster.map((x) => {
       accountType2branchSelectValues.push({
         value: x.branchCode,
         displayValue: x.branchCode + '　' + x.branchName,
@@ -1043,14 +1061,8 @@ const ScrMem0008BankTab = (props: {
   const scrCom00032PopupHandleConfirm = () => {
     setScrCom0033PopupData({
       screenId: 'SCR-MEM-0008',
-      tabId: 'B-14',
-      allRegistrationId: '',
-      masterId: '',
-      registChangeMemo: '',
-      changeExpectDate: getValues('changeExpectedDate'),
-      applicationMoney: '',
-      applicationId: appContext.user.id,
-      programId: '',
+      tabId: 14,
+      applicationMoney: 0,
     });
     setScrCom00033PopupIsOpen(true);
   };
@@ -1066,7 +1078,25 @@ const ScrMem0008BankTab = (props: {
    * 登録内容確認ポップアップの確定ボタンクリック時のイベントハンドラ
    */
   const scrCom00033PopupHandleConfirm = async (
-    selectValues: SelectValuesModel,
+    // 従業員ID1
+    employeeId1: string,
+    // 従業員名1
+    emploeeName1: string,
+    // 従業員メールアドレス1
+    employeeMailAddress1: string,
+    // 従業員ID2
+    employeeId2: string,
+    // 従業員名2
+    emploeeName2: string,
+    // 従業員ID3
+    employeeId3: string,
+    // 従業員名3
+    emploeeName3: string,
+    // 従業員ID4
+    employeeId4: string,
+    // 従業員名4
+    emploeeName4: string,
+    // 申請コメント
     applicationComment: string
   ) => {
     setScrCom00033PopupIsOpen(false);
@@ -1127,9 +1157,13 @@ const ScrMem0008BankTab = (props: {
       corporationId,
       billingId,
       getValues(),
-      appContext.user.id,
-      selectValues,
-      applicationComment
+      user.employeeId,
+      applicationComment,
+      employeeId1,
+      employeeMailAddress1,
+      employeeId2,
+      employeeId3,
+      employeeId4
     );
     await ScrMem0008ApplyRegistrationBankInfo(applyRegistrationBankInfoRequest);
   };
@@ -1137,7 +1171,33 @@ const ScrMem0008BankTab = (props: {
   /**
    * 確定ボタンクリック時のイベントハンドラ
    */
-  const onClickConfirm = () => {
+  const onClickConfirm = async () => {
+    await methods.trigger();
+    if (!methods.formState.isValid) return;
+    if (
+      accountType1Row[0].accountNumber.length > 7 ||
+      accountType1Row[0].accountNumber.match(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/) ===
+        null
+    )
+      if (
+        accountType2Row[0].accountNumber.length > 7 ||
+        accountType2Row[0].accountNumber.match(
+          /^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/
+        ) === null
+      )
+        if (
+          accountType1Row[0].accountNameKana.length > 40 ||
+          accountType1Row[0].accountNameKana.match(
+            /^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/
+          ) === null
+        )
+          if (
+            accountType2Row[0].accountNameKana.length > 40 ||
+            accountType2Row[0].accountNameKana.match(
+              /^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/
+            ) === null
+          )
+            return;
     // 反映予定日整合性チェック
     setChangeHistoryDateCheckIsOpen(true);
   };
@@ -1154,7 +1214,7 @@ const ScrMem0008BankTab = (props: {
         {
           screenId: 'SCR-MEM-0008',
           screenName: '請求先詳細',
-          tabId: 'B-14',
+          tabId: 14,
           tabName: '口座情報',
           sectionList: convertToSectionList(
             getValues(),
@@ -1179,29 +1239,29 @@ const ScrMem0008BankTab = (props: {
             {/* 口座情報セクション */}
             <Section name='口座情報'>
               <RowStack>
-                <InputLayout
-                  label='会員用引落口座（会費用）'
-                  required
-                  size='xl'
-                >
-                  <DataGrid
-                    columns={accountType1Columns}
-                    rows={accountType1Row}
-                  />
-                </InputLayout>
-              </RowStack>
-              <RowStack>
-                <MarginBox mt={5}>
+                <ColStack>
+                  <InputLayout
+                    label='会員用引落口座（会費用）'
+                    required
+                    size='xl'
+                  >
+                    <DataGrid
+                      columns={accountType1Columns}
+                      rows={accountType1Row}
+                      resolver={validationSchema}
+                      onRowValueChange={onRowValueChangeAccountType1}
+                      disabled={isReadOnly[0]}
+                    />
+                  </InputLayout>
                   <InputLayout label='支払口座' required size='xl'>
                     <DataGrid
                       columns={accountType2Columns}
                       rows={accountType2Row}
+                      resolver={validationSchema}
+                      onRowValueChange={onRowValueChangeAccountType2}
+                      disabled={isReadOnly[0]}
                     />
                   </InputLayout>
-                </MarginBox>
-              </RowStack>
-              <RowStack>
-                <MarginBox mt={5}>
                   <InputLayout
                     label='会員向け振込口座（計算書記載の入金バーチャル口座）'
                     size='xl'
@@ -1209,12 +1269,9 @@ const ScrMem0008BankTab = (props: {
                     <DataGrid
                       columns={accountType3Columns}
                       rows={accountType3Row}
+                      disabled={isReadOnly[0]}
                     />
                   </InputLayout>
-                </MarginBox>
-              </RowStack>
-              <RowStack>
-                <MarginBox mt={5}>
                   <InputLayout
                     label='会場向け振込口座（取引用バーチャル）'
                     size='xl'
@@ -1222,9 +1279,10 @@ const ScrMem0008BankTab = (props: {
                     <DataGrid
                       columns={accountType4Columns}
                       rows={accountType4Row}
+                      disabled={isReadOnly[0]}
                     />
                   </InputLayout>
-                </MarginBox>
+                </ColStack>
               </RowStack>
             </Section>
           </FormProvider>
@@ -1234,18 +1292,8 @@ const ScrMem0008BankTab = (props: {
           <FormProvider {...methods}>
             <Grid container height='100%'>
               <Grid item size='s'>
-                {changeHistory.length <= 0 ? (
-                  <RightElementStack>
-                    <></>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                ) : (
-                  <RightElementStack>
+                <RightElementStack>
+                  {changeHistory.length <= 0 ? (
                     <Stack>
                       <Typography bold>変更予約情報</Typography>
                       <WarningLabel text='変更予約あり' />
@@ -1258,14 +1306,17 @@ const ScrMem0008BankTab = (props: {
                         表示切替
                       </PrimaryButton>
                     </Stack>
-                    <MarginBox mb={6}>
-                      <DatePicker
-                        label='変更予定日'
-                        name='changeExpectedDate'
-                      />
-                    </MarginBox>
-                  </RightElementStack>
-                )}
+                  ) : (
+                    ''
+                  )}
+                  <MarginBox mb={6}>
+                    <DatePicker
+                      label='変更予定日'
+                      name='changeExpectedDate'
+                      disabled={isReadOnly[0]}
+                    />
+                  </MarginBox>
+                </RightElementStack>
               </Grid>
             </Grid>
           </FormProvider>
@@ -1274,36 +1325,51 @@ const ScrMem0008BankTab = (props: {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={onClickConfirm}>確定</ConfirmButton>
+            <ConfirmButton onClick={onClickConfirm} disable={isReadOnly[0]}>
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      <ScrCom00032Popup
-        isOpen={scrCom00032PopupIsOpen}
-        data={scrCom0032PopupData}
-        handleCancel={scrCom00032PopupHandleCancel}
-        handleConfirm={scrCom00032PopupHandleConfirm}
-      />
+      {scrCom00032PopupIsOpen ? (
+        <ScrCom00032Popup
+          isOpen={scrCom00032PopupIsOpen}
+          data={scrCom0032PopupData}
+          handleCancel={scrCom00032PopupHandleCancel}
+          handleRegistConfirm={scrCom00032PopupHandleConfirm}
+          handleApprovalConfirm={scrCom00032PopupHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 登録内容申請ポップアップ */}
-      <ScrCom0033Popup
-        isOpen={scrCom00033PopupIsOpen}
-        data={scrCom0033PopupData}
-        handleCancel={scrCom00033PopupHandleCancel}
-        handlePopupConfirm={scrCom00033PopupHandleConfirm}
-      />
+      {scrCom00033PopupIsOpen ? (
+        <ScrCom0033Popup
+          isOpen={scrCom00033PopupIsOpen}
+          data={scrCom0033PopupData}
+          handleCancel={scrCom00033PopupHandleCancel}
+          handleConfirm={scrCom00033PopupHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
 
       {/* 反映予定日整合性チェック */}
-      <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
-        isChangeHistoryBtn={isChangeHistoryBtn}
-        changeHistory={changeHistory}
-        isOpen={changeHistoryDateCheckIsOpen}
-        handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
-      />
+      {changeHistoryDateCheckIsOpen ? (
+        <ChangeHistoryDateCheckUtil
+          changeExpectedDate={getValues('changeExpectedDate')}
+          changeHistoryNumber={getValues('changeHistoryNumber')}
+          isChangeHistoryBtn={isChangeHistoryBtn}
+          changeHistory={changeHistory}
+          isOpen={changeHistoryDateCheckIsOpen}
+          handleConfirm={ChangeHistoryDateCheckUtilHandleConfirm}
+        />
+      ) : (
+        ''
+      )}
     </>
   );
 };
