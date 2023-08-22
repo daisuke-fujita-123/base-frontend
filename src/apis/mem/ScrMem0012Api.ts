@@ -1,37 +1,4 @@
-import { comApiClient, memApiClient } from 'providers/ApiClient';
-
-/** 法人基本情報取得APIリクエスト */
-export interface ScrMem9999GetCorpBasicInfoRequest {
-  // 法人ID
-  corporationId: string;
-}
-
-/** 法人基本情報取得APIレスポンス */
-export interface ScrMem9999GetCorpBasicInfoResponse {
-  // 法人ID
-  corporationId: string;
-  // 法人名称
-  corporationName: string;
-  // 住所
-  address: string;
-  // 法人電話番号
-  corporationPhoneNumber: string;
-  // 法人FAX番号
-  corporationFaxNumber: string;
-  // 会員メモ
-  memberMemo: string;
-}
-
-/** 法人基本情報取得API */
-export const ScrMem9999GetCorpBasicInfo = async (
-  request: ScrMem9999GetCorpBasicInfoRequest
-): Promise<ScrMem9999GetCorpBasicInfoResponse> => {
-  const response = await memApiClient.post(
-    '/scr-mem-9999/get-corp-basic-info',
-    request
-  );
-  return response.data;
-};
+import { memApiClient } from 'providers/ApiClient';
 
 /** 物流拠点基本情報取得APIリクエスト */
 export interface ScrMem0012GetLogisticsBaseBasicInfoRequest {
@@ -185,224 +152,12 @@ export interface ScrMem0012GetLogisticsBaseBasicInfoResponse {
   transferSalesAreaCode: string;
 }
 
-/** 物流拠点基本情報取得API */
+/** API-MEM-0012-0002: 物流拠点基本情報取得API */
 export const ScrMem0012GetLogisticsBaseBasicInfo = async (
   request: ScrMem0012GetLogisticsBaseBasicInfoRequest
 ): Promise<ScrMem0012GetLogisticsBaseBasicInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0012/get-logistics-base-basic-info',
-    request
-  );
-  return response.data;
-};
-
-/** コード管理マスタ情報取得API（複数取得）リクエスト */
-export interface ScrCom9999GetCodeManagementMasterMultipleRequest {
-  // コードIDリスト
-  codeIdList: CodeIdList[];
-}
-
-// コードIDリスト
-export interface CodeIdList {
-  // コードID
-  codeId: string;
-}
-
-/** コード管理マスタ情報取得API（複数取得）レスポンス */
-export interface ScrCom9999GetCodeManagementMasterMultipleResponse {
-  // 結果リスト
-  resultList: ResultList[];
-}
-
-// 結果リスト
-export interface ResultList {
-  // コードID
-  codeId: string;
-  // コード値リスト
-  codeValueList: CodeValueList[];
-}
-
-// コード値リスト
-export interface CodeValueList {
-  // コード値
-  codeValue: string;
-  // コード名称
-  codeName: string;
-}
-
-/** コード管理マスタ情報取得API（複数取得） */
-export const ScrCom9999GetCodeManagementMasterMultiple = async (
-  request: ScrCom9999GetCodeManagementMasterMultipleRequest
-): Promise<ScrCom9999GetCodeManagementMasterMultipleResponse> => {
-  const response = await comApiClient.post(
-    '/com/scr-com-9999/get-code-management-master-multiple',
-    request
-  );
-  return response.data;
-};
-
-/** 会員管理コード値取得API（コード管理マスタ以外）リクエスト */
-export interface ScrMem9999GetCodeValueRequest {
-  // エンティティリスト
-  entityList: EntityList[];
-}
-
-// コードIDリスト
-export interface EntityList {
-  // エンティティ名
-  entityName: string;
-}
-
-/** 会員管理コード値取得API（コード管理マスタ以外）レスポンス */
-export interface ScrMem9999GetCodeValueResponse {
-  // 結果リスト
-  resultList: ResultList[];
-}
-
-// 結果リスト
-export interface ResultList {
-  // エンティティ名
-  entityName: string;
-  // コード値リスト
-  codeValueList: CodeValueList[];
-}
-
-// コード値リスト
-export interface CodeValueList {
-  // コード値
-  codeValue: string;
-  // コード値名称
-  codeValueName: string;
-  // コード値名称カナ
-  codeValueNameKana: string;
-}
-
-/** 会員管理コード値取得API（コード管理マスタ以外） */
-export const ScrMem9999GetCodeValue = async (
-  request: ScrMem9999GetCodeValueRequest
-): Promise<ScrMem9999GetCodeValueResponse> => {
-  const response = await memApiClient.post(
-    '/scr-mem-9999/get-code-value',
-    request
-  );
-  return response.data;
-};
-
-/** 共通管理コード値取得API（コード管理マスタ以外）リクエスト */
-export interface ScrCom9999GetCodeValueRequest {
-  // エンティティリスト
-  entityList: EntityList[];
-}
-
-/** 共通管理コード値取得API（コード管理マスタ以外）レスポンス */
-export interface ScrCom9999GetCodeValueResponse {
-  // 結果リスト
-  resultList: ResultList[];
-}
-
-/** 共通管理コード値取得API（コード管理マスタ以外）*/
-export const ScrCom9999GetCodeValue = async (
-  request: ScrCom9999GetCodeValueRequest
-): Promise<ScrCom9999GetCodeValueResponse> => {
-  const response = await comApiClient.post(
-    'com/scr-com-9999/get-code-value',
-    request
-  );
-  return response.data;
-};
-
-/** 物流拠点代表契約ID取得APIリクエスト */
-export interface ScrMem9999GetLogisticsBaseRepresentativeContractRequest {
-  // 法人ID
-  corporationId: string;
-}
-
-/** 物流拠点代表契約ID取得APIレスポンス */
-export interface ScrMem9999GetLogisticsBaseRepresentativeContractResponse {
-  // 物流拠点代表契約IDリスト
-  logisticsBaseRepresentativeContractIdList: string[];
-}
-
-/** 物流拠点代表契約ID取得API */
-export const ScrMem9999GetLogisticsBaseRepresentativeContract = async (
-  request: ScrMem9999GetLogisticsBaseRepresentativeContractRequest
-): Promise<ScrMem9999GetLogisticsBaseRepresentativeContractResponse> => {
-  const response = await memApiClient.post(
-    '/scr-mem-9999/get-logistics-base-representative-contract',
-    request
-  );
-  return response.data;
-};
-
-/** 従業員情報取得APIリクエスト */
-export interface ScrCom9999GetStaffRequest {
-  // 従業員ID
-  employeeId: string;
-  // 業務日付
-  businessDate: Date;
-  // 営業担当フラグ
-  salesStaffFlag: boolean;
-  // 検査員フラグ
-  inspectorFlag: boolean;
-}
-
-/** 従業員情報取得APIレスポンス */
-export interface ScrCom9999GetStaffResponse {
-  // リスト
-  list: List[];
-}
-
-// リスト
-export interface List {
-  // 従業員ID
-  employeeId: string;
-  // 従業員名
-  employeeName: string;
-}
-
-/** 従業員情報取得API */
-export const ScrCom9999GetStaff = async (
-  request: ScrCom9999GetStaffRequest
-): Promise<ScrCom9999GetStaffResponse> => {
-  const response = await comApiClient.post(
-    '/com/scr-com-9999/get-staff',
-    request
-  );
-  return response.data;
-};
-
-/** 従業員情報取得APIリクエスト */
-export interface ScrCom9999GetHistoryInfoRequest {
-  // 画面ID
-  screenId: string;
-  // タブID
-  tabId: number;
-  // マスタID
-  masterId: string;
-  // 業務日付
-  businessDate: Date;
-}
-
-/** 従業員情報取得APIレスポンス */
-export interface ScrCom9999GetHistoryInfoResponse {
-  // 変更予定日情報
-  changeExpectDateInfo: ChangeExpectDateInfo[];
-}
-
-// 変更予定日情報
-export interface ChangeExpectDateInfo {
-  // 変更履歴番号
-  changeHistoryNumber: string;
-  // 変更予定日
-  changeExpectDate: string;
-}
-
-/** 従業員情報取得API */
-export const ScrCom9999GetHistoryInfo = async (
-  request: ScrCom9999GetHistoryInfoRequest
-): Promise<ScrCom9999GetHistoryInfoResponse> => {
-  const response = await comApiClient.post(
-    '/com/scr-com-9999/get-history-info',
+    '/api/mem/scr-mem-0012/get-logistics-base-basic-info',
     request
   );
   return response.data;
@@ -575,38 +330,7 @@ export const ScrMem9999GetHistoryInfo = async (
   request: ScrMem9999GetHistoryInfoRequest
 ): Promise<ScrMem9999GetHistoryInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-history-info',
-    request
-  );
-  return response.data;
-};
-
-/** 住所情報取得APIリクエスト */
-export interface ScrCom9999GetAddressInfoRequest {
-  // 郵便番号
-  zipCode: string;
-}
-
-/** 住所情報取得APIレスポンス */
-export interface ScrCom9999GetAddressInfoResponse {
-  // 都道府県コード
-  prefectureCode: string;
-  // 都道府県名称
-  prefectureName: string;
-  // 市区群コード
-  districtCode: string;
-  // 市区町村
-  municipalities: string;
-  // 町域名
-  townOrStreetName: string;
-}
-
-/** 住所情報取得API */
-export const ScrCom9999GetAddressInfo = async (
-  request: ScrCom9999GetAddressInfoRequest
-): Promise<ScrCom9999GetAddressInfoResponse> => {
-  const response = await comApiClient.post(
-    '/com/scr-com-9999/get-address-info',
+    '/api/mem/scr-mem-9999/get-history-info',
     request
   );
   return response.data;
@@ -644,12 +368,12 @@ export interface ScrMem0012GetDistrictStaffNameResponse {
   bikeInspectorCode: string;
 }
 
-/** 市区郡名称取得API */
+/** API-MEM-0012-0006: 市区郡名称取得API */
 export const ScrMem0012GetDistrictStaffName = async (
   request: ScrMem0012GetDistrictStaffNameRequest
 ): Promise<ScrMem0012GetDistrictStaffNameResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0012/get-district-staff-name',
+    '/api/mem/scr-mem-0012/get-district-staff-name',
     request
   );
   return response.data;
@@ -691,12 +415,12 @@ export interface ErrorList {
   errorMessage: string;
 }
 
-/** 物流拠点情報入力チェックAPI */
+/** API-MEM-0012-0008: 物流拠点情報入力チェックAPI */
 export const ScrMem0012InputCheckLogisticsBaseInfo = async (
   request: ScrMem0012InputCheckLogisticsBaseInfoRequest
 ): Promise<ScrMem0012InputCheckLogisticsBaseInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-0012/input-check-logistics-base-info',
+    '/api/mem/scr-mem-0012/input-check-logistics-base-info',
     request
   );
   return response.data;
@@ -868,12 +592,12 @@ export interface ScrMem0012RegistrationLogisticsBaseRequest {
   changeExpectDate: Date;
 }
 
-/** 物流拠点登録API */
+/** API-MEM-0012-0009: 物流拠点登録API */
 export const ScrMem0012RegistrationLogisticsBase = async (
   request: ScrMem0012RegistrationLogisticsBaseRequest
 ): Promise<null> => {
   const response = await memApiClient.post(
-    '/scr-mem-0012/registration-logistics-base',
+    '/api/mem/scr-mem-0012/registration-logistics-base',
     request
   );
   return null;
