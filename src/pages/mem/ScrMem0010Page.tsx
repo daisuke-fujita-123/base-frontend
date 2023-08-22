@@ -27,15 +27,9 @@ const ScrMem0010Page = () => {
     },
   ];
 
-  const editPossibleList = user.editPossibleScreenIdList.filter(
-    (x) => x === 'SCR-MEM-0010'
-  );
-
   return (
     <Tabs tabDef={tabDefs} defaultValue={location.hash}>
-      <ScrMem0010BasicTab
-        editPossible={editPossibleList.length > 0 ? false : true}
-      />
+      <ScrMem0010BasicTab />
       <ScrMem0010ContractListTab />
     </Tabs>
   );

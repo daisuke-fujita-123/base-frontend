@@ -29,6 +29,7 @@ import {
   GridCellParams,
   GridColumnGroupingModel,
   GridTreeNode,
+  useGridApiRef,
 } from '@mui/x-data-grid-pro';
 
 /**
@@ -141,11 +142,11 @@ const columnGroups: GridColumnGroupingModel = [
  * 契約情報モデル
  */
 interface ContractValuesModel {
-  tvaaContractList: ContractRowModel[];
-  bikeContractList: ContractRowModel[];
+  tvaaContractList: ContractModel[];
+  bikeContractList: ContractModel[];
 }
 
-interface ContractRowModel {
+interface ContractModel {
   // internalId
   id: string;
   // 契約ID
@@ -176,6 +177,37 @@ interface ContractRowModel {
   optionFeeTotal: string;
   // オプション会費合計値引値増フラグ
   optionFeeTotalDiscountFlag: boolean;
+  // 利用開始日
+  optionUseStartDate: string;
+}
+
+interface ContractRowModel {
+  // internalId
+  id: string;
+  // 契約ID
+  contractId: string;
+  // 会費合計
+  feeTotal: string;
+  // 変更予約
+  changeReservationFlag: string;
+  // 請求先ID
+  billingId: string;
+  // 会費請求方法
+  claimMethodKind: string;
+  // コース名
+  courseName: string;
+  // 参加区分
+  courseEntryKind: string;
+  // コース会費
+  courseFeeTotal: string;
+  // 利用開始日
+  courseUseStartDate: string;
+  // オプションサービス
+  serviceName: string;
+  // 数量
+  contractCount: string;
+  // オプションサービス会費合計
+  optionFeeTotal: string;
   // 利用開始日
   optionUseStartDate: string;
 }
@@ -320,10 +352,18 @@ const DatagridColumnGroups = () => {
   const { corporationId, bussinessBaseId } = useParams();
   const applicationId = searchParams.get('applicationId');
   const { user } = useContext(AuthContext);
+  const apiRefTvaaContract = useGridApiRef();
+  const apiRefBikeContract = useGridApiRef();
 
   // state
-  const [tvaaContract, setTvaaContract] = useState<ContractRowModel[]>([]);
-  const [bikeContract, setBikeContract] = useState<ContractRowModel[]>([]);
+  const [tvaaContract, setTvaaContract] = useState<ContractModel[]>([]);
+  const [tvaaContractRow, setTvaaContractRow] = useState<ContractRowModel[]>(
+    []
+  );
+  const [bikeContract, setBikeContract] = useState<ContractModel[]>([]);
+  const [bikeContractRow, setBikeContractRow] = useState<ContractRowModel[]>(
+    []
+  );
   const [tvaaHrefs, setTvaaHrefs] = useState<any[]>([]);
   const [bikeHrefs, setBikeHrefs] = useState<any[]>([]);
 
@@ -381,6 +421,46 @@ const DatagridColumnGroups = () => {
 
       setTvaaContract(contract.tvaaContractList);
       setBikeContract(contract.bikeContractList);
+      setTvaaContractRow(
+        contract.tvaaContractList.map((x) => {
+          return {
+            id: x.id,
+            contractId: x.contractId,
+            feeTotal: x.feeTotal,
+            changeReservationFlag: x.changeReservationFlag,
+            billingId: x.billingId,
+            claimMethodKind: x.claimMethodKind,
+            courseName: x.courseName,
+            courseEntryKind: x.courseEntryKind,
+            courseFeeTotal: x.courseFeeTotal,
+            courseUseStartDate: x.courseUseStartDate,
+            serviceName: x.serviceName,
+            contractCount: x.contractCount,
+            optionFeeTotal: x.optionFeeTotal,
+            optionUseStartDate: x.optionUseStartDate,
+          };
+        })
+      );
+      setBikeContractRow(
+        contract.bikeContractList.map((x) => {
+          return {
+            id: x.id,
+            contractId: x.contractId,
+            feeTotal: x.feeTotal,
+            changeReservationFlag: x.changeReservationFlag,
+            billingId: x.billingId,
+            claimMethodKind: x.claimMethodKind,
+            courseName: x.courseName,
+            courseEntryKind: x.courseEntryKind,
+            courseFeeTotal: x.courseFeeTotal,
+            courseUseStartDate: x.courseUseStartDate,
+            serviceName: x.serviceName,
+            contractCount: x.contractCount,
+            optionFeeTotal: x.optionFeeTotal,
+            optionUseStartDate: x.optionUseStartDate,
+          };
+        })
+      );
       setTvaaHrefs(tvaaHrefs);
       setBikeHrefs(bikeHrefs);
     };
@@ -442,28 +522,6 @@ const DatagridColumnGroups = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const tvaaHandleIconOutputCsvClick = () => {
-    const contractCsv: ContractCsvModel[] = [];
-    let feeTotal = '';
-    tvaaContract.map((x) => {
-      feeTotal = x.feeTotal === '' ? feeTotal : x.feeTotal;
-      contractCsv.push({
-        id: x.id,
-        contractId: x.contractId,
-        feeTotal: feeTotal,
-        changeReservationFlag: x.changeReservationFlag,
-        billingId: x.billingId,
-        claimMethodKind: x.claimMethodKind,
-        courseName: x.courseName,
-        courseEntryKind: x.courseEntryKind,
-        courseFeeTotal: x.courseFeeTotal,
-        courseUseStartDate: x.courseUseStartDate,
-        serviceName: x.serviceName,
-        contractCount: x.contractCount,
-        optionFeeTotal: x.optionFeeTotal,
-        optionUseStartDate: x.optionUseStartDate,
-      });
-    });
-
     const date = new Date();
     const year = date.getFullYear().toString().padStart(4, '0');
     const month = date.getMonth().toString().padStart(2, '0');
@@ -480,32 +538,10 @@ const DatagridColumnGroups = () => {
       hours +
       minutes +
       '.csv';
-
-    exportCsv(contractCsv, filename);
+    exportCsv(filename, apiRefTvaaContract);
   };
 
   const bikeHandleIconOutputCsvClick = () => {
-    const contractCsv: ContractCsvModel[] = [];
-    let feeTotal = '';
-    bikeContract.map((x) => {
-      feeTotal = x.feeTotal === '' ? feeTotal : x.feeTotal;
-      contractCsv.push({
-        id: x.id,
-        contractId: x.contractId,
-        feeTotal: feeTotal,
-        changeReservationFlag: x.changeReservationFlag,
-        billingId: x.billingId,
-        claimMethodKind: x.claimMethodKind,
-        courseName: x.courseName,
-        courseEntryKind: x.courseEntryKind,
-        courseFeeTotal: x.courseFeeTotal,
-        courseUseStartDate: x.courseUseStartDate,
-        serviceName: x.serviceName,
-        contractCount: x.contractCount,
-        optionFeeTotal: x.optionFeeTotal,
-        optionUseStartDate: x.optionUseStartDate,
-      });
-    });
     const date = new Date();
     const year = date.getFullYear().toString().padStart(4, '0');
     const month = date.getMonth().toString().padStart(2, '0');
@@ -522,8 +558,7 @@ const DatagridColumnGroups = () => {
       hours +
       minutes +
       '.csv';
-
-    exportCsv(contractCsv, filename);
+    exportCsv(filename, apiRefBikeContract);
   };
 
   /**
@@ -536,20 +571,45 @@ const DatagridColumnGroups = () => {
   /**
    * データグリッドの背景色設定
    */
-  const getCellClassName = (
+  const getCellClassNameTvaaContract = (
     params: GridCellParams<any, any, any, GridTreeNode>
   ): string => {
-    if (
-      params.field === 'courseFeeTotal' &&
-      params.row['courseFeeDiscountFlag']
-    )
-      return 'cold';
-    if (
-      params.field === 'optionFeeTotal' &&
-      params.row['optionFeeTotalDiscountFlag']
-    )
-      return 'cold';
-    return '';
+    let CellClassName = '';
+    if (params.field === 'courseFeeTotal') {
+      tvaaContract.map((x) => {
+        if (x.id === params.row.id) {
+          CellClassName = x.courseFeeDiscountFlag ? 'cold' : '';
+        }
+      });
+    }
+    if (params.field === 'optionFeeTotal') {
+      tvaaContract.map((x) => {
+        if (x.id === params.row.id) {
+          CellClassName = x.optionFeeTotalDiscountFlag ? 'cold' : '';
+        }
+      });
+    }
+    return CellClassName;
+  };
+  const getCellClassNameBikeContract = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ): string => {
+    let CellClassName = '';
+    if (params.field === 'courseFeeTotal') {
+      bikeContract.map((x) => {
+        if (x.id === params.id) {
+          CellClassName = x.courseFeeDiscountFlag ? 'cold' : '';
+        }
+      });
+    }
+    if (params.field === 'optionFeeTotal') {
+      bikeContract.map((x) => {
+        if (x.id === params.id) {
+          CellClassName = x.optionFeeTotalDiscountFlag ? 'cold' : '';
+        }
+      });
+    }
+    return CellClassName;
   };
 
   return (
@@ -567,13 +627,13 @@ const DatagridColumnGroups = () => {
           }
         >
           <DataGrid
-            width={1530}
             columns={contractColumns}
             columnGroupingModel={columnGroups}
-            rows={tvaaContract}
+            rows={tvaaContractRow}
             hrefs={tvaaHrefs}
             onLinkClick={handleLinkClick}
-            getCellClassName={getCellClassName}
+            getCellClassName={getCellClassNameTvaaContract}
+            apiRef={apiRefTvaaContract}
           />
         </Section>
         <Section
@@ -587,13 +647,13 @@ const DatagridColumnGroups = () => {
           }
         >
           <DataGrid
-            width={1530}
             columns={contractColumns}
             columnGroupingModel={columnGroups}
-            rows={bikeContract}
+            rows={bikeContractRow}
             hrefs={bikeHrefs}
             onLinkClick={handleLinkClick}
-            getCellClassName={getCellClassName}
+            getCellClassName={getCellClassNameBikeContract}
+            apiRef={apiRefBikeContract}
           />
         </Section>
       </MainLayout>

@@ -29,7 +29,10 @@ import { Textarea } from 'controls/Textarea';
 import { PostalTextField, TextField } from 'controls/TextField';
 import { Typography } from 'controls/Typography';
 
-import { ScrCom9999GetAddressInfo } from 'apis/com/ScrCom9999APi';
+import {
+  ScrCom9999GetAddressInfo,
+  ScrCom9999GetChangeDate,
+} from 'apis/com/ScrCom9999Api';
 import {
   errorResult,
   ScrMem0010GetBusinessbase,
@@ -38,7 +41,6 @@ import {
   ScrMem0010GetContract,
   ScrMem0010GetContractRequest,
   ScrMem0010GetContractResponse,
-  ScrMem0010GetEmployeeResponse,
   ScrMem0010InputCheckBusinessBase,
   ScrMem0010InputCheckBusinessBaseRequest,
   ScrMem0010RegistrationBusinessBase,
@@ -50,12 +52,13 @@ import {
   ScrMem9999GetCorpBasicInfoRequest,
   ScrMem9999GetCorpBasicInfoResponse,
   ScrMem9999GetEmployee,
+  ScrMem9999GetEmployeeFromBusinessBaseResponse,
 } from 'apis/mem/ScrMem9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { comApiClient, memApiClient } from 'providers/ApiClient';
+import { memApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
@@ -274,16 +277,16 @@ const convertToBusinessBaseModel = (
  * 事業拠点契約コース・サービス一覧取得レスポンスからプルダウンデータモデルへの変換
  */
 const salesStaffSelectValuesModel = (
-  response: ScrMem0010GetEmployeeResponse
+  response: ScrMem9999GetEmployeeFromBusinessBaseResponse
 ): SelectValuesModel => {
   return {
-    tvaaSalesStaffSelectValues: response.tvaaContractInfo.map((x) => {
+    tvaaSalesStaffSelectValues: response.tvaaSalesInfo.map((x) => {
       return {
         value: x.salesId,
         displayValue: x.salesId + '　' + x.salesName,
       };
     }),
-    bikeSalesStaffSelectValues: response.bikeContractInfo.map((x) => {
+    bikeSalesStaffSelectValues: response.bikeSalesInfo.map((x) => {
       return {
         value: x.salesId,
         displayValue: x.salesId + '　' + x.salesName,
@@ -397,24 +400,7 @@ const selectValuesInitialValues: SelectValuesModel = {
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
   errorList: [],
   warningList: [],
-  registrationChangeList: [
-    {
-      screenId: '',
-      screenName: '',
-      tabId: '',
-      tabName: '',
-      sectionList: [
-        {
-          sectionName: '',
-          columnList: [
-            {
-              columnName: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  registrationChangeList: [],
   changeExpectDate: '',
 };
 
@@ -564,7 +550,7 @@ const convertToErrorMessages = (response: errorResult[]): errorList[] => {
   response.map((x) => {
     list.push({
       errorCode: x.errorCode,
-      errorMessages: [x.errorMessage],
+      errorMessage: x.errorMessage,
     });
   });
   return list;
@@ -575,17 +561,18 @@ const convertTowarningMessages = (response: errorResult[]): warningList[] => {
   response.map((x) => {
     list.push({
       warningCode: x.errorCode,
-      warningMessages: [x.errorMessage],
+      warningMessage: x.errorMessage,
     });
   });
   return list;
 };
 
-const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
+const ScrMem0010BasicTab = () => {
   // router
   const [searchParams] = useSearchParams();
   const { corporationId, bussinessBaseId } = useParams();
   const applicationId = searchParams.get('applicationId');
+  const readOnly = searchParams.get('readOnly');
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
@@ -606,8 +593,12 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
     useState<boolean>(false);
 
   // コンポーネントを読み取り専用に変更するフラグ
+  const readOnlyFlag: boolean =
+    readOnly === null ? false : readOnly === 'true' ? true : false;
   const isReadOnly = useState<boolean>(
-    applicationId !== null ? true : props.editPossible
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0010') === -1
+      ? true
+      : readOnlyFlag
   );
 
   // form
@@ -765,23 +756,16 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
         screenId: 'SCR-MEM-0010',
         tabId: 'B-16',
         masterId: '',
-        businessDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
+        businessDate: user.taskDate,
       };
-      const getChangeDate = (
-        await comApiClient.post(
-          '/com/scr-com-9999/get-history-info',
-          getChangeDateRequest
-        )
-      ).data;
+      const getChangeDate = await ScrCom9999GetChangeDate(getChangeDateRequest);
 
-      const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
-        (e: { changeHistoryNumber: number; changeExpectDate: string }) => {
-          return {
-            value: e.changeHistoryNumber,
-            displayValue: new Date(e.changeExpectDate).toLocaleDateString(),
-          };
-        }
-      );
+      const chabngeHistory = getChangeDate.changeExpectDateInfo.map((x) => {
+        return {
+          value: x.changeHistoryNumber,
+          displayValue: new Date(x.changeExpectDate).toLocaleDateString(),
+        };
+      });
       setChangeHistory(chabngeHistory);
 
       //四輪、二輪契約情報
@@ -971,12 +955,12 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
         {
           screenId: 'SCR-MEM-0010',
           screenName: '事業拠点情報',
-          tabId: 'B-16',
+          tabId: 16,
           tabName: '基本情報',
           sectionList: convertToSectionList(dirtyFields),
         },
       ],
-      changeExpectDate: '', // TODO:業務日付取得方法実装待ち、new Date()で登録
+      changeExpectDate: user.taskDate,
     });
   };
 
@@ -1068,98 +1052,99 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
             <Section name='事業拠点情報'>
               <RowStack>
                 <ColStack>
-                  <Checkbox
-                    name='businessBaseCorporationInformationSynchronizationFlag'
-                    label='法人情報コピー'
-                  />
-                </ColStack>
-              </RowStack>
-              <MarginBox mb={10}>
-                <></>
-              </MarginBox>
-              <RowStack>
-                <ColStack>
-                  <TextField
-                    label='事業拠点ID'
-                    name='businessBaseId'
-                    readonly
-                  />
-                  <Select
-                    label='都道府県'
-                    name='businessBasePrefectureCode'
-                    selectValues={selectValues.prefectureCodeSelectValues}
-                    blankOption
-                    required
-                    disabled={getValues(
-                      'businessBaseCorporationInformationSynchronizationFlag'
-                    )}
-                  />
-                  <TextField label='担当者' name='businessBaseStaffName' />
-                </ColStack>
-                <ColStack>
-                  <TextField
-                    label='事業拠点名称'
-                    name='businessBaseName'
-                    required
-                  />
-                  <TextField
-                    label='市区町村'
-                    name='businessBaseMunicipalities'
-                    required
-                    disabled={getValues(
-                      'businessBaseCorporationInformationSynchronizationFlag'
-                    )}
-                  />
-                  <TextField
-                    label='担当者連絡先'
-                    name='businessBaseStaffContactPhoneNumber'
-                  />
-                </ColStack>
-                <ColStack>
-                  <TextField
-                    label='事業拠点名称カナ'
-                    name='businessBaseNameKana'
-                    required
-                  />
-                  <TextField
-                    label='番地・号・建物名など'
-                    name='businessBaseAddressBuildingName'
-                    required
-                    disabled={getValues(
-                      'businessBaseCorporationInformationSynchronizationFlag'
-                    )}
-                  />
-                  <Select
-                    label='四輪営業担当'
-                    name='tvaaSalesStaff'
-                    selectValues={selectValues.tvaaSalesStaffSelectValues}
-                    blankOption
-                  />
-                </ColStack>
-                <ColStack>
-                  <PostalTextField
-                    label='郵便番号'
-                    name='businessBaseZipCode'
-                    required
-                    onBlur={businessBaseZipCodeOnBlur}
-                    disabled={getValues(
-                      'businessBaseCorporationInformationSynchronizationFlag'
-                    )}
-                  />
-                  <TextField
-                    label='TEL'
-                    name='businessBasePhoneNumber'
-                    required
-                    disabled={getValues(
-                      'businessBaseCorporationInformationSynchronizationFlag'
-                    )}
-                  />
-                  <Select
-                    label='二輪営業担当'
-                    name='bikeSalesStaff'
-                    selectValues={selectValues.bikeSalesStaffSelectValues}
-                    blankOption
-                  />
+                  <RowStack>
+                    <ColStack>
+                      <Checkbox
+                        name='businessBaseCorporationInformationSynchronizationFlag'
+                        label='法人情報コピー'
+                      />
+                    </ColStack>
+                  </RowStack>
+                  <RowStack>
+                    <ColStack>
+                      <TextField
+                        label='事業拠点ID'
+                        name='businessBaseId'
+                        readonly
+                      />
+                      <Select
+                        label='都道府県'
+                        name='businessBasePrefectureCode'
+                        selectValues={selectValues.prefectureCodeSelectValues}
+                        blankOption
+                        required
+                        disabled={getValues(
+                          'businessBaseCorporationInformationSynchronizationFlag'
+                        )}
+                      />
+                      <TextField label='担当者' name='businessBaseStaffName' />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='事業拠点名称'
+                        name='businessBaseName'
+                        required
+                      />
+                      <TextField
+                        label='市区町村'
+                        name='businessBaseMunicipalities'
+                        required
+                        disabled={getValues(
+                          'businessBaseCorporationInformationSynchronizationFlag'
+                        )}
+                      />
+                      <TextField
+                        label='担当者連絡先'
+                        name='businessBaseStaffContactPhoneNumber'
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='事業拠点名称カナ'
+                        name='businessBaseNameKana'
+                        required
+                      />
+                      <TextField
+                        label='番地・号・建物名など'
+                        name='businessBaseAddressBuildingName'
+                        required
+                        disabled={getValues(
+                          'businessBaseCorporationInformationSynchronizationFlag'
+                        )}
+                      />
+                      <Select
+                        label='四輪営業担当'
+                        name='tvaaSalesStaff'
+                        selectValues={selectValues.tvaaSalesStaffSelectValues}
+                        blankOption
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <PostalTextField
+                        label='郵便番号'
+                        name='businessBaseZipCode'
+                        required
+                        onBlur={businessBaseZipCodeOnBlur}
+                        disabled={getValues(
+                          'businessBaseCorporationInformationSynchronizationFlag'
+                        )}
+                      />
+                      <TextField
+                        label='TEL'
+                        name='businessBasePhoneNumber'
+                        required
+                        disabled={getValues(
+                          'businessBaseCorporationInformationSynchronizationFlag'
+                        )}
+                      />
+                      <Select
+                        label='二輪営業担当'
+                        name='bikeSalesStaff'
+                        selectValues={selectValues.bikeSalesStaffSelectValues}
+                        blankOption
+                      />
+                    </ColStack>
+                  </RowStack>
                 </ColStack>
               </RowStack>
             </Section>
@@ -1173,7 +1158,7 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
                   </Link>
                 </ColStack>
                 <ColStack>
-                  <Textarea name='memberMemo' disabled={true} />
+                  <Textarea name='memberMemo' disabled={true} size='l' />
                 </ColStack>
               </RowStack>
             </Section>
@@ -1203,7 +1188,11 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
                     </Stack>
                   )}
                   <MarginBox mb={6}>
-                    <DatePicker label='変更予定日' name='changeExpectedDate' />
+                    <DatePicker
+                      label='変更予定日'
+                      name='changeExpectedDate'
+                      disabled={isReadOnly[0]}
+                    />
                   </MarginBox>
                 </RightElementStack>
               </Grid>
@@ -1214,7 +1203,9 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
         {/* bottom */}
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
-            <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
+            <CancelButton onClick={handleCancel} disable={readOnlyFlag}>
+              キャンセル
+            </CancelButton>
             <ConfirmButton onClick={handleConfirm} disable={isReadOnly[0]}>
               確定
             </ConfirmButton>
@@ -1226,7 +1217,8 @@ const ScrMem0010BasicTab = (props: { editPossible: boolean }) => {
       <ScrCom0032Popup
         isOpen={scrCom00032PopupIsOpen}
         data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
+        handleRegistConfirm={handlePopupConfirm}
+        handleApprovalConfirm={handlePopupConfirm}
         handleCancel={handlePopupCancel}
       />
 
