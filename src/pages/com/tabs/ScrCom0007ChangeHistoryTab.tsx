@@ -7,7 +7,6 @@ import { Section } from 'layouts/Section';
 import { AddButton } from 'controls/Button';
 import {
   DataGrid,
-  exportCsv,
   GridColDef,
   GridHrefsModel,
   GridTooltipsModel,
@@ -19,6 +18,8 @@ import {
 } from 'apis/com/ScrCom0007Api';
 
 import { useNavigate } from 'hooks/useNavigate';
+
+import { useGridApiRef } from '@mui/x-data-grid';
 
 /**
  * 検索条件列定義
@@ -123,7 +124,8 @@ const ScrCom0007ChangeHistoryTab = () => {
     GridTooltipsModel[]
   >([]);
 
-  // const [cellTypeRows] = useState<CellTypeRowModel[]>(CELL_TYPE_DATASET);
+  // CSV
+  const apiRef = useGridApiRef();
 
   // router
   const navigate = useNavigate();
@@ -171,7 +173,6 @@ const ScrCom0007ChangeHistoryTab = () => {
 
   /**
    * 申請IDリンク押下時のイベントハンドラ
-   * @param url
    */
   const handleLinkClick = (url: string) => {
     navigate(url);
@@ -181,7 +182,7 @@ const ScrCom0007ChangeHistoryTab = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv(searchResult, 'ScrCom0007ChangeHistoryTab.csv');
+    // exportCsv('ScrCom0007ChangeHistoryTab.csv', apiRef);
   };
 
   return (
