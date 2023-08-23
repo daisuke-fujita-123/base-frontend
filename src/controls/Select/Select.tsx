@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { FieldValues, Path, useFormContext } from 'react-hook-form';
+import React, { useEffect, useState } from 'react';
+import {
+  FieldPath,
+  FieldPathValue,
+  FieldValues,
+  Path,
+  useFormContext,
+  useWatch,
+} from 'react-hook-form';
 
 import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
@@ -8,19 +15,19 @@ import { AddIconButton } from 'controls/Button';
 import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
+import Pulldown from 'icons/pulldown_arrow.png';
+
 import {
   Box,
-  Chip,
   FormControl,
   FormHelperText,
   Select as SelectMui,
   styled,
 } from '@mui/material';
-import Autocomplete from '@mui/material/Autocomplete';
 import MenuItem from '@mui/material/MenuItem';
 
 export interface SelectValue {
-  value: string;
+  value: string | number;
   displayValue: string;
 }
 
@@ -35,6 +42,7 @@ export interface SelectProps<T extends FieldValues> {
   required?: boolean;
   minWidth?: number;
   isAddble?: boolean;
+  size?: 's' | 'm' | 'l' | 'xl';
 }
 
 export const StyledFormControl = styled(FormControl)(({ error }) => ({
@@ -53,6 +61,20 @@ export const StyledFormControl = styled(FormControl)(({ error }) => ({
   },
 }));
 
+export const StyledMenuItem = styled(MenuItem)({
+  '&.Mui-selected': {
+    backgroundColor: '#0075ff',
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: '#0075ff',
+    },
+  },
+});
+
+const PulldownIcon = () => {
+  return <img style={{ marginRight: 10 }} src={Pulldown}></img>;
+};
+
 export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
   const {
     label,
@@ -64,84 +86,110 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
     blankOption = false,
     required = false,
     minWidth = 100,
+    size = 's',
   } = props;
 
-  const { register, formState, watch, control } = useFormContext();
-
-  const crrentValue = watch(name);
+  const { register, formState, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
 
   // 複数選択された場合、先頭行の空白は削除する
   const omitBlankValue = (val: string[]) => {
-    return val.length > 1 ? val.filter((e) => e) : val;
+    return val.filter((e) => e !== '');
   };
-  const isReadOnly = control?._options?.context[0];
 
+  // 検索可能なSelect用変数
+  const [searchVal, setSearchVal] = useState<string>('');
+  const [isType, setIsType] = useState<boolean>(false);
+  const [filteringVal, setFilteringVal] = useState<SelectValue[]>(selectValues);
+
+  // 検索可能なSelectの選択肢検索変数
+  const handleChange = (val: string) => {
+    setSearchVal(val);
+  };
+
+  // 選択肢のフィルタリング
+  useEffect(() => {
+    if (isType) return;
+    if (!searchVal) {
+      setFilteringVal(selectValues);
+    } else {
+      setFilteringVal(
+        selectValues.filter((val) => val.displayValue.includes(searchVal))
+      );
+    }
+  }, [isType, searchVal, selectValues]);
+
+  const isReadOnly = control?._options?.context[0];
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
-      <Box sx={{ minWidth: minWidth, height: 30 }}>
+      <Box sx={{ minWidth: minWidth, minHeight: 30 }}>
         {/* 選択肢が10個未満の場合が上段、選択肢が10個以上の場合が下段。10個以上の場合は、選択肢を検索することができる。 */}
         {selectValues.length < 10 ? (
           <StyledFormControl fullWidth error={!!formState.errors[name]}>
             <SelectMui
               disabled={disabled}
-              value={multiple ? omitBlankValue(crrentValue) : crrentValue}
+              value={multiple ? omitBlankValue(watchValue) : watchValue}
               {...register(name)}
               multiple={multiple}
               sx={{ textAlign: 'left' }}
               inputProps={{
                 readOnly: isReadOnly,
               }}
+              IconComponent={PulldownIcon}
             >
-              {blankOption && <MenuItem value=''>{'　'}</MenuItem>}
+              {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
               {selectValues.map((option, index) => (
-                <MenuItem key={index} value={option.value}>
+                <StyledMenuItem key={index} value={option.value}>
                   {option.displayValue}
-                </MenuItem>
+                </StyledMenuItem>
               ))}
             </SelectMui>
-            <FormHelperText>
-              {formState.errors[name]?.message
-                ? String(formState.errors[name]?.message)
-                : null}
-            </FormHelperText>
+            {formState.errors[name]?.message && (
+              <FormHelperText>
+                {String(formState.errors[name]?.message)}
+              </FormHelperText>
+            )}
           </StyledFormControl>
         ) : (
-          // TODO 挙動を要確認（SelectではなくTextFieldになっている）
-          <Autocomplete
-            freeSolo
-            multiple={multiple}
-            disabled={disabled}
-            size='small'
-            options={selectValues.map((option) => option.displayValue)}
-            renderInput={(params) => (
-              <StyledTextFiled
-                {...params}
-                error={!!formState.errors[name]}
-                helperText={
-                  formState.errors[name]?.message
-                    ? String(formState.errors[name]?.message)
-                    : null
-                }
-              />
+          <StyledFormControl fullWidth error={!!formState.errors[name]}>
+            <SelectMui
+              disabled={disabled}
+              value={multiple ? omitBlankValue(watchValue) : watchValue}
+              {...register(name)}
+              multiple={multiple}
+              sx={{ textAlign: 'left' }}
+              inputProps={{
+                readOnly: isReadOnly,
+              }}
+              IconComponent={PulldownIcon}
+            >
+              {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
+              {
+                <StyledMenuItem value=''>
+                  <StyledTextFiled
+                    onChange={(e) => handleChange(e.target.value)}
+                    onCompositionStart={() => setIsType(true)}
+                    onCompositionEnd={() => setIsType(false)}
+                  ></StyledTextFiled>
+                </StyledMenuItem>
+              }
+              {filteringVal.map((option, index) => (
+                <StyledMenuItem key={index} value={option.value}>
+                  {option.displayValue}
+                </StyledMenuItem>
+              ))}
+            </SelectMui>
+            {formState.errors[name]?.message && (
+              <FormHelperText>
+                {String(formState.errors[name]?.message)}
+              </FormHelperText>
             )}
-            renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  {...getTagProps({ index })}
-                  label={option}
-                  size='small'
-                  key={index}
-                  style={{ maxHeight: 30, marginTop: -4, marginRight: 4 }}
-                />
-              ))
-            }
-            {...register(name)}
-            value={multiple ? omitBlankValue(crrentValue) : crrentValue}
-          />
+          </StyledFormControl>
         )}
       </Box>
     </InputLayout>
@@ -158,40 +206,54 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
     blankOption = false,
     required = false,
     minWidth = 100,
+    size = 's',
   } = props;
 
-  const { register, formState, watch, control } = useFormContext();
-
-  const crrentValue = watch(name);
-
-  const [selectRows, SetSelectRows] = useState<string[]>(['']);
-
-  const handleClick = () => {
-    SetSelectRows((prev) => [...prev, '']);
-  };
+  const { register, formState, control, setValue } = useFormContext();
   const isReadOnly = control?._options?.context[0];
-
+  const watchValue = useWatch({ name, control });
+  const selectList = [...watchValue];
+  const handleClick = () => {
+    setValue(name, [...selectList, ''] as FieldPathValue<
+      FieldValues,
+      FieldPath<FieldValues>
+    >);
+  };
+  if (!watchValue) return <></>;
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <Grid container width={490}>
         <Grid item xs={11}>
-          {selectRows.map((val: string, index: number) => {
+          {watchValue?.map((val: string, index: number) => {
             return (
               <Box key={index} mb={2}>
-                <Box sx={{ minWidth: minWidth, height: 30 }}>
+                <Box sx={{ minWidth: minWidth, minHeight: 30 }}>
                   <StyledFormControl fullWidth error={!!formState.errors[name]}>
                     <SelectMui
                       disabled={disabled}
-                      value={crrentValue}
-                      {...register(name)}
+                      defaultValue={val}
+                      {...register(name, {
+                        onChange: (e) =>
+                          setValue(
+                            name,
+                            selectList.map((value: string, rowIndex: number) =>
+                              rowIndex === index ? e.target.value : value
+                            ) as FieldPathValue<
+                              FieldValues,
+                              FieldPath<FieldValues>
+                            >
+                          ),
+                      })}
                       sx={{ textAlign: 'left' }}
                       inputProps={{
                         readOnly: isReadOnly,
                       }}
+                      IconComponent={PulldownIcon}
                     >
                       {blankOption && <MenuItem value=''>{'　'}</MenuItem>}
                       {selectValues.map((option, index) => (
@@ -200,11 +262,11 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
                         </MenuItem>
                       ))}
                     </SelectMui>
-                    <FormHelperText>
-                      {formState.errors[name]?.message
-                        ? String(formState.errors[name]?.message)
-                        : null}
-                    </FormHelperText>
+                    {formState.errors[name]?.message && (
+                      <FormHelperText>
+                        {String(formState.errors[name]?.message)}
+                      </FormHelperText>
+                    )}
                   </StyledFormControl>
                 </Box>
               </Box>

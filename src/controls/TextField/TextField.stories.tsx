@@ -30,10 +30,6 @@ export default {
     name: {
       description: 'reacthookformで管理する名前',
     },
-    variant: {
-      description: 'TextFieldのcssの種類',
-      defaultValue: { summary: 'outline' },
-    },
     disabled: {
       description: '使用可否',
       defaultValue: { summary: 'false' },
@@ -140,6 +136,14 @@ export const Example = () => {
           onBlur={() => {
             console.log('onBlur');
           }}
+        />
+        <TextField
+          label='サンプルラベル'
+          required={true}
+          name='sampleName'
+          fullWidth={true}
+          variant='outlined'
+          unit='単位'
         />
       </ThemeProvider>
     </FormProvider>

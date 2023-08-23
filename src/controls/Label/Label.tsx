@@ -2,13 +2,16 @@ import React from 'react';
 
 import { theme } from 'controls/theme';
 
-import { styled, Typography as TypographyMui } from '@mui/material';
+import { Chip, styled, Typography as TypographyMui } from '@mui/material';
 
 const StyledRequiredLabel = styled('div')({
   background: theme.palette.error.main,
   width: theme.spacing(8),
   height: theme.spacing(4),
   marginLeft: theme.spacing(1),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const RequiredLabelText = styled(TypographyMui)({
@@ -51,5 +54,31 @@ export const WarningLabel = (props: LabelProps) => {
       <WarningLabelText>{text}</WarningLabelText>
     </StyledWarningLabel>
   );
+};
+
+const StyledCaptionLabel = styled('div')({
+  alignItems: 'center',
+  display: 'flex',
+  justifyContent: 'flex-start',
+});
+
+const CaptionLabelText = styled(TypographyMui)({
+  textAlign: 'center',
+  fontWeight: 'bold',
+  fontSize: '16px',
+});
+
+export const CaptionLabel = (props: LabelProps) => {
+  const { text } = props;
+  return (
+    <StyledCaptionLabel>
+      <CaptionLabelText>{text}</CaptionLabelText>
+    </StyledCaptionLabel>
+  );
+};
+
+export const Wappen = (props: LabelProps) => {
+  const { text } = props;
+  return <Chip size='small' color='error' label={text}></Chip>;
 };
 

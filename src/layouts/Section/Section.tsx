@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
-import { ContentsBox, MarginBox, RightBox, SearchTextBox } from 'layouts/Box';
+import {
+  Box,
+  ContentsBox,
+  ContentsOutsideBox,
+  ErrorBox,
+  MarginBox,
+  RightBox,
+  SearchTextBox,
+  WarningBox,
+} from 'layouts/Box';
 
-import { Button } from 'controls/Button';
 import { theme } from 'controls/theme';
 import { SubTitle } from 'controls/Typography';
 
@@ -28,6 +36,13 @@ interface SectionProps {
   isSearch?: boolean;
   isTransparent?: boolean;
   serchLabels?: React.ReactNode | React.ReactNode[];
+  isWarning?: boolean;
+  isError?: boolean;
+  openable?: boolean;
+  width?: number;
+}
+export interface SectionClose {
+  closeSection: () => void;
 }
 
 const StyledAccordion = styled(AccordionMui)({
@@ -35,19 +50,66 @@ const StyledAccordion = styled(AccordionMui)({
   width: 'calc( 100% + 2px )',
   margin: 0,
 });
-
-export const Section = (props: SectionProps) => {
+// eslint-disable-next-line react/display-name
+export const Section = forwardRef((props: SectionProps, ref) => {
   const {
     name,
     children,
     decoration,
-    open = true,
     isSearch = false,
     isTransparent = false,
     serchLabels,
+    openable = true,
+    width,
   } = props;
 
-  const [expanded, setExpanded] = useState<boolean>(open);
+  const [expanded, setExpanded] = useState<boolean>(true);
+
+  const onClick = () => {
+    setExpanded(!expanded);
+  };
+
+  useImperativeHandle(ref, () => ({
+    closeSection: () => setExpanded(false),
+  }));
+
+  if (!name) {
+    return <ContentsBox>{children}</ContentsBox>;
+  }
+  const flexColSx = { display: 'flex', flexDirection: 'column' };
+  return (
+    <Box width={width}>
+      <SubTitle onClick={onClick} openable={openable}>
+        {name}
+      </SubTitle>
+      <ContentsBox transparent={isTransparent} disable={isSearch}>
+        <StyledAccordion expanded={expanded}>
+          {!expanded && (
+            <AccordionSummary>
+              <SearchTextBox>{serchLabels}</SearchTextBox>
+            </AccordionSummary>
+          )}
+          {expanded && (
+            <RightBox>
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                {decoration}
+              </MarginBox>
+            </RightBox>
+          )}
+          <AccordionDetails sx={{ m: theme.spacing(4) }}>
+            <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
+          </AccordionDetails>
+        </StyledAccordion>
+      </ContentsBox>
+    </Box>
+  );
+});
+
+export const PopSection = (props: SectionProps) => {
+  const { name, children, isWarning, isError } = props;
+
+  const [expanded, setExpanded] = useState<boolean>(true);
+
   const onClick = () => {
     setExpanded(!expanded);
   };
@@ -56,49 +118,23 @@ export const Section = (props: SectionProps) => {
     return <ContentsBox>{children}</ContentsBox>;
   }
 
-  const flexColSx = { display: 'flex', flexDirection: 'column' };
   return (
     <>
-      {!expanded && isSearch && (
-        <RightBox>
-          <Button
-            onClick={() => {
-              onClick();
-            }}
-          >
-            ^
-          </Button>
-        </RightBox>
+      {isWarning && (
+        <WarningBox onClick={onClick} title={name}>
+          {children}
+        </WarningBox>
       )}
-      <SubTitle onClick={onClick}>{name}</SubTitle>
-      <ContentsBox transparent={isTransparent} disable={isSearch}>
-        <StyledAccordion expanded={expanded}>
-          {!expanded && (
-            <AccordionSummary>
-              <SearchTextBox>{serchLabels}</SearchTextBox>
-            </AccordionSummary>
-          )}
-          {expanded && <RightBox>{decoration}</RightBox>}
-          <AccordionDetails>
-            <Stack sx={{ ...flexColSx, flexGrow: 1 }} spacing={4}>
-              {children}
-            </Stack>
-          </AccordionDetails>
-          {isSearch && (
-            <RightBox>
-              <MarginBox mt={2} mb={2} ml={2} mr={2}>
-                <Button
-                  onClick={() => {
-                    onClick();
-                  }}
-                >
-                  ^
-                </Button>
-              </MarginBox>
-            </RightBox>
-          )}
-        </StyledAccordion>
-      </ContentsBox>
+      {isError && (
+        <ErrorBox onClick={onClick} title={name}>
+          {children}
+        </ErrorBox>
+      )}
+      {!(isError || isWarning) && (
+        <ContentsOutsideBox onClick={onClick} title={name}>
+          {children}
+        </ContentsOutsideBox>
+      )}
     </>
   );
 };
