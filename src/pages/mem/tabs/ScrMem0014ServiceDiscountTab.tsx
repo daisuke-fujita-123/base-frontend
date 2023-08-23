@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
 
 import ScrCom0032Popup, {
   columnList,
@@ -14,7 +15,6 @@ import ScrCom0032Popup, {
 import ScrCom0033Popup, {
   ScrCom0033PopupModel,
 } from 'pages/com/popups/ScrCom0033Popup';
-import { ScrCom0038PopupModel } from 'pages/com/popups/ScrCom0038Popup';
 
 import { MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
@@ -38,7 +38,7 @@ import { Select, SelectValue } from 'controls/Select';
 import { TextField } from 'controls/TextField';
 
 import {
-  ScrCom9999GetCodeManagementMasterMultiple,
+  ScrCom9999getCodeManagementMasterMultiple,
   ScrCom9999GetCoursename,
   ScrCom9999GetCourseServiceDiscountInfo,
   ScrCom9999GetCourseServiceDiscountInfoResponse,
@@ -140,7 +140,7 @@ const courseInfomationColumns: GridColDef[] = [
     headerName: 'コース',
     cellType: 'select',
     selectValues: [],
-    size: 's',
+    size: 'l',
   },
   {
     field: 'linkMemberKind',
@@ -160,7 +160,7 @@ const courseInfomationColumns: GridColDef[] = [
     field: 'useStartDate',
     headerName: '利用開始日',
     cellType: 'datepicker',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'contractPeriodDate',
@@ -177,12 +177,12 @@ const courseInfomationColumns: GridColDef[] = [
     field: 'leavingDate',
     headerName: '脱会日',
     cellType: 'datepicker',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'targetedServiceKind',
     headerName: '連携用対象サービス',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'recessLeavingReasonKind',
@@ -193,6 +193,11 @@ const courseInfomationColumns: GridColDef[] = [
   },
 ];
 
+const courseInfomationValidationSchema: ObjectSchema<any> = yup.object({
+  useStartDate: yup.string().max(10).date().label('利用開始日'),
+  leavingDate: yup.string().max(10).date().label('脱会日'),
+});
+
 /**
  * 基本サービス情報列定義
  */
@@ -200,7 +205,7 @@ const baseServiceInfomationColumns: GridColDef[] = [
   {
     field: 'service',
     headerName: '基本サービス',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'contractCount',
@@ -211,9 +216,13 @@ const baseServiceInfomationColumns: GridColDef[] = [
   {
     field: 'targetedServiceKind',
     headerName: '連携用対象サービス',
-    size: 'm',
+    size: 'l',
   },
 ];
+
+const baseServiceInfomationValidationSchema: ObjectSchema<any> = yup.object({
+  contractCount: yup.string().max(4).number().label('契約本数'),
+});
 
 /**
  * オプション情報列定義
@@ -227,7 +236,7 @@ const optionInfomationColumns: GridColDef[] = [
   {
     field: 'serviceName',
     headerName: 'オプション',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'contractCount',
@@ -239,7 +248,7 @@ const optionInfomationColumns: GridColDef[] = [
     field: 'useStartDate',
     headerName: '利用開始日',
     cellType: 'datepicker',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'contractPeriodDate',
@@ -266,7 +275,7 @@ const optionInfomationColumns: GridColDef[] = [
   {
     field: 'targetedServiceKind',
     headerName: '連携用対象サービス',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'recessLeavingReasonKind',
@@ -281,6 +290,10 @@ const optionInfomationColumns: GridColDef[] = [
     //cellType: 'button',
   },
 ];
+
+const optionInfomationValidationSchema: ObjectSchema<any> = yup.object({
+  contractCount: yup.string().max(4).number().label('契約本数'),
+});
 
 /**
  * コース個別設定・基本値引値増列定義
@@ -299,12 +312,12 @@ const individualCourseSettingBasicDiscountPriceColumns: GridColDef[] = [
   {
     field: 'Price',
     headerName: '金額',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'courseName',
     headerName: 'セット対象コース',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'oneCountExclusionFlag',
@@ -341,12 +354,12 @@ const individualCourseSettingOptionDiscountPriceColumns: GridColDef[] = [
   {
     field: 'Price',
     headerName: '金額',
-    size: 's',
+    size: 'l',
   },
   {
     field: 'serviceName',
     headerName: 'サービス名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'oneCountExclusionFlag',
@@ -395,12 +408,12 @@ const individualContractSettingBasicDiscountPriceColumns: GridColDef[] = [
   {
     field: 'Price',
     headerName: '金額',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'courseName',
     headerName: 'セット対象コース',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'oneCountExclusionFlag',
@@ -449,12 +462,12 @@ const individualContractSettingOptionDiscountPriceColumns: GridColDef[] = [
   {
     field: 'Price',
     headerName: '金額',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'serviceName',
     headerName: 'サービス名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'oneCountExclusionFlag',
@@ -496,7 +509,7 @@ const finalFeeDiscountColumns: GridColDef[] = [
   {
     field: 'serviceName',
     headerName: 'サービス名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'contractCount',
@@ -522,7 +535,7 @@ const feeDiscountColumns: GridColDef[] = [
   {
     field: 'courseName',
     headerName: 'コース名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'courseMembership',
@@ -543,7 +556,7 @@ const optionInfoColumns: GridColDef[] = [
   {
     field: 'serviceName',
     headerName: 'オプションサービス名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'optionServiceMembership',
@@ -566,7 +579,7 @@ const memberTypeSettingTvaaColumns: GridColDef[] = [
     headerName: '値引値増',
     cellType: 'select',
     selectValues: [],
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'validityPeriodDate',
@@ -584,7 +597,7 @@ const memberTypeSettingBikeColumns: GridColDef[] = [
     headerName: '値引値増',
     cellType: 'select',
     selectValues: [],
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'validityPeriodDate',
@@ -602,7 +615,7 @@ const memberTypeSettingOmatomeColumns: GridColDef[] = [
     headerName: '値引値増',
     cellType: 'select',
     selectValues: [],
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'validityPeriodDate',
@@ -675,7 +688,7 @@ interface individualCourseSettingBasicDiscountPriceRowModel {
   discountPrice: number;
   courseId: string;
   courseName: string;
-  oneCountExclusionFlag: boolean;
+  oneCountExclusionFlag?: boolean;
   contractCount: string;
   contractCountMin: number;
   contractCountMax: number;
@@ -697,7 +710,7 @@ interface individualCourseSettingOptionDiscountPriceRowModel {
   discountPrice: number;
   serviceId: string;
   serviceName: string;
-  oneCountExclusionFlag: boolean;
+  oneCountExclusionFlag?: boolean;
   contractCount: string;
   contractCountMin: number;
   contractCountMax: number;
@@ -721,7 +734,7 @@ interface individualContractSettingBasicDiscountPriceRowModel {
   discountPrice: number;
   courseId: string;
   courseName: string;
-  oneCountExclusionFlag: boolean;
+  oneCountExclusionFlag?: boolean;
   contractCount: string;
   contractCountMin: number;
   contractCountMax: number;
@@ -745,7 +758,7 @@ interface individualContractSettingOptionDiscountPriceRowModel {
   discountPrice: number;
   serviceId: string;
   serviceName: string;
-  oneCountExclusionFlag: boolean;
+  oneCountExclusionFlag?: boolean;
   contractCount: string;
   contractCountMin: number;
   contractCountMax: number;
@@ -905,13 +918,7 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
 const scrCom0033PopupInitialValues: ScrCom0033PopupModel = {
   screenId: '',
   tabId: 0,
-  allRegistrationId: '',
-  masterId: '',
-  registChangeMemo: '',
-  changeExpectDate: '',
   applicationMoney: 0,
-  applicationId: '',
-  programId: '',
 };
 
 /**
@@ -1135,7 +1142,7 @@ const convertFromCalculateAmountMembershipfeediscountincreaseRequest = (
               feeKind: x.feeKind,
               discountPriceKind: x.discountPriceKind,
               discountPrice: x.discountPrice,
-              serviceId: x.serviceId,
+              serviceId: x.serviceID,
               serviceName: x.serviceName,
               oneCountExclusionFlag: x.oneCountExclusionFlag,
               contractCountMin: x.contractCountMin,
@@ -1180,7 +1187,7 @@ const convertFromCalculateAmountMembershipfeediscountincreaseRequest = (
               feeKind: x.feeKind,
               discountPriceKind: x.discountPriceKind,
               discountPrice: x.discountPrice,
-              serviceId: x.serviceId,
+              serviceId: x.serviceID,
               serviceName: x.serviceName,
               oneCountExclusionFlag: x.oneCountExclusionFlag,
               contractCountMin: x.contractCountMin,
@@ -1240,7 +1247,10 @@ const convertFromUpdateCalculateAmountMembershipfeediscountincreaseRequest = (
             discountPrice: x.discountPrice,
             courseId: x.courseId,
             courseName: x.courseName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -1258,7 +1268,10 @@ const convertFromUpdateCalculateAmountMembershipfeediscountincreaseRequest = (
             discountPrice: x.discountPrice,
             serviceId: x.serviceId,
             serviceName: x.serviceName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -1280,7 +1293,10 @@ const convertFromUpdateCalculateAmountMembershipfeediscountincreaseRequest = (
             discountPrice: x.discountPrice,
             courseId: x.courseId,
             courseName: x.courseName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -1301,7 +1317,10 @@ const convertFromUpdateCalculateAmountMembershipfeediscountincreaseRequest = (
             discountPrice: x.discountPrice,
             serviceId: x.serviceId,
             serviceName: x.serviceName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -1571,7 +1590,7 @@ const convertToIndividualCourseSettingBasicDiscountPriceRow = (
         discountPrice: val.discountPrice,
         courseId: val.courseId,
         courseName: val.courseName,
-        oneCountExclusionFlag: val.oneCountExclusionFlag,
+        oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
         contractCount:
           val.contractCountMin + '以上　' + val.contractCountMax + '未満',
         contractCountMin: val.contractCountMin,
@@ -1579,7 +1598,7 @@ const convertToIndividualCourseSettingBasicDiscountPriceRow = (
         periodDate: periodDate,
         periodStartDate: periodStartDate,
         periodEndDate: periodEndDate,
-        contractMonths: val.contractMonths,
+        contractMonths: Number(val.contractMonths),
       });
     }
   );
@@ -1616,7 +1635,7 @@ const convertToInputCheckBillingInfoIndividualCourseSettingBasicDiscountPriceRow
           discountPrice: val.discountPrice,
           courseId: val.courseId,
           courseName: val.courseName,
-          oneCountExclusionFlag: val.oneCountExclusionFlag,
+          oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
           contractCount:
             val.contractCountMin + '以上　' + val.contractCountMax + '未満',
           contractCountMin: val.contractCountMin,
@@ -1658,9 +1677,9 @@ const convertToIndividualCourseSettingOptionDiscountPriceRow = (
         Price: val.discountPriceKind + '　' + val.discountPrice,
         discountPriceKind: val.discountPriceKind,
         discountPrice: val.discountPrice,
-        serviceId: val.serviceId,
+        serviceId: val.serviceID,
         serviceName: val.serviceName,
-        oneCountExclusionFlag: val.oneCountExclusionFlag,
+        oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
         contractCount:
           val.contractCountMin + '以上　' + val.contractCountMax + '未満',
         contractCountMin: val.contractCountMin,
@@ -1668,7 +1687,7 @@ const convertToIndividualCourseSettingOptionDiscountPriceRow = (
         periodDate: periodDate,
         periodStartDate: periodStartDate,
         periodEndDate: periodEndDate,
-        contractMonths: val.contractMonths,
+        contractMonths: Number(val.contractMonths),
       });
     }
   );
@@ -1705,7 +1724,7 @@ const convertToInputCheckBillingInfoIndividualCourseSettingOptionDiscountPriceRo
           discountPrice: val.discountPrice,
           serviceId: val.serviceId,
           serviceName: val.serviceName,
-          oneCountExclusionFlag: val.oneCountExclusionFlag,
+          oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
           contractCount:
             val.contractCountMin + '以上　' + val.contractCountMax + '未満',
           contractCountMin: val.contractCountMin,
@@ -1751,7 +1770,7 @@ const convertToIndividualContractSettingBasicDiscountPriceRow = (
         discountPrice: val.discountPrice,
         courseId: val.courseId,
         courseName: val.courseName,
-        oneCountExclusionFlag: val.oneCountExclusionFlag,
+        oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
         contractCount:
           val.contractCountMin + '以上　' + val.contractCountMax + '未満',
         contractCountMin: val.contractCountMin,
@@ -1759,7 +1778,7 @@ const convertToIndividualContractSettingBasicDiscountPriceRow = (
         periodDate: periodDate,
         periodStartDate: periodStartDate,
         periodEndDate: periodEndDate,
-        contractMonths: val.contractMonths,
+        contractMonths: Number(val.contractMonths),
       });
     }
   );
@@ -1798,7 +1817,7 @@ const convertToInputCheckBillingInfoIndividualContractSettingBasicDiscountPriceR
           discountPrice: val.discountPrice,
           courseId: val.courseId,
           courseName: val.courseName,
-          oneCountExclusionFlag: val.oneCountExclusionFlag,
+          oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
           contractCount:
             val.contractCountMin + '以上　' + val.contractCountMax + '未満',
           contractCountMin: val.contractCountMin,
@@ -1842,9 +1861,9 @@ const convertToIndividualContractSettingOptionDiscountPriceRow = (
         Price: val.discountPriceKind + '　' + val.discountPrice,
         discountPriceKind: val.discountPriceKind,
         discountPrice: val.discountPrice,
-        serviceId: val.serviceId,
+        serviceId: val.serviceID,
         serviceName: val.serviceName,
-        oneCountExclusionFlag: val.oneCountExclusionFlag,
+        oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
         contractCount:
           val.contractCountMin + '以上　' + val.contractCountMax + '未満',
         contractCountMin: val.contractCountMin,
@@ -1852,7 +1871,7 @@ const convertToIndividualContractSettingOptionDiscountPriceRow = (
         periodDate: periodDate,
         periodStartDate: periodStartDate,
         periodEndDate: periodEndDate,
-        contractMonths: val.contractMonths,
+        contractMonths: Number(val.contractMonths),
       });
     }
   );
@@ -1891,7 +1910,7 @@ const convertToInputCheckBillingInfoIndividualContractSettingOptionDiscountPrice
           discountPrice: val.discountPrice,
           serviceId: val.serviceId,
           serviceName: val.serviceName,
-          oneCountExclusionFlag: val.oneCountExclusionFlag,
+          oneCountExclusionFlag: val.oneCountExclusionFlag ? true : undefined,
           contractCount:
             val.contractCountMin + '以上　' + val.contractCountMax + '未満',
           contractCountMin: val.contractCountMin,
@@ -2154,7 +2173,10 @@ const convertFromInputCheckBillingInfoRequest = (
             discountPrice: x.discountPrice,
             courseId: x.courseId,
             courseName: x.courseName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -2171,7 +2193,10 @@ const convertFromInputCheckBillingInfoRequest = (
             discountPrice: x.discountPrice,
             serviceId: x.serviceId,
             serviceName: x.serviceName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -2192,7 +2217,10 @@ const convertFromInputCheckBillingInfoRequest = (
             discountPrice: x.discountPrice,
             courseId: x.courseId,
             courseName: x.courseName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -2211,7 +2239,10 @@ const convertFromInputCheckBillingInfoRequest = (
             discountPrice: x.discountPrice,
             serviceId: x.serviceId,
             serviceName: x.serviceName,
-            oneCountExclusionFlag: x.oneCountExclusionFlag,
+            oneCountExclusionFlag:
+              x.oneCountExclusionFlag === undefined
+                ? false
+                : x.oneCountExclusionFlag,
             contractCountMin: x.contractCountMin,
             contractCountMax: x.contractCountMax,
             periodStartDate: new Date(x.periodStartDate),
@@ -2396,7 +2427,10 @@ const convertFromBillingInfo = (
         discountPrice: x.discountPrice,
         courseId: x.courseId,
         courseName: x.courseName,
-        oneCountExclusionFlag: x.oneCountExclusionFlag,
+        oneCountExclusionFlag:
+          x.oneCountExclusionFlag === undefined
+            ? false
+            : x.oneCountExclusionFlag,
         contractCountMin: x.contractCountMin,
         contractCountMax: x.contractCountMax,
         periodStartDate: new Date(x.periodStartDate),
@@ -2413,7 +2447,10 @@ const convertFromBillingInfo = (
         discountPrice: x.discountPrice,
         serviceId: x.serviceId,
         serviceName: x.serviceName,
-        oneCountExclusionFlag: x.oneCountExclusionFlag,
+        oneCountExclusionFlag:
+          x.oneCountExclusionFlag === undefined
+            ? false
+            : x.oneCountExclusionFlag,
         contractCountMin: x.contractCountMin,
         contractCountMax: x.contractCountMax,
         periodStartDate: new Date(x.periodStartDate),
@@ -2432,7 +2469,10 @@ const convertFromBillingInfo = (
         discountPrice: x.discountPrice,
         courseId: x.courseId,
         courseName: x.courseName,
-        oneCountExclusionFlag: x.oneCountExclusionFlag,
+        oneCountExclusionFlag:
+          x.oneCountExclusionFlag === undefined
+            ? false
+            : x.oneCountExclusionFlag,
         contractCountMin: x.contractCountMin,
         contractCountMax: x.contractCountMax,
         periodStartDate: new Date(x.periodStartDate),
@@ -2451,7 +2491,10 @@ const convertFromBillingInfo = (
         discountPrice: x.discountPrice,
         serviceId: x.serviceId,
         serviceName: x.serviceName,
-        oneCountExclusionFlag: x.oneCountExclusionFlag,
+        oneCountExclusionFlag:
+          x.oneCountExclusionFlag === undefined
+            ? false
+            : x.oneCountExclusionFlag,
         contractCountMin: x.contractCountMin,
         contractCountMax: x.contractCountMax,
         periodStartDate: new Date(x.periodStartDate),
@@ -2576,13 +2619,10 @@ const ScrMem0014ServiceDiscountTab = (props: {
     });
   const [campaignInfo, setCampaignInfo] =
     useState<ScrCom9999SearchCampaignInfoResponse>({
-      basicDiscountInfo: [],
-      optionDiscountInfo: [],
+      basicDiscountIncreaseList: [],
+      optionDiscountIncreaseList: [],
     });
-  const [scrCom0038Popup, setScrCom0038Popup] =
-    useState<ScrCom0038PopupModel>();
-  const [scrCom0038PopupIsOpen, setScrCom0038PopupIsOpen] =
-    useState<boolean>(false);
+  useState<boolean>(false);
   const [courseInfomation, setCourseInfomation] =
     useState<courseInfomationRowModel>({
       id: '',
@@ -2678,11 +2718,10 @@ const ScrMem0014ServiceDiscountTab = (props: {
     context: isReadOnly,
   });
   const {
-    formState: { dirtyFields, errors },
+    formState: { dirtyFields },
     setValue,
     getValues,
     reset,
-    watch,
   } = methods;
 
   // 初期表示
@@ -2711,7 +2750,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -2844,19 +2883,19 @@ const ScrMem0014ServiceDiscountTab = (props: {
       // キャンペーン情報取得
       const searchCampaignInfoResponse = await ScrCom9999SearchCampaignInfo();
       setCampaignInfo(searchCampaignInfoResponse);
-      searchCampaignInfoResponse.basicDiscountInfo.map((x) => {
+      searchCampaignInfoResponse.basicDiscountIncreaseList.map((x) => {
         individualContractSettingBasicDiscountPriceColumns[1].selectValues?.push(
           {
             value: x.campaignCode,
-            displayValue: x.campaignName,
+            displayValue: x.campaignCode,
           }
         );
       });
-      searchCampaignInfoResponse.optionDiscountInfo.map((x) => {
+      searchCampaignInfoResponse.optionDiscountIncreaseList.map((x) => {
         individualContractSettingOptionDiscountPriceColumns[1].selectValues?.push(
           {
             value: x.campaignCode,
-            displayValue: x.campaignName,
+            displayValue: x.campaignCode,
           }
         );
       });
@@ -3053,7 +3092,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -3186,7 +3225,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
       // キャンペーン情報取得
       const searchCampaignInfoResponse = await ScrCom9999SearchCampaignInfo();
       setCampaignInfo(searchCampaignInfoResponse);
-      searchCampaignInfoResponse.basicDiscountInfo.map((x) => {
+      searchCampaignInfoResponse.basicDiscountIncreaseList.map((x) => {
         individualContractSettingBasicDiscountPriceColumns[1].selectValues?.push(
           {
             value: x.campaignCode,
@@ -3194,7 +3233,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
           }
         );
       });
-      searchCampaignInfoResponse.optionDiscountInfo.map((x) => {
+      searchCampaignInfoResponse.optionDiscountIncreaseList.map((x) => {
         individualContractSettingOptionDiscountPriceColumns[1].selectValues?.push(
           {
             value: x.campaignCode,
@@ -3816,13 +3855,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
     setScrCom0033PopupData({
       screenId: 'SCR-MEM-0014',
       tabId: 27,
-      allRegistrationId: '',
-      masterId: '',
-      registChangeMemo: registrationChangeMemo,
-      changeExpectDate: '',
       applicationMoney: 0,
-      applicationId: '',
-      programId: '',
     });
   };
 
@@ -4049,15 +4082,6 @@ const ScrMem0014ServiceDiscountTab = (props: {
     if (courseInfomation.leavingDate !== row.leavingDate) {
       setIsRecessLeavingReasonKindDisabled(true);
     }
-    // サービス固有情報表示
-    if (
-      (row.useStartDate === '' && row.optionEntryKind == '参加') ||
-      row.optionEntryKind == '売り込み' ||
-      row.optionEntryKind == '休会' ||
-      row.optionEntryKind == '締結待ち'
-    ) {
-      setIsServiceInfoDisabled(false);
-    }
 
     // コース情報の契約期間
     if (courseInfomation.useStartDate !== row.useStartDate) {
@@ -4123,6 +4147,16 @@ const ScrMem0014ServiceDiscountTab = (props: {
    * オプション情報変更時のイベントハンドラ
    */
   const onOptionInfomationRowValueChange = (row: any) => {
+    // サービス固有情報表示
+    if (
+      row.useStartDate !== '' &&
+      (row.optionEntryKind == '参加' ||
+        row.optionEntryKind == '売り込み' ||
+        row.optionEntryKind == '休会' ||
+        row.optionEntryKind == '締結待ち')
+    ) {
+      setIsServiceInfoDisabled(false);
+    }
     // オプション情報の契約期間
     const useStartDate = new Date(row.useStartDate);
     const useStartDateYYYYMM =
@@ -4187,7 +4221,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
       if (x.id !== row.id)
         newIndividualContractSettingBasicDiscountPriceRow.push(x);
       if (x.id === row.id) {
-        const basicDiscountInfo = campaignInfo.basicDiscountInfo.find(
+        const basicDiscountInfo = campaignInfo.basicDiscountIncreaseList.find(
           (f) => f.campaignCode === row.campaignCode
         );
         if (basicDiscountInfo === undefined) return;
@@ -4214,10 +4248,12 @@ const ScrMem0014ServiceDiscountTab = (props: {
             '　' +
             basicDiscountInfo.discountPrice,
           discountPriceKind: basicDiscountInfo.discountPriceKind,
-          discountPrice: basicDiscountInfo.discountPrice,
+          discountPrice: Number(basicDiscountInfo.discountPrice),
           courseId: basicDiscountInfo.setTargetCourseId,
           courseName: basicDiscountInfo.courseName,
-          oneCountExclusionFlag: basicDiscountInfo.oneCountExclusionFlag,
+          oneCountExclusionFlag: basicDiscountInfo.oneCountExclusionFlag
+            ? true
+            : undefined,
           contractCount:
             basicDiscountInfo.contractCountMin +
             '以上　' +
@@ -4249,7 +4285,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
       if (x.id !== row.id)
         newIndividualContractSettingOptionDiscountPriceRow.push(x);
       if (x.id === row.id) {
-        const optionDiscountInfo = campaignInfo.optionDiscountInfo.find(
+        const optionDiscountInfo = campaignInfo.optionDiscountIncreaseList.find(
           (f) => f.campaignCode === row.campaignCode
         );
         if (optionDiscountInfo === undefined) return;
@@ -4276,10 +4312,13 @@ const ScrMem0014ServiceDiscountTab = (props: {
             '　' +
             optionDiscountInfo.discountPrice,
           discountPriceKind: optionDiscountInfo.discountPriceKind,
-          discountPrice: optionDiscountInfo.discountPrice,
+          discountPrice: Number(optionDiscountInfo.discountPrice),
           serviceId: optionDiscountInfo.serviceId,
           serviceName: optionDiscountInfo.serviceName,
-          oneCountExclusionFlag: optionDiscountInfo.oneCountExclusionFlag,
+          oneCountExclusionFlag:
+            optionDiscountInfo.oneCountExclusionFlag === undefined
+              ? false
+              : optionDiscountInfo.oneCountExclusionFlag,
           contractCount:
             optionDiscountInfo.contractCountMin +
             '以上　' +
@@ -4419,7 +4458,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
     const newIndividualContractSettingBasicDiscountPriceRow: individualContractSettingBasicDiscountPriceRowModel[] =
       Object.assign([], individualContractSettingBasicDiscountPriceRow);
     if (newIndividualContractSettingBasicDiscountPriceRow.length === 10) return;
-    const basicDiscountInfo = campaignInfo.basicDiscountInfo[0];
+    const basicDiscountInfo = campaignInfo.basicDiscountIncreaseList[0];
     const periodStartDate = new Date(
       basicDiscountInfo.periodStartDate
     ).toLocaleDateString();
@@ -4443,10 +4482,12 @@ const ScrMem0014ServiceDiscountTab = (props: {
         '　' +
         basicDiscountInfo.discountPrice,
       discountPriceKind: basicDiscountInfo.discountPriceKind,
-      discountPrice: basicDiscountInfo.discountPrice,
+      discountPrice: Number(basicDiscountInfo.discountPrice),
       courseId: basicDiscountInfo.setTargetCourseId,
       courseName: basicDiscountInfo.courseName,
-      oneCountExclusionFlag: basicDiscountInfo.oneCountExclusionFlag,
+      oneCountExclusionFlag: basicDiscountInfo.oneCountExclusionFlag
+        ? true
+        : undefined,
       contractCount:
         basicDiscountInfo.contractCountMin +
         '以上　' +
@@ -4472,7 +4513,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
       Object.assign([], individualContractSettingOptionDiscountPriceRow);
     if (newIndividualContractSettingOptionDiscountPriceRow.length === 10)
       return;
-    const optionDiscountInfo = campaignInfo.optionDiscountInfo[0];
+    const optionDiscountInfo = campaignInfo.optionDiscountIncreaseList[0];
     const periodStartDate = new Date(
       optionDiscountInfo.periodStartDate
     ).toLocaleDateString();
@@ -4496,10 +4537,12 @@ const ScrMem0014ServiceDiscountTab = (props: {
         '　' +
         optionDiscountInfo.discountPrice,
       discountPriceKind: optionDiscountInfo.discountPriceKind,
-      discountPrice: optionDiscountInfo.discountPrice,
+      discountPrice: Number(optionDiscountInfo.discountPrice),
       serviceId: optionDiscountInfo.serviceId,
       serviceName: optionDiscountInfo.serviceName,
-      oneCountExclusionFlag: optionDiscountInfo.oneCountExclusionFlag,
+      oneCountExclusionFlag: optionDiscountInfo.oneCountExclusionFlag
+        ? true
+        : undefined,
       contractCount:
         optionDiscountInfo.contractCountMin +
         '以上　' +
@@ -4674,26 +4717,32 @@ const ScrMem0014ServiceDiscountTab = (props: {
                   <DataGrid
                     columns={courseInfomationColumns}
                     rows={courseInfomationRow}
+                    resolver={courseInfomationValidationSchema}
                     onRowValueChange={(row) =>
                       onCourseInfomationRowValueChange(row)
                     }
                     getCellDisabled={courseInfomationRowGetCellDisabled}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
                 <InputLayout label='基本サービス情報' size='l'>
                   <DataGrid
                     columns={baseServiceInfomationColumns}
                     rows={baseServiceInfomationRow}
+                    resolver={baseServiceInfomationValidationSchema}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
                 <InputLayout label='オプション情報' size='l'>
                   <DataGrid
                     columns={optionInfomationColumns}
                     rows={optionInfomationRow}
+                    resolver={optionInfomationValidationSchema}
                     onRowValueChange={(row) =>
                       onOptionInfomationRowValueChange(row)
                     }
                     getCellDisabled={optionInfomationRowGetCellDisabled}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
               </ColStack>
@@ -4713,71 +4762,83 @@ const ScrMem0014ServiceDiscountTab = (props: {
                     </MarginBox>
                     <RowStack mb>
                       <ColStack>
-                        <Select
-                          label='端末契約ID'
-                          name='autobankSystemTerminalContractId'
-                          selectValues={
-                            selectValues.terminalContractIdSelectValues
-                          }
-                          size='s'
-                          blankOption
-                        />
-                        <TextField
-                          label='サービスIDメモ'
-                          name='autobankSystemServiceMemo'
-                          size='s'
-                        />
-                      </ColStack>
-                      <ColStack>
-                        <Radio
-                          label='認定証発行jpg'
-                          name='autobankSystemCertificateIssuanceJpgFlag'
-                          radioValues={[
-                            { value: '1', displayValue: '参加' },
-                            { value: '0', displayValue: '非参加' },
-                          ]}
-                        />
-                        <TextField
-                          label='設置完了日'
-                          name='autobankSystemInstallationCompletionDate'
-                          size='s'
-                        />
-                      </ColStack>
-                      <ColStack>
-                        <Radio
-                          label='NAVI取引区分'
-                          name='autobankSystemNaviDealKind'
-                          radioValues={[
-                            { value: '1', displayValue: '参加' },
-                            { value: '0', displayValue: '不参加' },
-                          ]}
-                        />
-                      </ColStack>
-                      <ColStack>
-                        <Radio
-                          label='NAVI特選車参加区分'
-                          name='autobankSystemNaviChoiceEntryKind'
-                          radioValues={[
-                            { value: '1', displayValue: '参加' },
-                            { value: '0', displayValue: '不参加' },
-                          ]}
-                        />
-                      </ColStack>
-                      <ColStack>
-                        <TextField
-                          label='在庫グループ'
-                          name='autobankSystemStockGroup'
-                          size='s'
-                        />
-                      </ColStack>
-                      <ColStack>
-                        <Select
-                          label='aB提供サービス'
-                          name='autobankSystemAbOfferServiceKind'
-                          selectValues={selectValues.serviceKindSelectValues}
-                          size='s'
-                          blankOption
-                        />
+                        <RowStack>
+                          <ColStack>
+                            <Select
+                              label='端末契約ID'
+                              name='autobankSystemTerminalContractId'
+                              selectValues={
+                                selectValues.terminalContractIdSelectValues
+                              }
+                              size='s'
+                              blankOption
+                            />
+                          </ColStack>
+                          <ColStack>
+                            <Radio
+                              label='認定証発行jpg'
+                              name='autobankSystemCertificateIssuanceJpgFlag'
+                              radioValues={[
+                                { value: '1', displayValue: '参加' },
+                                { value: '0', displayValue: '非参加' },
+                              ]}
+                            />
+                          </ColStack>
+                          <ColStack>
+                            <Radio
+                              label='NAVI取引区分'
+                              name='autobankSystemNaviDealKind'
+                              radioValues={[
+                                { value: '1', displayValue: '参加' },
+                                { value: '0', displayValue: '不参加' },
+                              ]}
+                            />
+                          </ColStack>
+                          <ColStack>
+                            <Radio
+                              label='NAVI特選車参加区分'
+                              name='autobankSystemNaviChoiceEntryKind'
+                              radioValues={[
+                                { value: '1', displayValue: '参加' },
+                                { value: '0', displayValue: '不参加' },
+                              ]}
+                            />
+                          </ColStack>
+                          <ColStack>
+                            <TextField
+                              label='在庫グループ'
+                              name='autobankSystemStockGroup'
+                              size='s'
+                            />
+                          </ColStack>
+                          <ColStack>
+                            <Select
+                              label='aB提供サービス'
+                              name='autobankSystemAbOfferServiceKind'
+                              selectValues={
+                                selectValues.serviceKindSelectValues
+                              }
+                              size='s'
+                              blankOption
+                            />
+                          </ColStack>
+                        </RowStack>
+                        <RowStack>
+                          <ColStack>
+                            <TextField
+                              label='サービスIDメモ'
+                              name='autobankSystemServiceMemo'
+                              size='l'
+                            />
+                          </ColStack>
+                          <ColStack>
+                            <TextField
+                              label='設置完了日'
+                              name='autobankSystemInstallationCompletionDate'
+                              size='s'
+                            />
+                          </ColStack>
+                        </RowStack>
                       </ColStack>
                     </RowStack>
                     {/* 《コラボ》 */}
@@ -4916,7 +4977,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
                         <TextField
                           label='ランマート共有情報'
                           name='runmartShareInformation'
-                          size='s'
+                          size='l'
                         />
                       </ColStack>
                     </RowStack>
@@ -4942,12 +5003,14 @@ const ScrMem0014ServiceDiscountTab = (props: {
                   <DataGrid
                     columns={individualCourseSettingBasicDiscountPriceColumns}
                     rows={individualCourseSettingBasicDiscountPriceRow}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
                 <InputLayout label='オプション値引値増' size='l'>
                   <DataGrid
                     columns={individualCourseSettingOptionDiscountPriceColumns}
                     rows={individualCourseSettingOptionDiscountPriceRow}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
                 <CaptionLabel text='契約個別設定' />
@@ -4959,6 +5022,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
                           individualContractSettingBasicDiscountPriceColumns
                         }
                         rows={individualContractSettingBasicDiscountPriceRow}
+                        disabled={isReadOnly[0]}
                         onRowValueChange={(row) =>
                           onIndividualContractSettingBasicDiscountPriceRowValueChange(
                             row
@@ -4987,6 +5051,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
                           individualContractSettingOptionDiscountPriceColumns
                         }
                         rows={individualContractSettingOptionDiscountPriceRow}
+                        disabled={isReadOnly[0]}
                         onRowValueChange={(row) =>
                           onIndividualContractSettingOptionDiscountPriceRowValueChange(
                             row
@@ -5083,18 +5148,21 @@ const ScrMem0014ServiceDiscountTab = (props: {
                   <DataGrid
                     columns={memberTypeSettingTvaaColumns}
                     rows={memberTypeSettingTvaaRow}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
                 <InputLayout label='二輪' size='m'>
                   <DataGrid
                     columns={memberTypeSettingBikeColumns}
                     rows={memberTypeSettingBikeRow}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
                 <InputLayout label='おまとめ' size='m'>
                   <DataGrid
                     columns={memberTypeSettingOmatomeColumns}
                     rows={memberTypeSettingOmatomeRow}
+                    disabled={isReadOnly[0]}
                   />
                 </InputLayout>
               </ColStack>
@@ -5134,7 +5202,8 @@ const ScrMem0014ServiceDiscountTab = (props: {
         <ScrCom0033Popup
           isOpen={scrCom00033PopupIsOpen}
           data={scrCom0033PopupData}
-          handleConfirmOrCancel={scrCom0033PopupHandlePopupConfirm}
+          handleCancel={scrCom0033PopupHandlePopupCancel}
+          handleConfirm={scrCom0033PopupHandlePopupConfirm}
         />
       ) : (
         ''

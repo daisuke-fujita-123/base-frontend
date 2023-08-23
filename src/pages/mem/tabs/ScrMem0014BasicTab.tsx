@@ -31,9 +31,9 @@ import { Typography } from 'controls/Typography';
 
 import {
   ScrCom9999GetAddressInfo,
-  ScrCom9999GetChangeDatebox,
-  ScrCom9999GetCodeManagementMasterMultiple,
-  ScrCom9999GetCodeValueListbox,
+  ScrCom9999GetChangeDate,
+  ScrCom9999getCodeManagementMasterMultiple,
+  ScrCom9999GetCodeValue,
 } from 'apis/com/ScrCom9999Api';
 import {
   LogisticsBase,
@@ -1097,7 +1097,7 @@ const ScrMem0014BasicTab = (props: {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -1184,7 +1184,7 @@ const ScrMem0014BasicTab = (props: {
       const getCodeValueListRequest = {
         entityList: [{ entityName: 'prefecture_master' }],
       };
-      const getCodeValueListResponse = await ScrCom9999GetCodeValueListbox(
+      const getCodeValueListResponse = await ScrCom9999GetCodeValue(
         getCodeValueListRequest
       );
       getCodeValueListResponse.resultList.map((x) => {
@@ -1234,9 +1234,9 @@ const ScrMem0014BasicTab = (props: {
         screenId: 'SCR-MEM-0014',
         tabId: 'B-24',
         masterId: corporationId,
-        businessDate: new Date(user.taskDate),
+        businessDate: user.taskDate,
       };
-      const getChangeDateResponse = await ScrCom9999GetChangeDatebox(
+      const getChangeDateResponse = await ScrCom9999GetChangeDate(
         getChangeDateRequest
       );
       const chabngeHistory = getChangeDateResponse.changeExpectDateInfo.map(
@@ -1325,7 +1325,7 @@ const ScrMem0014BasicTab = (props: {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -1333,7 +1333,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.shippingMethodSlipKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1341,7 +1341,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.sendKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1349,7 +1349,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.opehotPhonekindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1357,7 +1357,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.memberInformationSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1365,7 +1365,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.negotiationsLimitKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1373,7 +1373,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.commonMemberKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1412,7 +1412,7 @@ const ScrMem0014BasicTab = (props: {
       const getCodeValueListRequest = {
         entityList: [{ entityName: 'prefecture_master' }],
       };
-      const getCodeValueListResponse = await ScrCom9999GetCodeValueListbox(
+      const getCodeValueListResponse = await ScrCom9999GetCodeValue(
         getCodeValueListRequest
       );
       getCodeValueListResponse.resultList.map((x) => {
@@ -1520,7 +1520,7 @@ const ScrMem0014BasicTab = (props: {
         ],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -1528,7 +1528,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.shippingMethodSlipKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1536,7 +1536,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.sendKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1544,7 +1544,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.opehotPhonekindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1552,7 +1552,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.memberInformationSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1560,7 +1560,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.negotiationsLimitKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1568,7 +1568,7 @@ const ScrMem0014BasicTab = (props: {
           x.codeValueList.map((f) => {
             newSelectValues.commonMemberKindSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1607,7 +1607,7 @@ const ScrMem0014BasicTab = (props: {
       const getCodeValueListRequest = {
         entityList: [{ entityName: 'prefecture_master' }],
       };
-      const getCodeValueListResponse = await ScrCom9999GetCodeValueListbox(
+      const getCodeValueListResponse = await ScrCom9999GetCodeValue(
         getCodeValueListRequest
       );
       getCodeValueListResponse.resultList.map((x) => {
@@ -2237,6 +2237,7 @@ const ScrMem0014BasicTab = (props: {
                       { value: '5', displayValue: 'アイオーク' },
                       { value: 'N', displayValue: '任意手配' },
                     ]}
+                    disabled={isReadOnly[0]}
                   />
                   <Select
                     label='オペホットTEL―1'
@@ -2262,6 +2263,7 @@ const ScrMem0014BasicTab = (props: {
                       { value: '0', displayValue: '参加' },
                       { value: 'N', displayValue: '不参加' },
                     ]}
+                    disabled={isReadOnly[0]}
                   />
                   <Select
                     label='会員情報'
@@ -2310,6 +2312,7 @@ const ScrMem0014BasicTab = (props: {
                       { value: '1', displayValue: '対象' },
                       { value: '0', displayValue: '対象外' },
                     ]}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='先取り会員フラグ'
@@ -2318,6 +2321,7 @@ const ScrMem0014BasicTab = (props: {
                       { value: '1', displayValue: '対象' },
                       { value: '0', displayValue: '対象外' },
                     ]}
+                    disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='成約明細枝番送信フラグ'
@@ -2326,6 +2330,7 @@ const ScrMem0014BasicTab = (props: {
                       { value: '1', displayValue: '送信する' },
                       { value: '0', displayValue: '送信しない' },
                     ]}
+                    disabled={isReadOnly[0]}
                   />
                 </ColStack>
                 <ColStack>
@@ -2358,7 +2363,12 @@ const ScrMem0014BasicTab = (props: {
                   </Link>
                 </ColStack>
                 <ColStack>
-                  <Textarea name='memberMemo' maxRows={5} size='l' />
+                  <Textarea
+                    name='memberMemo'
+                    maxRows={5}
+                    size='l'
+                    disabled={true}
+                  />
                 </ColStack>
               </RowStack>
             </Section>

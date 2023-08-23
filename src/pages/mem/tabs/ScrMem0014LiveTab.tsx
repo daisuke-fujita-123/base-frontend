@@ -40,8 +40,8 @@ import { TextField } from 'controls/TextField';
 import { Typography } from 'controls/Typography';
 
 import {
-  ScrCom9999GetChangeDatebox,
-  ScrCom9999GetCodeManagementMasterMultiple,
+  ScrCom9999GetChangeDate,
+  ScrCom9999getCodeManagementMasterMultiple,
 } from 'apis/com/ScrCom9999Api';
 import {
   registrationRequest,
@@ -59,6 +59,7 @@ import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 import { TabDisabledsModel } from '../ScrMem0014Page';
 
 /**
@@ -224,13 +225,13 @@ const placeInfoListColumns: GridColDef[] = [
     field: 'dataSendingDate',
     headerName: 'データ送付日',
     cellType: 'datepicker',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'dataRegistrationDate',
     headerName: 'データ登録日',
     cellType: 'datepicker',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'placeEntryKind',
@@ -597,7 +598,7 @@ const convertToLiveInfoModel = (
     placeInfoListRow: response.placeInfoList.map((val, idx) => {
       const PosInfo = val.PosInfo.length.toString();
       return {
-        id: idx.toString(),
+        id: (idx + 1).toString(),
         placeCode: val.placeCode,
         placeName: val.placeName,
         sessionWeekKind: val.sessionWeekKind,
@@ -915,6 +916,7 @@ const ScrMem0014LiveTab = (props: {
   const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const apiRef = useGridApiRef();
 
   // state
   const [changeHistory, setChangeHistory] = useState<any>([]);
@@ -943,11 +945,9 @@ const ScrMem0014LiveTab = (props: {
     context: isReadOnly,
   });
   const {
-    formState: { dirtyFields, errors },
-    setValue,
+    formState: { dirtyFields },
     getValues,
     reset,
-    watch,
   } = methods;
 
   // 初期表示
@@ -963,7 +963,7 @@ const ScrMem0014LiveTab = (props: {
         codeIdList: [{ codeId: 'CDE-COM-0034' }, { codeId: 'CDE-COM-0035' }],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -971,7 +971,7 @@ const ScrMem0014LiveTab = (props: {
           x.codeValueList.map((f) => {
             placeInfoListColumns[6].selectValues?.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -979,7 +979,7 @@ const ScrMem0014LiveTab = (props: {
           x.codeValueList.map((f) => {
             placeInfoListColumns[9].selectValues?.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1020,9 +1020,9 @@ const ScrMem0014LiveTab = (props: {
         screenId: 'SCR-MEM-0014',
         tabId: 'B-25',
         masterId: corporationId,
-        businessDate: new Date(),
+        businessDate: user.taskDate,
       };
-      const getChangeDateResponse = await ScrCom9999GetChangeDatebox(
+      const getChangeDateResponse = await ScrCom9999GetChangeDate(
         getChangeDateRequest
       );
       const chabngeHistory = getChangeDateResponse.changeExpectDateInfo.map(
@@ -1059,7 +1059,7 @@ const ScrMem0014LiveTab = (props: {
         codeIdList: [{ codeId: 'CDE-COM-0034' }, { codeId: 'CDE-COM-0035' }],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -1067,7 +1067,7 @@ const ScrMem0014LiveTab = (props: {
           x.codeValueList.map((f) => {
             placeInfoListColumns[6].selectValues?.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1075,7 +1075,7 @@ const ScrMem0014LiveTab = (props: {
           x.codeValueList.map((f) => {
             placeInfoListColumns[9].selectValues?.push({
               value: f.codeValue,
-              displayValue: f.codeValueName,
+              displayValue: f.codeName,
             });
           });
         }
@@ -1170,7 +1170,23 @@ const ScrMem0014LiveTab = (props: {
    */
   const handleIconOutputCsvClick = () => {
     // CSV出力
-    exportCsv(getValues('placeInfoListRow'), 'filename.csv');
+    const date = new Date();
+    const year = date.getFullYear().toString().padStart(4, '0');
+    const month = date.getMonth().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const fileName =
+      'SCR-MEM-0014_' +
+      user.employeeId +
+      '_' +
+      year +
+      month +
+      day +
+      hours +
+      minutes +
+      '.csv';
+    exportCsv(fileName, apiRef);
   };
 
   /**
@@ -1714,6 +1730,8 @@ const ScrMem0014LiveTab = (props: {
                 columns={placeInfoListColumns}
                 rows={getValues('placeInfoListRow')}
                 tooltips={tooltips}
+                apiRef={apiRef}
+                disabled={isReadOnly[0]}
               />
             </Section>
             {/* 会場データ送付時備考セクション */}

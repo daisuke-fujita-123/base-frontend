@@ -27,13 +27,22 @@ import { CaptionLabel } from 'controls/Label';
 import { Select, SelectValue } from 'controls/Select';
 import { TextField } from 'controls/TextField';
 
-import { ScrCom9999GetCodeManagementMasterMultiple } from 'apis/com/ScrCom9999Api';
+import {
+  ScrCom9999getCodeManagementMasterMultiple,
+  ScrCom9999GetMembershipfeediscountincreaseInfo,
+  ScrCom9999GetMembershipfeediscountincreaseInfoResponse,
+} from 'apis/com/ScrCom9999Api';
 import {
   registrationRequest,
+  ScrMem0014CalculateAmountMembershipfeediscountincrease,
+  ScrMem0014CalculateAmountMembershipfeediscountincreaseRequest,
+  ScrMem0014CalculateAmountMembershipfeediscountincreaseResponse,
   ScrMem0014CheckMembershipfeediscountincrease,
   ScrMem0014ContractBillinginfoBase,
   ScrMem0014GetBillingInfo,
   ScrMem0014GetBillingInfoResponse,
+  ScrMem0014GetCourseServiceDiscountInfo,
+  ScrMem0014GetCourseServiceDiscountInfoResponse,
 } from 'apis/mem/ScrMem0014Api';
 import { ScrMem9999GetBill } from 'apis/mem/ScrMem9999Api';
 
@@ -66,7 +75,7 @@ const courseInfoColumns: GridColDef[] = [
   {
     field: 'courseName',
     headerName: 'コース名',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'contractCount',
@@ -92,7 +101,7 @@ const optionInfoColumns: GridColDef[] = [
   {
     field: 'serviceName',
     headerName: 'オプション',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'contractCount',
@@ -208,13 +217,7 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
 const scrCom0033PopupInitialValues: ScrCom0033PopupModel = {
   screenId: '',
   tabId: 0,
-  allRegistrationId: '',
-  masterId: '',
-  registChangeMemo: '',
-  changeExpectDate: '',
   applicationMoney: 0,
-  applicationId: '',
-  programId: '',
 };
 
 /**
@@ -254,7 +257,7 @@ const convertToSectionList = (dirtyFields: object): sectionList[] => {
  */
 const convertToBillingInfoModel = (
   response: ScrMem0014GetBillingInfoResponse,
-  contractBase: registrationRequest
+  contractBase: ScrMem0014CalculateAmountMembershipfeediscountincreaseResponse
 ): BillingInfoModel => {
   let totalPrice = contractBase.afterFeeDiscount.courseInfo.courseFee;
   return {
@@ -272,7 +275,7 @@ const convertToBillingInfoModel = (
     ],
     optionInfoRow: response.optionInfo.map((x) => {
       const optionInfo = contractBase.afterFeeDiscount.optionInfo.filter(
-        (f) => f.serviceId === x.serviceId
+        (f) => f.optionServiceId === x.serviceId
       );
       totalPrice = totalPrice + optionInfo[0].optionServiceFee;
       return {
@@ -401,6 +404,123 @@ const convertToContractBaseValue = (
   return newContractBase;
 };
 
+/**
+ * 会費値引値増金額算出APIリクエストへの変換
+ */
+const convertFromCalculateAmountMembershipfeediscountincreaseRequest = (
+  getCourseServiceDiscountInfoResponse: ScrMem0014GetCourseServiceDiscountInfoResponse,
+  getMembershipfeediscountincreaseInfoResponse: ScrCom9999GetMembershipfeediscountincreaseInfoResponse
+): ScrMem0014CalculateAmountMembershipfeediscountincreaseRequest => {
+  return {
+    courseInfo: {
+      courseId: getCourseServiceDiscountInfoResponse.courseInfo.courseId,
+      courseName: getCourseServiceDiscountInfoResponse.courseInfo.courseName,
+      courseEntryKind:
+        getCourseServiceDiscountInfoResponse.courseInfo.courseEntryKind,
+      useStartDate: new Date(
+        getCourseServiceDiscountInfoResponse.courseInfo.useStartDate
+      ),
+    },
+    optionInfo: getCourseServiceDiscountInfoResponse.optionInfomation.map(
+      (x) => {
+        return {
+          optionEntryKind: x.optionEntryKind,
+          serviceId: x.serviceId,
+          serviceName: x.serviceName,
+          contractCount: x.contractCount,
+        };
+      }
+    ),
+    courseFeeDiscountJudgeFlag:
+      getCourseServiceDiscountInfoResponse.courseFeeDiscountJudgeFlag,
+    individualCourseSetting: {
+      basicDiscountPrice:
+        getMembershipfeediscountincreaseInfoResponse.courseBasseicDiscountPrice.map(
+          (x) => {
+            return {
+              feeKind: x.feeKind,
+              discountPriceKind: x.discountPriceKind,
+              discountPrice: x.discountPrice,
+              courseId: x.courseId,
+              courseName: x.courseName,
+              oneCountExclusionFlag: x.oneCountExclusionFlag,
+              contractCountMin: x.contractCountMin,
+              contractCountMax: x.contractCountMax,
+              periodStartDate: new Date(x.periodStartDate),
+              periodEndDate: new Date(x.periodEndDate),
+              contractMonths: Number(x.contractMonths),
+              enableFlag: x.enableFlag,
+            };
+          }
+        ),
+      optionDiscountPrice:
+        getMembershipfeediscountincreaseInfoResponse.courseOptionDiscountPrice.map(
+          (x) => {
+            return {
+              feeKind: x.feeKind,
+              discountPriceKind: x.discountPriceKind,
+              discountPrice: x.discountPrice,
+              serviceId: x.serviceID,
+              serviceName: x.serviceName,
+              oneCountExclusionFlag: x.oneCountExclusionFlag,
+              contractCountMin: x.contractCountMin,
+              contractCountMax: x.contractCountMax,
+              periodStartDate: new Date(x.periodStartDate),
+              periodEndDate: new Date(x.periodEndDate),
+              contractMonths: Number(x.contractMonths),
+              enableFlag: x.enableFlag,
+            };
+          }
+        ),
+    },
+    individualContractSetting: {
+      basicDiscountPrice:
+        getMembershipfeediscountincreaseInfoResponse.contractBasicDiscountPrice.map(
+          (x) => {
+            return {
+              campaignCode: x.campaignCode,
+              campaignName: x.campaignName,
+              feeKind: x.feeKind,
+              discountPriceKind: x.discountPriceKind,
+              discountPrice: x.discountPrice,
+              courseId: x.courseId,
+              courseName: x.courseName,
+              oneCountExclusionFlag: x.oneCountExclusionFlag,
+              contractCountMin: x.contractCountMin,
+              contractCountMax: x.contractCountMax,
+              periodStartDate: new Date(x.periodStartDate),
+              periodEndDate: new Date(x.periodEndDate),
+              contractMonths: Number(x.contractMonths),
+              enableFlag: x.enableFlag,
+            };
+          }
+        ),
+      // オプション値引値増
+      optionDiscountPrice:
+        getMembershipfeediscountincreaseInfoResponse.contractOptionDiscountPrice.map(
+          (x) => {
+            return {
+              campaignCode: x.campaignCode,
+              campaignName: x.campaignName,
+              feeKind: x.feeKind,
+              discountPriceKind: x.discountPriceKind,
+              discountPrice: x.discountPrice,
+              serviceId: x.serviceID,
+              serviceName: x.serviceName,
+              oneCountExclusionFlag: x.oneCountExclusionFlag,
+              contractCountMin: x.contractCountMin,
+              contractCountMax: x.contractCountMax,
+              periodStartDate: new Date(x.periodStartDate),
+              periodEndDate: new Date(x.periodEndDate),
+              contractMonths: Number(x.contractMonths),
+              enableFlag: x.enableFlag,
+            };
+          }
+        ),
+    },
+  };
+};
+
 const ScrMem0014BillingTab = (props: {
   contractBase: registrationRequest;
   setContractBaseValue: (contractBase: registrationRequest) => void;
@@ -458,7 +578,7 @@ const ScrMem0014BillingTab = (props: {
         codeIdList: [{ codeId: 'CDE-COM-0029' }],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -496,11 +616,41 @@ const ScrMem0014BillingTab = (props: {
       const getBillingInfoResponse = await ScrMem0014GetBillingInfo(
         getBillingInfoRequest
       );
+      // サービス・値引値増情報取得
+      const getCourseServiceDiscountInfoRequest = {
+        courseId: '',
+        contractId: contractId,
+      };
+      const getCourseServiceDiscountInfoResponse =
+        await ScrMem0014GetCourseServiceDiscountInfo(
+          getCourseServiceDiscountInfoRequest
+        );
+
+      // 会費値引値増情報取得
+      const getMembershipfeediscountincreaseInfoRequest = {
+        contractId: contractId,
+        courseId: getCourseServiceDiscountInfoResponse.courseInfo.courseId,
+      };
+      const getMembershipfeediscountincreaseInfoResponse =
+        await ScrCom9999GetMembershipfeediscountincreaseInfo(
+          getMembershipfeediscountincreaseInfoRequest
+        );
+
+      // 会費値引値増金額算出
+      const calculateAmountMembershipfeediscountincreaseRequest =
+        convertFromCalculateAmountMembershipfeediscountincreaseRequest(
+          getCourseServiceDiscountInfoResponse,
+          getMembershipfeediscountincreaseInfoResponse
+        );
+      const calculateAmountMembershipfeediscountincreaseResponse =
+        await ScrMem0014CalculateAmountMembershipfeediscountincrease(
+          calculateAmountMembershipfeediscountincreaseRequest
+        );
 
       // 画面にデータを設定
       const billingInfo = convertToBillingInfoModel(
         getBillingInfoResponse,
-        props.contractBase
+        calculateAmountMembershipfeediscountincreaseResponse
       );
 
       reset(billingInfo);
@@ -522,7 +672,7 @@ const ScrMem0014BillingTab = (props: {
         codeIdList: [{ codeId: 'CDE-COM-0029' }],
       };
       const getCodeManagementMasterMultipleResponse =
-        await ScrCom9999GetCodeManagementMasterMultiple(
+        await ScrCom9999getCodeManagementMasterMultiple(
           getCodeManagementMasterMultipleRequest
         );
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
@@ -656,13 +806,7 @@ const ScrMem0014BillingTab = (props: {
     setScrCom0033PopupData({
       screenId: 'SCR-MEM-0014',
       tabId: 26,
-      allRegistrationId: '',
-      masterId: '',
-      registChangeMemo: registrationChangeMemo,
-      changeExpectDate: '',
       applicationMoney: 0,
-      applicationId: '',
-      programId: '',
     });
   };
 
@@ -806,7 +950,8 @@ const ScrMem0014BillingTab = (props: {
         <ScrCom0033Popup
           isOpen={scrCom00033PopupIsOpen}
           data={scrCom0033PopupData}
-          handleConfirmOrCancel={scrCom0033PopupHandlePopupConfirm}
+          handleCancel={scrCom0033PopupHandlePopupCancel}
+          handleConfirm={scrCom0033PopupHandlePopupConfirm}
         />
       ) : (
         ''
