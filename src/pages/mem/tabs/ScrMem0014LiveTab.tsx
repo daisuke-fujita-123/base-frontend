@@ -4,6 +4,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
 
 import ScrCom0011Popup, {
   ScrCom0011PopupModel,
@@ -183,9 +184,6 @@ interface LiveInfoModel {
   // 会場データ送付時備考
   placeDataSendingRemarks: string;
 
-  // 会場情報
-  placeInfoListRow: placeInfoListRowModel[];
-
   changeHistoryNumber: string;
   changeExpectedDate: string;
 }
@@ -289,6 +287,15 @@ const placeInfoListColumns: GridColDef[] = [
   },
 ];
 
+const placeInfoListValidationSchema: ObjectSchema<any> = yup.object({
+  dataSendingDate: yup.string().max(10).date().label('データ送付日'),
+  dataRegistrationDate: yup.string().max(10).date().label('データ登録日'),
+  PosNumber: yup.string().max(12).half().label('POS番号'),
+  PosInfoNumber: yup.string().max(3).number().label('重複POS'),
+  omatomeAccountNumber: yup.string().max(10).half().label('おまとめ口座番号'),
+  entryPlaceMemo: yup.string().max(20).label('メモ'),
+});
+
 /**
  * コース情報行データモデル
  */
@@ -374,7 +381,7 @@ const initialValues: LiveInfoModel = {
   payAccountOmatomeInfoAccuntNameKana: '',
   placeDataSendingRemarks: '',
 
-  placeInfoListRow: [],
+  //placeInfoListRow: [],
   changeHistoryNumber: '',
   changeExpectedDate: '',
 };
@@ -469,7 +476,6 @@ const convertToLiveInfoModel = (
 ): LiveInfoModel => {
   const liveBaseInfo = response.liveBaseInfo;
   const liveRegistrationInfo = response.liveRegistrationInfo;
-  // TODO: 都道府県コードを変更
   const corporationAddress =
     liveBaseInfo.corporationZipCode +
     '　' +
@@ -595,39 +601,46 @@ const convertToLiveInfoModel = (
       liveRegistrationInfo.payAccountInfo.accuntNameKana,
     placeDataSendingRemarks: response.placeDataSendingRemarks,
 
-    placeInfoListRow: response.placeInfoList.map((val, idx) => {
-      const PosInfo = val.PosInfo.length.toString();
-      return {
-        id: (idx + 1).toString(),
-        placeCode: val.placeCode,
-        placeName: val.placeName,
-        sessionWeekKind: val.sessionWeekKind,
-        dataSendingDate: new Date(val.dataSendingDate).toLocaleDateString(),
-        dataRegistrationDate: new Date(
-          val.dataRegistrationDate
-        ).toLocaleDateString(),
-        placeEntryKind: val.placeEntryKind,
-        PosNumber: val.PosNumber,
-        PosInfoNumber: PosInfo,
-        PosInfo: val.PosInfo,
-        placeMemberKind: val.placeMemberKind,
-        statementDisplayPlaceName: val.statementDisplayPlaceName,
-        omatomePlaceFlag: val.omatomePlaceFlag
-          ? val.statementDisplayPlaceName === 'TAA'
-            ? '※'
-            : val.statementDisplayPlaceName === 'CAA'
-            ? '※'
-            : '●'
-          : '',
-        omatomeKind: val.omatomeKind,
-        omatomeAccountNumber: val.omatomeAccountNumber,
-        entryPlaceMemo: val.entryPlaceMemo,
-      };
-    }),
-
     changeHistoryNumber: '',
     changeExpectedDate: '',
   };
+};
+
+/**
+ * ライブ情報取得APIレスポンスから会場情報リストモデルへの変換
+ */
+const convertToPlaceInfoListRow = (
+  response: ScrMem0014GetLiveInfoResponse
+): placeInfoListRowModel[] => {
+  return response.placeInfoList.map((val, idx) => {
+    const PosInfo = val.PosInfo.length.toString();
+    return {
+      id: (idx + 1).toString(),
+      placeCode: val.placeCode,
+      placeName: val.placeName,
+      sessionWeekKind: val.sessionWeekKind,
+      dataSendingDate: new Date(val.dataSendingDate).toLocaleDateString(),
+      dataRegistrationDate: new Date(
+        val.dataRegistrationDate
+      ).toLocaleDateString(),
+      placeEntryKind: val.placeEntryKind,
+      PosNumber: val.PosNumber,
+      PosInfoNumber: PosInfo,
+      PosInfo: val.PosInfo,
+      placeMemberKind: val.placeMemberKind,
+      statementDisplayPlaceName: val.statementDisplayPlaceName,
+      omatomePlaceFlag: val.omatomePlaceFlag
+        ? val.statementDisplayPlaceName === 'TAA'
+          ? '※'
+          : val.statementDisplayPlaceName === 'CAA'
+          ? '※'
+          : '●'
+        : '',
+      omatomeKind: val.omatomeKind,
+      omatomeAccountNumber: val.omatomeAccountNumber,
+      entryPlaceMemo: val.entryPlaceMemo,
+    };
+  });
 };
 
 /**
@@ -761,39 +774,46 @@ const convertToHistoryLiveInfoModel = (
       liveRegistrationInfo.venuepaymentAccount.accuntNameKana,
     placeDataSendingRemarks: response.placeDataSendingRemarks,
 
-    placeInfoListRow: response.placeInfoList.map((val, idx) => {
-      const posInfo = val.posInfo.length.toString();
-      return {
-        id: idx.toString(),
-        placeCode: val.placeCode,
-        placeName: val.placeName,
-        sessionWeekKind: val.sessionWeekKind,
-        dataSendingDate: new Date(val.dataSendingDate).toLocaleDateString(),
-        dataRegistrationDate: new Date(
-          val.dataRegistrationDate
-        ).toLocaleDateString(),
-        placeEntryKind: val.placeEntryKind,
-        PosNumber: val.posNumber,
-        PosInfoNumber: posInfo,
-        PosInfo: val.posInfo,
-        placeMemberKind: val.placeMemberKind,
-        statementDisplayPlaceName: val.statementDisplayPlaceName,
-        omatomePlaceFlag: val.omatomePlaceFlag
-          ? val.statementDisplayPlaceName === 'TAA'
-            ? '※'
-            : val.statementDisplayPlaceName === 'CAA'
-            ? '※'
-            : '●'
-          : '',
-        omatomeKind: val.omatomeKind,
-        omatomeAccountNumber: val.omatomeAccountNumber,
-        entryPlaceMemo: val.entryPlaceMemo,
-      };
-    }),
-
     changeHistoryNumber: changeHistoryNumber,
     changeExpectedDate: '',
   };
+};
+
+/**
+ * 変更履歴情報取得APIから会場情報リストモデルへの変換
+ */
+const convertToHistoryPlaceInfoListRow = (
+  response: registrationRequest
+): placeInfoListRowModel[] => {
+  return response.placeInfoList.map((val, idx) => {
+    const posInfo = val.posInfo.length.toString();
+    return {
+      id: idx.toString(),
+      placeCode: val.placeCode,
+      placeName: val.placeName,
+      sessionWeekKind: val.sessionWeekKind,
+      dataSendingDate: new Date(val.dataSendingDate).toLocaleDateString(),
+      dataRegistrationDate: new Date(
+        val.dataRegistrationDate
+      ).toLocaleDateString(),
+      placeEntryKind: val.placeEntryKind,
+      PosNumber: val.posNumber,
+      PosInfoNumber: posInfo,
+      PosInfo: val.posInfo,
+      placeMemberKind: val.placeMemberKind,
+      statementDisplayPlaceName: val.statementDisplayPlaceName,
+      omatomePlaceFlag: val.omatomePlaceFlag
+        ? val.statementDisplayPlaceName === 'TAA'
+          ? '※'
+          : val.statementDisplayPlaceName === 'CAA'
+          ? '※'
+          : '●'
+        : '',
+      omatomeKind: val.omatomeKind,
+      omatomeAccountNumber: val.omatomeAccountNumber,
+      entryPlaceMemo: val.entryPlaceMemo,
+    };
+  });
 };
 
 /**
@@ -801,6 +821,7 @@ const convertToHistoryLiveInfoModel = (
  */
 const convertFromLiveInfo = (
   liveInfo: LiveInfoModel,
+  placeInfoListRow: placeInfoListRowModel[],
   contractBase: registrationRequest
 ): registrationRequest => {
   const newLiveInfo: registrationRequest = Object.assign(contractBase);
@@ -882,7 +903,7 @@ const convertFromLiveInfo = (
     },
   };
 
-  newLiveInfo.placeInfoList = liveInfo.placeInfoListRow.map((x) => {
+  newLiveInfo.placeInfoList = placeInfoListRow.map((x) => {
     return {
       placeCode: x.placeCode,
       placeName: x.placeName,
@@ -919,6 +940,9 @@ const ScrMem0014LiveTab = (props: {
   const apiRef = useGridApiRef();
 
   // state
+  const [placeInfoListRow, setPlaceInfoListRow] = useState<
+    placeInfoListRowModel[]
+  >([]);
   const [changeHistory, setChangeHistory] = useState<any>([]);
   const [tooltips, setTooltips] = useState<GridTooltipsModel[]>([]);
   const [scrCom0011PopupIsOpen, setScrCom0011PopupIsOpen] =
@@ -947,6 +971,7 @@ const ScrMem0014LiveTab = (props: {
   const {
     formState: { dirtyFields },
     getValues,
+    setValue,
     reset,
   } = methods;
 
@@ -997,12 +1022,13 @@ const ScrMem0014LiveTab = (props: {
       // 画面にデータを設定
       const liveInfo = convertToLiveInfoModel(getLiveInfoResponse);
       reset(liveInfo);
+      setPlaceInfoListRow(convertToPlaceInfoListRow(getLiveInfoResponse));
 
       // ツールチップ設定
       const tooltips: GridTooltipsModel[] = [];
       tooltips.push({
         field: 'PosInfoNumber',
-        tooltips: liveInfo.placeInfoListRow.map((x) => {
+        tooltips: placeInfoListRow.map((x) => {
           const text: string[] = [];
           x.PosInfo.map((f) => {
             text.push('契約ID : ' + f.contractId);
@@ -1095,12 +1121,15 @@ const ScrMem0014LiveTab = (props: {
 
       // 画面にデータを設定
       reset(liveInfo);
+      const historyPlaceInfoListRow =
+        convertToHistoryPlaceInfoListRow(response);
+      setPlaceInfoListRow(historyPlaceInfoListRow);
 
       // ツールチップ設定
       const tooltips: GridTooltipsModel[] = [];
       tooltips.push({
         field: 'PosInfoNumber',
-        tooltips: liveInfo.placeInfoListRow.map((x) => {
+        tooltips: historyPlaceInfoListRow.map((x) => {
           const text: string[] = [];
           x.PosInfo.map((f) => {
             text.push('契約ID : ' + f.contractId);
@@ -1130,7 +1159,6 @@ const ScrMem0014LiveTab = (props: {
    * 一括参加ボタンクリック時のイベントハンドラ
    */
   const handleAllEntryClick = () => {
-    const placeInfoListRow = getValues('placeInfoListRow');
     const newPlaceInfoListRow: placeInfoListRowModel[] = [];
     placeInfoListRow.map((x) => {
       const newPlaceInfo = x;
@@ -1140,13 +1168,13 @@ const ScrMem0014LiveTab = (props: {
       }
       newPlaceInfoListRow.push(newPlaceInfo);
     });
+    setPlaceInfoListRow(newPlaceInfoListRow);
   };
 
   /**
    * 一括参加制限ボタンクリック時のイベントハンドラ
    */
   const handleAllEntryLimitClick = () => {
-    const placeInfoListRow = getValues('placeInfoListRow');
     const newPlaceInfoListRow: placeInfoListRowModel[] = [];
     placeInfoListRow.map((x) => {
       const newPlaceInfo = x;
@@ -1156,6 +1184,7 @@ const ScrMem0014LiveTab = (props: {
       }
       newPlaceInfoListRow.push(newPlaceInfo);
     });
+    setPlaceInfoListRow(newPlaceInfoListRow);
   };
 
   /**
@@ -1236,6 +1265,28 @@ const ScrMem0014LiveTab = (props: {
   const handleConfirm = () => {
     methods.trigger();
     if (!methods.formState.isValid) return;
+    let isValid = false;
+    placeInfoListRow.map((x) => {
+      if (x.dataSendingDate.length > 10) isValid = true;
+      if (x.dataRegistrationDate.length > 10) isValid = true;
+      if (
+        x.PosNumber.length > 12 ||
+        x.PosNumber.match(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/) === null
+      )
+        isValid = true;
+      if (
+        x.PosInfoNumber.length > 3 ||
+        x.PosInfoNumber.match(/^[0-9]*$/) === null
+      )
+        isValid = true;
+      if (
+        x.omatomeAccountNumber.length > 10 ||
+        x.omatomeAccountNumber.match(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/) === null
+      )
+        isValid = true;
+      if (x.entryPlaceMemo.length > 20) isValid = true;
+    });
+    if (isValid) return;
     setChangeHistoryDateCheckIsOpen(true);
   };
 
@@ -1271,7 +1322,11 @@ const ScrMem0014LiveTab = (props: {
     setScrCom00032PopupIsOpen(false);
 
     // ライブ情報登録
-    const liveInfo = convertFromLiveInfo(getValues(), props.contractBase);
+    const liveInfo = convertFromLiveInfo(
+      getValues(),
+      placeInfoListRow,
+      props.contractBase
+    );
 
     // ライブ情報登録
     const request = Object.assign(liveInfo, {
@@ -1728,7 +1783,8 @@ const ScrMem0014LiveTab = (props: {
             >
               <DataGrid
                 columns={placeInfoListColumns}
-                rows={getValues('placeInfoListRow')}
+                rows={placeInfoListRow}
+                resolver={placeInfoListValidationSchema}
                 tooltips={tooltips}
                 apiRef={apiRef}
                 disabled={isReadOnly[0]}

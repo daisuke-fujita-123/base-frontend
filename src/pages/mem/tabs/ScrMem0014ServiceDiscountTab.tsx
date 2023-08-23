@@ -835,7 +835,36 @@ interface SelectValuesModel {
  * バリデーションスキーマ
  */
 const validationSchama = {
-  corporationName: yup.string().label('法人名').max(10).required(),
+  autobankSystemTerminalContractId: yup.string().label('端末契約ID'),
+  autobankSystemCertificateIssuanceJpgFlag: yup.string().label('認定証発行jpg'),
+  autobankSystemNaviDealKind: yup.string().label('NAVI取引区分'),
+  autobankSystemNaviChoiceEntryKind: yup.string().label('NAVI特選車参加区分'),
+  autobankSystemStockGroup: yup.string().label('在庫グループ').max(3),
+  autobankSystemAbOfferServiceKind: yup
+    .string()
+    .label('aB提供サービス')
+    .max(10),
+  autobankSystemServiceMemo: yup.string().label('サービスIDメモ').max(254),
+  autobankSystemInstallationCompletionDate: yup
+    .string()
+    .label('設置完了日')
+    .max(10),
+  collaborationCommonKind: yup.string().label('コラボ共通区分'),
+  imotoaucMemberKind: yup.string().label('会員区分'),
+  imotoaucEntryKind: yup.string().label('参加区分'),
+  imotoaucMailSendKind: yup.string().label('メール送信F'),
+  imotoaucDmSendKind: yup.string().label('DM送信F'),
+  imotoaucContractCount: yup.string().label('契約数').max(1).number(),
+  iaucManagementNumber: yup.string().label('アイオーク管理番号').max(7).half(),
+  carsensorSalesKind: yup.string().label('カーセンサー営業区分').max(10),
+  carsensorAucCsKind: yup.string().label('AUCCS区分').max(10),
+  supportManagementNumber: yup
+    .string()
+    .label('業務支援用管理番号')
+    .max(7)
+    .half(),
+  runmartDealKind: yup.string().label('ランマート取引区分'),
+  runmartShareInformation: yup.string().label('ランマート共有情報').max(60),
 };
 
 /**
@@ -2623,6 +2652,21 @@ const ScrMem0014ServiceDiscountTab = (props: {
       optionDiscountIncreaseList: [],
     });
   useState<boolean>(false);
+  const [beforeCourseInfomation, setBeforeCourseInfomation] =
+    useState<courseInfomationRowModel>({
+      id: '',
+      courseId: '',
+      linkMemberKind: '',
+      courseEntryKind: '',
+      useStartDate: '',
+      contractPeriodStartDate: '',
+      contractPeriodEndDate: '',
+      contractPeriodDate: '',
+      recessPeriodDate: [],
+      leavingDate: '',
+      targetedServiceKind: '',
+      recessLeavingReasonKind: '',
+    });
   const [courseInfomation, setCourseInfomation] =
     useState<courseInfomationRowModel>({
       id: '',
@@ -2956,6 +3000,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
       );
       setCourseInfomationRow(courseInfomationRow);
       setCourseInfomation(Object.assign({}, courseInfomationRow[0]));
+      setBeforeCourseInfomation(Object.assign({}, courseInfomationRow[0]));
       // 基本サービス行変換
       setBaseServiceInfomationRow(
         convertToBaseServiceInfomationRow(
@@ -3659,9 +3704,21 @@ const ScrMem0014ServiceDiscountTab = (props: {
   const handleConfirm = async () => {
     methods.trigger();
     if (!methods.formState.isValid) return;
+    let isValid = false;
+    baseServiceInfomationRow.map((x) => {
+      if (x.contractCount.toString().length > 4) isValid = true;
+      if (x.contractCount.toString().match(/^[0-9]*$/) === null) isValid = true;
+    });
+    optionInfomationRow.map((x) => {
+      if (x.contractCount.toString().length > 4) isValid = true;
+      if (x.contractCount.toString().match(/^[0-9]*$/) === null) isValid = true;
+    });
+    if (isValid) return;
     const errorList: errorList[] = [];
     // コース情報利用開始日・脱会日・休会期間のチェック
-    const contractPeriodDate = new Date(courseInfomation.contractPeriodDate);
+    const contractPeriodDate = new Date(
+      beforeCourseInfomation.contractPeriodDate
+    );
     const contractPeriodDateYYYYMM =
       contractPeriodDate.getFullYear() + contractPeriodDate.getMonth();
     const taskDate = new Date(user.taskDate);
@@ -3703,7 +3760,8 @@ const ScrMem0014ServiceDiscountTab = (props: {
           optionInfo.contractPeriodDate
         );
         const optionInfoContractPeriodDateYYYYMM =
-          contractPeriodDate.getFullYear() + contractPeriodDate.getMonth();
+          optionInfoContractPeriodDate.getFullYear() +
+          optionInfoContractPeriodDate.getMonth();
         if (optionInfoContractPeriodDateYYYYMM !== taskDateYYYYMM) {
           if (new Date(optionInfo.contractPeriodDate) < taskDate) {
             errorList.push({
@@ -4251,9 +4309,12 @@ const ScrMem0014ServiceDiscountTab = (props: {
           discountPrice: Number(basicDiscountInfo.discountPrice),
           courseId: basicDiscountInfo.setTargetCourseId,
           courseName: basicDiscountInfo.courseName,
-          oneCountExclusionFlag: basicDiscountInfo.oneCountExclusionFlag
-            ? true
-            : undefined,
+          oneCountExclusionFlag:
+            basicDiscountInfo.oneCountExclusionFlag === undefined
+              ? false
+              : basicDiscountInfo.oneCountExclusionFlag
+              ? true
+              : undefined,
           contractCount:
             basicDiscountInfo.contractCountMin +
             '以上　' +
@@ -4318,7 +4379,9 @@ const ScrMem0014ServiceDiscountTab = (props: {
           oneCountExclusionFlag:
             optionDiscountInfo.oneCountExclusionFlag === undefined
               ? false
-              : optionDiscountInfo.oneCountExclusionFlag,
+              : optionDiscountInfo.oneCountExclusionFlag
+              ? true
+              : undefined,
           contractCount:
             optionDiscountInfo.contractCountMin +
             '以上　' +
