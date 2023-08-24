@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -7,7 +7,7 @@ import yup from 'utils/yup';
 import { CenterBox, MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
 import { MainLayout } from 'layouts/MainLayout';
-import { Section } from 'layouts/Section';
+import { Section, SectionClose } from 'layouts/Section';
 import { ColStack, RowStack } from 'layouts/Stack';
 
 import { AddButton, SearchButton } from 'controls/Button';
@@ -40,7 +40,7 @@ import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
 
-import { GridRowSelectionModel } from '@mui/x-data-grid-pro';
+import { GridRowSelectionModel, useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件データモデル
@@ -263,7 +263,6 @@ const ScrCom0009Page = () => {
     selectValuesInitialValues
   );
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
-  const [openSection, setOpenSection] = useState<boolean>(true);
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
   const [checkList, setCheckList] = useState<SearchResultRowModel[]>([]);
@@ -277,6 +276,9 @@ const ScrCom0009Page = () => {
   const { watch, getValues } = methods;
   // user情報
   const { getMessage } = useContext(MessageContext);
+
+  // Sectionの開閉処理
+  const sectionRef = useRef<SectionClose>();
 
   // 初期表示
   useEffect(() => {
@@ -344,7 +346,6 @@ const ScrCom0009Page = () => {
       });
     };
     initialize();
-    // TODO warningの解消が必要
   }, []);
 
   /**
@@ -394,7 +395,9 @@ const ScrCom0009Page = () => {
     }
     // データグリッドにデータを設定
     setSearchResult(searchResult);
-    setOpenSection(false);
+    // セクションを閉じる
+    if (sectionRef.current && sectionRef.current.closeSection)
+      sectionRef.current.closeSection();
   };
 
   /**
@@ -503,6 +506,18 @@ const ScrCom0009Page = () => {
     setCheckList(RowSelections);
   };
 
+  // TODO データグリットの幅指定
+  const apiRef = useGridApiRef();
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
+
   return (
     <>
       <MainLayout>
@@ -512,9 +527,9 @@ const ScrCom0009Page = () => {
             {/* 検索条件セクション */}
             <Section
               name='検索条件'
-              isSearch
               serchLabels={serchLabels}
-              open={openSection}
+              isSearch
+              ref={sectionRef}
             >
               <RowStack>
                 <ColStack>
@@ -580,6 +595,7 @@ const ScrCom0009Page = () => {
                   )}
                 </MarginBox>
               }
+              width={maxSectionWidth}
             >
               {searchResult.length !== 0 ? (
                 <DataGrid
@@ -588,6 +604,7 @@ const ScrCom0009Page = () => {
                   pagination
                   checkboxSelection
                   onRowSelectionModelChange={handRowSelectionModelChange}
+                  apiRef={apiRef}
                 />
               ) : (
                 ''
