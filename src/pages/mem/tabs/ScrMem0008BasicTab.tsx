@@ -258,6 +258,15 @@ interface contractRowModel {
 }
 
 /**
+ * ラジオボタンモデル
+ */
+interface RadioValue {
+  value: string | number;
+  displayValue: string;
+  backgroundColor?: string;
+}
+
+/**
  * プルダウン初期データ
  */
 const selectValuesInitialValues: SelectValuesModel = {
@@ -640,6 +649,63 @@ const ScrMem0008BasicTab = (props: {
   const [changeHistoryDateCheckIsOpen, setChangeHistoryDateCheckIsOpen] =
     useState<boolean>(false);
 
+  const [tvaaImmediatePaymentFlagRadio, setTvaaImmediatePaymentFlagRadio] =
+    useState<RadioValue[]>([
+      { value: 0, displayValue: '可' },
+      { value: 1, displayValue: '不可' },
+    ]);
+  const [tvaaDocumentAdvanceFlagRadio, setTvaaDocumentAdvanceFlagRadio] =
+    useState<RadioValue[]>([
+      { value: 0, displayValue: '可' },
+      { value: 1, displayValue: '不可' },
+    ]);
+  const [
+    tvaaArrearsPriceAutomaticOccurrenceFlagRadio,
+    setTvaaArrearsPriceAutomaticOccurrenceFlagRadio,
+  ] = useState<RadioValue[]>([
+    { value: 0, displayValue: '可' },
+    { value: 1, displayValue: '不可' },
+  ]);
+  const [tvaaOffsettingFlagRadio, setTvaaOffsettingFlagRadio] = useState<
+    RadioValue[]
+  >([
+    { value: 0, displayValue: '可' },
+    { value: 1, displayValue: '不可' },
+  ]);
+  const [tvaaAuctionEntryLimitFlagRadio, setTvaaAuctionEntryLimitFlagRadio] =
+    useState<RadioValue[]>([
+      { value: 0, displayValue: '可' },
+      { value: 1, displayValue: '不可' },
+    ]);
+  const [bikeImmediatePaymentFlagRadio, setBikeImmediatePaymentFlagRadio] =
+    useState<RadioValue[]>([
+      { value: 0, displayValue: '可' },
+      { value: 1, displayValue: '不可' },
+    ]);
+  const [bikeDocumentAdvanceFlagRadio, setBikeDocumentAdvanceFlagRadio] =
+    useState<RadioValue[]>([
+      { value: 0, displayValue: '可' },
+      { value: 1, displayValue: '不可' },
+    ]);
+  const [
+    bikeArrearsPriceAutomaticOccurrenceFlagRadio,
+    setBikeArrearsPriceAutomaticOccurrenceFlagRadio,
+  ] = useState<RadioValue[]>([
+    { value: 0, displayValue: '可' },
+    { value: 1, displayValue: '不可' },
+  ]);
+  const [bikeOffsettingFlagRadio, setBikeOffsettingFlagRadio] = useState<
+    RadioValue[]
+  >([
+    { value: 0, displayValue: '可' },
+    { value: 1, displayValue: '不可' },
+  ]);
+  const [bikeAuctionEntryLimitFlagRadio, setBikeAuctionEntryLimitFlagRadio] =
+    useState<RadioValue[]>([
+      { value: 0, displayValue: '可' },
+      { value: 1, displayValue: '不可' },
+    ]);
+
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(
     user.editPossibleScreenIdList.indexOf('SCR-MEM-0008') === -1
@@ -674,7 +740,109 @@ const ScrMem0008BasicTab = (props: {
         '',
         ''
       );
+      // ラジオボタンのラベル背景色変更
+      // 四輪即払可否
+      const newTvaaImmediatePaymentFlagRadio = tvaaImmediatePaymentFlagRadio;
+      if (billingInfo.tvaaImmediatePaymentFlag === '0') {
+        newTvaaImmediatePaymentFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.tvaaImmediatePaymentFlag === '1') {
+        newTvaaImmediatePaymentFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setTvaaImmediatePaymentFlagRadio(newTvaaImmediatePaymentFlagRadio);
+
+      // 四輪書類先出し
+      const newTvaaDocumentAdvanceFlagRadio = tvaaDocumentAdvanceFlagRadio;
+      if (billingInfo.tvaaDocumentAdvanceFlag === '0') {
+        newTvaaDocumentAdvanceFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.tvaaDocumentAdvanceFlag === '1') {
+        newTvaaDocumentAdvanceFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setTvaaDocumentAdvanceFlagRadio(newTvaaDocumentAdvanceFlagRadio);
+
+      // 四輪延滞金の自動発生可否フラグ
+      const newTvaaArrearsPriceAutomaticOccurrenceFlagRadio =
+        tvaaArrearsPriceAutomaticOccurrenceFlagRadio;
+      if (billingInfo.tvaaArrearsPriceAutomaticOccurrenceFlag === '0') {
+        newTvaaArrearsPriceAutomaticOccurrenceFlagRadio[0].backgroundColor =
+          '#6fb9ff';
+      } else if (billingInfo.tvaaArrearsPriceAutomaticOccurrenceFlag === '1') {
+        newTvaaArrearsPriceAutomaticOccurrenceFlagRadio[1].backgroundColor =
+          '#6fb9ff';
+      }
+      setTvaaArrearsPriceAutomaticOccurrenceFlagRadio(
+        newTvaaArrearsPriceAutomaticOccurrenceFlagRadio
+      );
+
+      // 四輪相殺要否
+      const newTvaaOffsettingFlagRadio = tvaaOffsettingFlagRadio;
+      if (billingInfo.tvaaOffsettingFlag === '0') {
+        newTvaaOffsettingFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.tvaaOffsettingFlag === '1') {
+        newTvaaOffsettingFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setTvaaOffsettingFlagRadio(newTvaaOffsettingFlagRadio);
+
+      // 四輪オークション参加制限可否
+      const newTvaaAuctionEntryLimitFlagRadio = tvaaAuctionEntryLimitFlagRadio;
+      if (billingInfo.tvaaAuctionEntryLimitFlag === '0') {
+        newTvaaAuctionEntryLimitFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.tvaaAuctionEntryLimitFlag === '1') {
+        newTvaaAuctionEntryLimitFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setTvaaAuctionEntryLimitFlagRadio(newTvaaAuctionEntryLimitFlagRadio);
+
+      // 二輪即払可否
+      const newBikeImmediatePaymentFlagRadio = bikeImmediatePaymentFlagRadio;
+      if (billingInfo.bikeImmediatePaymentFlag === '0') {
+        newBikeImmediatePaymentFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.bikeImmediatePaymentFlag === '1') {
+        newBikeImmediatePaymentFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setBikeImmediatePaymentFlagRadio(newBikeImmediatePaymentFlagRadio);
+
+      // 四輪書類先出し
+      const newBikeDocumentAdvanceFlagRadio = bikeDocumentAdvanceFlagRadio;
+      if (billingInfo.bikeDocumentAdvanceFlag === '0') {
+        newBikeDocumentAdvanceFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.bikeDocumentAdvanceFlag === '1') {
+        newBikeDocumentAdvanceFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setBikeDocumentAdvanceFlagRadio(newBikeDocumentAdvanceFlagRadio);
+
+      // 四輪延滞金の自動発生可否フラグ
+      const newBikeArrearsPriceAutomaticOccurrenceFlagRadio =
+        bikeArrearsPriceAutomaticOccurrenceFlagRadio;
+      if (billingInfo.bikeArrearsPriceAutomaticOccurrenceFlag === '0') {
+        newBikeArrearsPriceAutomaticOccurrenceFlagRadio[0].backgroundColor =
+          '#6fb9ff';
+      } else if (billingInfo.bikeArrearsPriceAutomaticOccurrenceFlag === '1') {
+        newBikeArrearsPriceAutomaticOccurrenceFlagRadio[1].backgroundColor =
+          '#6fb9ff';
+      }
+      setBikeArrearsPriceAutomaticOccurrenceFlagRadio(
+        newBikeArrearsPriceAutomaticOccurrenceFlagRadio
+      );
+
+      // 四輪相殺要否
+      const newBikeOffsettingFlagRadio = bikeOffsettingFlagRadio;
+      if (billingInfo.bikeOffsettingFlag === '0') {
+        newBikeOffsettingFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.bikeOffsettingFlag === '1') {
+        newBikeOffsettingFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setBikeOffsettingFlagRadio(newBikeOffsettingFlagRadio);
+
+      // 四輪オークション参加制限可否
+      const newBikeAuctionEntryLimitFlagRadio = bikeAuctionEntryLimitFlagRadio;
+      if (billingInfo.bikeAuctionEntryLimitFlag === '0') {
+        newBikeAuctionEntryLimitFlagRadio[0].backgroundColor = '#6fb9ff';
+      } else if (billingInfo.bikeAuctionEntryLimitFlag === '1') {
+        newBikeAuctionEntryLimitFlagRadio[1].backgroundColor = '#6fb9ff';
+      }
+      setBikeAuctionEntryLimitFlagRadio(newBikeAuctionEntryLimitFlagRadio);
+
       reset(billingInfo);
+
       const contractRow: contractRowModel[] = [];
       getBillingInfoResponse.contractInfo.map((x) => {
         contractRow.push({
@@ -1074,11 +1242,6 @@ const ScrMem0008BasicTab = (props: {
     );
   };
 
-  const flagRadio = [
-    { value: 0, displayValue: '可' },
-    { value: 1, displayValue: '不可' },
-  ];
-
   return (
     <>
       <MainLayout>
@@ -1159,31 +1322,31 @@ const ScrMem0008BasicTab = (props: {
                   <Radio
                     label='即払可否'
                     name='tvaaImmediatePaymentFlag'
-                    radioValues={flagRadio}
+                    radioValues={tvaaImmediatePaymentFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='書類先出し'
                     name='tvaaDocumentAdvanceFlag'
-                    radioValues={flagRadio}
+                    radioValues={tvaaDocumentAdvanceFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='延滞金の自動発生可否フラグ'
                     name='tvaaArrearsPriceAutomaticOccurrenceFlag'
-                    radioValues={flagRadio}
+                    radioValues={tvaaArrearsPriceAutomaticOccurrenceFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='相殺要否'
                     name='tvaaOffsettingFlag'
-                    radioValues={flagRadio}
+                    radioValues={tvaaOffsettingFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='オークション参加制限可否'
                     name='tvaaAuctionEntryLimitFlag'
-                    radioValues={flagRadio}
+                    radioValues={tvaaAuctionEntryLimitFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <InputLayout label='督促状発行' size='s'>
@@ -1217,31 +1380,31 @@ const ScrMem0008BasicTab = (props: {
                   <Radio
                     label='即払可否'
                     name='bikeImmediatePaymentFlag'
-                    radioValues={flagRadio}
+                    radioValues={bikeImmediatePaymentFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='書類先出し'
                     name='bikeDocumentAdvanceFlag'
-                    radioValues={flagRadio}
+                    radioValues={bikeDocumentAdvanceFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='延滞金の自動発生可否フラグ'
                     name='bikeArrearsPriceAutomaticOccurrenceFlag'
-                    radioValues={flagRadio}
+                    radioValues={bikeArrearsPriceAutomaticOccurrenceFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='相殺要否'
                     name='bikeOffsettingFlag'
-                    radioValues={flagRadio}
+                    radioValues={bikeOffsettingFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <Radio
                     label='オークション参加制限可否'
                     name='bikeAuctionEntryLimitFlag'
-                    radioValues={flagRadio}
+                    radioValues={bikeAuctionEntryLimitFlagRadio}
                     disabled={isReadOnly[0]}
                   />
                   <InputLayout label='督促状発行' size='s'>
