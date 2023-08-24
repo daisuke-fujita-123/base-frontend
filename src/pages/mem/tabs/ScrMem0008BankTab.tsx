@@ -49,6 +49,7 @@ import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 import { watch } from 'fs';
 import { TabDisabledsModel } from '../ScrMem0008Page';
 
@@ -531,6 +532,7 @@ const ScrMem0008BankTab = (props: {
   const [searchParams] = useSearchParams();
   const applicationId = searchParams.get('applicationId');
   const { user } = useContext(AuthContext);
+  const apiRef = useGridApiRef();
 
   // state
   const [accountType1Row, setAccountType1Row] = useState<
@@ -557,6 +559,7 @@ const ScrMem0008BankTab = (props: {
   const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
   const [changeHistoryDateCheckIsOpen, setChangeHistoryDateCheckIsOpen] =
     useState<boolean>(false);
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(
@@ -877,6 +880,17 @@ const ScrMem0008BankTab = (props: {
 
     initialize(corporationId, billingId);
   }, [corporationId, billingId, applicationId]);
+
+  /**
+   * セクションの幅変更
+   */
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 銀行変更時のイベントハンドラ
@@ -1237,7 +1251,7 @@ const ScrMem0008BankTab = (props: {
         <MainLayout main>
           <FormProvider {...methods}>
             {/* 口座情報セクション */}
-            <Section name='口座情報'>
+            <Section name='口座情報' width={maxSectionWidth}>
               <RowStack>
                 <ColStack>
                   <InputLayout
@@ -1270,6 +1284,7 @@ const ScrMem0008BankTab = (props: {
                       columns={accountType3Columns}
                       rows={accountType3Row}
                       disabled={isReadOnly[0]}
+                      apiRef={apiRef}
                     />
                   </InputLayout>
                   <InputLayout
