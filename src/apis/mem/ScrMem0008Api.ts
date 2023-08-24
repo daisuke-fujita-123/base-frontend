@@ -143,7 +143,7 @@ export const ScrMem0008GetBillingInfo = async (
   request: ScrMem0008GetBillingInfoRequest
 ): Promise<ScrMem0008GetBillingInfoResponse> => {
   const response = await memApiClient.post(
-    '/api/mem/scr-mem-0010/get-businessbase',
+    '/api/mem/scr-mem-0008/get-billing-info',
     request
   );
   return response.data;
