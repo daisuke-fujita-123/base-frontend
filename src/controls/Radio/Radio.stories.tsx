@@ -83,7 +83,7 @@ export const Example = () => {
   });
 
   const radioSample = [
-    { value: 0, displayValue: '男' },
+    { value: 0, displayValue: '男', backgroundColor: '#6fb9ff' },
     { value: 1, displayValue: '女' },
   ];
 
@@ -94,12 +94,7 @@ export const Example = () => {
   return (
     <ThemeProvider theme={theme}>
       <FormProvider {...methods}>
-        <Radio
-          label='性別'
-          name='gender'
-          radioValues={radioSample}
-          backgroundColor='#6fb9ff'
-        />
+        <Radio label='性別' name='gender' radioValues={radioSample} />
         <Button onClick={hendleClick}>click</Button>
       </FormProvider>
     </ThemeProvider>

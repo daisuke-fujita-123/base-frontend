@@ -40,6 +40,7 @@ import {
   GridValidRowModel,
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
+
 import Encoding from 'encoding-japanese';
 import saveAs from 'file-saver';
 import Papa from 'papaparse';
@@ -83,6 +84,9 @@ const StyledDataGrid = styled(MuiDataGridPro)({
   },
   '& .MuiDataGrid-columnSeparator': {
     display: 'none',
+  },
+  '& .MuiDataGrid-virtualScroller': {
+    overflow: 'hidden',
   },
 });
 
@@ -200,6 +204,10 @@ export interface DataGridProps extends DataGridProProps {
    */
   onRowValueChange?: (row: any) => void; // add, cellType = 'input'
   /**
+   * onRowChange
+   */
+  onCellBlur?: (row: any) => void;
+  /**
    * リンククリック時のハンドラ<br>
    * cellTypeがlinkの時のみ指定
    * @param url
@@ -214,6 +222,10 @@ export interface DataGridProps extends DataGridProProps {
    * getCellDisabled
    */
   getCellDisabled?: (params: any) => boolean;
+  /**
+   * getCellDisabled
+   */
+  getCellReadonly?: (params: any) => boolean;
   /**
    * getSelectValues
    */
@@ -272,9 +284,11 @@ export const DataGrid = (props: DataGridProps) => {
     checkboxSelection = false,
     /** misc */
     onRowValueChange,
+    onCellBlur,
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
     getCellDisabled,
+    getCellReadonly,
     getSelectValues,
     apiRef,
   } = props;
@@ -320,7 +334,7 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   const generateInputCell = (params: any) => {
-    if (params.value === undefined) return <></>;
+    if (getCellReadonly && getCellReadonly(params)) return <>{params.value}</>;
 
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
@@ -361,6 +375,7 @@ export const DataGrid = (props: DataGridProps) => {
           width={params.colDef.width - 10}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
+          onCellBlur={onCellBlur}
         />
         {params.colDef.cellHelperButton === 'info' && (
           <InfoButton onClick={() => handleClick(params)} />
@@ -635,7 +650,9 @@ export const DataGrid = (props: DataGridProps) => {
       <Box
         sx={{
           height: height ? height : '100%',
-          width: width ? width : resolveGridWidth(muiColumns),
+          width: width
+            ? width
+            : resolveGridWidth(muiColumns, checkboxSelection),
           '& .cold': {
             backgroundColor: '#b9d5ff91',
           },
@@ -645,6 +662,7 @@ export const DataGrid = (props: DataGridProps) => {
           '& .disabled': {
             backgroundColor: '#D8D8D8',
           },
+          overflowX: 'hidden',
         }}
       >
         <StyledDataGrid

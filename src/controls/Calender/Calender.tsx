@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Controller, FieldValues, Path, useFormContext } from 'react-hook-form';
 
 import { Stack } from 'layouts/Stack';
@@ -19,6 +19,7 @@ import {
   TextField,
   Theme,
 } from '@mui/material';
+
 import { getWeeksInMonth } from 'date-fns';
 
 export interface CalenderItemDef {
@@ -104,7 +105,22 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
     return dataPerWeek;
   });
 
-  const tableCellSx: SxProps<Theme> = { width: '100px' };
+  const ref = useRef<HTMLTableCellElement>();
+  const [tableWidth, setTableWidth] = useState<number>();
+  useEffect(() => {
+    if (ref.current) {
+      const clientHeight = ref.current?.clientWidth;
+      setTableWidth(clientHeight);
+    }
+  }, [ref]);
+  console.log('tableWidth', tableWidth);
+
+  const tableCellSx: SxProps<Theme> = {
+    width: `${100 / 8}%`,
+    minWidth: `${100 / 8}%`,
+    paddingX: 1,
+    paddingY: 2,
+  };
 
   return (
     <>
@@ -114,7 +130,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
             <TableHead>
               {/* 曜日 */}
               <TableRow>
-                <TableCell></TableCell>
+                <TableCell sx={tableCellSx}></TableCell>
                 {dayOfWeeks.map((data, i) => (
                   <TableCell key={i} sx={tableCellSx}>
                     {data}
@@ -123,7 +139,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
               </TableRow>
               {/* 日付 */}
               <TableRow>
-                <TableCell>day</TableCell>
+                <TableCell sx={tableCellSx}>day</TableCell>
                 {dataPerWeek.map((data, i) => (
                   <TableCell
                     key={i}
