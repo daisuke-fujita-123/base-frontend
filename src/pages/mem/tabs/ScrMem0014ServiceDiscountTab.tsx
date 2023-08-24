@@ -270,6 +270,7 @@ const optionInfomationColumns: GridColDef[] = [
   {
     field: 'useOptionService',
     headerName: '利用前提サービス',
+    cellType: 'input',
     size: 'l',
   },
   {
@@ -4767,6 +4768,21 @@ const ScrMem0014ServiceDiscountTab = (props: {
     setConfirmButtonDisable(true);
   };
 
+  const handleGetCellReadonly = (params: any) => {
+    if (params.field === 'useOptionService') {
+      if (
+        params.row.useStartDate !== '' &&
+        (params.row.optionEntryKind === '参加' ||
+          params.row.optionEntryKind === '売りのみ' ||
+          params.row.optionEntryKind === '休会' ||
+          params.row.optionEntryKind === '締結待ち')
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   return (
     <>
       <MainLayout>
@@ -4805,6 +4821,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
                       onOptionInfomationRowValueChange(row)
                     }
                     getCellDisabled={optionInfomationRowGetCellDisabled}
+                    getCellReadonly={handleGetCellReadonly}
                     disabled={isReadOnly[0]}
                   />
                 </InputLayout>
