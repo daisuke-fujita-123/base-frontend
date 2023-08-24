@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -12,7 +12,7 @@ import ScrCom0035Popup, {
 import { CenterBox, MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
 import { MainLayout } from 'layouts/MainLayout';
-import { Section } from 'layouts/Section';
+import { Section, SectionClose } from 'layouts/Section';
 import { ColStack, RowStack } from 'layouts/Stack';
 
 import { AddButton, SearchButton } from 'controls/Button';
@@ -50,6 +50,8 @@ import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
+
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件データモデル
@@ -740,6 +742,8 @@ const ScrMem0001Page = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const { getMessage } = useContext(MessageContext);
+  const sectionRef = useRef<SectionClose>();
+  const apiRef = useGridApiRef();
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -890,6 +894,8 @@ const ScrMem0001Page = () => {
    * 検索クリック時のイベントハンドラ
    */
   const handleSearchClick = async () => {
+    if (sectionRef.current && sectionRef.current.closeSection)
+      sectionRef.current.closeSection();
     // 法人情報検索API
     const request = convertFromSearchConditionModel(getValues());
     const response = await ScrMem0001SearchCorporations(request);
@@ -977,7 +983,7 @@ const ScrMem0001Page = () => {
       hours +
       minutes +
       '.csv';
-    exportCsv(searchResult, fileName);
+    exportCsv(fileName, apiRef);
   };
 
   /**
@@ -1121,7 +1127,7 @@ const ScrMem0001Page = () => {
               name='法人情報一覧検索'
               isSearch
               serchLabels={serchLabels}
-              open={openSection}
+              ref={sectionRef}
             >
               <RowStack>
                 <ColStack>
