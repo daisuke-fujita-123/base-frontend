@@ -15,7 +15,7 @@ export const useNavigate = () => {
     newTab = false,
     options?: NavigateOptions
   ) => {
-    if (newTab && to === 'string') {
+    if (newTab && typeof to === 'string') {
       window.open(to, '_blank');
     } else {
       navigateContext(to, options);
