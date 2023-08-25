@@ -506,17 +506,12 @@ const ScrCom0009Page = () => {
     setCheckList(RowSelections);
   };
 
-  // TODO データグリットの幅指定
+  // データグリットの幅指定
   const apiRef = useGridApiRef();
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
-
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   return (
     <>
