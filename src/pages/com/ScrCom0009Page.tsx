@@ -358,7 +358,7 @@ const ScrCom0009Page = () => {
       getValues('reportCreateDateTo') !== ''
     ) {
       if (getValues('reportCreateDateFrom') > getValues('reportCreateDateTo')) {
-        const messege = getMessage('MSG-FR-INF-00062');
+        const messege = getMessage('MSG-FR-ERR-00062');
         // ダイアログを表示
         setTitle(messege);
         setHandleDialog(true);
@@ -369,7 +369,7 @@ const ScrCom0009Page = () => {
     if (getValues('systemKind') !== '' && getValues('reportName') !== '') {
       if (getValues('systemKind') !== getValues('reportName').slice(4, 7)) {
         // TODO メッセージを確認
-        const messege = getMessage('MSG-FR-INF-00063');
+        const messege = getMessage('MSG-FR-ERR-');
         // ダイアログを表示
         setTitle(messege);
         setHandleDialog(true);
@@ -381,23 +381,29 @@ const ScrCom0009Page = () => {
     const request = convertFromSearchConditionModel(getValues());
     const response = await ScrCom0009GetReportList(request);
     const searchResult = convertToSearchResultRowModel(response);
-
-    // 制限件数 <  取得件数の場合
-    if (response.count < response.acquisitionCount) {
-      // メッセージ取得機能へ引数を渡しメッセージを取得する
-      const messege = Format(getMessage('MSG-FR-INF-00004'), [
-        response.acquisitionCount.toString(),
-        response.responseCount.toString(),
-      ]);
+    if (searchResult.length != 0) {
+      // 制限件数 <  取得件数の場合
+      if (response.count < response.acquisitionCount) {
+        // メッセージ取得機能へ引数を渡しメッセージを取得する
+        const messege = Format(getMessage('MSG-FR-INF-00004'), [
+          response.acquisitionCount.toString(),
+          response.responseCount.toString(),
+        ]);
+        // ダイアログを表示
+        setTitle(messege);
+        setHandleDialog(true);
+      }
+      // データグリッドにデータを設定
+      setSearchResult(searchResult);
+      // セクションを閉じる
+      if (sectionRef.current && sectionRef.current.closeSection)
+        sectionRef.current.closeSection();
+    } else {
+      const message = getMessage('MSG-FR-INF-00017');
       // ダイアログを表示
-      setTitle(messege);
+      setTitle(message);
       setHandleDialog(true);
     }
-    // データグリッドにデータを設定
-    setSearchResult(searchResult);
-    // セクションを閉じる
-    if (sectionRef.current && sectionRef.current.closeSection)
-      sectionRef.current.closeSection();
   };
 
   /**
