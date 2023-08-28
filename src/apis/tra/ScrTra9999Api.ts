@@ -43,7 +43,7 @@ export const ScrTra9999GetCodeValue = async (
   request: ScrTra9999GetCodeValueRequest
 ): Promise<ScrTra9999GetCodeValueResponse> => {
   const response = await traApiClient.post(
-    '/scr-tra-9999/get-code-value',
+    '/api/tra/scr-tra-9999/get-code-value',
     request
   );
   return response.data;
@@ -76,7 +76,7 @@ export const ScrTra9999CreateReportImageTra = async (
   request: ScrTra9999CreateReportImageTraRequest
 ): Promise<ScrTra9999CreateReportImageTraResponse> => {
   const response = await traApiClient.post(
-    '/com/scr-tra-9999/create-report-image-tra',
+    '/api/tra/scr-tra-9999/create-report-image-tra',
     request,
     {
       responseType: 'blob',

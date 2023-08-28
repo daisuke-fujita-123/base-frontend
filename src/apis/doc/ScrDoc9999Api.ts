@@ -27,7 +27,7 @@ export const ScrDoc9999CreateReportImageDoc = async (
   request: ScrDoc9999CreateReportImageDocRequest
 ): Promise<ScrDoc9999CreateReportImageDocResponse> => {
   const response = await docApiClient.post(
-    '/com/scr-doc-9999/create-report-image-doc',
+    '/api/doc/scr-doc-9999/create-report-image-doc',
     request,
     {
       responseType: 'blob',
