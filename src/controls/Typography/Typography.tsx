@@ -171,7 +171,8 @@ export const AccordionSubTitle = (props: TypographyProps) => {
 const StyledAccordionContentText = styled(TypographyMui)({
   margin: 0,
   marginBottom: theme.spacing(1),
-  height: theme.spacing(6),
+  paddingTop: 7,
+  paddingBottom: 7,
   display: 'flex',
   alignItems: 'center',
   '&:hover': {

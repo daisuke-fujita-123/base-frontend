@@ -1,36 +1,103 @@
-import React from 'react';
+import React, { ChangeEventHandler, FocusEventHandler } from 'react';
 import {
   FieldValues,
   Path,
   useController,
   useFormContext,
+  useWatch,
 } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
 
+import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
 import Calendar from 'icons/button_calendar.png';
 
-import { IconButton, Stack, styled } from '@mui/material';
+import { Box, IconButton, styled } from '@mui/material';
 import {
+  BaseSingleInputFieldProps,
   DatePicker as DatePickerMui,
+  DateValidationError,
+  FieldSection,
   LocalizationProvider,
+  UseDateFieldProps,
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
-import { ja } from 'date-fns/locale';
-import dayjs from 'dayjs';
 
-export interface DatePickerProps<T extends FieldValues> {
-  name: Path<T>;
-  label?: string;
-  labelPosition?: 'above' | 'side';
-  required?: boolean;
-  disabled?: boolean;
-  withWareki?: boolean;
-  size?: 's' | 'm' | 'l' | 'xl';
+import { ja } from 'date-fns/locale';
+import {
+  convertFromDateToDisplay,
+  isInvalidDate,
+  transformWareki,
+} from './DatePickerHelper';
+
+/**
+ * DatePickerFieldPropsコンポーネントのProps
+ */
+interface DatePickerFieldProps
+  extends UseDateFieldProps<Date>,
+    BaseSingleInputFieldProps<
+      Date | null,
+      Date,
+      FieldSection,
+      DateValidationError
+    > {
+  name?: string;
 }
+
+/**
+ * DatePickerFieldPropsコンポーネント
+ */
+const DatePickerField = (props: DatePickerFieldProps) => {
+  const {
+    name = '',
+    disabled,
+    readOnly,
+    InputProps: { ref: containerRef, startAdornment, endAdornment } = {},
+  } = props;
+
+  // form
+  const { formState, control } = useFormContext();
+  const { field } = useController({ name, control });
+  useWatch({ name });
+
+  const handleOnChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    const newValue = event.target.value;
+    // formで値の状態を行うため、DatePickerには値の変更通知を行わない。
+    field.onChange(newValue);
+  };
+
+  const handleOnBlur: FocusEventHandler<
+    HTMLInputElement | HTMLTextAreaElement
+  > = () => {
+    field.onBlur();
+  };
+
+  return (
+    <Box ref={containerRef}>
+      {startAdornment}
+      <StyledTextFiled
+        value={field.value}
+        disabled={disabled}
+        onChange={handleOnChange}
+        onBlur={handleOnBlur}
+        error={!!formState.errors[name]}
+        helperText={
+          formState.errors[name]?.message
+            ? String(formState.errors[name]?.message)
+            : null
+        }
+        InputProps={{
+          endAdornment: endAdornment,
+          readOnly: readOnly,
+        }}
+        fullWidth
+      />
+    </Box>
+  );
+};
 
 const StyledButton = styled(IconButton)({
   ...theme.palette.calender,
@@ -48,6 +115,22 @@ const CalenderIcon = () => {
   );
 };
 
+/**
+ * DatePickerコンポーネント
+ */
+export interface DatePickerProps<T extends FieldValues> {
+  name: Path<T>;
+  label?: string;
+  labelPosition?: 'above' | 'side';
+  required?: boolean;
+  disabled?: boolean;
+  withWareki?: boolean;
+  size?: 's' | 'm' | 'l' | 'xl';
+}
+
+/**
+ * DatePickerコンポーネント
+ */
 export const DatePicker = <T extends FieldValues>(
   props: DatePickerProps<T>
 ) => {
@@ -62,48 +145,19 @@ export const DatePicker = <T extends FieldValues>(
   } = props;
 
   // form
-  const {
-    control,
-    getValues,
-    formState: { errors },
-  } = useFormContext();
+  const { control, getValues } = useFormContext();
   const { field } = useController({ name, control });
-  const isReadOnly = control?._options?.context[0];
 
-  const isInvalidDate = (date: Date) => Number.isNaN(date.getTime());
-
-  const transformWareki = (date: Date): string => {
-    if (isInvalidDate(date)) return '';
-    const formatted = new Intl.DateTimeFormat('ja-JP-u-ca-japanese', {
-      era: 'long',
-    }).format(date);
-    const splitted = formatted.split('/');
-    const transformed = `${splitted[0]}年${splitted[1]}月${splitted[2]}日`;
-    return transformed;
-  };
-
-  const transformYyyymmdd = (date: Date): string => {
-    if (isInvalidDate(date)) return '';
-    const yyyymmdd = [
-      String(date.getFullYear()),
-      String(date.getMonth() + 1).padStart(2, '0'),
-      String(date.getDate()).padStart(2, '0'),
-    ];
-    const transformed = yyyymmdd.join('/');
-    return transformed;
-  };
-
-  const handleValueChange = (value: Date | null) => {
+  const handleOnAccept = (value: Date | null) => {
     if (value === null) return;
     if (isInvalidDate(value)) return;
-    field.onChange(transformYyyymmdd(value));
+    const newValue = convertFromDateToDisplay(value);
+    field.onChange(newValue);
     field.onBlur();
   };
 
   const wareki = transformWareki(new Date(getValues(name)));
-  const helperText = errors[name]?.message
-    ? String(errors[name]?.message)
-    : null;
+
   return (
     <InputLayout
       label={label}
@@ -111,53 +165,46 @@ export const DatePicker = <T extends FieldValues>(
       required={required}
       size={size}
     >
-      <Stack spacing={0}>
-        {withWareki && <Typography>{wareki}</Typography>}
-        <LocalizationProvider
-          // dateAdapter={AdapterDayjs}
-          dateAdapter={AdapterDateFns}
-          adapterLocale={ja}
-        >
-          <DatePickerMui
-            {...field}
-            value={new Date(field.value)}
-            onChange={handleValueChange}
-            // slots={{ textField: TextField }}
-            slots={{
-              openPickerIcon: CalenderIcon,
-            }}
-            slotProps={{
-              layout: {
-                sx: {
-                  '& .MuiPickersCalendarHeader-labelContainer': {
-                    fontWeight: 'bold',
-                  },
-                  '& .MuiButtonBase-root.MuiPickersDay-root': {
-                    '&.Mui-selected': {
-                      border: '3px solid #f37246',
-                      backgroundColor: '#fde8d4',
-                      color: '#000000',
-                    },
+      {withWareki && <Typography>{wareki}</Typography>}
+      <LocalizationProvider
+        // dateAdapter={AdapterDayjs}
+        dateAdapter={AdapterDateFns}
+        adapterLocale={ja}
+      >
+        <DatePickerMui
+          {...field}
+          value={new Date(field.value)}
+          // onChangeでハンドリングするとテキストの変更も検知対象になり、かつ、値が補正されてしまう。
+          // ここでは、onAcceptでカレンダーの変更のみを検知し、テキストの変更検知はDatePickerFieldで行う。
+          onAccept={handleOnAccept}
+          slots={{
+            field: DatePickerField,
+            openPickerIcon: CalenderIcon,
+          }}
+          slotProps={{
+            field: {
+              name,
+            } as any,
+            layout: {
+              sx: {
+                '& .MuiPickersCalendarHeader-labelContainer': {
+                  fontWeight: 'bold',
+                },
+                '& .MuiButtonBase-root.MuiPickersDay-root': {
+                  '&.Mui-selected': {
+                    border: '3px solid #f37246',
+                    backgroundColor: '#fde8d4',
+                    color: '#000000',
                   },
                 },
               },
-              textField: {
-                helperText: helperText,
-                sx: {
-                  '& .MuiOutlinedInput-root': {
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#f37246',
-                    },
-                  },
-                },
-              },
-            }}
-            // format='yyyy/mm/dd'
-            readOnly={isReadOnly}
-            disabled={disabled}
-          />
-        </LocalizationProvider>
-      </Stack>
+            },
+          }}
+          format='yyyy/mm/dd'
+          readOnly={control?._options?.context[0]}
+          disabled={disabled}
+        />
+      </LocalizationProvider>
     </InputLayout>
   );
 };

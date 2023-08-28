@@ -1,22 +1,20 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
 
-import { CenterBox } from 'layouts/Box';
-import { Grid } from 'layouts/Grid';
+import { CenterBox, MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
-import { Section } from 'layouts/Section';
+import { Section, SectionClose } from 'layouts/Section';
+import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 
-import { Button, SearchButton } from 'controls/Button';
-import { Checkbox } from 'controls/Checkbox';
+import { Button, PrimaryButton, SearchButton } from 'controls/Button';
 import { DataGrid, GridColDef, GridTooltipsModel } from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
 import { ContentsDivider } from 'controls/Divider';
-import { FileSelect } from 'controls/FileSelect';
-import { Radio } from 'controls/Radio';
+import { WarningLabel } from 'controls/Label';
 import { Select, SelectValue } from 'controls/Select';
 import { TextField } from 'controls/TextField';
 import { Typography } from 'controls/Typography';
@@ -263,9 +261,9 @@ const convertToSelectValues = (response: any[]): SelectValue[] => {
 };
 
 /**
- * Experiments
+ * Scroll
  */
-const Experiments = () => {
+const Scroll = () => {
   // context
   const { showDialog, saveState, loadState } = useContext(AppContext);
 
@@ -289,6 +287,10 @@ const Experiments = () => {
 
   // ref
   const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   useEffect(() => {
     const fetch = async () => {
@@ -322,10 +324,7 @@ const Experiments = () => {
   }, [methods]);
 
   // Sectionの開閉処理
-  const [open, setopen] = useState<boolean>(true);
-  useEffect(() => {
-    if (!open) setopen(true);
-  }, [open]);
+  const sectionRef = useRef<SectionClose>();
 
   const handleSeachClick = async () => {
     try {
@@ -347,7 +346,8 @@ const Experiments = () => {
     } catch (error) {
       console.error(error);
     }
-    setopen(false);
+    if (sectionRef.current && sectionRef.current.closeSection)
+      sectionRef.current.closeSection();
   };
 
   const handleUpdateClick = async () => {
@@ -387,100 +387,69 @@ const Experiments = () => {
     <MainLayout>
       <MainLayout main>
         <FormProvider {...methods}>
-          <Section name='検索条件' isSearch open={open}>
+          <Section name='検索条件' isSearch ref={sectionRef}>
             <Typography>search condition</Typography>
-            <Grid container>
-              <Grid item xs={2}>
-                <Select
-                  name='country'
-                  label='country'
-                  selectValues={selectValues.countries}
-                />
-                <Select
-                  name='state'
-                  label='state'
-                  selectValues={selectValues.states}
-                />
-                <Select
-                  name='city'
-                  label='city'
-                  selectValues={selectValues.cities}
-                />
-                <Select
-                  name='street'
-                  label='street'
-                  selectValues={selectValues.streets}
-                />
-              </Grid>
-              <Grid item xs={2}>
+            <RowStack>
+              <ColStack>
+                <TextField label='法人ID' name='corporationId' readonly />
                 <TextField
-                  name='string1'
-                  label='ストリング1'
-                  onBlur={handleOnBlur}
+                  label='法人名'
+                  name='corporationName'
+                  required
+                  size='m'
                 />
                 <TextField
-                  name='string2'
-                  label='ストリング2'
-                  onBlur={handleOnBlur}
+                  label='法人名カナ'
+                  name='corporationNameKana'
+                  required
+                  size='m'
                 />
-                <TextField name='string3' label='ストリング3' />
-                <TextField name='string4' label='ストリング4' />
-                <TextField name='string5' label='ストリング5' />
-                <TextField name='string6' label='ストリング6' />
-                <TextField name='string7' label='ストリング7' />
-                <TextField name='string8' label='ストリング8' />
-                <TextField name='string9' label='ストリング9' />
-                <TextField name='string10' label='ストリング10' />
-                <TextField name='string11' label='ストリング11' />
-              </Grid>
-              <Grid item xs={2}>
-                <TextField name='number1' label='ナンバー1' />
-                <TextField name='number2' label='ナンバー2' />
-                <TextField name='number3' label='ナンバー3' />
-              </Grid>
-              <Grid item xs={2}>
-                <DatePicker name='date1' label='date 1' withWareki />
-                <DatePicker name='date2' label='date 2' withWareki />
-                <DatePicker name='date3' label='date 3' withWareki />
-              </Grid>
-              <Grid item xs={2}>
-                <Radio
-                  name='radio1'
-                  label='radio1'
-                  radioValues={[
-                    { value: '1', displayValue: '1' },
-                    { value: '2', displayValue: '2' },
-                  ]}
+              </ColStack>
+              <ColStack>
+                <TextField
+                  label='市区町村'
+                  name='corporationMunicipalities'
+                  required
                 />
-                <Radio
-                  name='radio2'
-                  label='radio2'
-                  radioValues={[
-                    { value: 1, displayValue: '1' },
-                    { value: 2, displayValue: '2' },
-                  ]}
+                <TextField
+                  label='番地・号・建物名など'
+                  name='corporationAddressBuildingName'
+                  required
+                  size='m'
                 />
-                <Select
-                  name='select1'
-                  label='select1'
-                  selectValues={[
-                    { value: '1', displayValue: '1' },
-                    { value: '2', displayValue: '2' },
-                  ]}
+                <TextField label='TEL' name='corporationPhoneNumber' required />
+                <TextField label='FAX' name='corporationFaxNumber' />
+                <TextField
+                  label='メールアドレス'
+                  name='corporationMailAddress'
+                  size='m'
                 />
-                <Select
-                  name='select2'
-                  label='select2'
-                  selectValues={[
-                    { value: 1, displayValue: '1' },
-                    { value: 2, displayValue: '2' },
-                  ]}
+              </ColStack>
+              <ColStack>
+                <TextField
+                  label='適格事業者番号'
+                  name='eligibleBusinessNumber'
+                  readonly
                 />
-                <Checkbox name='check1' label='check1' />
-                <Checkbox name='check2' label='check2' />
-                <FileSelect name='file' label='ファイル' />
-              </Grid>
-            </Grid>
+                <TextField
+                  label='税事業者区分'
+                  name='taxBusinessKind'
+                  readonly
+                />
+                <TextField
+                  label='公安委員会'
+                  name='publicSafetyCommittee'
+                  required
+                />
+                <TextField
+                  label='古物商許可番号'
+                  name='antiqueBusinessLicenseNumber'
+                  required
+                />
+                <DatePicker label='交付年月日' name='issuanceDate' withWareki />
+                <TextField label='古物名義' name='antiqueName' />
+              </ColStack>
+            </RowStack>
             <ContentsDivider />
             <CenterBox>
               <SearchButton onClick={handleSeachClick}>検索</SearchButton>
@@ -488,7 +457,7 @@ const Experiments = () => {
             </CenterBox>
           </Section>
         </FormProvider>
-        <Section name='検索結果'>
+        <Section name='検索結果' width={maxSectionWidth}>
           <Typography>search result</Typography>
           <DataGrid
             columns={searchResultColDef}
@@ -534,8 +503,38 @@ const Experiments = () => {
           </Button>
         </Section>
       </MainLayout>
+      {/* right */}
+      <MainLayout right>
+        <FormProvider {...methods}>
+          <RowStack>
+            <ColStack>
+              <RightElementStack>
+                <Stack>
+                  <Typography bold>変更予約情報</Typography>
+                  <WarningLabel text='変更予約あり' />
+                  <Select
+                    name='changeHistoryNumber'
+                    selectValues={[]}
+                    blankOption
+                  />
+                  <PrimaryButton
+                    onClick={() => {
+                      console.log();
+                    }}
+                  >
+                    表示切替
+                  </PrimaryButton>
+                </Stack>
+                <MarginBox mb={6} mt={4}>
+                  <DatePicker label='変更予定日' name='changeHistoryDate' />
+                </MarginBox>
+              </RightElementStack>
+            </ColStack>
+          </RowStack>
+        </FormProvider>
+      </MainLayout>
     </MainLayout>
   );
 };
 
-export default Experiments;
+export default Scroll;
