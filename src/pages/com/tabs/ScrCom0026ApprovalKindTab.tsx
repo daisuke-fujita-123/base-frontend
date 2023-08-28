@@ -2,7 +2,9 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import ScrCom0032Popup, {
-    columnList, ScrCom0032PopupModel, sectionList
+  columnList,
+  ScrCom0032PopupModel,
+  sectionList,
 } from 'pages/com/popups/ScrCom0032Popup';
 
 import { MarginBox } from 'layouts/Box';
@@ -14,13 +16,17 @@ import { AddButton, ConfirmButton } from 'controls/Button';
 import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 
 import {
-    ScrCom0026GetApprovalKind, ScrCom0026GetApprovalKindRequest, ScrCom0026GetApprovalKindResponse,
-    ScrCom0026RegistApprovalKind, ScrCom9999GetHistoryInfo, ScrCom9999GetHistoryInfoResponse
+  ScrCom0026GetApprovalKind,
+  ScrCom0026GetApprovalKindRequest,
+  ScrCom0026GetApprovalKindResponse,
+  ScrCom0026RegistApprovalKind,
+  ScrCom9999GetHistoryInfo,
+  ScrCom9999GetHistoryInfoResponse,
 } from 'apis/com/ScrCom0026Api';
 
 import { AuthContext } from 'providers/AuthProvider';
 
-import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
+import { GridColumnGroupingModel, useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索結果行データモデル
@@ -50,6 +56,8 @@ interface SearchResultApprovalModel {
   approval: boolean;
   // 承認種類ID
   approvalKindId: string;
+  // 有効開始日
+  validityStartDate: string;
   // 変更前タイムスタンプ
   beforeTimestamp: string;
   // 変更履歴番号
@@ -162,6 +170,7 @@ const convertToApprovalKindModel = (
       number4: x.number4,
       approval: x.approval,
       approvalKindId: x.approvalKindId,
+      validityStartDate: x.validityStartDate,
       beforeTimestamp: x.beforeTimestamp,
       changeHistoryNumber: '',
       changeExpectDate: '',
@@ -187,6 +196,7 @@ const convertToHistoryInfo = (
       number4: x.number4,
       approval: x.approval,
       approvalKindId: x.approvalKindId,
+      validityStartDate: x.validityStartDate,
       beforeTimestamp: x.beforeTimestamp,
       changeHistoryNumber: changeHistoryNumber,
       changeExpectDate: '',
@@ -234,6 +244,11 @@ const ScrCom0026ApprovalKindTab = () => {
   >([]);
   // 履歴表示によるボタン活性判別フラグ
   const [activeFlag, setActiveFlag] = useState(false);
+  const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   // router
   const [searchParams] = useSearchParams();
@@ -319,7 +334,6 @@ const ScrCom0026ApprovalKindTab = () => {
     const hours = d.getHours();
     const min = d.getMinutes();
     exportCsv(
-      approvalResult,
       '承認種類' +
         user.employeeId +
         '_' +
@@ -330,7 +344,8 @@ const ScrCom0026ApprovalKindTab = () => {
         day.toString() +
         hours.toString() +
         min.toString() +
-        '.csv'
+        '.csv',
+      apiRef
     );
   };
 
@@ -436,6 +451,7 @@ const ScrCom0026ApprovalKindTab = () => {
           number4: x.number4,
           approval: x.approval,
           approvalKindId: x.approvalKindId,
+          validityStartDate: x.validityStartDate,
           beforeTimestamp: x.beforeTimestamp,
           changeHistoryNumber: '',
           changeExpectDate: '',
@@ -489,6 +505,7 @@ const ScrCom0026ApprovalKindTab = () => {
           number4: x.number4,
           approval: x.approval,
           approvalKindId: x.approvalKindId,
+          validityStartDate: x.validityStartDate,
           beforeTimestamp: x.beforeTimestamp,
           changeHistoryNumber: '',
           changeExpectDate: '',
@@ -498,18 +515,20 @@ const ScrCom0026ApprovalKindTab = () => {
 
     // API-COM-0026-0007: 承認種類登録更新API
     const request = {
+      screenId: 'SCR-COM-0026',
+      tabId: '3',
+      registrationChangeMemo: registrationChangeMemo,
+      businessDate: user.taskDate,
+      changeApplicationEmployeeId: user.employeeId,
       registApprovalKindList: approvalResultRequest.map((x) => {
         return {
           approvalKindId: x.approvalKindId,
-          screenId: 'SCR-COM-0026',
-          tabId: '3',
-          registrationChangeMemo: registrationChangeMemo,
-          changeApplicationEmployeeId: user.employeeId,
+          validityStartDate: x.validityStartDate,
           number1: x.number1,
           number2: x.number2,
           number3: x.number3,
           number4: x.number4,
-          businessDate: user.taskDate,
+          beforeTimestamp: x.beforeTimestamp,
         };
       }),
     };
@@ -542,12 +561,14 @@ const ScrCom0026ApprovalKindTab = () => {
                 </AddButton>
               </MarginBox>
             }
+            width={maxSectionWidth}
           >
             <DataGrid
               columns={approvalResultColumns}
               columnGroupingModel={columnGroups}
               rows={approvalResult}
               disabled={activeFlag}
+              apiRef={apiRef}
             />
           </Section>
         </MainLayout>

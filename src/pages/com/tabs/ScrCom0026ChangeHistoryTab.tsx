@@ -6,17 +6,24 @@ import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
 import {
-    DataGrid, exportCsv, GridColDef, GridHrefsModel, GridTooltipsModel
+  DataGrid,
+  exportCsv,
+  GridColDef,
+  GridHrefsModel,
+  GridTooltipsModel,
 } from 'controls/Datagrid';
 
 import {
-    ScrCom0026GetChangeHistory, ScrCom0026GetChangeHistoryRequest,
-    ScrCom0026GetChangeHistoryResponse
+  ScrCom0026GetChangeHistory,
+  ScrCom0026GetChangeHistoryRequest,
+  ScrCom0026GetChangeHistoryResponse,
 } from 'apis/com/ScrCom0026Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
+
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索結果行データモデル
@@ -122,6 +129,11 @@ const ScrCom0026ChangeHistoryTab = () => {
   >([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
   const [tooltips, setTooltips] = useState<GridTooltipsModel[]>([]);
+  const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   // router
   const navigate = useNavigate();
@@ -226,7 +238,6 @@ const ScrCom0026ChangeHistoryTab = () => {
     const hours = d.getHours();
     const min = d.getMinutes();
     exportCsv(
-      changeHistoryResult,
       '変更履歴一覧' +
         user.employeeId +
         '_' +
@@ -237,7 +248,8 @@ const ScrCom0026ChangeHistoryTab = () => {
         day.toString() +
         hours.toString() +
         min.toString() +
-        '.csv'
+        '.csv',
+      apiRef
     );
   };
 
@@ -256,6 +268,7 @@ const ScrCom0026ChangeHistoryTab = () => {
                 </AddButton>
               </MarginBox>
             }
+            width={maxSectionWidth}
           >
             <DataGrid
               columns={approvalResultColumns}
@@ -264,6 +277,7 @@ const ScrCom0026ChangeHistoryTab = () => {
               tooltips={tooltips}
               onLinkClick={handleLinkClick}
               pagination={true}
+              apiRef={apiRef}
             />
           </Section>
         </MainLayout>

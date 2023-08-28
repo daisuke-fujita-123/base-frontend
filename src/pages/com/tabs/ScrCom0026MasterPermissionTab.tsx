@@ -5,16 +5,24 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
 import { AddButton } from 'controls/Button';
-import { DataGrid, exportCsv, GridColDef, GridHrefsModel } from 'controls/Datagrid';
+import {
+  DataGrid,
+  exportCsv,
+  GridColDef,
+  GridHrefsModel,
+} from 'controls/Datagrid';
 
 import {
-    ScrCom0026GetMasterPermission, ScrCom0026GetMasterPermissionRequest,
-    ScrCom0026GetMasterPermissionResponse
+  ScrCom0026GetMasterPermission,
+  ScrCom0026GetMasterPermissionRequest,
+  ScrCom0026GetMasterPermissionResponse,
 } from 'apis/com/ScrCom0026Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
+
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索結果行データモデル
@@ -86,6 +94,11 @@ const ScrCom0026MasterPermissionTab = () => {
     []
   );
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
+  const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   // router
   const navigate = useNavigate();
@@ -152,7 +165,6 @@ const ScrCom0026MasterPermissionTab = () => {
     const hours = d.getHours();
     const min = d.getMinutes();
     exportCsv(
-      masterResult,
       'マスタ権限一覧' +
         user.employeeId +
         '_' +
@@ -163,7 +175,8 @@ const ScrCom0026MasterPermissionTab = () => {
         day.toString() +
         hours.toString() +
         min.toString() +
-        '.csv'
+        '.csv',
+      apiRef
     );
   };
   return (
@@ -182,12 +195,14 @@ const ScrCom0026MasterPermissionTab = () => {
                 </AddButton>
               </MarginBox>
             }
+            width={maxSectionWidth}
           >
             <DataGrid
               columns={masterResultColumns}
               rows={masterResult}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
+              apiRef={apiRef}
             />
           </Section>
         </MainLayout>

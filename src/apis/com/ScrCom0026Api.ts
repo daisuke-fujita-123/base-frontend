@@ -1,4 +1,4 @@
-import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032';
+import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032Popup';
 
 import { comApiClient } from 'providers/ApiClient';
 
@@ -32,7 +32,7 @@ export const ScrCom0026GetScreenPermission = async (
   req: ScrCom0026GetScreenPermissionRequest
 ): Promise<ScrCom0026GetScreenPermissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0026/get-screen-permission',
+    '/com/scr-com-0026/get-screen-permission',
     req
   );
   return response.data;
@@ -68,7 +68,7 @@ export const ScrCom0026GetMasterPermission = async (
   req: ScrCom0026GetMasterPermissionRequest
 ): Promise<ScrCom0026GetMasterPermissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0026/get-master-permission',
+    '/com/scr-com-0026/get-master-permission',
     req
   );
   return response.data;
@@ -111,6 +111,10 @@ interface ApprovalKindList {
   approval: boolean;
   // 承認種類ID
   approvalKindId: string;
+  // 有効開始日
+  validityStartDate: string;
+  // 変更前タイムスタンプ
+  beforeTimestamp: string;
 }
 
 // API-COM-0026-0003: 承認種類一覧取得
@@ -118,7 +122,7 @@ export const ScrCom0026GetApprovalKind = async (
   req: ScrCom0026GetApprovalKindRequest
 ): Promise<ScrCom0026GetApprovalKindResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0026/get-approval-kind',
+    '/com/scr-com-0026/get-approval-kind',
     req
   );
   return response.data;
@@ -128,11 +132,6 @@ export const ScrCom0026GetApprovalKind = async (
 export interface ScrCom0026RegistApprovalKindRequest {
   /** リスト */
   registApprovalKindList: RegistApprovalKindList[];
-}
-
-interface RegistApprovalKindList {
-  // 承認種類ID
-  approvalKindId: string;
   // 画面ID
   screenId: string;
   // タブID
@@ -141,6 +140,15 @@ interface RegistApprovalKindList {
   registrationChangeMemo: string;
   // 変更申請従業員ID
   changeApplicationEmployeeId: string;
+  // 業務日付
+  businessDate: string;
+}
+
+interface RegistApprovalKindList {
+  // 承認種類ID
+  approvalKindId: string;
+  // 有効開始日
+  validityStartDate: string;
   // 第1
   number1: boolean;
   // 第2
@@ -149,8 +157,8 @@ interface RegistApprovalKindList {
   number3: boolean;
   // 第4
   number4: boolean;
-  // 業務日付
-  businessDate: string;
+  // 変更前タイムスタンプ
+  beforeTimestamp: string;
 }
 
 // API-COM-0026-0007: 承認種類登録更新API
@@ -158,7 +166,7 @@ export const ScrCom0026RegistApprovalKind = async (
   req: ScrCom0026RegistApprovalKindRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/scr-com-0026/get-approval-kind',
+    '/com/scr-com-0026/get-approval-kind',
     req
   );
   return response.data;
@@ -194,7 +202,7 @@ export const ScrCom0026GetApprovalPermission = async (
   req: ScrCom0026GetApprovalPermissionRequest
 ): Promise<ScrCom0026GetApprovalPermissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0026/get-approval-permission',
+    '/com/scr-com-0026/get-approval-permission',
     req
   );
   return response.data;
@@ -240,8 +248,31 @@ export const ScrCom0026GetChangeHistory = async (
   req: ScrCom0026GetChangeHistoryRequest
 ): Promise<ScrCom0026GetChangeHistoryResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0026/get-change-history',
+    '/com/scr-com-0026/get-change-history',
     req
+  );
+  return response.data;
+};
+
+/** API-COM-9999-0025: 変更履歴情報取得API リクエスト */
+export interface ScrCom9999GetHistoryInfoRequest {
+  // 変更履歴番号
+  changeHistoryNumber: string;
+}
+
+/** API-COM-9999-0025: 変更履歴情報取得API レスポンス */
+export interface ScrCom9999GetHistoryInfoResponse {
+  // 承認種類一覧リスト
+  approvalKindList: ApprovalKindList[];
+}
+
+/** API-COM-9999-0025: 変更履歴情報取得API */
+export const ScrCom9999GetHistoryInfo = async (
+  request: ScrCom9999GetHistoryInfoRequest
+): Promise<ScrCom9999GetHistoryInfoResponse> => {
+  const response = await comApiClient.post(
+    '/com/scr-com-9999/get-history-info',
+    request
   );
   return response.data;
 };
