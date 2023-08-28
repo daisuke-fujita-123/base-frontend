@@ -87,6 +87,9 @@ export const Example = () => {
         <DeleteButton disable={false} onClick={onClickFunction}>
           削除
         </DeleteButton>
+        <DeleteButton disable={false} onClick={onClickFunction} size='large'>
+          削除（大）
+        </DeleteButton>
         <CancelButton disable={false} onClick={onClickFunction}>
           キャンセル
         </CancelButton>
@@ -123,6 +126,9 @@ export const Example = () => {
         <DeleteButton disable={true} onClick={onClickFunction}>
           削除
         </DeleteButton>
+        <DeleteButton disable={true} onClick={onClickFunction} size='large'>
+          削除（大）
+        </DeleteButton>
         <CancelButton disable={true} onClick={onClickFunction}>
           キャンセル
         </CancelButton>
@@ -132,9 +138,11 @@ export const Example = () => {
         <LogoutButton disable={true} onClick={onClickFunction}>
           ログアウト
         </LogoutButton>
-        <PrimaryButton onClick={onClickFunction} size='small'>
+        <PrimaryButton onClick={onClickFunction} disable={true} size='small'>
           small
         </PrimaryButton>
+        <AddIconButton disable={true}></AddIconButton>
+        <InfoButton disable={true}></InfoButton>
       </RowStack>
     </ThemeProvider>
   );
