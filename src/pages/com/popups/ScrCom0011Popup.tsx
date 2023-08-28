@@ -17,9 +17,9 @@ import { Typography } from 'controls/Typography';
 
 import {
   reportList,
+  ScrCom0011GetReportInfoRequest,
+  ScrCom0011GetReportInfoResponse,
   ScrCom0011GetReportListInfo,
-  ScrCom0011GetReportListInfoRequest,
-  ScrCom0011GetReportListInfoResponse,
 } from 'apis/com/ScrCom0011Api';
 
 import { useForm } from 'hooks/useForm';
@@ -113,7 +113,7 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
 
   // state
   const [reportsValue, setReportsValue] =
-    useState<ScrCom0011GetReportListInfoResponse>();
+    useState<ScrCom0011GetReportInfoResponse>();
   const [commentRow, setCommentRow] = useState<number>();
   const [commentLine, setCommentLine] = useState<number>();
   // 出力帳票リスト
@@ -232,7 +232,7 @@ const ScrCom0011Popup = (props: ScrCom0011PopupProps) => {
   useEffect(() => {
     const initialize = async () => {
       // API-COM-0011-0001：帳票一覧情報取得API
-      const request: ScrCom0011GetReportListInfoRequest = {
+      const request: ScrCom0011GetReportInfoRequest = {
         /** 画面ID */
         screenId: data.screenId,
       };
