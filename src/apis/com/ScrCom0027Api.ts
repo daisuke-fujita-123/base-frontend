@@ -25,14 +25,12 @@ export interface ScrCom0027GetScreenPermissionResponse {
 }
 
 export interface ScreenList {
-  // 項目ID
-  id: string;
   // 画面ID
   screenId: string;
   // 画面名
   screenName: string;
   // 編集権限
-  editPermission?: boolean;
+  editPermission: boolean;
 }
 
 //  API-COM-0027-0001：画面権限一覧情報取得API
@@ -49,7 +47,14 @@ export const getScreenPermission = async (
 // API-COM-0027-0002：画面一覧情報取得API レスポンス
 export interface ScrCom0027GetScreenResponse {
   // リスト
-  screenList: ScreenList[];
+  screenList: ScreenInfoList[];
+}
+
+interface ScreenInfoList {
+  // 画面ID
+  screenId: string;
+  // 画面名
+  screenName: string;
 }
 
 //  API-COM-0027-0002：画面一覧情報取得API
@@ -118,6 +123,8 @@ export interface ScrCom0027RegistScreenPermissionRequest {
   screenId: string;
   // 登録変更メモ
   registrationChangeMemo: string;
+  // 業務日付
+  businessDate: string;
 }
 
 // API-COM-0027-0004: 画面権限登録API
@@ -164,8 +171,6 @@ interface ScreenPermissionList {
 }
 
 interface ScreenOrgList {
-  // 項目ID
-  id: string;
   // 画面ID
   screenId: string;
   // 画面名

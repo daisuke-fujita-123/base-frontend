@@ -43,6 +43,8 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+
 /**
  * 検索結果行データモデル
  */
@@ -102,7 +104,7 @@ interface ScreenModel {
   // 画面名
   screenName: string;
   // 編集権限
-  editPermission: number;
+  editPermission?: number;
 }
 
 /**
@@ -206,7 +208,6 @@ const convertToNewScreenModel = (
       id: x.screenId,
       screenId: x.screenId,
       screenName: x.screenName,
-      editPermission: 1,
     };
   });
 };
@@ -252,7 +253,8 @@ const convertFromScreenPermissionModel = (
   screenPermission: ScreenResultModel,
   user: string,
   idList: ScreenIdList[],
-  registrationChangeMemo: string
+  registrationChangeMemo: string,
+  businessDate: string
 ): ScrCom0027RegistScreenPermissionRequest => {
   return {
     screenPermissionId: screenPermission.screenPermissionId,
@@ -262,6 +264,7 @@ const convertFromScreenPermissionModel = (
     applicationEmployeeId: user,
     screenId: 'SCR-COM-0027',
     registrationChangeMemo: registrationChangeMemo,
+    businessDate: businessDate,
   };
 };
 
@@ -296,12 +299,20 @@ const ScrCom0027Page = () => {
     return x.includes('SCR-COM-0027');
   });
   const disableFlg = setDisableFlg[0] === 'SCR-COM-0027' ? false : true;
+  // 組織管理、変更履歴からのアクセス時のdisable設定
+  const [cancelDisableFlg, setCancelDisableFlg] = useState(false);
 
   // state
   const [screenResult, setScreenResult] = useState<ScreenModel[]>([]);
+  const [initScreenResult, setInitScreenResult] = useState<ScreenModel[]>([]);
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
+  const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 540;
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -350,7 +361,7 @@ const ScrCom0027Page = () => {
     {
       field: 'screenName',
       headerName: '画面名',
-      size: 'l',
+      width: 400,
     },
     {
       field: 'editPermission',
@@ -377,6 +388,11 @@ const ScrCom0027Page = () => {
       const screenResponse = await getScreenPermission(screenRequest);
       const screenResult = convertToScreenModel(screenResponse);
 
+      // 初期値情報格納
+      if (initScreenResult.length === 0) {
+        setInitScreenResult(screenResult.screenList);
+      }
+
       // 画面にデータを設定
       reset(screenResult);
       // データグリッドにデータを設定
@@ -387,6 +403,9 @@ const ScrCom0027Page = () => {
     const initializeOrg = async (
       screenPermissionId: ScreenPermissionOrgList[]
     ) => {
+      // キャンセルボタンを非活性
+      setCancelDisableFlg(true);
+
       // API-COM-0027-0006: 画面権限一覧情報取得API（組織管理画面からの遷移）
       const screenOrgRequest: ScrCom0027GetScreenPermissionOrganizationRequest =
         {
@@ -440,12 +459,20 @@ const ScrCom0027Page = () => {
         screenOrgResult.screenPermissionList[0].totalSettingPost
       );
 
+      // 初期値情報格納
+      if (initScreenResult.length === 0) {
+        setInitScreenResult(screenOrgResult.screenList);
+      }
+
       // データグリッドにデータを設定
       setScreenResult(screenOrgResult.screenList);
     };
 
     // 初期表示処理(履歴表示)
     const historyInfoInitialize = async (changeHistoryNumber: string) => {
+      // キャンセルボタンを非活性
+      setCancelDisableFlg(true);
+
       // 変更履歴情報取得API
       const getHistoryInfoRequest = {
         changeHistoryNumber: changeHistoryNumber,
@@ -457,6 +484,11 @@ const ScrCom0027Page = () => {
         getHistoryInfoResponse,
         changeHistoryNumber
       );
+
+      // 初期値情報格納
+      if (initScreenResult.length === 0) {
+        setInitScreenResult(historyInfo.screenList);
+      }
 
       // 画面にデータを設定
       reset(historyInfo);
@@ -515,6 +547,9 @@ const ScrCom0027Page = () => {
     reset,
     applicationId,
     disableFlg,
+    user.taskDate,
+    initScreenResult.length,
+    setCancelDisableFlg,
   ]);
 
   /**
@@ -528,7 +563,6 @@ const ScrCom0027Page = () => {
     const hours = d.getHours();
     const min = d.getMinutes();
     exportCsv(
-      screenResult,
       '画面権限詳細_' +
         user.employeeId +
         '_' +
@@ -539,7 +573,8 @@ const ScrCom0027Page = () => {
         day.toString() +
         hours.toString() +
         min.toString() +
-        '.csv'
+        '.csv',
+      apiRef
     );
   };
 
@@ -569,7 +604,8 @@ const ScrCom0027Page = () => {
    */
   const handleConfirm = async () => {
     const idList: ScreenIdList[] = [];
-    screenResult.forEach((x) => {
+    // 編集権限が編集の画面IDのリストを作成（変更行のみ取得）
+    initScreenResult.forEach((x) => {
       if (x.editPermission === 1) {
         idList.push({
           screenId: x.screenId,
@@ -611,7 +647,7 @@ const ScrCom0027Page = () => {
    * キャンセルボタンクリック時のイベントハンドラ
    */
   const handleCancel = () => {
-    navigate('/com/permissions/screen/:' + screenPermissionId);
+    navigate('/com/permissions/screen/' + screenPermissionId);
   };
 
   /**
@@ -621,7 +657,8 @@ const ScrCom0027Page = () => {
     setIsOpenPopup(false);
 
     const idList: ScreenIdList[] = [];
-    screenResult.forEach((x) => {
+    // 編集権限が編集の画面IDのリストを作成（変更行のみ取得）
+    initScreenResult.forEach((x) => {
       if (x.editPermission === 1) {
         idList.push({
           screenId: x.screenId,
@@ -634,7 +671,8 @@ const ScrCom0027Page = () => {
       getValues(),
       user.employeeId,
       idList,
-      registrationChangeMemo
+      registrationChangeMemo,
+      user.taskDate
     );
     await registScreenPermission(request);
   };
@@ -662,6 +700,7 @@ const ScrCom0027Page = () => {
                   </AddButton>
                 </MarginBox>
               }
+              width={maxSectionWidth}
             >
               <RowStack>
                 <ColStack>
@@ -687,7 +726,7 @@ const ScrCom0027Page = () => {
                     name='useFlag'
                     size='s'
                     radioValues={flagRadiovalues}
-                    row
+                    disabled={disableFlg}
                   />
                 </ColStack>
                 <ColStack>
@@ -704,6 +743,7 @@ const ScrCom0027Page = () => {
                 columns={searchResultColumns}
                 rows={screenResult}
                 disabled={disableFlg}
+                apiRef={apiRef}
               />
             </Section>
           </FormProvider>
@@ -712,8 +752,12 @@ const ScrCom0027Page = () => {
         {/* bottom */}
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
-            <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={handleConfirm}>確定</ConfirmButton>
+            <CancelButton onClick={handleCancel} disable={cancelDisableFlg}>
+              キャンセル
+            </CancelButton>
+            <ConfirmButton onClick={handleConfirm} disable={disableFlg}>
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
