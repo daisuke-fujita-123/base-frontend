@@ -9,11 +9,12 @@ import { TableColDef } from 'controls/Table';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material';
+
 import {
   ConditionalTable,
+  ConditionModel,
   DeepKey,
   PricingTable,
-  SearchConditionProps,
 } from './ConditionalTable';
 
 export default {
@@ -24,8 +25,8 @@ export default {
 export const Example = () => {
   const columns: TableColDef[] = [
     { field: 'conditionType', headerName: '条件種類', width: 150 },
-    { field: 'conditions', headerName: '条件', width: 100 },
-    { field: 'conditionVal', headerName: '値', width: 150 },
+    { field: 'conditions', headerName: '条件', width: 80 },
+    { field: 'conditionVal', headerName: '値', width: 200 },
   ];
 
   /**
@@ -123,7 +124,7 @@ export const Example = () => {
     return getItems.find((val) => val.value === select) ?? null;
   };
 
-  const initialVal: SearchConditionProps = {
+  const initialVal: ConditionModel = {
     conditionType: '',
     condition: [
       {
@@ -132,17 +133,17 @@ export const Example = () => {
       },
     ],
   };
-  const [rows, setRows] = useState<SearchConditionProps[]>([initialVal]);
+  const [rows, setRows] = useState<ConditionModel[]>([initialVal]);
 
   // 値の変更を検知する
   const handleChange = (
     val: string | number,
-    changeVal: DeepKey<SearchConditionProps>,
+    changeVal: DeepKey<ConditionModel>,
     indexRow: number,
     indexCol?: number
   ) => {
-    const newArray: SearchConditionProps[] = rows.map(
-      (row: SearchConditionProps, rowIndex: number) => {
+    const newArray: ConditionModel[] = rows.map(
+      (row: ConditionModel, rowIndex: number) => {
         if (changeVal === 'conditionType' && typeof val === 'string') {
           if (rowIndex === indexRow) {
             return { ...row, [changeVal]: val };
@@ -170,7 +171,7 @@ export const Example = () => {
     setRows(newArray);
   };
 
-  const handleSetItem = (sortValues: SearchConditionProps[]) => {
+  const handleSetItem = (sortValues: ConditionModel[]) => {
     setRows(sortValues);
   };
 
@@ -216,7 +217,7 @@ export const Example = () => {
   );
   return (
     <ThemeProvider theme={theme}>
-      <Section name='条件設定'>
+      <Section name='条件設定' width={800}>
         <ConditionalTable
           columns={columns}
           getItems={getItems}

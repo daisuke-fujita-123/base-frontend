@@ -6,14 +6,18 @@ import { Chip, styled, Typography as TypographyMui } from '@mui/material';
 
 const StyledRequiredLabel = styled('div')({
   background: theme.palette.error.main,
-  width: theme.spacing(8),
-  height: theme.spacing(4),
+  width: 30,
+  height: 13,
   marginLeft: theme.spacing(1),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const RequiredLabelText = styled(TypographyMui)({
   color: theme.palette.error.light,
   textAlign: 'center',
+  fontSize: 11,
 });
 
 export const RequiredLabel = () => {

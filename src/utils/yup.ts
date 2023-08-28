@@ -64,13 +64,13 @@ yup.addMethod(yup.StringSchema, 'numberWithComma', function () {
 });
 
 yup.addMethod(yup.StringSchema, 'half', function () {
-  return this.matches(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/, {
+  return this.matches(/^[!-~ｦ-ﾟ]*$/, {
     message: ({ label }) => `${label}は半角英数字カナ記号です`,
   });
 });
 
 yup.addMethod(yup.StringSchema, 'date', function () {
-  return this.matches(/^[0-9]*$/, {
+  return this.matches(/^\d{4}\/\d{2}\/\d{2}$/, {
     message: ({ label }) => `${label}は日付形式です`,
   });
 });

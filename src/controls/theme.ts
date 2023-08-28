@@ -90,9 +90,11 @@ export const theme = createTheme({
   typography: {
     fontFamily: ['メイリオ', 'Meiryo'].join(','),
     fontSize: 13,
+    fontWeightBold: 700,
+    fontWeightRegular: 400,
     body1: {
       fontSize: 13,
-      lineHeight: 1.5,
+      lineHeight: 1,
     },
   },
   spacing: 5,
@@ -133,7 +135,7 @@ export const theme = createTheme({
           borderRadius: 0,
           height: 30,
           padding: 0,
-          borderColor: '#bbbbbbb',
+          borderColor: '#bbbbbb',
           minWidth: 180,
           maxWidth: 1550,
           background: '#ffffff',
@@ -144,7 +146,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 0,
-          borderColor: '#bbbbbbb',
+          borderColor: '#bbbbbb',
         },
         input: {
           padding: '0 0 0 8px',
