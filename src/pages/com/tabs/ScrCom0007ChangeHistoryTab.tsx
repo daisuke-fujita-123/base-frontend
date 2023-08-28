@@ -20,7 +20,7 @@ import {
 
 import { useNavigate } from 'hooks/useNavigate';
 
-import { useGridApiRef } from '@mui/x-data-grid';
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件列定義
@@ -124,12 +124,21 @@ const ScrCom0007ChangeHistoryTab = () => {
   const [changeHistoryTooltips, setChangeHistoryTooltips] = useState<
     GridTooltipsModel[]
   >([]);
+  // section の横幅
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
-  // CSV
   const apiRef = useGridApiRef();
 
   // router
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -188,7 +197,9 @@ const ScrCom0007ChangeHistoryTab = () => {
 
   return (
     <MainLayout>
+      {/* main */}
       <MainLayout main>
+        {/* TODO: 画面遷移時に表示おかしくなる */}
         <Section
           name='変更履歴一覧'
           decoration={
@@ -196,8 +207,10 @@ const ScrCom0007ChangeHistoryTab = () => {
               <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
             </MarginBox>
           }
+          width={maxSectionWidth}
         >
           <DataGrid
+            apiRef={apiRef}
             columns={changeHistoryColumns}
             rows={searchResult}
             hrefs={hrefs}

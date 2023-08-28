@@ -9,6 +9,8 @@ import { getReport, ScrCom0007GetReportResponse } from 'apis/com/ScrCom0007Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+
 /**
  * 検索条件列定義
  */
@@ -115,8 +117,20 @@ const ScrCom0007BasicTab = () => {
     SearchResultRowModelForConvert[]
   >([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
+  // section の横幅
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
   // router
   const navigate = useNavigate();
+
+  const apiRef = useGridApiRef();
+
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -164,8 +178,9 @@ const ScrCom0007BasicTab = () => {
       <MainLayout>
         {/* main */}
         <MainLayout main>
-          <Section name='帳票一覧'>
+          <Section name='帳票一覧' width={maxSectionWidth}>
             <DataGrid
+              apiRef={apiRef}
               columns={searchResultColumns}
               rows={searchResult}
               hrefs={hrefs}

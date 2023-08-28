@@ -1,12 +1,12 @@
 import { comApiClient } from 'providers/ApiClient';
 
-// SCR-COM-0007-0001：帳票一覧情報取得API レスポンス
+// API-COM-0007-0001：帳票一覧情報取得API レスポンス
 export interface ScrCom0007GetReportResponse {
   // リスト
   getReportSearchResult: GetReportSearchResult[];
 }
 
-// SCR-COM-0007-0001：帳票一覧情報取得API レスポンス（リスト行）
+// API-COM-0007-0001：帳票一覧情報取得API レスポンス（リスト行）
 export interface GetReportSearchResult {
   // 帳票ID
   reportId: string;
@@ -22,13 +22,13 @@ export interface GetReportSearchResult {
   outputSourceFunctionName: string;
 }
 
-// SCR-COM-0007-0002：変更履歴一覧情報取得API レスポンス
+// API-COM-0007-0002：変更履歴一覧情報取得API レスポンス
 export interface ScrCom0007GetChangeHistoryResponse {
   // リスト
   getChangeHistorySearchResult: GetChangeHistorySearchResult[];
 }
 
-// SCR-COM-0007-0002：変更履歴一覧情報取得API レスポンス（リスト行）
+// API-COM-0007-0002：変更履歴一覧情報取得API レスポンス（リスト行）
 export interface GetChangeHistorySearchResult {
   // 申請ID
   applicationId: string;
@@ -50,17 +50,17 @@ export interface GetChangeHistorySearchResult {
   reportId: string;
 }
 
-// SCR-COM-0007-0001：帳票一覧情報取得API
+// API-COM-0007-0001：帳票一覧情報取得API
 export const getReport = async (): Promise<ScrCom0007GetReportResponse> => {
-  const response = await comApiClient.post('com/scr-com-0007/get-report');
+  const response = await comApiClient.post('/api/com/scr-com-0007/get-report');
   return response.data;
 };
 
-// SCR-COM-0007-0002：変更履歴一覧情報取得API
+// API-COM-0007-0002：変更履歴一覧情報取得API
 export const getChangeHistory =
   async (): Promise<ScrCom0007GetChangeHistoryResponse> => {
     const response = await comApiClient.post(
-      'com/scr-com-0007/get-change-history'
+      '/api/com/scr-com-0007/get-change-history'
     );
     return response.data;
   };
