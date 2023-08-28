@@ -744,6 +744,10 @@ const ScrMem0001Page = () => {
   const { getMessage } = useContext(MessageContext);
   const sectionRef = useRef<SectionClose>();
   const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -751,7 +755,6 @@ const ScrMem0001Page = () => {
   );
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
-  const [openSection, setOpenSection] = useState<boolean>(true);
   const [scrCom0035PopupIsOpen, setScrCom0035PopupIsOpen] =
     useState<boolean>(false);
   const [scrCom0011PopupIsOpen, setScrCom0011PopupIsOpen] =
@@ -930,7 +933,6 @@ const ScrMem0001Page = () => {
 
     setSearchResult(searchResult);
     setHrefs(hrefs);
-    setOpenSection(false);
   };
 
   /**
@@ -1293,6 +1295,7 @@ const ScrMem0001Page = () => {
             {/* 法人情報一覧セクション */}
             <Section
               name='法人情報一覧'
+              width={maxSectionWidth}
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                   <AddButton onClick={handleIconAddClick}>追加</AddButton>
@@ -1315,6 +1318,7 @@ const ScrMem0001Page = () => {
                 columns={searchResultColumns}
                 rows={searchResult}
                 hrefs={hrefs}
+                apiRef={apiRef}
                 pagination
                 onLinkClick={handleLinkClick}
                 checkboxSelection
