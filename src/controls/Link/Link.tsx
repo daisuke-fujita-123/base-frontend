@@ -23,9 +23,8 @@ export const Link = (props: LinkProps) => {
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
   ) => {
     event.preventDefault();
-    if (onClick === undefined) return;
-    // TODO hrefにしないとクエリパラメータ・ハッシュが含まれないので要変更
-    onClick(event.currentTarget.pathname);
+    const target = event.currentTarget;
+    onClick && onClick(target.pathname + target.search + target.hash);
   };
 
   return (

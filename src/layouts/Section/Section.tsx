@@ -1,9 +1,11 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
 import {
+  Box,
   ContentsBox,
   ContentsOutsideBox,
   ErrorBox,
+  MarginBox,
   RightBox,
   SearchTextBox,
   WarningBox,
@@ -30,13 +32,13 @@ interface SectionProps {
   name?: string;
   children: React.ReactNode;
   decoration?: React.ReactNode | React.ReactNode[];
-  open?: boolean;
   isSearch?: boolean;
   isTransparent?: boolean;
   serchLabels?: React.ReactNode | React.ReactNode[];
   isWarning?: boolean;
   isError?: boolean;
   openable?: boolean;
+  width?: number;
 }
 export interface SectionClose {
   closeSection: () => void;
@@ -57,6 +59,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
     isTransparent = false,
     serchLabels,
     openable = true,
+    width,
   } = props;
 
   const [expanded, setExpanded] = useState<boolean>(true);
@@ -74,7 +77,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
   }
   const flexColSx = { display: 'flex', flexDirection: 'column' };
   return (
-    <>
+    <Box width={width}>
       <SubTitle onClick={onClick} openable={openable}>
         {name}
       </SubTitle>
@@ -85,13 +88,19 @@ export const Section = forwardRef((props: SectionProps, ref) => {
               <SearchTextBox>{serchLabels}</SearchTextBox>
             </AccordionSummary>
           )}
-          {expanded && <RightBox>{decoration}</RightBox>}
+          {expanded && (
+            <RightBox>
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                {decoration}
+              </MarginBox>
+            </RightBox>
+          )}
           <AccordionDetails sx={{ m: theme.spacing(4) }}>
             <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
           </AccordionDetails>
         </StyledAccordion>
       </ContentsBox>
-    </>
+    </Box>
   );
 });
 

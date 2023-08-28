@@ -8,9 +8,12 @@ import {
   useWatch,
 } from 'react-hook-form';
 
+import { MarginBox } from 'layouts/Box';
+import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
 
 import { theme } from 'controls/theme';
+import { Typography } from 'controls/Typography';
 
 import ClearIcon from '@mui/icons-material/Clear';
 
@@ -33,6 +36,8 @@ export interface TextFieldProps<T extends FieldValues> {
   readonly?: boolean;
   size?: 's' | 'm' | 'l' | 'xl';
   onBlur?: (name: string) => void;
+  unit?: string;
+  type?: 'text' | 'password';
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -61,6 +66,8 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     readonly = false,
     size = 's',
     onBlur,
+    unit,
+    type = 'text',
   } = props;
 
   const { register, formState, setValue, control } = useFormContext();
@@ -81,37 +88,47 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
       required={required}
       size={size}
     >
-      <StyledTextFiled
-        id={name}
-        disabled={disabled}
-        fullWidth={fullWidth}
-        variant={isReadOnly || readonly ? 'standard' : variant}
-        error={!!formState.errors[name]}
-        helperText={
-          formState.errors[name]?.message
-            ? String(formState.errors[name]?.message)
-            : null
-        }
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position='end'>
-              {watchValue && !readonly && (
-                <IconButton onClick={onClickIconHandler}>
-                  <ClearIcon />
-                </IconButton>
-              )}
-            </InputAdornment>
-          ),
-          readOnly: isReadOnly || readonly,
-        }}
-        onChange={registerRet.onChange}
-        onBlur={(event) => {
-          registerRet.onBlur(event);
-          onBlur && onBlur(name);
-        }}
-        ref={registerRet.ref}
-        name={registerRet.name}
-      />
+      <Grid container>
+        <Grid item xs={unit ? 10 : 12}>
+          <StyledTextFiled
+            id={name}
+            disabled={disabled}
+            fullWidth={fullWidth}
+            variant={isReadOnly || readonly ? 'standard' : variant}
+            error={!!formState.errors[name]}
+            helperText={
+              formState.errors[name]?.message
+                ? String(formState.errors[name]?.message)
+                : null
+            }
+            type={type}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position='end'>
+                  {watchValue && !readonly && (
+                    <IconButton onClick={onClickIconHandler}>
+                      <ClearIcon />
+                    </IconButton>
+                  )}
+                </InputAdornment>
+              ),
+              readOnly: isReadOnly || readonly,
+            }}
+            onChange={registerRet.onChange}
+            onBlur={(event) => {
+              registerRet.onBlur(event);
+              onBlur && onBlur(name);
+            }}
+            ref={registerRet.ref}
+            name={registerRet.name}
+          />
+        </Grid>
+        <Grid item xs={unit ? 2 : false}>
+          <MarginBox mt={1} ml={1}>
+            <Typography>{unit}</Typography>
+          </MarginBox>
+        </Grid>
+      </Grid>
     </InputLayout>
   );
 };
