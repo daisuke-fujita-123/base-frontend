@@ -241,6 +241,10 @@ export const Example = () => {
     input2: yup.string().required().max(10).label('Input 2'),
   });
 
+  const handleGetCellReadonly = (params: any) => {
+    return params.field === 'input2' && params.id % 2 === 0;
+  };
+
   const handleGetSelectValues = (params: any) => {
     return params.id % 2 === 0
       ? [
@@ -255,6 +259,10 @@ export const Example = () => {
         ];
   };
 
+  const handleOnCellBlur = (params: any) => {
+    console.log(params);
+  };
+
   const handleOnClick = () => {
     console.log(rows);
   };
@@ -267,7 +275,17 @@ export const Example = () => {
           columns={columns}
           rows={rows}
           resolver={validationSchema}
+          getCellReadonly={handleGetCellReadonly}
           getSelectValues={handleGetSelectValues}
+          onCellBlur={handleOnCellBlur}
+        />
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          resolver={validationSchema}
+          getCellReadonly={handleGetCellReadonly}
+          getSelectValues={handleGetSelectValues}
+          checkboxSelection
         />
       </ThemeProvider>
     </>
