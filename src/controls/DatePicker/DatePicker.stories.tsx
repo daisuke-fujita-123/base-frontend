@@ -8,6 +8,7 @@ import { Button } from 'controls/Button';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
+
 import { DatePicker } from './DatePicker';
 
 export default {
@@ -102,7 +103,12 @@ export const Example = () => {
       <Button onClick={handleOnClick}>log</Button>
       <ThemeProvider theme={theme}>
         <DatePicker label='DatePicker' name='date1' />
-        <DatePicker label='DatePicker（和暦付き）' name='date2' withWareki />
+        <DatePicker
+          label='DatePicker（和暦付き）'
+          name='date2'
+          withWareki
+          size='m'
+        />
       </ThemeProvider>
     </FormProvider>
   );
