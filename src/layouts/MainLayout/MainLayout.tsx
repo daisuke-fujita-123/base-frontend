@@ -69,7 +69,7 @@ export const MainLayout = (props: MainLayoutProps) => {
               minWidth: rightElement ? '1325px' : '1590px',
               flexGrow: 1,
               m: 2,
-              overflowX: rightElement ? 'auto' : 'hidden',
+              // overflowX: rightElement ? 'auto' : 'hidden',
             }}
           >
             {mainElement}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 
 import { CenterBox, MarginBox, RightBox } from 'layouts/Box';
 import { RowStack, Stack } from 'layouts/Stack';
@@ -11,14 +11,18 @@ import {
 } from 'controls/Button';
 import { TableDivider, TableSpaceDivider } from 'controls/Divider';
 import { RequiredLabel } from 'controls/Label';
+import { StyledFormControl, StyledMenuItem } from 'controls/Select';
 import { TableColDef } from 'controls/Table';
+import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
+import Pulldown from 'icons/pulldown_arrow.png';
 
-import { IconButton, styled } from '@mui/material';
+import { IconButton, Select as SelectMui, styled } from '@mui/material';
+import Icon from '@mui/material/Icon';
 import { default as TableMui } from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import {
@@ -32,22 +36,31 @@ const TableCell = styled(TableCellMui)({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.table.header,
     textAlign: 'center',
+    borderRight: '1px solid',
+    borderRightColor: '#bbbbbb',
+    padding: 16,
   },
   borderRight: '1px solid',
   borderRightColor: 'rgba(224, 224, 224, 1)',
   fontWeight: 'bold',
   textAlign: 'center',
+  padding: 3,
+  paddingBottom: 0,
 });
 
 const TableLeftHeader = styled(TableCellMui)({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: 'transparent',
+    borderBottom: '1px solid',
+    borderBottomColor: '#bbbbbb',
+    padding: 16,
   },
   backgroundColor: theme.palette.table.header,
-  borderRight: '1px solid',
-  borderRightColor: 'rgba(224, 224, 224, 1)',
+  borderBottom: '1px solid',
+  borderBottomColor: '#bbbbbb',
   fontWeight: 'bold',
   textAlign: 'center',
+  padding: 3,
 });
 
 const TableRow = styled(TableRowMui)({
@@ -59,10 +72,9 @@ const TableRow = styled(TableRowMui)({
   },
 });
 
-const StyledIconButton = styled(IconButton)({
-  margin: -5,
+const StyledButton = styled(IconButton)({
+  marginRight: 5,
   padding: 0,
-  marginLeft: 'auto',
 });
 
 const SetIconButton = styled('div')({
@@ -76,7 +88,40 @@ const StyledColmun = styled('div')({
   display: 'flex',
   textAlign: 'center',
   justifyContent: 'space-between',
+  alignItems: 'center',
 });
+const StyledSelect = styled(SelectMui)({
+  maxWidth: 225,
+  minWidth: 80,
+  width: '100%',
+  textAlign: 'left',
+  marginBottom: 5,
+});
+
+const StyledInput = styled(StyledTextFiled)({
+  maxWidth: 225,
+  minWidth: 80,
+  marginBottom: 5,
+});
+
+const SortedAscIcon = () => {
+  return (
+    <div>
+      <img src={SortAsc}></img>
+    </div>
+  );
+};
+const SortedDescIcon = () => {
+  return (
+    <div>
+      <img src={SortDesc}></img>
+    </div>
+  );
+};
+
+const PulldownIcon = () => {
+  return <img style={{ marginRight: 10 }} src={Pulldown}></img>;
+};
 
 /**
  * 行データモデル
@@ -283,21 +328,29 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
   };
 
   // 検索条件（セル内）削除
-  const onClickConditionRemove = (indexCol: number) => {
+  const onClickConditionRemove = (indexCol: number, indexRow: number) => {
     setTableData(
-      tableData.map((val) => {
-        return {
-          ...val,
-          condition: val.condition.filter((_, index) => index !== indexCol),
-        };
+      tableData.map((val, tableIndex) => {
+        if (indexRow !== tableIndex) {
+          return { ...val };
+        } else {
+          return {
+            ...val,
+            condition: val.condition.filter((_, index) => index !== indexCol),
+          };
+        }
       })
     );
     handleSetItem(
-      rows.map((val) => {
-        return {
-          ...val,
-          condition: val.condition.filter((_, index) => index !== indexCol),
-        };
+      rows.map((val, tableIndex) => {
+        if (indexRow !== tableIndex) {
+          return { ...val };
+        } else {
+          return {
+            ...val,
+            condition: val.condition.filter((_, index) => index !== indexCol),
+          };
+        }
       })
     );
   };
@@ -372,15 +425,31 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
     }
   };
 
+  // Menuの開閉制御
+  const [isOpen, setisOpen] = useState<string>('');
+  const handleMenuOpen = (val: string, row: number, col: number) => {
+    const cell = val + row + col;
+    const openMenu = cell === isOpen ? '' : cell;
+    setisOpen(openMenu);
+  };
+
   return (
     <TableMui>
       <TableHead>
         <TableRow>
-          <TableLeftHeader width={70}></TableLeftHeader>
+          <TableLeftHeader width='70px'></TableLeftHeader>
           {columns.map((column, index) => {
             return (
-              <TableCell key={index}>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <TableCell key={index} width={column.width}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    textOverflow: 'nowrap',
+                    alignItems: 'center',
+                  }}
+                >
                   <Typography bold>{column.headerName}</Typography>
                   {<RequiredLabel />}
                 </div>
@@ -388,7 +457,7 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
             );
           })}
           {tableData.length + 1 <= 10 && (
-            <MarginBox ml={2}>
+            <MarginBox ml={2} justifyContent='start'>
               <AddButton onClick={onClickRow}>条件追加</AddButton>
             </MarginBox>
           )}
@@ -401,22 +470,24 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
               <TableLeftHeader>
                 {isEditable ? (
                   <StyledColmun>
-                    <div style={{ textAlign: 'center' }} />
+                    <div
+                      style={{ textAlign: 'center', textOverflow: 'nowrap' }}
+                    />
                     条件{indexRow + 1}
                     <SetIconButton>
                       {indexRow !== 0 && (
-                        <StyledIconButton
+                        <StyledButton
                           onClick={() => handleSortValue('up', indexRow)}
                         >
-                          <ArrowDropUpIcon />
-                        </StyledIconButton>
+                          <SortedAscIcon />
+                        </StyledButton>
                       )}
                       {indexRow !== tableData.length - 1 && (
-                        <StyledIconButton
+                        <StyledButton
                           onClick={() => handleSortValue('down', indexRow)}
                         >
-                          <ArrowDropDownIcon />
-                        </StyledIconButton>
+                          <SortedDescIcon />
+                        </StyledButton>
                       )}
                     </SetIconButton>
                   </StyledColmun>
@@ -428,36 +499,48 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                 )}
               </TableLeftHeader>
               <TableCell>
-                <select
-                  size={1}
-                  onChange={(e) => {
-                    onChangeRow(e.target.value, indexRow);
-                    handleChange(e.target.value, 'conditionType', indexRow);
-                  }}
-                  value={row.conditionType}
-                >
-                  <option hidden></option>
-                  {getItems.map((conditionType, index) => {
-                    return (
-                      <option
-                        key={conditionType.value + index}
-                        value={conditionType.value}
-                      >
-                        {conditionType.displayValue}
-                      </option>
-                    );
-                  })}
-                </select>
+                <StyledFormControl>
+                  <StyledSelect
+                    open={isOpen === 'conditionType' + indexRow + '0'}
+                    onClick={() => handleMenuOpen('conditionType', indexRow, 0)}
+                    onChange={(e) => {
+                      onChangeRow(e.target.value as string, indexRow);
+                      handleChange(
+                        e.target.value as string | number,
+                        'conditionType',
+                        indexRow
+                      );
+                    }}
+                    value={row.conditionType}
+                    IconComponent={PulldownIcon}
+                  >
+                    <StyledMenuItem value=''>{'　'}</StyledMenuItem>
+                    {getItems.map((conditionType, index) => {
+                      return (
+                        <StyledMenuItem
+                          key={conditionType.value + index}
+                          value={conditionType.value}
+                        >
+                          {conditionType.displayValue}
+                        </StyledMenuItem>
+                      );
+                    })}
+                  </StyledSelect>
+                </StyledFormControl>
               </TableCell>
               <TableCell>
                 {tableData[indexRow].condition.map((conditionRow, indexCol) => {
                   return (
-                    <div key={indexCol} style={{ display: 'flex' }}>
-                      <select
-                        size={1}
+                    <StyledFormControl key={indexCol}>
+                      <StyledSelect
+                        open={isOpen === 'conditions' + indexRow + indexCol}
+                        onClick={() =>
+                          handleMenuOpen('conditions', indexRow, indexCol)
+                        }
+                        IconComponent={PulldownIcon}
                         onChange={(e) =>
                           handleChange(
-                            e.target.value,
+                            e.target.value as string | number,
                             'conditions',
                             indexRow,
                             indexCol
@@ -465,94 +548,120 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                         }
                         value={row.condition[indexCol]?.conditions}
                       >
-                        <option hidden></option>
+                        <StyledMenuItem value=''>{'　'}</StyledMenuItem>
                         {conditionRow.conditions.map((rowVal, index) => {
                           return (
-                            <option key={index} value={rowVal.value}>
+                            <StyledMenuItem key={index} value={rowVal.value}>
                               {rowVal.displayValue}
-                            </option>
+                            </StyledMenuItem>
                           );
                         })}
-                      </select>
-                    </div>
+                      </StyledSelect>
+                    </StyledFormControl>
                   );
                 })}
               </TableCell>
               <TableCell>
-                {tableData[indexRow].condition.map((conditionRow, indexCol) => {
-                  if (
-                    isConditionVal(conditionRow.conditionVal[indexRow]) &&
-                    Array.isArray(conditionRow.conditionVal)
-                  ) {
-                    return (
-                      <div key={indexCol} style={{ display: 'flex' }}>
-                        <select
-                          size={1}
-                          onChange={(e) => {
-                            handleChange(
-                              e.target.value,
-                              'conditionVal',
-                              indexRow,
-                              indexCol
-                            );
-                          }}
-                          value={row.condition[indexCol]?.conditionVal}
-                        >
-                          <option hidden></option>
-                          {conditionRow.conditionVal.map(
-                            (rowVal: ConditionVal, index: number) => {
-                              return (
-                                <option key={index} value={rowVal.value}>
-                                  {rowVal.displayValue}
-                                </option>
-                              );
-                            }
-                          )}
-                        </select>
-                        {indexCol > 0 && (
-                          <RemoveIconButton
-                            onClick={() => {
-                              onClickConditionRemove(indexCol);
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
-                  } else if (typeof conditionRow.conditionVal === 'string') {
-                    return (
-                      <div key={indexCol} style={{ display: 'flex' }}>
-                        <input
-                          type='text'
-                          onChange={(e) => {
-                            handleChange(
-                              e.target.value,
-                              'conditionVal',
-                              indexRow,
-                              indexCol
-                            );
-                          }}
-                          value={row.condition[indexCol]?.conditionVal}
-                        />
-                        {indexCol > 0 && isEditable && (
-                          <RemoveIconButton
-                            onClick={() => {
-                              onClickConditionRemove(indexCol);
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
-                  }
-                })}
-                <RightBox>
-                  {tableData[indexRow].condition.length <= 10 && isEditable && (
-                    <AddIconButton
-                      onClick={() => {
-                        onClickCondition(indexRow);
-                      }}
-                    />
+                <Stack
+                  spacing={5}
+                  direction='row'
+                  justifyContent='space-between'
+                >
+                  {tableData[indexRow].condition.map(
+                    (conditionRow, indexCol) => {
+                      if (
+                        isConditionVal(conditionRow.conditionVal[indexRow]) &&
+                        Array.isArray(conditionRow.conditionVal)
+                      ) {
+                        return (
+                          <div key={indexCol} style={{ display: 'flex' }}>
+                            <StyledFormControl>
+                              <StyledSelect
+                                open={
+                                  isOpen ===
+                                  'conditionVal' + indexRow + indexCol
+                                }
+                                onClick={() =>
+                                  handleMenuOpen(
+                                    'conditionVal',
+                                    indexRow,
+                                    indexCol
+                                  )
+                                }
+                                IconComponent={PulldownIcon}
+                                onChange={(e) => {
+                                  handleChange(
+                                    e.target.value as string | number,
+                                    'conditionVal',
+                                    indexRow,
+                                    indexCol
+                                  );
+                                }}
+                                value={row.condition[indexCol]?.conditionVal}
+                              >
+                                <StyledMenuItem value=''>{'　'}</StyledMenuItem>
+                                {conditionRow.conditionVal.map(
+                                  (rowVal: ConditionVal, index: number) => {
+                                    return (
+                                      <StyledMenuItem
+                                        key={index}
+                                        value={rowVal.value}
+                                      >
+                                        {rowVal.displayValue}
+                                      </StyledMenuItem>
+                                    );
+                                  }
+                                )}
+                              </StyledSelect>
+                            </StyledFormControl>
+                            {indexCol > 0 && (
+                              <RemoveIconButton
+                                onClick={() => {
+                                  onClickConditionRemove(indexCol, indexRow);
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      } else if (
+                        typeof conditionRow.conditionVal === 'string'
+                      ) {
+                        return (
+                          <div key={indexCol} style={{ display: 'flex' }}>
+                            <StyledInput
+                              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                handleChange(
+                                  e.target.value,
+                                  'conditionVal',
+                                  indexRow,
+                                  indexCol
+                                );
+                              }}
+                              value={row.condition[indexCol]?.conditionVal}
+                            />
+                            {indexCol > 0 && isEditable && (
+                              <RemoveIconButton
+                                onClick={() => {
+                                  onClickConditionRemove(indexCol, indexRow);
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      }
+                    }
                   )}
-                </RightBox>
+                  <RightBox>
+                    {tableData[indexRow].condition.length <= 10 &&
+                      isEditable && (
+                        <AddIconButton
+                          onClick={() => {
+                            onClickCondition(indexRow);
+                          }}
+                        />
+                      )}
+                  </RightBox>
+                </Stack>
               </TableCell>
               <RemoveIconButton
                 onClick={() => {
