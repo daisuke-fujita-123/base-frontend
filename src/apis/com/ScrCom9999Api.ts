@@ -187,6 +187,43 @@ export const ScrCom9999GetPostIdListbox = async (
   return response.data;
 };
 
+/** API-COM-9999-0009: 従業員情報取得API リクエスト */
+export interface ScrCom9999GetStaffRequest {
+  // 従業員ID
+  employeeId: string;
+  // 業務日付
+  businessDate: Date;
+  // 営業担当フラグ
+  salesStaffFlag: boolean;
+  // 検査員フラグ
+  inspectorFlag: boolean;
+}
+
+/** API-COM-9999-0009: 従業員情報取得API レスポンス */
+export interface ScrCom9999GetStaffResponse {
+  // リスト
+  list: List[];
+}
+
+/** API-COM-9999-0009: 従業員情報取得API レスポンス(リスト行) */
+export interface List {
+  // 従業員ID
+  employeeId: string;
+  // 従業員名
+  employeeName: string;
+}
+
+/** API-COM-9999-0009: 従業員情報取得API */
+export const ScrCom9999GetStaff = async (
+  request: ScrCom9999GetStaffRequest
+): Promise<ScrCom9999GetStaffResponse> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-9999/get-staff',
+    request
+  );
+  return response.data;
+};
+
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API リクエスト */
 export interface ScrCom9999GetCodeManagementMasterRequest {
   /** 業務日付 */
@@ -259,7 +296,7 @@ export const ScrCom9999getCodeManagementMasterMultiple = async (
   request?: ScrCom9999getCodeManagementMasterMultipleRequest
 ): Promise<ScrCom9999getCodeManagementMasterMultipleResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-9999/get-code-management-master-multiple',
+    '/api/com/scr-com-9999/get-code-management-master-multiple',
     request
   );
   return response.data;
@@ -269,8 +306,6 @@ export const ScrCom9999getCodeManagementMasterMultiple = async (
 export interface ScrCom9999GetStatementKindRequest {
   /** 手数料ID */
   commissionId: string;
-  /** 業務日付 */
-  businessDate: string;
 }
 
 /** API-COM-9999-0012: 計算書種別情報取得API レスポンス */
@@ -302,8 +337,6 @@ export const ScrCom9999GetStatementKind = async (
 export interface ScrCom9999GetCommissionConditionRequest {
   /** 手数料ID */
   commissionId: string;
-  /** 業務日付 */
-  businessDate: string;
 }
 
 /**  API-COM-9999-0013: 手数料条件情報取得API レスポンス */
@@ -395,13 +428,44 @@ export const ScrCom9999GetBranchMaster = async (
   return response.data;
 };
 
+/** API-COM-9999-0019: 手数料導出API リクエスト */
+export interface ScrCom9999GetCommissionKindRequest {
+  /** 計算書種別 */
+  statementKind: string;
+}
+
+/** API-COM-9999-0019: 手数料導出API レスポンス */
+export interface ScrCom9999GetCommissionKindResponse {
+  // リスト
+  commissionList: commissionList[];
+}
+
+/** API-COM-9999-0019: 手数料導出API レスポンス(リスト行) */
+export interface commissionList {
+  // 手数料種類区分
+  commissionKind: string;
+  // 手数料種類名
+  commissionKindName: string;
+}
+
+/** API-COM-9999-0019: 手数料導出API */
+export const ScrCom9999GetCommissionKind = async (
+  request?: ScrCom9999GetCommissionKindRequest
+): Promise<ScrCom9999GetCommissionKindResponse> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-9999/get-commission-kind',
+    request
+  );
+  return response.data;
+};
+
 /** API-COM-9999-0020: 値属性変換API リクエスト */
 export interface ScrCom9999ValueAttributeConversionRequest {
   /** 条件種類コード */
   conditionKindCode: string;
 }
 
-/** API-COM-9999-0020: 値属性変換API レスポンス */
+/** TODO: 要確認 API-COM-9999-0020: 値属性変換API レスポンス */
 export interface ScrCom9999ValueAttributeConversionResponse {
   // 型区分
   typeKind: string;
@@ -533,7 +597,7 @@ export interface ScrCom9999GetChangeDateRequest {
   // 画面ID
   screenId: string;
   // タブID
-  tabId: string;
+  tabId: number;
   // マスタID
   masterId: string;
   // 業務日付
@@ -684,10 +748,147 @@ export interface MemberTypeSettingOmatome {
 export const ScrCom9999GetCourseServiceDiscountInfo =
   async (): Promise<ScrCom9999GetCourseServiceDiscountInfoResponse> => {
     const response = await comApiClient.post(
-      '/scr/get-course-service-discount-info'
+      '/api/com/scr-com-9999/get-course-service-discount-info'
     );
     return response.data;
   };
+
+/** API-COM-9999-0035: 会費値引値増情報取得API リクエスト */
+export interface ScrCom9999GetMembershipfeediscountincreaseInfoRequest {
+  // 契約ID
+  contractId: string;
+  // コースID
+  courseId: string;
+}
+
+/** API-COM-9999-0035: 会費値引値増情報取得API レスポンス */
+export interface ScrCom9999GetMembershipfeediscountincreaseInfoResponse {
+  // コース個別設定・基本値引値増
+  courseBasseicDiscountPrice: {
+    // 有効
+    enableFlag: boolean;
+    // 会費種別
+    feeKind: string;
+    // 値引値増金額区分
+    discountPriceKind: string;
+    // 値引値増金額
+    discountPrice: number;
+    // コースID
+    courseId: string;
+    // コース名
+    courseName: string;
+    // 1本目除外フラグ
+    oneCountExclusionFlag: boolean;
+    // 契約数量上限
+    contractCountMin: number;
+    // 契約数量下限
+    contractCountMax: number;
+    // 期限開始日
+    periodStartDate: string;
+    // 期限終了日
+    periodEndDate: string;
+    // 契約後月数
+    contractMonths: string;
+  }[];
+  // コース個別設定・オプション値引値増
+  courseOptionDiscountPrice: {
+    // 有効
+    enableFlag: boolean;
+    // 会費種別
+    feeKind: string;
+    // 値引値増金額区分
+    discountPriceKind: string;
+    // 値引値増金額
+    discountPrice: number;
+    // サービスID
+    serviceID: string;
+    // サービス名
+    serviceName: string;
+    // 1本目除外フラグ
+    oneCountExclusionFlag: boolean;
+    // 契約数量上限
+    contractCountMin: number;
+    // 契約数量下限
+    contractCountMax: number;
+    // 期限開始日
+    periodStartDate: string;
+    // 期限終了日
+    periodEndDate: string;
+    // 契約後月数
+    contractMonths: string;
+  }[];
+  contractBasicDiscountPrice: {
+    // 有効
+    enableFlag: boolean;
+    // キャンペーンコード
+    campaignCode: string;
+    // キャンペーン名
+    campaignName: string;
+    // 会費種別
+    feeKind: string;
+    // 値引値増金額区分
+    discountPriceKind: string;
+    // 値引値増金額
+    discountPrice: number;
+    // コースID
+    courseId: string;
+    // コース名
+    courseName: string;
+    // 1本目除外フラグ
+    oneCountExclusionFlag: boolean;
+    // 契約数量上限
+    contractCountMin: number;
+    // 契約数量下限
+    contractCountMax: number;
+    // 期限開始日
+    periodStartDate: string;
+    // 期限終了日
+    periodEndDate: string;
+    // 契約後月数
+    contractMonths: string;
+  }[];
+  contractOptionDiscountPrice: {
+    // 有効
+    enableFlag: boolean;
+    // キャンペーンコード
+    campaignCode: string;
+    // キャンペーン名
+    campaignName: string;
+    // 会費種別
+    feeKind: string;
+    // 値引値増金額区分
+    discountPriceKind: string;
+    // 値引値増金額
+    discountPrice: number;
+    // サービスID
+    serviceID: string;
+    // サービス名
+    serviceName: string;
+    // 1本目除外フラグ
+    oneCountExclusionFlag: boolean;
+    // 契約数量上限
+    contractCountMin: number;
+    // 契約数量下限
+    contractCountMax: number;
+    // 期限開始日
+    periodStartDate: string;
+    // 期限終了日
+    periodEndDate: string;
+    // 契約後月数
+    contractMonths: string;
+  }[];
+}
+
+/** API-COM-9999-0035: 会費値引値増情報取得API */
+export const ScrCom9999GetMembershipfeediscountincreaseInfo = async (
+  request?: ScrCom9999GetMembershipfeediscountincreaseInfoRequest
+): Promise<ScrCom9999GetMembershipfeediscountincreaseInfoResponse> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-9999/get-membershipfeediscountincrease-info',
+    request
+  );
+  return response.data;
+};
 
 /** API-COM-9999-0036: キャンペーン情報取得API レスポンス */
 export interface ScrCom9999SearchCampaignInfoResponse {
@@ -760,6 +961,8 @@ export interface OptionDiscountIncreaseList {
 /** API-COM-9999-0036: キャンペーン情報取得API */
 export const ScrCom9999SearchCampaignInfo =
   async (): Promise<ScrCom9999SearchCampaignInfoResponse> => {
-    const response = await comApiClient.post('/scr/search-campaign-info');
+    const response = await comApiClient.post(
+      '/api/com/scr-com-9999/search-campaign-info'
+    );
     return response.data;
   };
