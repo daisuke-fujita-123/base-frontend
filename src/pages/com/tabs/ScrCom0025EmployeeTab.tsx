@@ -994,16 +994,14 @@ const ScrCom0025EmployeeTab = () => {
     setIsOpenPopup(false);
   };
 
+  /**
+   * 一括反映ボタンのイベントハンドラ
+   */
   const handleIkkatsuHaneiClick = () => {
     const headerRow = headerApiRef.current.getRow(-1);
     const newRows = searchResult.map((x) => {
       return {
         ...x,
-        id: headerRow.id,
-        employeeId: headerRow.employeeId,
-        employeeName: headerRow.employeeName,
-        employeeMailAddress: headerRow.employeeMailAddress,
-        belong: headerRow.belong,
         salesForceId: headerRow.salesForceId,
         organizationId_1: headerRow.organizationId_1,
         postId_1: headerRow.postId_1,
@@ -1021,9 +1019,6 @@ const ScrCom0025EmployeeTab = () => {
         postId_4: headerRow.postId_4,
         applyingStartDate_4: headerRow.applyingStartDate_4,
         applyingEndDate_4: headerRow.applyingEndDate_4,
-        screenPermissionName: headerRow.screenPermissionName,
-        masterPermissionName: headerRow.masterPermissionName,
-        approvalPermissionName: headerRow.approvalPermissionName,
         changeReason: headerRow.changeReason,
       };
     });

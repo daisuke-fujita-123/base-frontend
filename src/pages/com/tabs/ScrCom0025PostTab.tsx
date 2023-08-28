@@ -267,6 +267,10 @@ const ScrCom0025PostTab = () => {
   );
   const [scrCom0035PopupIsOpen, setScrCom0035PopupIsOpen] =
     useState<boolean>(false);
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
@@ -411,7 +415,7 @@ const ScrCom0025PostTab = () => {
       });
     };
     initialize();
-  }, [user.taskDate]);
+  }, [user.taskDate, maxSectionWidth]);
 
   /**
    * 追加アイコンクリック時のイベントハンドラ
@@ -644,8 +648,13 @@ const ScrCom0025PostTab = () => {
                 <AddButton onClick={handleIconAddClick}>追加</AddButton>
               </MarginBox>
             }
+            width={maxSectionWidth}
           >
-            <DataGrid columns={searchResultColumns} rows={searchResult} />
+            <DataGrid
+              columns={searchResultColumns}
+              rows={searchResult}
+              apiRef={apiRef}
+            />
           </Section>
         </MainLayout>
         {/* bottom */}
