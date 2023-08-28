@@ -19,6 +19,7 @@ import {
 interface RadioValue {
   value: string | number;
   displayValue: string;
+  backgroundColor?: string;
 }
 export interface RadioProps<T extends FieldValues> {
   name: Path<T>;
@@ -29,7 +30,6 @@ export interface RadioProps<T extends FieldValues> {
   required?: boolean;
   disabled?: boolean;
   column?: boolean;
-  backgroundColor?: string;
 }
 
 export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
@@ -42,7 +42,6 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
     required = false,
     disabled = false,
     radioValues,
-    backgroundColor,
   } = props;
 
   const { formState, control } = useFormContext();
@@ -61,8 +60,8 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
             <FormControlLabel
               sx={{
                 '&.MuiFormControlLabel-root .MuiFormControlLabel-label': {
-                  backgroundColor: backgroundColor
-                    ? { backgroundColor }
+                  backgroundColor: value.backgroundColor
+                    ? value.backgroundColor
                     : 'transparent',
                 },
               }}

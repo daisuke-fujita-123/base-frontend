@@ -37,6 +37,7 @@ export interface TextFieldProps<T extends FieldValues> {
   size?: 's' | 'm' | 'l' | 'xl';
   onBlur?: (name: string) => void;
   unit?: string;
+  type?: 'text' | 'password';
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -66,6 +67,7 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     size = 's',
     onBlur,
     unit,
+    type = 'text',
   } = props;
 
   const { register, formState, setValue, control } = useFormContext();
@@ -99,6 +101,7 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
                 ? String(formState.errors[name]?.message)
                 : null
             }
+            type={type}
             InputProps={{
               endAdornment: (
                 <InputAdornment position='end'>

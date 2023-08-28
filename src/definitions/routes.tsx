@@ -579,6 +579,11 @@ export const ROUTES = [
     children: [],
   },
   {
+    path: '/com/login',
+    element: <ScrCom0001Page />,
+    children: [],
+  },
+  {
     path: '/',
     element: <GlobalLayout />,
     children: _ROUTES,

@@ -1,4 +1,4 @@
-import React, { ChangeEventHandler } from 'react';
+import React, { ChangeEventHandler, FocusEventHandler } from 'react';
 import {
   FieldValues,
   Path,
@@ -9,12 +9,13 @@ import {
 
 import { InputLayout } from 'layouts/InputLayout';
 
+import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
 import Calendar from 'icons/button_calendar.png';
 
-import { Box, FormHelperText, IconButton, Stack, styled } from '@mui/material';
+import { Box, IconButton, styled } from '@mui/material';
 import {
   BaseSingleInputFieldProps,
   DatePicker as DatePickerMui,
@@ -24,10 +25,10 @@ import {
   UseDateFieldProps,
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
+
 import { ja } from 'date-fns/locale';
-import dayjs from 'dayjs';
 import {
-  convertFromDataToDisplay,
+  convertFromDateToDisplay,
   isInvalidDate,
   transformWareki,
 } from './DatePickerHelper';
@@ -68,32 +69,33 @@ const DatePickerField = (props: DatePickerFieldProps) => {
     field.onChange(newValue);
   };
 
-  const handleOnBlur: ChangeEventHandler<HTMLInputElement> = () => {
+  const handleOnBlur: FocusEventHandler<
+    HTMLInputElement | HTMLTextAreaElement
+  > = () => {
     field.onBlur();
   };
 
   return (
-    <>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}
-        ref={containerRef}
-      >
-        {startAdornment}
-        <input
-          value={field.value}
-          disabled={disabled}
-          readOnly={readOnly}
-          onChange={handleOnChange}
-          onBlur={handleOnBlur}
-        />
-        {endAdornment}
-      </Box>
-      {formState.errors[name]?.message && (
-        <FormHelperText>
-          {String(formState.errors[name]?.message)}
-        </FormHelperText>
-      )}
-    </>
+    <Box ref={containerRef}>
+      {startAdornment}
+      <StyledTextFiled
+        value={field.value}
+        disabled={disabled}
+        onChange={handleOnChange}
+        onBlur={handleOnBlur}
+        error={!!formState.errors[name]}
+        helperText={
+          formState.errors[name]?.message
+            ? String(formState.errors[name]?.message)
+            : null
+        }
+        InputProps={{
+          endAdornment: endAdornment,
+          readOnly: readOnly,
+        }}
+        fullWidth
+      />
+    </Box>
   );
 };
 
@@ -143,26 +145,18 @@ export const DatePicker = <T extends FieldValues>(
   } = props;
 
   // form
-  const {
-    register,
-    control,
-    getValues,
-    formState: { errors },
-  } = useFormContext();
+  const { control, getValues } = useFormContext();
   const { field } = useController({ name, control });
 
   const handleOnAccept = (value: Date | null) => {
     if (value === null) return;
     if (isInvalidDate(value)) return;
-    const newValue = convertFromDataToDisplay(value);
+    const newValue = convertFromDateToDisplay(value);
     field.onChange(newValue);
     field.onBlur();
   };
 
   const wareki = transformWareki(new Date(getValues(name)));
-  const helperText = errors[name]?.message
-    ? String(errors[name]?.message)
-    : null;
 
   return (
     <InputLayout
@@ -171,59 +165,46 @@ export const DatePicker = <T extends FieldValues>(
       required={required}
       size={size}
     >
-      <Stack spacing={0}>
-        {withWareki && <Typography>{wareki}</Typography>}
-        <LocalizationProvider
-          // dateAdapter={AdapterDayjs}
-          dateAdapter={AdapterDateFns}
-          adapterLocale={ja}
-        >
-          <DatePickerMui
-            {...field}
-            value={new Date(field.value)}
-            // onChangeでハンドリングするとテキストの変更も検知対象になり、かつ、値が補正されてしまう。
-            // ここでは、onAcceptでカレンダーの変更のみを検知し、テキストの変更検知はDatePickerFieldで行う。
-            onAccept={handleOnAccept}
-            slots={{
-              field: DatePickerField,
-              openPickerIcon: CalenderIcon,
-            }}
-            slotProps={{
-              field: {
-                name,
-              } as any,
-              layout: {
-                sx: {
-                  '& .MuiPickersCalendarHeader-labelContainer': {
-                    fontWeight: 'bold',
-                  },
-                  '& .MuiButtonBase-root.MuiPickersDay-root': {
-                    '&.Mui-selected': {
-                      border: '3px solid #f37246',
-                      backgroundColor: '#fde8d4',
-                      color: '#000000',
-                    },
+      {withWareki && <Typography>{wareki}</Typography>}
+      <LocalizationProvider
+        // dateAdapter={AdapterDayjs}
+        dateAdapter={AdapterDateFns}
+        adapterLocale={ja}
+      >
+        <DatePickerMui
+          {...field}
+          value={new Date(field.value)}
+          // onChangeでハンドリングするとテキストの変更も検知対象になり、かつ、値が補正されてしまう。
+          // ここでは、onAcceptでカレンダーの変更のみを検知し、テキストの変更検知はDatePickerFieldで行う。
+          onAccept={handleOnAccept}
+          slots={{
+            field: DatePickerField,
+            openPickerIcon: CalenderIcon,
+          }}
+          slotProps={{
+            field: {
+              name,
+            } as any,
+            layout: {
+              sx: {
+                '& .MuiPickersCalendarHeader-labelContainer': {
+                  fontWeight: 'bold',
+                },
+                '& .MuiButtonBase-root.MuiPickersDay-root': {
+                  '&.Mui-selected': {
+                    border: '3px solid #f37246',
+                    backgroundColor: '#fde8d4',
+                    color: '#000000',
                   },
                 },
               },
-              // textField: {
-              //   name: name,
-              //   helperText: helperText,
-              //   sx: {
-              //     '& .MuiOutlinedInput-root': {
-              //       '&.Mui-focused fieldset': {
-              //         borderColor: '#f37246',
-              //       },
-              //     },
-              //   },
-              // },
-            }}
-            format='yyyy/mm/dd'
-            readOnly={control?._options?.context[0]}
-            disabled={disabled}
-          />
-        </LocalizationProvider>
-      </Stack>
+            },
+          }}
+          format='yyyy/mm/dd'
+          readOnly={control?._options?.context[0]}
+          disabled={disabled}
+        />
+      </LocalizationProvider>
     </InputLayout>
   );
 };

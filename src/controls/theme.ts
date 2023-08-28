@@ -135,7 +135,7 @@ export const theme = createTheme({
           borderRadius: 0,
           height: 30,
           padding: 0,
-          borderColor: '#bbbbbbb',
+          borderColor: '#bbbbbb',
           minWidth: 180,
           maxWidth: 1550,
           background: '#ffffff',
@@ -146,7 +146,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 0,
-          borderColor: '#bbbbbbb',
+          borderColor: '#bbbbbb',
         },
         input: {
           padding: '0 0 0 8px',
