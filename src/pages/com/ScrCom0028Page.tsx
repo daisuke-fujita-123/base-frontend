@@ -43,6 +43,8 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+
 /**
  * 検索結果行データモデル
  */
@@ -175,7 +177,7 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'masterName',
     headerName: 'マスタ名称',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'masterEditFlag',
@@ -183,8 +185,8 @@ const searchResultColumns: GridColDef[] = [
     size: 'l',
     cellType: 'radio',
     radioValues: [
-      { value: 'true', displayValue: '参照' },
-      { value: 'false', displayValue: '編集' },
+      { value: 'true', displayValue: '可' },
+      { value: 'false', displayValue: '不可' },
     ],
   },
 ];
@@ -244,7 +246,7 @@ const convertToNewMasterModel = (
       id: x.masterId,
       masterId: x.masterId,
       masterName: x.masterName,
-      masterEditFlag: x.masterEditFlag === true ? 'true' : 'false',
+      masterEditFlag: 'false',
     };
   });
 };
@@ -290,7 +292,8 @@ const convertFromMasterPermissionModel = (
   masterPermission: MasterResultModel,
   user: string,
   IdList: MasterIdList[],
-  registrationChangeMemo: string
+  registrationChangeMemo: string,
+  businessDate: string
 ): ScrCom0028RegistMasterPermissionRequest => {
   return {
     masterPermissionId: masterPermission.masterPermissionId,
@@ -300,6 +303,7 @@ const convertFromMasterPermissionModel = (
     applicationEmployeeId: user,
     screenId: 'SCR-COM-0028',
     registrationChangeMemo: registrationChangeMemo,
+    businessDate: businessDate,
   };
 };
 
@@ -333,9 +337,19 @@ const ScrCom0028Page = () => {
 
   // state
   const [masterResult, setMasterResult] = useState<MasterInfoList[]>([]);
+  const [initMasterResult, setInitMasterResult] = useState<MasterInfoList[]>(
+    []
+  );
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
+  const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 600;
+  // キャンセルボタンの活性化・非活性化を判定するフラグ
+  const [canelFlag, setCanelFlag] = useState(false);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -354,9 +368,6 @@ const ScrCom0028Page = () => {
     setValue,
     reset,
   } = methods;
-
-  // キャンセルボタンの活性化・非活性化を判定するフラグ
-  const canelFlag = typeof masterPermissionId !== 'string' ? true : false;
 
   // 編集権限_disable設定
   const setDisableFlg = user.editPossibleScreenIdList.filter((x) => {
@@ -386,6 +397,11 @@ const ScrCom0028Page = () => {
       const masterResponse = await getMasterPermission(masterRequest);
       const masterResult = convertToMasterModel(masterResponse);
 
+      // 初期値情報格納
+      if (initMasterResult.length === 0) {
+        setInitMasterResult(masterResult.masterInfoList);
+      }
+
       // 画面にデータを設定
       setValue('masterPermissionId', masterResult.masterPermissionId);
       setValue('masterPermissionName', masterResult.masterPermissionName);
@@ -399,6 +415,9 @@ const ScrCom0028Page = () => {
     const initializeOrg = async (
       masterPermissionId: MasterPermissionOrgList[]
     ) => {
+      // キャンセルボタン非活性
+      setCanelFlag(true);
+
       // API-COM-0028-0006: マスタ権限一覧取得API（組織管理画面から遷移）
       const masterOrgRequest: ScrCom0028GetMasterPermissionOrganizationRequest =
         {
@@ -447,12 +466,20 @@ const ScrCom0028Page = () => {
         masterOrgResult.masterPermissionList[0].totalSettingPost
       );
 
+      // 初期値情報格納
+      if (initMasterResult.length === 0) {
+        setInitMasterResult(masterOrgResult.masterInfoList);
+      }
+
       // データグリッドにデータを設定
       setMasterResult(masterOrgResult.masterInfoList);
     };
 
     // 初期表示処理(履歴表示)
     const historyInfoInitialize = async (changeHistoryNumber: string) => {
+      // キャンセルボタン非活性
+      setCanelFlag(true);
+
       // 変更履歴情報取得API
       const getHistoryInfoRequest = {
         changeHistoryNumber: changeHistoryNumber,
@@ -467,6 +494,11 @@ const ScrCom0028Page = () => {
 
       // 画面にデータを設定
       reset(historyInfo);
+
+      // 初期値情報格納
+      if (initMasterResult.length === 0) {
+        setInitMasterResult(historyInfo.masterInfoList);
+      }
 
       // データグリッドにデータを設定
       setMasterResult(historyInfo.masterInfoList);
@@ -522,6 +554,9 @@ const ScrCom0028Page = () => {
     user.taskDate,
     setValue,
     reset,
+    maxSectionWidth,
+    setCanelFlag,
+    initMasterResult.length,
   ]);
 
   /**
@@ -535,7 +570,6 @@ const ScrCom0028Page = () => {
     const hours = d.getHours();
     const min = d.getMinutes();
     exportCsv(
-      masterResult,
       'マスタ権限詳細_' +
         user.employeeId +
         '_' +
@@ -546,15 +580,30 @@ const ScrCom0028Page = () => {
         day.toString() +
         hours.toString() +
         min.toString() +
-        '.csv'
+        '.csv',
+      apiRef
     );
   };
 
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
+  const convertToChngedSections = (
+    dirtyFields: object,
+    masterResult: MasterInfoList[],
+    initMasterResult: MasterInfoList[]
+  ): sectionList[] => {
     const fields = Object.keys(dirtyFields);
+
+    masterResult.map((x, i) => {
+      if (
+        x.masterEditFlag !== initMasterResult[i].masterEditFlag &&
+        !fields.includes('masterEditFlag')
+      ) {
+        fields.push('masterEditFlag');
+      }
+    });
+
     const changedSections: sectionList[] = [];
     const columnList: columnList[] = [];
     sectionDef.forEach((d) => {
@@ -577,11 +626,13 @@ const ScrCom0028Page = () => {
   const handleConfirm = async () => {
     // 編集権限が編集のマスタIDのみのリスト作成
     const idList: MasterIdList[] = [];
-    masterResult.forEach((x) => {
-      if (x.masterEditFlag === 'true') {
-        idList.push({
-          masterId: x.masterId,
-        });
+    masterResult.forEach((x, i) => {
+      if (x.masterEditFlag !== initMasterResult[i].masterEditFlag) {
+        if (x.masterEditFlag === 'true') {
+          idList.push({
+            masterId: x.masterId,
+          });
+        }
       }
     });
     // API-COM-0028-0003: マスタ権限詳細情報入力チェックAPI
@@ -608,7 +659,11 @@ const ScrCom0028Page = () => {
           screenName: 'マスタ権限詳細',
           tabId: '',
           tabName: '',
-          sectionList: convertToChngedSections(dirtyFields),
+          sectionList: convertToChngedSections(
+            dirtyFields,
+            masterResult,
+            initMasterResult
+          ),
         },
       ],
       changeExpectDate: getValues('changeExpectDate'),
@@ -619,7 +674,7 @@ const ScrCom0028Page = () => {
    * キャンセルボタンクリック時のイベントハンドラ
    */
   const handleCancel = () => {
-    navigate('/com/permissions/master/:' + masterPermissionId);
+    navigate('/com/permissions/master/' + masterPermissionId);
   };
 
   /**
@@ -630,11 +685,13 @@ const ScrCom0028Page = () => {
 
     // 編集権限が編集のマスタIDのみのリスト作成
     const idList: MasterIdList[] = [];
-    masterResult.forEach((x) => {
-      if (x.masterEditFlag === 'true') {
-        idList.push({
-          masterId: x.masterId,
-        });
+    masterResult.forEach((x, i) => {
+      if (x.masterEditFlag !== initMasterResult[i].masterEditFlag) {
+        if (x.masterEditFlag === 'true') {
+          idList.push({
+            masterId: x.masterId,
+          });
+        }
       }
     });
 
@@ -643,7 +700,8 @@ const ScrCom0028Page = () => {
       getValues(),
       user.employeeId,
       idList,
-      registrationChangeMemo
+      registrationChangeMemo,
+      user.taskDate
     );
     await registMasterPermission(request);
   };
@@ -671,6 +729,7 @@ const ScrCom0028Page = () => {
                   </AddButton>
                 </MarginBox>
               }
+              width={maxSectionWidth}
             >
               <RowStack>
                 <ColStack>
@@ -695,7 +754,7 @@ const ScrCom0028Page = () => {
                     label='利用フラグ'
                     name='useFlag'
                     size='s'
-                    row
+                    disabled={disableFlg}
                     radioValues={radioValues}
                   />
                 </ColStack>
@@ -713,6 +772,7 @@ const ScrCom0028Page = () => {
                 columns={searchResultColumns}
                 rows={masterResult}
                 disabled={disableFlg}
+                apiRef={apiRef}
               />
             </Section>
           </FormProvider>

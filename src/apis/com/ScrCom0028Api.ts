@@ -25,8 +25,6 @@ export interface ScrCom0028GetMasterPermissionResponse {
 }
 
 export interface MasterInfoList {
-  // 項目ID
-  id: string;
   // マスタID
   masterId: string;
   // マスタ名
@@ -49,7 +47,14 @@ export const getMasterPermission = async (
 // API-COM-0028-0002:マスタ情報一覧取得API レスポンス
 export interface ScrCom0028GetMasterResponse {
   // リスト
-  masterInfoList: MasterInfoList[];
+  masterInfoList: MasterList[];
+}
+
+export interface MasterList {
+  // マスタID
+  masterId: string;
+  // マスタ名
+  masterName: string;
 }
 
 // API-COM-0028-0002:マスタ情報一覧取得API
@@ -118,6 +123,8 @@ export interface ScrCom0028RegistMasterPermissionRequest {
   screenId: string;
   // 登録変更メモ
   registrationChangeMemo: string;
+  // 業務日付
+  businessDate: string;
 }
 
 // API-COM-0028-0004: マスタ権限登録API
@@ -162,17 +169,14 @@ interface MasterPermissionList {
   // 設定役職数
   totalSettingPost: number;
 }
-console;
 
 interface MasterOrgList {
-  // 項目ID
-  id: string;
   // マスタID
   masterId: string;
   // マスタ名
   masterName: string;
   // 編集権限
-  masterEditFlag?: boolean;
+  masterEditFlag: boolean;
 }
 
 // API-COM-0028-0006: マスタ権限一覧取得API（組織管理画面から遷移）
