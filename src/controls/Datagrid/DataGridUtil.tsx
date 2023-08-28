@@ -11,8 +11,15 @@ export const convertFromSizeToWidth = (size: string | undefined): number => {
   return 80;
 };
 
-export const resolveGridWidth = (columns: GridColDef[]): number => {
-  return columns.reduce((acc, val) => acc + (val.width ? val.width : 0), 4);
+export const resolveGridWidth = (
+  columns: GridColDef[],
+  checkboxSelection?: boolean
+): number => {
+  const checkboxWidth = checkboxSelection ? 50 : 0;
+  return (
+    columns.reduce((acc, val) => acc + (val.width ? val.width : 0), 0) +
+    checkboxWidth
+  );
 };
 
 /**

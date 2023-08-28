@@ -5,9 +5,12 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
+import { RowStack } from 'layouts/Stack';
+
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
+
 import { PostalTextField, PriceTextField, TextField } from './TextField';
 
 export default {
@@ -94,6 +97,21 @@ export const Example = () => {
   return (
     <FormProvider {...methods}>
       <ThemeProvider theme={theme}>
+        <RowStack>
+          <TextField
+            label='サンプルラベル'
+            required={true}
+            name='sampleName'
+            disabled={false}
+            fullWidth={true}
+          />
+          <TextField
+            label='サンプルラベル'
+            name='sampleName'
+            disabled={false}
+            fullWidth={true}
+          />
+        </RowStack>
         <TextField
           label='サンプルラベル'
           required={true}
@@ -136,6 +154,14 @@ export const Example = () => {
           onBlur={() => {
             console.log('onBlur');
           }}
+        />
+        <TextField
+          label='サンプルラベル'
+          required={true}
+          name='sampleName'
+          fullWidth={true}
+          variant='outlined'
+          unit='単位'
         />
       </ThemeProvider>
     </FormProvider>

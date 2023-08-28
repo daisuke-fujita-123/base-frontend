@@ -19,7 +19,7 @@ import {
 interface RadioValue {
   value: string | number;
   displayValue: string;
-  disabled?: boolean;
+  backgroundColor?: string;
 }
 export interface RadioProps<T extends FieldValues> {
   name: Path<T>;
@@ -28,8 +28,8 @@ export interface RadioProps<T extends FieldValues> {
   size?: 's' | 'm' | 'l' | 'xl';
   labelPosition?: 'above' | 'side';
   required?: boolean;
-  row?: boolean;
-  backgroundColor?: string;
+  disabled?: boolean;
+  column?: boolean;
 }
 
 export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
@@ -38,15 +38,14 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
     label,
     size = 's',
     labelPosition,
-    row = false,
+    column = false,
     required = false,
+    disabled = false,
     radioValues,
-    backgroundColor,
   } = props;
 
   const { formState, control } = useFormContext();
   const { field } = useController({ name, control });
-  const isReadOnly = control?._options?.context[0];
 
   return (
     <InputLayout
@@ -56,20 +55,25 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
       size={size}
     >
       <FormControl error={!!formState.errors[name]}>
-        <RadioGroup row={row} {...field}>
+        <RadioGroup row={!column} {...field}>
           {radioValues.map((value, index) => (
             <FormControlLabel
               sx={{
                 '&.MuiFormControlLabel-root .MuiFormControlLabel-label': {
-                  backgroundColor: backgroundColor
-                    ? { backgroundColor }
+                  backgroundColor: value.backgroundColor
+                    ? value.backgroundColor
                     : 'transparent',
                 },
               }}
               key={index}
               value={value.value}
               label={value.displayValue}
-              control={<MuiRadio readOnly={isReadOnly} />}
+              control={
+                <MuiRadio
+                  readOnly={control?._options?.context[0]}
+                  disabled={disabled}
+                />
+              }
             />
           ))}
         </RadioGroup>
