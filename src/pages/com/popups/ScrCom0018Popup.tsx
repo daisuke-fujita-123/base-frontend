@@ -31,6 +31,8 @@ import { useForm } from 'hooks/useForm';
 
 import { AuthContext } from 'providers/AuthProvider';
 
+import { GridRowId } from '@mui/x-data-grid-pro';
+
 /**
  * 検索結果行データモデル
  */
@@ -87,7 +89,7 @@ const columns: GridColDef[] = [
   {
     field: 'serviceName',
     headerName: 'サービス名',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'changeReservation',
@@ -155,7 +157,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
     selectValuesInitialValues
   );
   // チェックボックス選択行
-  const [rowSelectionModel, setRowSelectionModel] = useState<any[]>([]);
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowId[]>([]);
   // メッセージポップアップ(ダイアログ)
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
 
@@ -221,7 +223,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
     };
 
     initialize(user.taskDate);
-  }, [isOpen]);
+  }, [isOpen, user.taskDate]);
 
   // イベントハンドル：検索
   const handleSearchClick = async () => {
@@ -266,7 +268,7 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
     const selectServiceList: SelectServiceInfoModel[] = [];
     rowSelectionModel.forEach((d) => {
       serviceResult.forEach((f) => {
-        if (f.serviceId.includes(d)) {
+        if (f.serviceId.includes(d.toString())) {
           selectServiceList.push({
             serviceId: f.serviceId,
             serviceName: f.serviceName,
@@ -334,8 +336,6 @@ const ScrCom0018Popup = (props: ScrCom0018PopupProps) => {
                         setRowSelectionModel(newRowSelectionModel);
                       }}
                       rowSelectionModel={rowSelectionModel}
-                      width={552}
-                      height={120}
                     />
                   </ControlsStackItem>
                 </PopSection>
