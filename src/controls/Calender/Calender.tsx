@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Controller, FieldValues, Path, useFormContext } from 'react-hook-form';
 
 import { Stack } from 'layouts/Stack';
@@ -19,6 +19,7 @@ import {
   TextField,
   Theme,
 } from '@mui/material';
+
 import { getWeeksInMonth } from 'date-fns';
 
 export interface CalenderItemDef {
@@ -50,14 +51,20 @@ export interface CalenderProps<T extends FieldValues> {
   getCellBackground?: (
     date: Date,
     field: string,
-    value: string | number
+    value?: string | number
   ) => string | undefined;
+  getCellDisabled?: (
+    date: Date,
+    field: string,
+    value?: string | number
+  ) => boolean;
 }
 
 const dayOfWeeks = ['日', '月', '火', '水', '木', '金', '土'];
 
 export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
-  const { name, yearmonth, itemDef, getCellBackground } = props;
+  const { name, yearmonth, itemDef, getCellBackground, getCellDisabled } =
+    props;
 
   // state
   const [errors, setErrors] = useState<any>({});
@@ -98,7 +105,22 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
     return dataPerWeek;
   });
 
-  const tableCellSx: SxProps<Theme> = { width: '100px' };
+  const ref = useRef<HTMLTableCellElement>();
+  const [tableWidth, setTableWidth] = useState<number>();
+  useEffect(() => {
+    if (ref.current) {
+      const clientHeight = ref.current?.clientWidth;
+      setTableWidth(clientHeight);
+    }
+  }, [ref]);
+  console.log('tableWidth', tableWidth);
+
+  const tableCellSx: SxProps<Theme> = {
+    width: `${100 / 8}%`,
+    minWidth: `${100 / 8}%`,
+    paddingX: 1,
+    paddingY: 2,
+  };
 
   return (
     <>
@@ -108,7 +130,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
             <TableHead>
               {/* 曜日 */}
               <TableRow>
-                <TableCell></TableCell>
+                <TableCell sx={tableCellSx}></TableCell>
                 {dayOfWeeks.map((data, i) => (
                   <TableCell key={i} sx={tableCellSx}>
                     {data}
@@ -117,7 +139,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
               </TableRow>
               {/* 日付 */}
               <TableRow>
-                <TableCell>day</TableCell>
+                <TableCell sx={tableCellSx}>day</TableCell>
                 {dataPerWeek.map((data, i) => (
                   <TableCell
                     key={i}
@@ -169,6 +191,11 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                           {...register(
                             `${name}.${data.date.getDate() - 1}.${def.field}`
                           )}
+                          disabled={
+                            data.date &&
+                            getCellDisabled &&
+                            getCellDisabled(data.date, def.field)
+                          }
                         />
                       )}
                       {data.date && def.type === 'select' && (
@@ -179,7 +206,16 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                           control={control}
                           render={({ field, fieldState }) => (
                             <>
-                              <Select {...field} size='small' fullWidth>
+                              <Select
+                                {...field}
+                                size='small'
+                                fullWidth
+                                disabled={
+                                  data.date &&
+                                  getCellDisabled &&
+                                  getCellDisabled(data.date, def.field)
+                                }
+                              >
                                 {def.selectValues?.map((x: any, i: number) => (
                                   <MenuItem key={i} value={x.value}>
                                     {x.displayValue}
@@ -208,7 +244,16 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                               control={control}
                               render={({ field, fieldState }) => (
                                 <>
-                                  <Select {...field} size='small' fullWidth>
+                                  <Select
+                                    {...field}
+                                    size='small'
+                                    fullWidth
+                                    disabled={
+                                      data.date &&
+                                      getCellDisabled &&
+                                      getCellDisabled(data.date, def.field)
+                                    }
+                                  >
                                     {x.selectValues?.map(
                                       (x: any, i: number) => (
                                         <MenuItem key={i} value={x.value}>
