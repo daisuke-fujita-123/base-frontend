@@ -31,6 +31,7 @@ import {
   UseDateFieldProps,
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
+
 import { ja } from 'date-fns/locale';
 
 /**
@@ -163,6 +164,7 @@ interface GridSelectCellProps {
   width: number;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
+  onCellBlur?: (row: any) => void;
 }
 
 /**
@@ -180,6 +182,7 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
     width,
     disabled = false,
     onRowValueChange,
+    onCellBlur,
   } = props;
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
@@ -205,11 +208,17 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
     [apiRef, field, id]
   );
 
+  const handleOnBlur: FocusEventHandler<HTMLSelectElement> = () => {
+    const row = apiRef.current.getRow(id);
+    onCellBlur && onCellBlur(row);
+  };
+
   return (
     <select
       style={{ width }}
       value={controlled ? selection : value}
       onChange={handleValueChange}
+      onBlur={handleOnBlur}
       disabled={disabled}
     >
       {selectValues.map((x, i) => (

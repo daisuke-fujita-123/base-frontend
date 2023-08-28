@@ -32,7 +32,6 @@ interface SectionProps {
   name?: string;
   children: React.ReactNode;
   decoration?: React.ReactNode | React.ReactNode[];
-  open?: boolean;
   isSearch?: boolean;
   isTransparent?: boolean;
   serchLabels?: React.ReactNode | React.ReactNode[];
