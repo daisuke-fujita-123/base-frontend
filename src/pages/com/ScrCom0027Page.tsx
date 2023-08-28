@@ -581,8 +581,20 @@ const ScrCom0027Page = () => {
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
+  const convertToChngedSections = (
+    dirtyFields: object,
+    screenResult: ScreenModel[],
+    initScreenResult: ScreenModel[]
+  ): sectionList[] => {
     const fields = Object.keys(dirtyFields);
+    screenResult.map((x, i) => {
+      if (
+        x.editPermission !== initScreenResult[i].editPermission &&
+        !fields.includes('editPermission')
+      ) {
+        fields.push('editPermission');
+      }
+    });
     const changedSections: sectionList[] = [];
     const columnList: columnList[] = [];
     sectionDef.forEach((d) => {
@@ -605,11 +617,13 @@ const ScrCom0027Page = () => {
   const handleConfirm = async () => {
     const idList: ScreenIdList[] = [];
     // 編集権限が編集の画面IDのリストを作成（変更行のみ取得）
-    initScreenResult.forEach((x) => {
-      if (x.editPermission === 1) {
-        idList.push({
-          screenId: x.screenId,
-        });
+    screenResult.forEach((x, i) => {
+      if (x.editPermission !== initScreenResult[i].editPermission) {
+        if (x.editPermission === 1) {
+          idList.push({
+            screenId: x.screenId,
+          });
+        }
       }
     });
 
@@ -636,7 +650,11 @@ const ScrCom0027Page = () => {
           screenName: '画面権限詳細',
           tabId: '',
           tabName: '',
-          sectionList: convertToChngedSections(dirtyFields),
+          sectionList: convertToChngedSections(
+            dirtyFields,
+            screenResult,
+            initScreenResult
+          ),
         },
       ],
       changeExpectDate: getValues('changeExpectDate'),
@@ -658,11 +676,13 @@ const ScrCom0027Page = () => {
 
     const idList: ScreenIdList[] = [];
     // 編集権限が編集の画面IDのリストを作成（変更行のみ取得）
-    initScreenResult.forEach((x) => {
-      if (x.editPermission === 1) {
-        idList.push({
-          screenId: x.screenId,
-        });
+    screenResult.forEach((x, i) => {
+      if (x.editPermission !== initScreenResult[i].editPermission) {
+        if (x.editPermission === 1) {
+          idList.push({
+            screenId: x.screenId,
+          });
+        }
       }
     });
 
