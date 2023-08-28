@@ -1,4 +1,5 @@
-import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032';
+import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032Popup';
+
 import { comApiClient } from 'providers/ApiClient';
 
 // API-COM-0025-0001：組織情報一覧取得API レスポンス
@@ -30,20 +31,19 @@ export interface SearchResult {
   // 変更理由
   changeReason: string;
   // 変更タイムスタンプ
-  changeTimestamp: Date;
-};
+  changeTimestamp: string;
+}
 
 // COM-0025-0001：組織情報一覧取得API
 export const getOrganizationList = async (
   req: null
 ): Promise<ScrCom0025GetOrganizationListResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0025/get-organizationlist',
+    '/com/scr-com-0025/get-organizationlist',
     req
   );
   return response.data;
 };
-
 
 // API-COM-0025-0002：役職情報一覧取得API レスポンス
 export interface ScrCom0025GetPositionListResponse {
@@ -82,15 +82,15 @@ export interface SearchPositionListResult {
   // 変更理由
   changeReason: string;
   // 変更タイムスタンプ
-  changeTimestamp: Date;
-};
+  changeTimestamp: string;
+}
 
 // COM-0025-0002：役職情報一覧取得API
 export const getPositionList = async (
   req: null
 ): Promise<ScrCom0025GetPositionListResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0025/get-positionlist',
+    '/com/scr-com-0025/get-positionlist',
     req
   );
   return response.data;
@@ -119,7 +119,7 @@ export interface SearchEmployeeListResult {
   // 変更理由
   changeReason: string;
   // 変更タイムスタンプ
-  beforeTimestamp: Date;
+  beforeTimestamp: string;
   // 組織ID_1
   organizationId_1: string;
   // 部署名称_1
@@ -145,7 +145,7 @@ export interface SearchEmployeeListResult {
   // 適用終了日_1
   applyingEndDate_1: string;
   // 変更タイムスタンプ_1
-  beforeTimestamp_1: Date;
+  beforeTimestamp_1: string;
   // 組織ID_2
   organizationId_2: string;
   // 部署名称_2
@@ -171,7 +171,7 @@ export interface SearchEmployeeListResult {
   // 適用終了日_2
   applyingEndDate_2: string;
   // 変更タイムスタンプ_2
-  beforeTimestamp_2: Date;
+  beforeTimestamp_2: string;
   // 組織ID_3
   organizationId_3: string;
   // 部署名称_3
@@ -197,7 +197,7 @@ export interface SearchEmployeeListResult {
   // 適用終了日_3
   applyingEndDate_3: string;
   // 変更タイムスタンプ_3
-  beforeTimestamp_3: Date;
+  beforeTimestamp_3: string;
   // 組織ID_4
   organizationId_4: string;
   // 部署名称_4
@@ -223,20 +223,19 @@ export interface SearchEmployeeListResult {
   // 適用終了日_4
   applyingEndDate_4: string;
   // 変更タイムスタンプ_4
-  beforeTimestamp_4: Date;
-};
+  beforeTimestamp_4: string;
+}
 
 // COM-0025-0003：従業員情報一覧取得API
 export const getEmployeeList = async (
   req: null
 ): Promise<ScrCom0025GetEmployeeListResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0025/get-employeelist',
+    '/com/scr-com-0025/get-employeelist',
     req
   );
   return response.data;
 };
-
 
 /** SCR-COM-0025-0004: 組織情報入力チェックAPI リクエスト */
 export interface ScrCom0025CheckOrganizationRequest {
@@ -254,14 +253,18 @@ export interface OrganizationList {
   /** 適用終了日 */
   applyingEndDate: string;
   /** TODO:業務日付 */
-  businessDate: Date;
+  businessDate: string;
 }
 
 /** SCR-COM-0025-0004: 組織情報入力チェックAPI レスポンス */
 export interface ScrCom0025CheckOrganizationResponse {
   // リスト
-  errorMessages: string[];
-  warningMessages: string[];
+  errorList: ErrorList[];
+}
+
+interface ErrorList {
+  errorCode: string;
+  errorMessage: string;
 }
 
 /** SCR-COM-0025-0004: 組織情報入力チェックAPI */
@@ -269,13 +272,11 @@ export const ScrCom0025OrganizationInfoCheck = async (
   request: ScrCom0025CheckOrganizationRequest
 ): Promise<ScrCom0025CheckOrganizationResponse> => {
   const response = await comApiClient.post(
-  //const response = await comApiClient.post(
-      '/scr-com-0025/chk-organization',
-      request
+    '/com/scr-com-0025/chk-organization',
+    request
   );
   return response.data;
 };
-
 
 /** SCR-COM-0025-0005: 組織情報登録更新API リクエスト */
 export interface ScrCom0025RegistUpdateOrganizationRequest {
@@ -303,9 +304,9 @@ interface RegistUpdateOrganizationList {
   /** ユーザーID */
   userId: string;
   /** 変更後タイムスタンプ */
-  afterTimestamp: Date;
+  afterTimestamp: string;
   /** 変更前タイムスタンプ */
-  beforeTimestamp: Date;
+  beforeTimestamp: string;
 }
 
 /** SCR-COM-0025-0005: 組織情報登録更新API */
@@ -313,9 +314,8 @@ export const ScrCom0025RegistUpdateOrganization = async (
   request: ScrCom0025RegistUpdateOrganizationRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-  //const response = await comApiClient.post(
-      '/scr-com-0025/merge-organization',
-      request
+    '/com/scr-com-0025/merge-organization',
+    request
   );
   return response.data;
 };
@@ -325,7 +325,7 @@ export const ScrCom0025RegistUpdateOrganization = async (
 export interface ScrCom0025GetOrganizationHierarchyRequest {
   // 組織ID
   organizationId: string;
-};
+}
 
 // API-COM-0025-0006：組織情報取得（部署階層）API レスポンス
 export interface ScrCom0025GetOrganizationHierarchyResponse {
@@ -338,12 +338,11 @@ export const getOrganizationHierarchy = async (
   req: ScrCom0025GetOrganizationHierarchyRequest
 ): Promise<ScrCom0025GetOrganizationHierarchyResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0025/get-organization-hierarchy',
+    '/com/scr-com-0025/get-organization-hierarchy',
     req
   );
   return response.data;
 };
-
 
 /** SCR-COM-0025-0007: 役職情報入力チェックAPI リクエスト */
 export interface ScrCom0025CheckPostRequest {
@@ -352,7 +351,7 @@ export interface ScrCom0025CheckPostRequest {
 }
 
 /** SCR-COM-0025-0007: 役職情報入力チェックAPI リクエスト(リスト行) */
-interface CheckPostList{
+interface CheckPostList {
   // 役職ID
   postId: string;
   // 役職名
@@ -368,14 +367,18 @@ interface CheckPostList{
   // 適用終了日
   applyingEndDate: string;
   /** TODO:業務日付 */
-  businessDate: Date;
+  businessDate: string;
 }
 
 /** SCR-COM-0025-0007: 役職情報入力チェックAPI レスポンス */
 export interface ScrCom0025CheckPostResponse {
   // リスト
-  errorMessages: string[];
-  warningMessages: string[];
+  errorList: ErrorList[];
+}
+
+interface ErrorList {
+  errorCode: string;
+  errorMessage: string;
 }
 
 /** SCR-COM-0025-0007: 役職情報入力チェックAPI */
@@ -383,13 +386,11 @@ export const ScrCom0025PostInfoCheck = async (
   request: ScrCom0025CheckPostRequest
 ): Promise<ScrCom0025CheckPostResponse> => {
   const response = await comApiClient.post(
-  //const response = await comApiClient.post(
-      '/scr-com-0025/chk-post',
-      request
+    '/com/scr-com-0025/chk-post',
+    request
   );
   return response.data;
 };
-
 
 /** SCR-COM-0025-0008: 役職情報登録更新API リクエスト */
 export interface ScrCom0025RegistUpdatePostRequest {
@@ -403,7 +404,7 @@ interface RegistUpdatePostList {
   postId: string;
   // 役職名
   postName: string;
-  // 組織ID 
+  // 組織ID
   organizationId: string;
   // 画面権限ID
   screenPermissionId: string;
@@ -417,12 +418,12 @@ interface RegistUpdatePostList {
   applyingEndDate: string;
   // 変更理由
   changeReason: string;
-  // ユーザーID 
+  // ユーザーID
   userId: string;
   // 変更後タイムスタンプ
-  afterTimestamp: Date;
+  afterTimestamp: string;
   // 変更前タイムスタンプ
-  beforeTimestamp: Date;
+  beforeTimestamp: string;
 }
 
 /** SCR-COM-0025-0008: 役職情報登録更新API */
@@ -430,13 +431,11 @@ export const ScrCom0025RegistUpdatePost = async (
   request: ScrCom0025RegistUpdatePostRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-  //const response = await comApiClient.post(
-      '/scr-com-0025/merge-post',
-      request
+    '/com/scr-com-0025/merge-post',
+    request
   );
   return response.data;
 };
-
 
 /** SCR-COM-0025-0009: 従業員情報入力チェックAPI リクエスト */
 export interface ScrCom0025CheckEmployeeRequest {
@@ -452,8 +451,12 @@ interface CheckEmployeeList {
 /** SCR-COM-0025-0009: 従業員情報入力チェックAPI レスポンス */
 export interface ScrCom0025CheckEmployeeResponse {
   // リスト
-  errorMessages: string[];
-  warningMessages: string[];
+  errorList: ErrorList[];
+}
+
+interface ErrorList {
+  errorCode: string;
+  errorMessage: string;
 }
 
 /** SCR-COM-0025-0009: 従業員情報入力チェックAPI */
@@ -461,9 +464,8 @@ export const ScrCom0025EmployeeInfoCheck = async (
   request: ScrCom0025CheckEmployeeRequest
 ): Promise<ScrCom0025CheckEmployeeResponse> => {
   const response = await comApiClient.post(
-  //const response = await comApiClient.post(
-      '/scr-com-0025/chk-employee',
-      request
+    '/com/scr-com-0025/chk-employee',
+    request
   );
   return response.data;
 };
@@ -490,7 +492,7 @@ interface RegistUpdateEmployeeList {
   // 適用終了日_1
   applyingEndDate_1: string;
   // 変更前タイムスタンプ_1
-  beforeTimestamp_1: Date;
+  beforeTimestamp_1: string;
   // 組織ID_2
   organizationId_2: string;
   // 役職ID_2
@@ -500,7 +502,7 @@ interface RegistUpdateEmployeeList {
   // 適用終了日_2
   applyingEndDate_2: string;
   // 変更前タイムスタンプ_2
-  beforeTimestamp_2: Date;
+  beforeTimestamp_2: string;
   // 組織ID_3
   organizationId_3: string;
   // 役職ID_3
@@ -510,7 +512,7 @@ interface RegistUpdateEmployeeList {
   // 適用終了日_3
   applyingEndDate_3: string;
   // 変更前タイムスタンプ_3
-  beforeTimestamp_3: Date;
+  beforeTimestamp_3: string;
   // 組織ID_4
   organizationId_4: string;
   // 役職ID_4
@@ -520,13 +522,13 @@ interface RegistUpdateEmployeeList {
   // 適用終了日_4
   applyingEndDate_4: string;
   // 変更前タイムスタンプ_4
-  beforeTimestamp_4: Date;
-  // ユーザーID 
+  beforeTimestamp_4: string;
+  // ユーザーID
   userId: string;
   // 変更後タイムスタンプ
-  afterTimestamp: Date;
+  afterTimestamp: string;
   // 変更前タイムスタンプ
-  beforeTimestamp: Date;
+  beforeTimestamp: string;
 }
 
 /** SCR-COM-0025-0010: 従業員情報登録更新API */
@@ -534,9 +536,8 @@ export const ScrCom0025RegistUpdateEmployee = async (
   request: ScrCom0025RegistUpdateEmployeeRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-  //const response = await comApiClient.post(
-      '/scr-com-0025/merge-employee',
-      request
+    '/com/scr-com-0025/merge-employee',
+    request
   );
   return response.data;
 };
@@ -546,7 +547,7 @@ export const ScrCom0025RegistUpdateEmployee = async (
 export interface ScrCom0025GetEmployeeRequest {
   // 従業員ID
   employeeId: string;
-};
+}
 
 // API-COM-0025-0011：従業員情報取得API レスポンス
 export interface ScrCom0025GetEmployeeResponse {
@@ -565,7 +566,7 @@ export const getEmployee = async (
   req: ScrCom0025GetEmployeeRequest
 ): Promise<ScrCom0025GetEmployeeResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0025/get-employee',
+    '/com/scr-com-0025/get-employee',
     req
   );
   return response.data;

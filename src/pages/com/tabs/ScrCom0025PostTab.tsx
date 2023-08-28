@@ -1,22 +1,49 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { AddButton, CancelButton, ConfirmButton } from 'controls/Button';
+import React, { useContext, useEffect, useState } from 'react';
+
+import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
+
+import ScrCom0032Popup, {
+  columnList,
+  ScrCom0032PopupModel,
+  sectionList,
+} from 'pages/com/popups/ScrCom0032Popup';
+import ScrCom0035Popup, {
+  ScrCom0035PopupAllRegistrationDefinitionModel,
+} from 'pages/com/popups/ScrCom0035Popup';
+
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
-import { SelectValue } from 'controls/Select/Select';
-import { useForm } from 'hooks/useForm';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { generate } from 'utils/validation/BaseYup';
-import { useNavigate } from 'react-router-dom';
 import { Stack } from 'layouts/Stack';
-import { TableRowModel } from 'controls/Table';
-import { ScrCom0025GetPositionListResponse, getPositionList, ScrCom0025CheckPostRequest, ScrCom0025PostInfoCheck, ScrCom0025RegistUpdatePostRequest, ScrCom0025RegistUpdatePost } from 'apis/com/ScrCom0025Api';
-import { ScrCom9999GetOrganizationidListboxRequest, ScrCom9999GetOrganizationidListbox, ScrCom9999GetOrganizationidListboxResponse, ScrCom9999GetScreenpermissionidListboxResponse, ScrCom9999GetScreenpermissionidListbox, ScrCom9999GetMasterpermissionidListbox, ScrCom9999GetMasterpermissionidListboxResponse, ScrCom9999GetApprovalPermissionIdListbox, ScrCom9999GetApprovalPermissionIdListboxResponse } from 'apis/com/ScrCom9999Api';
-import ScrCom0032Popup, {
-  ScrCom0032PopupModel,
-} from 'pages/com/popups/ScrCom0032';
-import { AppContext } from 'providers/AppContextProvider';
+
+import { AddButton, ConfirmButton } from 'controls/Button';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
+import { SelectValue } from 'controls/Select/Select';
+
+import {
+  getPositionList,
+  ScrCom0025GetPositionListResponse,
+  ScrCom0025PostInfoCheck,
+  ScrCom0025RegistUpdatePost,
+} from 'apis/com/ScrCom0025Api';
+import {
+  ScrCom9999GetApprovalPermissionId,
+  ScrCom9999GetApprovalPermissionIdResponse,
+  ScrCom9999GetMasterpermissionid,
+  ScrCom9999GetMasterpermissionidResponse,
+  ScrCom9999GetOrganizationidListbox,
+  ScrCom9999GetOrganizationidListboxRequest,
+  ScrCom9999GetOrganizationidListboxResponse,
+  ScrCom9999GetScreenpermissionidListbox,
+  ScrCom9999GetScreenpermissionidListboxResponse,
+} from 'apis/com/ScrCom9999Api';
+
+import { useForm } from 'hooks/useForm';
+
+import { AuthContext } from 'providers/AuthProvider';
+
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 役職情報一覧結果行データモデル
@@ -51,8 +78,8 @@ interface SearchResultRowModel {
   // 変更理由
   changeReason: string;
   // 変更タイムスタンプ
-  changeTimestamp: Date;
-};
+  changeTimestamp: string;
+}
 
 /**
  * 組織情報一覧結果行データモデル
@@ -87,8 +114,13 @@ const initialValues: SearchResultRowModel = {
   // 変更理由
   changeReason: '',
   // 変更タイムスタンプ
-  changeTimestamp: new Date(),
+  changeTimestamp: '',
 };
+
+interface ErrorList {
+  errorCode: string;
+  errorMessage: string;
+}
 
 /**
  * プルダウンデータモデル
@@ -113,95 +145,10 @@ const selectValuesInitialValues: SelectValuesModel = {
 };
 
 /**
- * 検索条件列定義
+ * 取込対象選択データ
  */
-const searchResultColumns: GridColDef[] = [
-  {
-    field: 'postId',
-    headerName: '役職ID',
-    headerAlign: 'center',
-    size: 'ss',
-  },
-  {
-    field: 'postName',
-    headerName: '役職名',
-    headerAlign: 'center',
-    size: 'l',
-    cellType: 'input',
-  },
-  {
-    field: 'organizationname',
-    headerName: '所属組織',
-    headerAlign: 'center',
-    size: 'm',
-    cellType: 'select',
-    // TODO: selectValues設定の実装待ち
-    selectValues: [
-      { value: '1', displayValue: 'one' },
-      { value: '2', displayValue: 'two' },
-      { value: '3', displayValue: 'three' },
-    ],
-  },
-  {
-    field: 'screenPermissionName',
-    headerName: '画面権限',
-    headerAlign: 'center',
-    size: 'm',
-    cellType: 'select',
-    // TODO: selectValues設定の実装待ち
-    selectValues: [
-      { value: '1', displayValue: 'one' },
-      { value: '2', displayValue: 'two' },
-      { value: '3', displayValue: 'three' },
-    ],
-  },
-  {
-    field: 'masterPermissionName',
-    headerName: 'マスタ権限',
-    headerAlign: 'center',
-    size: 'm',
-    cellType: 'select',
-    // TODO: selectValues設定の実装待ち
-    selectValues: [
-      { value: '1', displayValue: 'one' },
-      { value: '2', displayValue: 'two' },
-      { value: '3', displayValue: 'three' },
-    ],
-  },
-  {
-    field: 'approvalPermissionName',
-    headerName: '承認権限',
-    headerAlign: 'center',
-    size: 'm',
-    cellType: 'select',
-    // TODO: selectValues設定の実装待ち
-    selectValues: [
-      { value: '1', displayValue: 'one' },
-      { value: '2', displayValue: 'two' },
-      { value: '3', displayValue: 'three' },
-    ],
-  },
-  {
-    field: 'applyingStartDate',
-    headerName: '適用開始日',
-    size: 'm',
-    cellType: 'datepicker',
-  },
-  {
-    field: 'applyingEndDate',
-    headerName: '適用終了日',
-    headerAlign: 'center',
-    size: 'm',
-    cellType: 'datepicker',
-  },
-  {
-    field: 'changeReason',
-    headerName: '変更理由',
-    headerAlign: 'center',
-    size: 'l',
-    cellType: 'input',
-  },
-];
+const allRegistrationDefinitions: ScrCom0035PopupAllRegistrationDefinitionModel[] =
+  [{ id: 'BRG-COM-0003', label: '役職情報' }];
 
 /**
  * 役職情報一覧結果情報取得APIレスポンスから検索結果モデルへの変換
@@ -262,7 +209,7 @@ const screenpermissionidSelectValuesModel = (
  * マスター権限ID情報取得APIレスポンスからへの変換
  */
 const masterpermissionidSelectValuesModel = (
-  response: ScrCom9999GetMasterpermissionidListboxResponse
+  response: ScrCom9999GetMasterpermissionidResponse
 ): SelectValue[] => {
   return response.searchGetMasterpermissionidListbox.map((x) => {
     return {
@@ -276,7 +223,7 @@ const masterpermissionidSelectValuesModel = (
  * 承認権限ID情報取得APIレスポンスからへの変換
  */
 const approvalPermissionIdSelectValuesModel = (
-  response: ScrCom9999GetApprovalPermissionIdListboxResponse
+  response: ScrCom9999GetApprovalPermissionIdResponse
 ): SelectValue[] => {
   return response.searchGetApprovalPermissionIdListbox.map((x) => {
     return {
@@ -289,43 +236,40 @@ const approvalPermissionIdSelectValuesModel = (
 /**
  * バリデーションスキーマ
  */
-const validationSchama = generate([
-  'organizationId',
-  'organizationName',
-  'parentOrganizationId',
-  'organizationClassName',
-  'applyingStartDate',
-  'applyingEndDate',
-  'changeReason',
-]);
+const validationSchama = {
+  organizationName: yup.string().label('役職名').max(30).required(),
+  organizationClassName: yup.string().label('所属組織').max(30).required(),
+  applyingStartDate: yup.date().label('適用開始日').required(),
+  applyingEndDate: yup.date().label('適用終了日'),
+  changeReason: yup.string().label('変更理由').max(10),
+};
 
 /**
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
-  changedSections: [],
-  errorMessages: [],
-  warningMessages: [],
+  // 登録・変更内容リスト
+  registrationChangeList: [],
+  errorList: [],
+  warningList: [],
+  changeExpectDate: '',
 };
 
 /**
  * SCR-COM-0025-0002 役職情報一覧タブ
  */
 const ScrCom0025PostTab = () => {
-
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
-
-  // router
-  const navigate = useNavigate();
-
-  // state
+  const apiRef = useGridApiRef();
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
+  const [scrCom0035PopupIsOpen, setScrCom0035PopupIsOpen] =
+    useState<boolean>(false);
 
   // user情報(businessDateも併せて取得)
-  const { appContext } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -337,13 +281,84 @@ const ScrCom0025PostTab = () => {
     context: isReadOnly,
   });
   const {
-    formState: { dirtyFields, errors },
+    formState: { dirtyFields },
   } = methods;
 
   // popup
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
+
+  /**
+   * 検索条件列定義
+   */
+  const searchResultColumns: GridColDef[] = [
+    {
+      field: 'postId',
+      headerName: '役職ID',
+      headerAlign: 'center',
+      size: 'ss',
+    },
+    {
+      field: 'postName',
+      headerName: '役職名',
+      headerAlign: 'center',
+      size: 'l',
+      cellType: 'input',
+    },
+    {
+      field: 'organizationname',
+      headerName: '所属組織',
+      headerAlign: 'center',
+      size: 'l',
+      cellType: 'select',
+      selectValues: selectValues.organizationidSelectValues,
+    },
+    {
+      field: 'screenPermissionName',
+      headerName: '画面権限',
+      headerAlign: 'center',
+      size: 'l',
+      cellType: 'select',
+      selectValues: selectValues.screenpermissionidSelectValues,
+    },
+    {
+      field: 'masterPermissionName',
+      headerName: 'マスタ権限',
+      headerAlign: 'center',
+      size: 'l',
+      cellType: 'select',
+      selectValues: selectValues.masterpermissionidSelectValues,
+    },
+    {
+      field: 'approvalPermissionName',
+      headerName: '承認権限',
+      headerAlign: 'center',
+      size: 'l',
+      cellType: 'select',
+      selectValues: selectValues.approvalPermissionIdSelectValues,
+    },
+    {
+      field: 'applyingStartDate',
+      headerName: '適用開始日',
+      size: 'l',
+      cellType: 'datepicker',
+    },
+    {
+      field: 'applyingEndDate',
+      headerName: '適用終了日',
+      headerAlign: 'center',
+      size: 'l',
+      cellType: 'datepicker',
+    },
+    {
+      field: 'changeReason',
+      headerName: '変更理由',
+      headerAlign: 'center',
+      size: 'l',
+      cellType: 'input',
+    },
+  ];
 
   /**
    * 初期画面表示時に処理結果一覧検索処理を実行
@@ -356,56 +371,109 @@ const ScrCom0025PostTab = () => {
 
       // API-COM-9999-0003: 組織ID情報取得API
       const organizationidRequest: ScrCom9999GetOrganizationidListboxRequest = {
-        // TODO: 業務日付取得方法実装後に変更
-        businessDate: '',
+        // 業務日付
+        businessDate: user.taskDate,
       };
-      const organizationidResponse = await ScrCom9999GetOrganizationidListbox(organizationidRequest);
+      const organizationidResponse = await ScrCom9999GetOrganizationidListbox(
+        organizationidRequest
+      );
 
       // API-COM-9999-0004: 画面権限ID情報取得API
-      const screenpermissionidResponse = await ScrCom9999GetScreenpermissionidListbox(null);
+      const screenpermissionidResponse =
+        await ScrCom9999GetScreenpermissionidListbox(null);
 
       // API-COM-9999-0005: マスタ権限ID情報取得API
-      const masterpermissionidResponse = await ScrCom9999GetMasterpermissionidListbox(null);
+      const masterpermissionidResponse = await ScrCom9999GetMasterpermissionid(
+        null
+      );
 
       // API-COM-9999-0006: 承認権限ID情報取得API
-      const approvalPermissionIdResponse = await ScrCom9999GetApprovalPermissionIdListbox(null);
+      const approvalPermissionIdResponse =
+        await ScrCom9999GetApprovalPermissionId(null);
 
       setSelectValues({
         // 組織ID
-        organizationidSelectValues: organizationidSelectValuesModel(organizationidResponse),
+        organizationidSelectValues: organizationidSelectValuesModel(
+          organizationidResponse
+        ),
         // 画面権限ID
-        screenpermissionidSelectValues: screenpermissionidSelectValuesModel(screenpermissionidResponse),
+        screenpermissionidSelectValues: screenpermissionidSelectValuesModel(
+          screenpermissionidResponse
+        ),
         // マスタ権限ID
-        masterpermissionidSelectValues: masterpermissionidSelectValuesModel(masterpermissionidResponse),
+        masterpermissionidSelectValues: masterpermissionidSelectValuesModel(
+          masterpermissionidResponse
+        ),
         // 承認権限ID
-        approvalPermissionIdSelectValues: approvalPermissionIdSelectValuesModel(approvalPermissionIdResponse),
+        approvalPermissionIdSelectValues: approvalPermissionIdSelectValuesModel(
+          approvalPermissionIdResponse
+        ),
       });
     };
     initialize();
-  }, []);
+  }, [user.taskDate]);
 
   /**
    * 追加アイコンクリック時のイベントハンドラ
    */
   const handleIconAddClick = () => {
-    // TODO：新規作成用URI決定後に変更
-    navigate('/com/organization#post/');
+    const id = searchResult.length;
+
+    const addRows = [
+      ...searchResult,
+      {
+        id: id.toString(),
+        postId: '',
+        postName: '',
+        organizationId: '',
+        organizationname: '',
+        screenPermissionId: '',
+        screenPermissionName: '',
+        masterPermissionId: '',
+        masterPermissionName: '',
+        approvalPermissionId: '',
+        approvalPermissionName: '',
+        applyingStartDate: '',
+        applyingEndDate: '',
+        changeReason: '',
+        changeTimestamp: '',
+      },
+    ];
+    setSearchResult(addRows);
   };
 
   /**
    * 一括登録アイコンクリック時のイベントハンドラ
    */
   const handleIconRegistUpdateClick = () => {
-    // TODO：一括登録機能実装後に変更
-    alert('TODO:入力結果情報を元に一括登録する。');
+    // CSV読込ポップアップを表示
+    setScrCom0035PopupIsOpen(true);
   };
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleIconOutputCsvClick = () => {
-    // TODO：CSV機能実装後に変更
-    alert('TODO:結果からCSVを出力する。');
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hours = d.getHours();
+    const min = d.getMinutes();
+    exportCsv(
+      '役職情報_' +
+        user.employeeId +
+        '_' +
+        year.toString() +
+        (month < 10 ? '0' : '') +
+        month.toString() +
+        (day < 10 ? '0' : '') +
+        day.toString() +
+        hours.toString() +
+        min.toString() +
+        '.csv',
+      apiRef
+    );
   };
 
   /**
@@ -424,28 +492,37 @@ const ScrCom0025PostTab = () => {
         'applyingStartDate',
         'applyingEndDate',
         'changeReason',
-        'userId',
-        'afterTimestamp',
-        'beforeTimestamp',
-
+      ],
+      name: [
+        '役職ID',
+        '役職名',
+        '所属組織',
+        '画面権限',
+        'マスタ権限',
+        '承認権限',
+        '適用開始日',
+        '適用終了日',
+        '変更理由',
       ],
     },
   ];
 
   /**
-* 変更した項目から登録・変更内容データへの変換
-*/
-  const convertToChngedSections = (dirtyFields: object): TableRowModel[] => {
+   * 変更した項目から登録・変更内容データへの変換
+   */
+  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
     const fields = Object.keys(dirtyFields);
-    const changedSections: TableRowModel[] = [];
+    const changedSections: sectionList[] = [];
+    const columnList: columnList[] = [];
     sectionDef.forEach((d) => {
       fields.forEach((f) => {
         if (d.fields.includes(f)) {
-          changedSections.push({
-            変更種類: '基本情報変更',
-            セクション名: d.section,
-          });
+          columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
         }
+      });
+      changedSections.push({
+        sectionName: d.section,
+        columnList: columnList,
       });
     });
     return changedSections;
@@ -456,17 +533,23 @@ const ScrCom0025PostTab = () => {
    */
   const handleConfirm = async () => {
     // 役職情報入力チェック
+    const errList: ErrorList[] = [];
     searchResult.map((x) => {
-      // TODO：適用開始日 < 業務日付チェック
-      if (x.applyingStartDate < appContext.user) { // TODO:業務日付が実装されるまで暫定
-        alert('TODO:MSG-FR-ERR-00020のエラーメッセージを表示予定')
-        return;
+      // 適用開始日 < 業務日付チェック
+      if (x.applyingStartDate < user.taskDate) {
+        errList.push({
+          errorCode: 'MSG-FR-ERR-00020',
+          errorMessage:
+            '役職ID「' + x.postId + '」の適用開始日が正しくありません。',
+        });
       }
 
-      // TODO：適用開始日と適用終了日チェック
+      // 適用開始日と適用終了日チェック
       if (x.applyingStartDate > x.applyingEndDate) {
-        alert('TODO:MSG-FR-ERR-00021のエラーメッセージを表示予定')
-        return;
+        errList.push({
+          errorCode: 'MSG-FR-ERR-00021',
+          errorMessage: '役職ID「' + x.postId + '」の期間に誤りがあります。',
+        });
       }
     });
 
@@ -481,24 +564,35 @@ const ScrCom0025PostTab = () => {
           approvalPermissionId: x.approvalPermissionId,
           applyingStartDate: x.applyingStartDate,
           applyingEndDate: x.applyingEndDate,
-          businessDate: new Date(),// TODO:業務日付取得方法実装待ち、new Date()で登録
-        }
-      })
+          businessDate: user.taskDate,
+        };
+      }),
     };
     const checkResult = await ScrCom0025PostInfoCheck(request);
+
+    errList.concat(checkResult.errorList);
 
     // 登録更新の結果を登録確認ポップアップへ渡す
     setIsOpenPopup(true);
     setScrCom0032PopupData({
-      changedSections: convertToChngedSections(dirtyFields),
-      errorMessages: checkResult.errorMessages,
-      warningMessages: checkResult.warningMessages,
+      errorList: errList,
+      warningList: [],
+      registrationChangeList: [
+        {
+          screenId: 'SCR-COM-0025',
+          screenName: '組織管理',
+          tabId: '2',
+          tabName: '役職情報',
+          sectionList: convertToChngedSections(dirtyFields),
+        },
+      ],
+      changeExpectDate: '', //getValues('changeExpectDate'),
     });
-  }
+  };
 
   /**
- * ポップアップの確定ボタンクリック時のイベントハンドラ
- */
+   * ポップアップの確定ボタンクリック時のイベントハンドラ
+   */
   const handlePopupConfirm = async () => {
     setIsOpenPopup(false);
 
@@ -515,25 +609,18 @@ const ScrCom0025PostTab = () => {
           applyingEndDate: x.applyingEndDate,
           organizationId: x.organizationId,
           changeReason: x.changeReason,
-          userId: appContext.user,
-          afterTimestamp: new Date(),// TODO:業務日付取得方法実装待ち、new Date()で登録
-          beforeTimestamp: x.changeTimestamp,// TODO:業務日付取得方法実装待ち、new Date()で登録
-        }
-      })
+          userId: user.employeeId,
+          afterTimestamp: user.taskDate,
+          beforeTimestamp: x.changeTimestamp,
+        };
+      }),
     };
     await ScrCom0025RegistUpdatePost(request);
   };
 
   /**
-  * キャンセルボタンクリック時のイベントハンドラ
-  */
-  const handleCancel = () => {
-    navigate('/com/organization#post');
-  };
-
-  /**
- * ポップアップのキャンセルボタンクリック時のイベントハンドラ
- */
+   * ポップアップのキャンセルボタンクリック時のイベントハンドラ
+   */
   const handlePopupCancel = () => {
     setIsOpenPopup(false);
   };
@@ -548,38 +635,48 @@ const ScrCom0025PostTab = () => {
             name='役職情報一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                {/* TODO：エクスポートアイコンに将来的に変更 */}
                 <AddButton onClick={handleIconOutputCsvClick}>
                   CSV出力
                 </AddButton>
-                <AddButton onClick={handleIconRegistUpdateClick}>一括登録</AddButton>
+                <AddButton onClick={handleIconRegistUpdateClick}>
+                  一括登録
+                </AddButton>
                 <AddButton onClick={handleIconAddClick}>追加</AddButton>
               </MarginBox>
             }
           >
-            <DataGrid
-              columns={searchResultColumns}
-              rows={searchResult}
-              pageSize={10}
-            />
+            <DataGrid columns={searchResultColumns} rows={searchResult} />
           </Section>
         </MainLayout>
         {/* bottom */}
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
-            <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
             <ConfirmButton onClick={handleConfirm}>確定</ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
+      {/* CSV読込（ポップアップ） */}
+      {scrCom0035PopupIsOpen ? (
+        <ScrCom0035Popup
+          allRegistrationDefinitions={allRegistrationDefinitions}
+          screenId={'SCR-COM-0025'}
+          isOpen={scrCom0035PopupIsOpen}
+          setIsOpen={() => setScrCom0035PopupIsOpen(false)}
+        />
+      ) : (
+        ''
+      )}
+
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
-        handleCancel={handlePopupCancel}
-      />
+      {isOpenPopup && (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleConfirm={handlePopupConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      )}
     </>
   );
 };
