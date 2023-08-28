@@ -31,30 +31,9 @@ export interface TableRowModel {
 }
 
 /**
- * 検索条件データモデル
+ * AddableBoxコンポーネントのProps
  */
-export interface SearchConditionProps {
-  conditionType: string;
-  condition: {
-    conditions: number;
-    conditionVal: string | number;
-  }[];
-}
-
-export interface CommissionFormValues {
-  rows: {
-    commissionType: number;
-    productCode: number;
-    priceChange: number;
-    plusMinus: number;
-    price: number;
-  }[];
-}
-
-/**
- * TableコンポーネントのProps
- */
-interface TableProps {
+interface AddableBoxProps {
   /**
    * 呼び出し元より渡されるデータ
    */
@@ -70,11 +49,11 @@ interface TableProps {
 }
 
 /**
- * Tableコンポーネント
+ * AddableBoxコンポーネント
  * @param props
  * @returns
  */
-export const AddableBox = (props: TableProps) => {
+export const AddableBox = (props: AddableBoxProps) => {
   const { children, handleAddClick, handleRemoveClick } = props;
 
   return (

@@ -1,5 +1,12 @@
+import { ThemeProvider } from '@emotion/react';
 import { ComponentMeta } from '@storybook/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+
+import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
+
+import { theme } from 'controls/theme';
 
 import { getDaysInMonth } from 'date-fns';
 import { Calender, CalenderItemDef } from './Calender';
@@ -10,10 +17,13 @@ export default {
 } as ComponentMeta<typeof Calender>;
 
 interface CalenderExampleModel {
-  date: Date;
-  input: string;
+  calender: {
+    date: Date;
+    input: string;
+    select: number;
+    doubleSelect: number[];
+  }[];
   select: number;
-  doubleSelect: number[];
 }
 
 export const Example = () => {
@@ -63,51 +73,82 @@ export const Example = () => {
   const month = 7;
   const yearmonth = new Date(year, month - 1, 1);
   const daysInMonth = getDaysInMonth(yearmonth);
-  const defaultValue: CalenderExampleModel[] = [...Array(daysInMonth)].map(
-    (_, i) => {
+  const defaultValue: CalenderExampleModel = {
+    calender: [...Array(daysInMonth)].map((_, i) => {
       return {
         date: new Date(year, month - 1, i + 1),
         input: `input ${i + 1}`,
         select: (i % 10) + 1,
         doubleSelect: [(i % 10) + 1, (i % 10) + 1],
       };
-    }
-  );
-
-  const [dataset, setDataset] = useState<CalenderExampleModel[]>(defaultValue);
-
-  const handleOnCellChange = (
-    value: string | number,
-    date: Date,
-    field: string,
-    index: number | undefined
-  ) => {
-    // 特定の日付の入力を他の日付にも反映するサンプル
-    const newDataset = dataset.map((x, i) => {
-      if (field === 'input' && typeof value === 'string') {
-        x.input = value;
-      }
-      if (field === 'select' && typeof value === 'number') {
-        x.select = value;
-      }
-      if (field === 'doubleSelect') {
-        if (index !== undefined && typeof value === 'number') {
-          x.doubleSelect[index] = value;
-        }
-      }
-      return x;
-    });
-    setDataset(newDataset);
+    }),
+    select: 1,
   };
+
+  const validationSchema = yup.object().shape({
+    calender: yup.array().of(
+      yup.object().shape({
+        input: yup.string().required().max(10).label('Item 1'),
+        select: yup.number().required().min(1).label('Item 2'),
+        doubleSelect: yup
+          .array()
+          .of(yup.number().required().min(1).label('Item 3 / Item 4')),
+      })
+    ),
+  });
+
+  // state
+  const [dataset, setDataset] = useState<CalenderExampleModel>(defaultValue);
+
+  // form
+  const methods = useForm<CalenderExampleModel>({
+    mode: 'onBlur',
+    reValidateMode: 'onBlur',
+    defaultValues: defaultValue,
+    resolver: yupResolver(validationSchema),
+  });
+  const { getValues, setValue, watch } = methods;
+
+  const handleGetCellBackground = (
+    date: Date,
+    field: string
+  ): string | undefined => {
+    if (date.getDate() === 1 && field === 'date') return '#75cfeb';
+    return undefined;
+  };
+
+  const handleGetCellDisabled = (date: Date): boolean => {
+    return date.getDate() < 5;
+  };
+
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      // inputフィールドの変更のみを処理するサンプル
+      if (name?.split('.')[2] === 'input') {
+        const newValue = String(getValues(name));
+        const newCalender = getValues('calender').map((x) => {
+          x.input = newValue;
+          return x;
+        });
+        setValue('calender', newCalender);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   return (
     <>
-      <Calender
-        yearmonth={yearmonth}
-        itemDef={itemDef}
-        dataset={dataset}
-        onItemValueChange={handleOnCellChange}
-      />
+      <ThemeProvider theme={theme}>
+        <FormProvider {...methods}>
+          <Calender
+            name='calender'
+            yearmonth={yearmonth}
+            itemDef={itemDef}
+            getCellBackground={handleGetCellBackground}
+            getCellDisabled={handleGetCellDisabled}
+          />
+        </FormProvider>
+      </ThemeProvider>
     </>
   );
 };

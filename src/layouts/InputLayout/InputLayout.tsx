@@ -56,6 +56,7 @@ export const InputLayout = (props: InputLayoutProps) => {
 
 interface BlankLayout {
   size?: 's' | 'm' | 'l' | 'xl';
+  quantity?: number;
 }
 
 const StyledFormControl = styled(FormControl)({
@@ -64,14 +65,17 @@ const StyledFormControl = styled(FormControl)({
   height: 30,
 });
 export const BlankLayout = (props: BlankLayout) => {
-  const { size = 's' } = props;
-  return (
-    <InputStack size={size}>
-      <LabelStack>
-        <Typography>{'　'}</Typography>
-      </LabelStack>
-      <StyledFormControl>{'　'}</StyledFormControl>
-    </InputStack>
-  );
+  const { size = 's', quantity = 1 } = props;
+  const blank = Array.from({ length: quantity }, (_, index) => {
+    return (
+      <InputStack size={size} key={index}>
+        <LabelStack>
+          <Typography>{'　'}</Typography>
+        </LabelStack>
+        <StyledFormControl>{'　'}</StyledFormControl>
+      </InputStack>
+    );
+  });
+  return <>{blank}</>;
 };
 
