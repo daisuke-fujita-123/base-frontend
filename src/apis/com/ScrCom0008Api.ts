@@ -49,8 +49,7 @@ export const ScrCom0008GetReportCommentCurrent = async (
   request: ScrCom0008GetReportCommentCurrentRequest
 ): Promise<ScrCom0008GetReportCommentCurrentResponse> => {
   const response = await comApiClient.post(
-    // '/api/com/scr-com-0008/get-reportcomment-current',
-    '/com/scr-com-0008/get-reportcomment-current',
+    '/api/com/scr-com-0008/get-reportcomment-current',
     request
   );
   return response.data;
@@ -61,8 +60,7 @@ export const ScrCom0008RegistUpdateReportComment = async (
   request: ScrCom0008RegistUpdateReportCommentRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    // '/api/com/scr-com-0008/regist-update-reportcomment',
-    '/com/scr-com-0008/regist-update-reportcomment',
+    '/api/com/scr-com-0008/regist-update-reportcomment',
     request
   );
   return response.data;

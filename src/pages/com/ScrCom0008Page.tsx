@@ -47,6 +47,7 @@ import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 import ScrCom0032Popup, {
   registrationChangeList,
   ScrCom0032PopupModel,
@@ -190,6 +191,10 @@ const ScrCom0008Page = () => {
   const [reportCommentLengthForVal, setReportCommentLengthForVal] =
     useState<number>(70);
 
+  // セクション横幅調整用
+  const apiRef = useGridApiRef();
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
   // user情報
   const { user } = useContext(AuthContext);
 
@@ -277,6 +282,14 @@ const ScrCom0008Page = () => {
     useState<ScrCom0032PopupModel>(popupInitialValues);
 
   useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
+
+  useEffect(() => {
     // 初期表示処理(現在情報)
     const initializeCurrent = async (reportId: string) => {
       // 履歴表示画面ではない為falseを設定
@@ -297,13 +310,52 @@ const ScrCom0008Page = () => {
       setGetCommentLine(getCommissionDisplayResponse.commentLine);
       setGetChangeTimestamp(getCommissionDisplayResponse.changeTimestamp);
       setGetSystemKind(getCommissionDisplayResponse.systemKind);
+
+      // 改行コードでつながっている帳票コメントを改行コード毎に行単位に分割してコメント行に初期設定する
+      const comments: string[] =
+        getCommissionDisplayResponse.reportComment.split(/\n/);
+      comments.forEach((comment, i) => {
+        console.log(comment);
+        if (i === 0) {
+          setValue(`reportComment1`, comment);
+        } else if (i === 1) {
+          setValue(`reportComment2`, comment);
+        } else if (i === 2) {
+          setValue(`reportComment3`, comment);
+        } else if (i === 3) {
+          setValue(`reportComment4`, comment);
+        } else if (i === 4) {
+          setValue(`reportComment5`, comment);
+        } else if (i === 5) {
+          setValue(`reportComment6`, comment);
+        } else if (i === 6) {
+          setValue(`reportComment7`, comment);
+        } else if (i === 7) {
+          setValue(`reportComment8`, comment);
+        } else if (i === 8) {
+          setValue(`reportComment9`, comment);
+        } else if (i === 9) {
+          setValue(`reportComment10`, comment);
+        } else if (i === 10) {
+          setValue(`reportComment11`, comment);
+        } else if (i === 11) {
+          setValue(`reportComment12`, comment);
+        } else if (i === 12) {
+          setValue(`reportComment13`, comment);
+        } else if (i === 13) {
+          setValue(`reportComment14`, comment);
+        } else if (i === 14) {
+          setValue(`reportComment15`, comment);
+        }
+      });
+
       // バリデーションの文字数を設定
       setReportCommentLengthForVal(getCommissionDisplayResponse.commentLine);
 
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: SCR_COM_0008,
-        tabId: '',
+        tabId: 0,
         masterId: reportId,
         businessDate: user.taskDate,
       };
@@ -731,7 +783,7 @@ const ScrCom0008Page = () => {
           disabled={historyFlag ? true : false}
         />
       );
-      // 最大10個のコメント列にするように制御
+      // 最大15個のコメント列にするように制御
       if (i == 15) {
         break;
       }
@@ -745,7 +797,7 @@ const ScrCom0008Page = () => {
         {/* main */}
         <MainLayout main>
           <FormProvider {...methods}>
-            <Section name='帳票情報'>
+            <Section name='帳票情報' width={maxSectionWidth}>
               <RowStack>
                 <ColStack>
                   <Box>
@@ -790,51 +842,42 @@ const ScrCom0008Page = () => {
         {/* right */}
         <MainLayout right>
           <FormProvider {...methods}>
-            <RowStack>
-              <ColStack>
-                <RightElementStack>
-                  <Stack>
-                    <Typography bold>変更予約情報</Typography>
-                    {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「非表示」 */}
-                    {selectValues.changeReservationInfoSelectValues.length >=
-                    1 ? (
-                      <WarningLabel text='変更予約あり' />
-                    ) : (
-                      ''
-                    )}
-                    {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「表示・非活性 */}
-                    <Select
-                      name='changeHistoryNumber'
-                      selectValues={
-                        selectValues.changeReservationInfoSelectValues
-                      }
-                      disabled={
-                        selectValues.changeReservationInfoSelectValues.length >=
-                        1
-                          ? false
-                          : true
-                      }
-                      blankOption
-                    />
-                    {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「表示・非活性」 */}
-                    <PrimaryButton
-                      onClick={handleSwichDisplay}
-                      disable={
-                        selectValues.changeReservationInfoSelectValues.length >=
-                        1
-                          ? false
-                          : true
-                      }
-                    >
-                      表示切替
-                    </PrimaryButton>
-                  </Stack>
-                  <MarginBox mb={6}>
-                    <DatePicker label='変更予定日' name='changeHistoryDate' />
-                  </MarginBox>
-                </RightElementStack>
-              </ColStack>
-            </RowStack>
+            <RightElementStack>
+              <Stack>
+                <Typography bold>変更予約情報</Typography>
+                {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「非表示」 */}
+                {selectValues.changeReservationInfoSelectValues.length >= 1 ? (
+                  <WarningLabel text='変更予約あり' />
+                ) : (
+                  ''
+                )}
+                {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「表示・非活性 */}
+                <Select
+                  name='changeHistoryNumber'
+                  selectValues={selectValues.changeReservationInfoSelectValues}
+                  disabled={
+                    selectValues.changeReservationInfoSelectValues.length >= 1
+                      ? false
+                      : true
+                  }
+                  blankOption
+                />
+                {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「表示・非活性」 */}
+                <PrimaryButton
+                  onClick={handleSwichDisplay}
+                  disable={
+                    selectValues.changeReservationInfoSelectValues.length >= 1
+                      ? false
+                      : true
+                  }
+                >
+                  表示切替
+                </PrimaryButton>
+              </Stack>
+              <MarginBox mb={6}>
+                <DatePicker label='変更予定日' name='changeHistoryDate' />
+              </MarginBox>
+            </RightElementStack>
           </FormProvider>
         </MainLayout>
 
