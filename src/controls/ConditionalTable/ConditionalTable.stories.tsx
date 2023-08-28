@@ -9,6 +9,7 @@ import { TableColDef } from 'controls/Table';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material';
+
 import {
   ConditionalTable,
   ConditionModel,
@@ -24,8 +25,8 @@ export default {
 export const Example = () => {
   const columns: TableColDef[] = [
     { field: 'conditionType', headerName: '条件種類', width: 150 },
-    { field: 'conditions', headerName: '条件', width: 100 },
-    { field: 'conditionVal', headerName: '値', width: 150 },
+    { field: 'conditions', headerName: '条件', width: 80 },
+    { field: 'conditionVal', headerName: '値', width: 200 },
   ];
 
   /**
@@ -216,7 +217,7 @@ export const Example = () => {
   );
   return (
     <ThemeProvider theme={theme}>
-      <Section name='条件設定'>
+      <Section name='条件設定' width={800}>
         <ConditionalTable
           columns={columns}
           getItems={getItems}
