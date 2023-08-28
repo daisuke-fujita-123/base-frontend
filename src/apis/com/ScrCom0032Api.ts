@@ -19,7 +19,7 @@ export const ScrCom0032GetApproval = async (
   request: ScrCom0032GetApprovalRequest
 ): Promise<ScrCom0032GetApprovalResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0032/get-approval',
+    '/api/com/scr-com-0032/get-approval',
     request
   );
   return response.data;
