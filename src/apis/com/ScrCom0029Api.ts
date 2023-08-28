@@ -163,6 +163,8 @@ export interface ScrCom0029RegistApprovalPermissionRequest {
   registrationChangeMemo: string;
   // 変更タイムスタンプ
   changeTimestamp: string;
+  // 業務日付
+  businessDate: string;
 }
 
 interface ApprvlList {

@@ -43,7 +43,7 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
-import { GridColumnGroupingModel } from '@mui/x-data-grid-pro';
+import { GridColumnGroupingModel, useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索結果行データモデル
@@ -329,7 +329,8 @@ const convertFromApprovalPermissionModel = (
   approvalData: ApprovalPermissionListModel[],
   user: string,
   tastDate: string,
-  registrationChangeMemo: string
+  registrationChangeMemo: string,
+  businessDate: string
 ): ScrCom0029RegistApprovalPermissionRequest => {
   return {
     approvalPermissionId: approval.approvalPermissionId,
@@ -353,6 +354,7 @@ const convertFromApprovalPermissionModel = (
     applicationEmployeeId: user,
     screenId: 'SCR-COM-0029',
     changeTimestamp: tastDate,
+    businessDate: businessDate,
   };
 };
 
@@ -403,6 +405,11 @@ const ScrCom0029Page = () => {
   const [initApprovalResult, setInitApprovalResult] = useState<NumList[]>([]);
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
+  const apiRef = useGridApiRef();
+  const maxSectionWidth =
+    Number(
+      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+    ) + 40;
 
   // router
   const [searchParams] = useSearchParams();
@@ -683,6 +690,8 @@ const ScrCom0029Page = () => {
     reset,
     setValue,
     user.taskDate,
+    initApprovalResult.length,
+    initUseFlag,
   ]);
 
   /**
@@ -696,7 +705,6 @@ const ScrCom0029Page = () => {
     const hours = d.getHours();
     const min = d.getMinutes();
     exportCsv(
-      approvalResult,
       '承認権限詳細_' +
         user.employeeId +
         '_' +
@@ -707,7 +715,8 @@ const ScrCom0029Page = () => {
         day.toString() +
         hours.toString() +
         min.toString() +
-        '.csv'
+        '.csv',
+      apiRef
     );
   };
 
@@ -924,7 +933,8 @@ const ScrCom0029Page = () => {
       approvalResultRequest,
       user.employeeId,
       user.taskDate,
-      registrationChangeMemo
+      registrationChangeMemo,
+      user.taskDate
     );
     await registApprovalPermission(request);
   };
@@ -952,6 +962,7 @@ const ScrCom0029Page = () => {
                   </AddButton>
                 </MarginBox>
               }
+              width={maxSectionWidth}
             >
               <RowStack>
                 <ColStack>
@@ -977,6 +988,7 @@ const ScrCom0029Page = () => {
                     name='useFlag'
                     size='s'
                     radioValues={radioValues}
+                    disabled={disableFlg}
                   />
                 </ColStack>
                 <ColStack>
@@ -994,6 +1006,7 @@ const ScrCom0029Page = () => {
                 columnGroupingModel={columnGroups}
                 rows={approvalResult}
                 disabled={disableFlg}
+                apiRef={apiRef}
               />
             </Section>
           </FormProvider>
