@@ -1341,7 +1341,7 @@ const ScrMem0001Page = () => {
       )}
 
       {/* 帳票選択（ポップアップ） */}
-      {scrCom0011PopupIsOpen ? (
+      {/* {scrCom0011PopupIsOpen ? (
         <ScrCom0011Popup
           isOpen={scrCom0011PopupIsOpen}
           data={{ screenId: 'SCR-MEM-0001' }}
@@ -1350,7 +1350,7 @@ const ScrMem0001Page = () => {
         />
       ) : (
         ''
-      )}
+      )} */}
 
       {/* ダイアログ */}
       {handleDialog ? (
