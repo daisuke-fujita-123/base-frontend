@@ -37,13 +37,13 @@ export interface ScrCom0014GetCommissionDisplayResponse {
 /** API-COM-0014-0001: 手数料表示API 条件設定セクションレスポンス(リスト行) */
 export interface commissionConditionList {
   /** 手数料条件種類No */
-  commissionConditionKindNo: string;
+  commissionConditionKindNo: number;
   /** 条件種類コード */
   conditionKindCode: string;
   /** 手数料条件種類名 */
   conditionKindName: string;
   /** 手数料条件No */
-  commissionConditionNo: string;
+  commissionConditionNo: number;
   /** 手数料条件区分 */
   commissionConditionKind: string;
   /** 手数料条件区分名 */
@@ -115,7 +115,7 @@ export interface commissionPriceList {
   /** 手数料条件値No10 */
   commissionConditionValueNo10: string;
   /** 手数料金額 */
-  commissionPrice: string;
+  commissionPrice: number;
 }
 
 /** API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI リクエスト */
@@ -135,11 +135,11 @@ export interface ScrCom0014CommissionCheckRequest {
 /** API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI レスポンス 条件設定セクション(リスト行) */
 export interface checkCommissionConditionList {
   /** 手数料条件種類No */
-  commissionConditionKindNo: string;
+  commissionConditionKindNo: number;
   /** 条件種類コード */
   conditionKindCode: string;
   /** 手数料条件No */
-  commissionConditionNo: string;
+  commissionConditionNo: number;
   /** 手数料条件区分 */
   commissionConditionKind: string;
   /** 手数料条件値 */
