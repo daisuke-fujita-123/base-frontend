@@ -510,7 +510,7 @@ export const ScrCom0013DisplayComoditymanagementService = async (
   request: ScrCom0013DisplayComoditymanagementServiceRequest
 ): Promise<ScrCom0013DisplayComoditymanagementServiceResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0013/display-comoditymanagement-service',
+    '/api/com/scr-com-0013/display-comoditymanagement-service',
     request
   );
   return response.data;
@@ -521,7 +521,7 @@ export const ScrCom0013DisplayComoditymanagementCommission = async (
   request: ScrCom0013DisplayComoditymanagementCommissionRequest
 ): Promise<ScrCom0013DisplayComoditymanagementCommissionResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0013/display-comoditymanagement-commission',
+    '/api/com/scr-com-0013/display-comoditymanagement-commission',
     request
   );
   return response.data;
@@ -532,7 +532,7 @@ export const ScrCom0013DisplayComoditymanagementDiscount = async (
   request: ScrCom0013DisplayComoditymanagementDiscountRequest
 ): Promise<ScrCom0013DisplayComoditymanagementDiscountResponse> => {
   const response = await comApiClient.post(
-    '/scr-com-0013/display-comoditymanagement-discount',
+    '/api/com/scr-com-0013/display-comoditymanagement-discount',
     request
   );
   return response.data;
@@ -542,7 +542,7 @@ export const ScrCom0013DisplayComoditymanagementDiscount = async (
 export const ScrCom0013DisplayComoditymanagementHistory =
   async (): Promise<ScrCom0013DisplayComoditymanagementHistoryResponse> => {
     const response = await comApiClient.post(
-      '/scr-com-0013/display-comoditymanagement-history'
+      '/api/com/scr-com-0013/display-comoditymanagement-history'
     );
     return response.data;
   };
@@ -552,7 +552,7 @@ export const ScrCom0013chkService = async (
   request: ScrCom0013chkServiceRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/scr-com-0013/chk-service',
+    '/api/com/scr-com-0013/chk-service',
     request
   );
   return response.data;
@@ -563,7 +563,7 @@ export const ScrCom0013MergeService = async (
   request: ScrCom0013MergeServiceRequest
 ): Promise<void> => {
   const response = await comApiClient.post(
-    '/scr-com-0013/merge-service',
+    '/api/com/scr-com-0013/merge-service',
     request
   );
   return response.data;
@@ -574,7 +574,7 @@ export const ScrCom0013chkDiscount = async (
   request: ScrCom0013chkDiscountRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/scr-com-0013/chk-discount',
+    '/api/com/scr-com-0013/chk-discount',
     request
   );
   return response.data;
@@ -584,7 +584,7 @@ export const ScrCom0013chkDiscount = async (
 export const ScrCom0013MergeDiscount = async (
   request: ScrCom0013MergeDiscountRequest
 ): Promise<void> => {
-  await comApiClient.post('/scr-com-0013/merge-discount', request);
+  await comApiClient.post('/api/com/scr-com-0013/merge-discount', request);
 };
 
 // 全タブのリクエスト情報を統括

@@ -130,6 +130,8 @@ const ScrCom0013CourceTab = (props: {
   // CSV
   const apiRef = useGridApiRef();
 
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
   // form
   const methods = useForm<SearchResultRowModel>({});
   const {
@@ -139,6 +141,14 @@ const ScrCom0013CourceTab = (props: {
     reset,
     watch,
   } = methods;
+
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -236,7 +246,7 @@ const ScrCom0013CourceTab = (props: {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv('ScrCom0013CourceTab.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
 
   return (
@@ -247,6 +257,7 @@ const ScrCom0013CourceTab = (props: {
           <FormProvider {...methods}>
             <Section
               name='コース一覧'
+              width={maxSectionWidth}
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                   <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
@@ -261,6 +272,7 @@ const ScrCom0013CourceTab = (props: {
               }
             >
               <DataGrid
+                apiRef={apiRef}
                 pagination={true}
                 columns={searchResultColumns}
                 rows={searchResult}

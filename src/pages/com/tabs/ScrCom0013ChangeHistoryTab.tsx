@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -18,6 +18,8 @@ import {
 } from 'apis/com/ScrCom0013Api';
 
 import { useNavigate } from 'hooks/useNavigate';
+
+import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
 
@@ -306,11 +308,24 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
   const [unApprovedHrefs, setUnApprovedHrefs] = useState<GridHrefsModel[]>([]);
   const [unApprovedTooltips, setunApprovedTooltips] = useState<any[]>([]);
 
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
+  // user情報(businessDateも併せて取得)
+  const { user } = useContext(AuthContext);
+
   // router
   const navigate = useNavigate();
 
   // CSV
   const apiRef = useGridApiRef();
+
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -458,13 +473,13 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
    * 変更履歴一覧セクション CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv('ScrCom0013ChangeHistoryTab.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
   /**
    * 未承認一覧セクションCSV出力アイコンクリック時のイベントハンドラ
    */
   const unApprovedhandleIconOutputCsvClick = () => {
-    exportCsv('ScrCom0013ChangeHistoryTabUnApproved.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
 
   return (
@@ -474,6 +489,7 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
         <MainLayout main>
           <Section
             name='変更履歴一覧'
+            width={maxSectionWidth}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
@@ -481,6 +497,7 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
             }
           >
             <DataGrid
+              apiRef={apiRef}
               pagination={true}
               columns={changeHistorySearchResultColumns}
               rows={changeHistorySearchResult}
@@ -500,6 +517,7 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
             }
           >
             <DataGrid
+              apiRef={apiRef}
               pagination={true}
               columns={unApprovedSearchResultColumns}
               rows={unApprovedSearchResult}

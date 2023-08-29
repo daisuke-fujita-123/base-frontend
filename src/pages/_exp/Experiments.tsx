@@ -125,7 +125,7 @@ const searchConditionSchema = {
   city: yup.string().label('市町村区'),
   street: yup.string().label('番地'),
 
-  string1: yup.string().required().label('ストリング1'),
+  string1: yup.string().required().half().label('ストリング1'),
   string2: yup.string().max(5).label('ストリング2'),
   string3: yup.string().number().label('ストリング3'),
   string4: yup.string().numberWithComma().label('ストリング4'),

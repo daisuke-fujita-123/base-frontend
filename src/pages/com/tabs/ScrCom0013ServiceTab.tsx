@@ -7,7 +7,7 @@ import { ObjectSchema } from 'yup';
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
+import { RightElementStack, Stack } from 'layouts/Stack';
 
 import { AddButton, ConfirmButton, PrimaryButton } from 'controls/Button';
 import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
@@ -229,6 +229,8 @@ const ScrCom0013ServiceTab = (props: {
   const [scrCom0033PopupData, setScrCom0033PopupData] =
     useState<ScrCom0033PopupModel>(scrCom0033PopupInitialValues);
 
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
   /**
    * 商品管理 画面 初期データ
    */
@@ -360,6 +362,14 @@ const ScrCom0013ServiceTab = (props: {
     });
   };
 
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
+
   /**
    * 初期表示
    */
@@ -413,7 +423,7 @@ const ScrCom0013ServiceTab = (props: {
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         businessDate: user.taskDate,
         screenId: SCR_COM_0013,
-        tabId: '2',
+        tabId: 2,
         masterId: '',
       };
       const getChangeDateResponse = await ScrCom9999GetChangeDate(
@@ -554,7 +564,7 @@ const ScrCom0013ServiceTab = (props: {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv('ScrCom0013ServiceTab.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
 
   /**
@@ -703,6 +713,7 @@ const ScrCom0013ServiceTab = (props: {
         <MainLayout main>
           <Section
             name='サービステーブル一覧'
+            width={maxSectionWidth}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
@@ -717,6 +728,7 @@ const ScrCom0013ServiceTab = (props: {
             }
           >
             <DataGrid
+              apiRef={apiRef}
               pagination={true}
               columns={searchResultColumns}
               rows={searchResult}
@@ -768,39 +780,33 @@ const ScrCom0013ServiceTab = (props: {
         {/* right */}
         <MainLayout right>
           <FormProvider {...methods}>
-            <RowStack>
-              <ColStack>
-                <RightElementStack>
-                  <Stack>
-                    <Typography bold>変更予約情報</Typography>
-                    {/* 履歴表示の場合 非活性 */}
-                    <Select
-                      name='changeHistoryNumber'
-                      selectValues={
-                        selectValues.changeReservationInfoSelectValues
-                      }
-                      blankOption
-                      disabled={props.changeHisoryNumber === '' ? true : false}
-                    />
-                    {/* 履歴表示の場合 非活性 */}
-                    <PrimaryButton
-                      onClick={handleSwichDisplay}
-                      disable={props.changeHisoryNumber === '' ? true : false}
-                    >
-                      表示切替
-                    </PrimaryButton>
-                  </Stack>
-                  <MarginBox mb={6}>
-                    {/* 履歴表示の場合 非活性 */}
-                    <DatePicker
-                      label='変更予定日'
-                      name='changeExpectedDate'
-                      disabled={props.changeHisoryNumber === '' ? true : false}
-                    />
-                  </MarginBox>
-                </RightElementStack>
-              </ColStack>
-            </RowStack>
+            <RightElementStack>
+              <Stack>
+                <Typography bold>変更予約情報</Typography>
+                {/* 履歴表示の場合 非活性 */}
+                <Select
+                  name='changeHistoryNumber'
+                  selectValues={selectValues.changeReservationInfoSelectValues}
+                  blankOption
+                  disabled={props.changeHisoryNumber === '' ? true : false}
+                />
+                {/* 履歴表示の場合 非活性 */}
+                <PrimaryButton
+                  onClick={handleSwichDisplay}
+                  disable={props.changeHisoryNumber === '' ? true : false}
+                >
+                  表示切替
+                </PrimaryButton>
+              </Stack>
+              <MarginBox mb={6}>
+                {/* 履歴表示の場合 非活性 */}
+                <DatePicker
+                  label='変更予定日'
+                  name='changeExpectedDate'
+                  disabled={props.changeHisoryNumber === '' ? true : false}
+                />
+              </MarginBox>
+            </RightElementStack>
           </FormProvider>
         </MainLayout>
 

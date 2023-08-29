@@ -612,6 +612,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   const [registrationChangeMemo, setRegistrationChangeMemo] =
     useState<string>('');
 
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
   // メッセージの取得
   const { getMessage } = useContext(MessageContext);
 
@@ -950,10 +952,17 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     },
   ];
 
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
+
   /**
    * 初期表示
    */
-
   useEffect(() => {
     // 現在情報の表示
     const initialize = async () => {
@@ -1023,12 +1032,14 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // 基本値引
       const searchResult0013Basic =
         convertToSearchBasicResultRowModel(response0013);
+
       setBasicSearchResult(searchResult0013Basic);
       setAddedBasicSearchResult(searchResult0013Basic);
 
       // オプション値引
       const searchResult0013Option =
         convertToSearchOptionResultRowModel(response0013);
+
       setOptionSearchResult(searchResult0013Option);
       setAddedOptionSearchResult(searchResult0013Option);
 
@@ -1073,7 +1084,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     };
 
     // 変更履歴番号を受け取っていたら履歴表示
-    if (props.changeHisoryNumber !== null) {
+    if (props.changeHisoryNumber !== '') {
       historyInitialize(props.changeHisoryNumber);
       return;
     }
@@ -1287,20 +1298,20 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
    * 会費セクション-基本値引値増 CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleBasicIconOutputCsvClick = () => {
-    exportCsv('ScrCom0013CommissionDiscountPacksTab-Basic.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
 
   /**
    * 会費セクション-オプション値引値増 CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleOptionIconOutputCsvClick = () => {
-    exportCsv('ScrCom0013CommissionDiscountPacksTab-Option.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
   /**
    * 手数料セクション CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleIconCommissionOutputCsvClick = () => {
-    exportCsv('ScrCom0013CommissionDiscountPacksTab-Commission.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
 
   /**
@@ -1647,6 +1658,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         <MainLayout main>
           <Section
             name='会費セクション'
+            width={maxSectionWidth}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <AddButton onClick={handleBasicIconOutputCsvClick}>
@@ -1664,6 +1676,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
           >
             <Typography variant='h6'>基本値引値増</Typography>
             <DataGrid
+              apiRef={apiRef}
               pagination={true}
               columns={searchBasicResultColumns}
               rows={addedBasicSearchResult}
@@ -1787,6 +1800,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
             </RightBox>
             <Typography variant='h6'>オプション値引値増</Typography>
             <DataGrid
+              apiRef={apiRef}
               pagination={true}
               columns={searchOptionResultColumns}
               rows={addedOptionSearchResult}
@@ -1896,6 +1910,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
           </Section>
           <Section
             name='手数料セクション'
+            width={maxSectionWidth}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <AddButton onClick={handleIconCommissionOutputCsvClick}>
@@ -1912,6 +1927,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
             }
           >
             <DataGrid
+              apiRef={apiRef}
               pagination={true}
               columns={searchCommissionResultColumns}
               rows={commissionSearchResult}

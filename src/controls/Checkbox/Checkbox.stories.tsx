@@ -64,6 +64,11 @@ export const Example = () => {
           disabled
         />
         <Checkbox name='cancelFlag2' label='キャンセルフラグ2' />
+        <Checkbox
+          name='cancelFlag2'
+          label='キャンセルフラグ2'
+          backgroundColor='red'
+        />
         <Button onClick={handleClick}>click</Button>
       </FormProvider>
     </ThemeProvider>
