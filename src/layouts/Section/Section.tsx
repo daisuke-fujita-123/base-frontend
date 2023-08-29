@@ -1,7 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
 import {
-  Box,
   ContentsBox,
   ContentsOutsideBox,
   ErrorBox,
@@ -14,7 +13,7 @@ import {
 import { theme } from 'controls/theme';
 import { SubTitle } from 'controls/Typography';
 
-import { Stack, styled } from '@mui/material';
+import { Box, Stack, styled } from '@mui/material';
 import { default as AccordionMui } from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
@@ -46,7 +45,7 @@ export interface SectionClose {
 
 const StyledAccordion = styled(AccordionMui)({
   backgroundColor: 'transparent',
-  width: 'calc( 100% + 2px )',
+  // width: 'calc( 100% + 2px )',
   margin: 0,
 });
 // eslint-disable-next-line react/display-name
@@ -75,7 +74,9 @@ export const Section = forwardRef((props: SectionProps, ref) => {
   if (!name) {
     return <ContentsBox>{children}</ContentsBox>;
   }
+
   const flexColSx = { display: 'flex', flexDirection: 'column' };
+
   return (
     <Box width={width}>
       <SubTitle onClick={onClick} openable={openable}>
