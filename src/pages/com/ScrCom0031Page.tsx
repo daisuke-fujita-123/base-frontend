@@ -254,7 +254,6 @@ const ScrCom0031Page = () => {
     } else if (result === '.zip') {
       // zipファイル処理API
       const downlodLinkValues: DownlodLinkModel[] = [];
-      console.log(url);
       searchResult.forEach((x) => {
         if (x.outputFileUrl.includes(url)) {
           downlodLinkValues.push({
