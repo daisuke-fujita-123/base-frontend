@@ -94,7 +94,7 @@ interface SearchResultRowModelForConvert {
 const convertToSearchResultRowModel = (
   response: ScrCom0007GetReportResponse
 ): SearchResultRowModelForConvert[] => {
-  return response.getReportSearchResult.map((x) => {
+  return response.reportInfoList.map((x) => {
     return {
       id: x.reportId,
       reportId: x.reportId,

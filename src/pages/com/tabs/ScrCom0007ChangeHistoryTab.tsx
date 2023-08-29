@@ -97,7 +97,7 @@ interface changeHistoryRowModel {
 const convertToSearchResultRowModel = (
   response: ScrCom0007GetChangeHistoryResponse
 ): changeHistoryRowModel[] => {
-  return response.getChangeHistorySearchResult.map((x) => {
+  return response.changeHistoryInfoList.map((x) => {
     return {
       id: x.applicationId,
       applicationId: x.applicationId,

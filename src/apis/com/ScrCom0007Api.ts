@@ -3,7 +3,7 @@ import { comApiClient } from 'providers/ApiClient';
 // API-COM-0007-0001：帳票一覧情報取得API レスポンス
 export interface ScrCom0007GetReportResponse {
   // リスト
-  getReportSearchResult: GetReportSearchResult[];
+  reportInfoList: GetReportSearchResult[];
 }
 
 // API-COM-0007-0001：帳票一覧情報取得API レスポンス（リスト行）
@@ -25,7 +25,7 @@ export interface GetReportSearchResult {
 // API-COM-0007-0002：変更履歴一覧情報取得API レスポンス
 export interface ScrCom0007GetChangeHistoryResponse {
   // リスト
-  getChangeHistorySearchResult: GetChangeHistorySearchResult[];
+  changeHistoryInfoList: GetChangeHistorySearchResult[];
 }
 
 // API-COM-0007-0002：変更履歴一覧情報取得API レスポンス（リスト行）
