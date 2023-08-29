@@ -106,6 +106,11 @@ interface SearchResultRowModel {
 }
 
 /**
+ * 画面ID 定数定義
+ */
+const SCR_COM_0023 = 'SCR-COM-0023';
+
+/**
  * SCR-COM-0023 ライブ会場一覧画面
  */
 const ScrCom0023Page = () => {
@@ -113,11 +118,19 @@ const ScrCom0023Page = () => {
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
 
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
   // router
   const navigate = useNavigate();
 
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
+
+  // ユーザーの編集権限
+  const userEditFlag =
+    user.editPossibleScreenIdList === undefined
+      ? ''
+      : user.editPossibleScreenIdList.includes(SCR_COM_0023);
 
   // CSV
   const apiRef = useGridApiRef();
@@ -162,6 +175,14 @@ const ScrCom0023Page = () => {
       };
     });
   };
+
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期画面表示時にライブ会場一覧検索処理を実行
@@ -212,7 +233,7 @@ const ScrCom0023Page = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv('ScrCom0023.csv', apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
 
   return (
@@ -223,17 +244,14 @@ const ScrCom0023Page = () => {
           {/* ライブ会場一覧 */}
           <Section
             name='ライブ会場一覧'
+            width={maxSectionWidth}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
                 {/* 編集権限なしの場合 非活性 */}
                 <AddButton
                   onClick={handleIconAddClick}
-                  disable={
-                    !user.editPossibleScreenIdList.includes('SCR-COM-0023')
-                      ? true
-                      : false
-                  }
+                  disable={!userEditFlag ? true : false}
                 >
                   追加
                 </AddButton>
@@ -241,6 +259,7 @@ const ScrCom0023Page = () => {
             }
           >
             <DataGrid
+              apiRef={apiRef}
               columns={searchResultColumns}
               rows={searchResult}
               hrefs={hrefs}
