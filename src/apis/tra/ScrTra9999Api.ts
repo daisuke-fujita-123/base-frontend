@@ -1,4 +1,9 @@
-import { comApiClient, traApiClient } from 'providers/ApiClient';
+<<<<<<< HEAD
+import { traApiClient } from 'providers/ApiClient';
+
+=======
+import { traApiClient } from 'providers/ApiClient';
+>>>>>>> 14cd0a35e6ea101594b475cd2c6510bf044d00d7
 
 /** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API リクエスト */
 export interface ScrTra9999GetCodeValueRequest {
@@ -42,10 +47,8 @@ export interface codeList {
 export const ScrTra9999GetCodeValue = async (
   request: ScrTra9999GetCodeValueRequest
 ): Promise<ScrTra9999GetCodeValueResponse> => {
-  // TODO: comApiClient => traApiClient
-  const response = await comApiClient.post(
-    // TODO: URI api/com => api/tra
-    '/api/com/scr-tra-9999/get-code-value',
+  const response = await traApiClient.post(
+    '/api/tra/scr-tra-9999/get-code-value',
     request
   );
   return response.data;
@@ -78,7 +81,7 @@ export const ScrTra9999CreateReportImageTra = async (
   request: ScrTra9999CreateReportImageTraRequest
 ): Promise<ScrTra9999CreateReportImageTraResponse> => {
   const response = await traApiClient.post(
-    '/com/scr-tra-9999/create-report-image-tra',
+    '/api/tra/scr-tra-9999/create-report-image-tra',
     request,
     {
       responseType: 'blob',
