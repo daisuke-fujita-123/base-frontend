@@ -1354,7 +1354,7 @@ const ScrMem0012Page = () => {
       // 変更予定日取得API
       const getHistoryInfoRequest = {
         screenId: 'SCR-MEM-0012',
-        tabId: 'B-20',
+        tabId: 20,
         masterId: corporationId,
         businessDate: user.taskDate,
       };
