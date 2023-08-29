@@ -23,4 +23,9 @@ export const MESSAGES = [
     id: 'MSG-FR-INF-00009',
     message: '申請内容を確定してよろしいでしょうか',
   },
+  {
+    id: 'MSG-FR-INF-00004',
+    message:
+      '検索件数が保持上限数を超えたため{1}件で区切りました。（検索結果：{0}件）',
+  },
 ];

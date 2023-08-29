@@ -4,24 +4,13 @@ import { ObjectSchema, ValidationError } from 'yup';
 
 import { InfoButton } from 'controls/Button';
 import {
-  GridCellForTooltip,
-  GridCheckboxCell,
-  GridCustomizableRadiioCell,
-  GridDatepickerCell,
-  GridFromtoCell,
-  GridInputCell,
-  GridRadioCell,
-  GridSelectCell,
+    GridCellForTooltip as MuiGridCellForTooltip, GridCheckboxCell, GridCustomizableRadiioCell,
+    GridDatepickerCell, GridFromtoCell, GridInputCell, GridRadioCell, GridSelectCell
 } from 'controls/Datagrid/DataGridCell';
 import { GridToolbar } from 'controls/Datagrid/DataGridToolbar';
 import {
-  appendErrorToInvalids,
-  convertFromInvalidToMessage,
-  convertFromResolverToInvalids,
-  convertFromSizeToWidth,
-  InvalidModel,
-  removeIdFromInvalids,
-  resolveGridWidth,
+    appendErrorToInvalids, convertFromInvalidToMessage, convertFromResolverToInvalids,
+    convertFromSizeToWidth, InvalidModel, removeIdFromInvalids, resolveGridWidth
 } from 'controls/Datagrid/DataGridUtil';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
@@ -31,13 +20,8 @@ import SortDesc from 'icons/content_sort_descend.png';
 
 import { Box, Stack, styled, Tooltip } from '@mui/material';
 import {
-  DataGridPro as MuiDataGridPro,
-  DataGridProProps,
-  GridColDef as MuiGridColDef,
-  GridColumnHeaderParams,
-  GridRenderCellParams,
-  GridRowsProp,
-  GridValidRowModel,
+    DataGridPro as MuiDataGridPro, DataGridProProps, GridColDef as MuiGridColDef,
+    GridColumnHeaderParams, GridRenderCellParams, GridRowsProp, GridValidRowModel
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 
@@ -87,6 +71,12 @@ const StyledDataGrid = styled(MuiDataGridPro)({
   },
   '& .MuiDataGrid-virtualScroller': {
     overflow: 'hidden',
+  },
+});
+
+const GridCellForTooltip = styled(MuiGridCellForTooltip)({
+  '&:hover': {
+    textDecoration: 'underline',
   },
 });
 
@@ -561,11 +551,10 @@ export const DataGrid = (props: DataGridProps) => {
 
   const generateTooltipCell = (params: GridRenderCellParams<any>) => {
     const map = tooltips?.find((x) => x.field === params.field);
-    const tooltip = map?.tooltips.find((x: any) => x.id === params.id);
-
+    const tooltip = map?.tooltips.find((x: any) => x.id === String(params.id));
     const text = tooltip !== undefined ? tooltip.text : '';
     return (
-      <Tooltip title={text} placement='right'>
+      <Tooltip title={text} placement='right' arrow>
         <GridCellForTooltip>{params.value}</GridCellForTooltip>
       </Tooltip>
     );
