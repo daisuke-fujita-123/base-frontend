@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 
 import { theme } from 'controls/theme';
 
+import { styled } from '@mui/material';
 import { default as StackMui } from '@mui/material/Stack';
 import { ResponsiveStyleValue } from '@mui/system';
 
@@ -21,6 +22,7 @@ interface StackProps {
   alignItems?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
   width?: number | string;
   height?: number | string;
+  mb?: boolean;
 }
 
 export const Stack = (props: StackProps) => {
@@ -56,15 +58,41 @@ export const Stack = (props: StackProps) => {
 export const RowStack = (props: StackProps) => {
   const {
     children,
+    justifyContent = 'flex-start',
+    spacing = theme.spacing(8),
+    mb = false,
+  } = props;
+
+  return (
+    <StackMui
+      marginRight={8}
+      spacing={spacing}
+      direction='row'
+      justifyContent={justifyContent}
+      marginBottom={mb ? theme.spacing(6) : 0}
+    >
+      {Array.isArray(children) ? (
+        children.map((child: ReactNode, index: number) => (
+          <div key={index}>{child}</div>
+        ))
+      ) : (
+        <div>{children}</div>
+      )}
+    </StackMui>
+  );
+};
+
+export const ColStack = (props: StackProps) => {
+  const {
+    children,
     justifyContent = 'flex-end',
-    alignItems = 'center',
-    spacing = theme.spacing(10),
+    alignItems = 'start',
+    spacing = theme.spacing(6),
   } = props;
 
   return (
     <StackMui
       spacing={spacing}
-      direction='row'
       justifyContent={justifyContent}
       alignItems={alignItems}
     >
@@ -79,14 +107,54 @@ export const RowStack = (props: StackProps) => {
   );
 };
 
-export const InputStack = (props: StackProps) => {
-  const { children } = props;
+const StyledControlsStackItem = styled('div')({
+  minWidth: 225,
+});
+
+interface ItemProps {
+  children: React.ReactNode;
+  size?: 's' | 'm' | 'l' | 'el';
+}
+export const ControlsStackItem = (props: ItemProps) => {
+  const { children, size = 's' } = props;
+
+  const areaWidth = () => {
+    if (size === 's') return 225;
+    else if (size === 'm') return 490;
+    else if (size === 'l') return 755;
+    else if (size === 'el') return 1550;
+    else return 225;
+  };
 
   return (
-    <StackMui margin='20px 20px -10px 20px'>
+    <StyledControlsStackItem style={{ width: areaWidth() }}>
+      {children}
+    </StyledControlsStackItem>
+  );
+};
+
+interface InputStackProps extends StackProps {
+  size: 's' | 'm' | 'l' | 'xl';
+}
+
+export const InputStack = (props: InputStackProps) => {
+  const { children, size } = props;
+
+  const areaWidth = () => {
+    if (size === 's') return 225;
+    else if (size === 'm') return 490;
+    else if (size === 'l') return 755;
+    else if (size === 'xl') return 1550;
+    else return 225;
+  };
+
+  return (
+    <StackMui>
       {Array.isArray(children) ? (
         children.map((child: ReactNode, index: number) => (
-          <div key={index}>{child}</div>
+          <div style={{ width: areaWidth() }} key={index}>
+            {child}
+          </div>
         ))
       ) : (
         <div>{children}</div>
@@ -111,6 +179,22 @@ export const LabelStack = (props: StackProps) => {
   return (
     <StackMui alignItems='center' flexDirection='row' marginBottom={1}>
       {children}
+    </StackMui>
+  );
+};
+
+export const RightElementStack = (props: StackProps) => {
+  const { children } = props;
+
+  return (
+    <StackMui justifyContent='space-between' height='100%'>
+      {Array.isArray(children) ? (
+        children.map((child: ReactNode, index: number) => (
+          <div key={index}>{child}</div>
+        ))
+      ) : (
+        <div>{children}</div>
+      )}
     </StackMui>
   );
 };

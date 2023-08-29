@@ -27,7 +27,7 @@ const GlobalLayout = () => {
       }}
     >
       {/* Top */}
-      <Box sx={{ ...flexRowSx, height: 58 }}>
+      <Box sx={{ ...flexRowSx, minHeight: 58, height: 58 }}>
         {/* Logo */}
         <Box sx={{ ...flexColSx, width: 236, mr: 10, ml: 3 }}>Logo</Box>
         <Box
@@ -49,8 +49,11 @@ const GlobalLayout = () => {
             minWidth: isOpen ? 250 : 40,
             backgroundColor: 'accordion.backgroundColor',
             transition: '0.5s ease',
-            overflow: 'hidden',
+            overflowY: 'auto',
             display: 'inline-block',
+            '::-webkit-scrollbar': {
+              display: 'none',
+            },
           }}
         >
           <TreeView open={isOpen} />

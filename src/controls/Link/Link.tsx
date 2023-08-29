@@ -23,8 +23,8 @@ export const Link = (props: LinkProps) => {
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
   ) => {
     event.preventDefault();
-    if (onClick === undefined) return;
-    onClick(event.currentTarget.href);
+    const target = event.currentTarget;
+    onClick && onClick(target.pathname + target.search + target.hash);
   };
 
   return (

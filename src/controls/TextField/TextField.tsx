@@ -5,13 +5,18 @@ import {
   FieldValues,
   Path,
   useFormContext,
+  useWatch,
 } from 'react-hook-form';
 
+import { MarginBox } from 'layouts/Box';
+import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
 
 import { theme } from 'controls/theme';
+import { Typography } from 'controls/Typography';
 
 import ClearIcon from '@mui/icons-material/Clear';
+
 import {
   IconButton,
   InputAdornment,
@@ -28,6 +33,11 @@ export interface TextFieldProps<T extends FieldValues> {
   variant?: 'standard' | 'filled' | 'outlined';
   disabled?: boolean;
   fullWidth?: boolean;
+  readonly?: boolean;
+  size?: 's' | 'm' | 'l' | 'xl';
+  onBlur?: (name: string) => void;
+  unit?: string;
+  type?: 'text' | 'password';
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -41,9 +51,6 @@ export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
       borderColor: '#f37246',
     },
   },
-  '& .Mui-disabled': {
-    backgroundColor: theme.palette.background.disabled,
-  },
 }));
 
 export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
@@ -56,9 +63,17 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     variant = 'outlined',
     disabled = false,
     fullWidth = true,
+    readonly = false,
+    size = 's',
+    onBlur,
+    unit,
+    type = 'text',
   } = props;
 
-  const { register, formState, setValue, watch, control } = useFormContext();
+  const { register, formState, setValue, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
@@ -66,39 +81,54 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     }
   };
 
-  const isReadOnly = control?._options?.context[0];
-
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
-      <StyledTextFiled
-        id={name}
-        disabled={disabled}
-        fullWidth={fullWidth}
-        variant={isReadOnly || disabled ? 'standard' : variant}
-        error={!!formState.errors[name]}
-        helperText={
-          formState.errors[name]?.message
-            ? String(formState.errors[name]?.message)
-            : null
-        }
-        {...register(name)}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position='end'>
-              {watch(name) && (
-                <IconButton onClick={onClickIconHandler}>
-                  <ClearIcon />
-                </IconButton>
-              )}
-            </InputAdornment>
-          ),
-          readOnly: isReadOnly,
-        }}
-      />
+      <Grid container>
+        <Grid item xs={unit ? 10 : 12}>
+          <StyledTextFiled
+            id={name}
+            disabled={disabled}
+            fullWidth={fullWidth}
+            variant={isReadOnly || readonly ? 'standard' : variant}
+            error={!!formState.errors[name]}
+            helperText={
+              formState.errors[name]?.message
+                ? String(formState.errors[name]?.message)
+                : null
+            }
+            type={type}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position='end'>
+                  {watchValue && !readonly && (
+                    <IconButton onClick={onClickIconHandler}>
+                      <ClearIcon />
+                    </IconButton>
+                  )}
+                </InputAdornment>
+              ),
+              readOnly: isReadOnly || readonly,
+            }}
+            onChange={registerRet.onChange}
+            onBlur={(event) => {
+              registerRet.onBlur(event);
+              onBlur && onBlur(name);
+            }}
+            ref={registerRet.ref}
+            name={registerRet.name}
+          />
+        </Grid>
+        <Grid item xs={unit ? 2 : false}>
+          <MarginBox mt={1} ml={1}>
+            <Typography>{unit}</Typography>
+          </MarginBox>
+        </Grid>
+      </Grid>
     </InputLayout>
   );
 };
@@ -115,10 +145,15 @@ export const PriceTextField = <T extends FieldValues>(
     value = '',
     disabled = false,
     fullWidth = true,
+    readonly = false,
+    size = 's',
+    onBlur,
   } = props;
-  const { register, formState, setValue, watch, trigger, control } =
-    useFormContext();
-  const currentValue = watch(name);
+
+  const { register, formState, setValue, trigger, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
@@ -127,15 +162,15 @@ export const PriceTextField = <T extends FieldValues>(
   };
 
   const onFocusHandle = () => {
-    if (currentValue && typeof currentValue === 'string') {
-      const noConnmaString = currentValue.replace(/,/g, '');
+    if (watchValue && typeof watchValue === 'string') {
+      const noConnmaString = watchValue.replace(/,/g, '');
       setValue(name, noConnmaString);
     }
   };
 
   const onBlurHandle = () => {
-    if (currentValue && typeof currentValue === 'string') {
-      const hannkakuString = fullWidth2HalfWidth(currentValue);
+    if (watchValue && typeof watchValue === 'string') {
+      const hannkakuString = fullWidth2HalfWidth(watchValue);
       const noConnmaString = hannkakuString.replace(/,/g, '');
       // 数値に変換できない場合はそのままの値を返却する
       if (!isNaN(Number(noConnmaString)) && noConnmaString.trim() !== '') {
@@ -147,7 +182,7 @@ export const PriceTextField = <T extends FieldValues>(
         >;
         setValue(name, noConnmaPrice);
       } else {
-        setValue(name, currentValue);
+        setValue(name, watchValue);
       }
     }
     // バリデーションチェックを行う
@@ -161,30 +196,28 @@ export const PriceTextField = <T extends FieldValues>(
     });
   };
 
-  const isReadOnly = control?._options?.context[0];
-
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <StyledTextFiled
         id={name}
         disabled={disabled}
         fullWidth={fullWidth}
-        variant={variant}
+        variant={isReadOnly || readonly ? 'standard' : variant}
         error={!!formState.errors[name]}
         helperText={
           formState.errors[name]?.message
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && (
+              {watchValue && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
@@ -193,51 +226,22 @@ export const PriceTextField = <T extends FieldValues>(
           ),
           readOnly: isReadOnly,
         }}
-        onBlur={onBlurHandle}
-        onFocus={onFocusHandle}
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
+          onBlurHandle();
+          onBlur && onBlur(name);
+        }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );
 };
 
-export const DataGridTextField = <T extends FieldValues>(
+export const PostalTextField = <T extends FieldValues>(
   props: TextFieldProps<T>
 ) => {
-  const {
-    name,
-    variant = 'outlined',
-    disabled = false,
-    fullWidth = true,
-    value,
-  } = props;
-  const { register, formState, control } = useFormContext();
-  const isReadOnly = control?._options?.context[0];
-  return (
-    <StyledTextFiled
-      id={name}
-      defaultValue={value}
-      disabled={disabled}
-      fullWidth={fullWidth}
-      variant={variant}
-      error={!!formState.errors[name]}
-      helperText={
-        formState.errors[name]?.message
-          ? String(formState.errors[name]?.message)
-          : null
-      }
-      {...register(name)}
-      InputProps={{
-        readOnly: isReadOnly,
-      }}
-    />
-  );
-};
-
-interface PostalTextFieldProps extends TextFieldProps<FieldValues> {
-  onBlur: () => void;
-}
-
-export const PostalTextField = (props: PostalTextFieldProps) => {
   const {
     label,
     labelPosition = 'above',
@@ -247,23 +251,27 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
     variant = 'outlined',
     disabled = false,
     fullWidth = true,
+    readonly = false,
+    size = 's',
     onBlur,
   } = props;
 
-  const { register, formState, setValue, watch, trigger, control } =
-    useFormContext();
-  const currentValue = watch(name);
+  const { register, formState, setValue, trigger, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
+  const isReadOnly = control?._options?.context[0];
+  const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
     }
   };
+
   const onBlurHandle = () => {
     // 郵便番号形式に変換 ※文字列が7桁以外の場合はハイフンは入れない。
-    if (currentValue.length === 7 && currentValue.indexOf('-') === -1) {
-      const firstPart = currentValue.substring(0, 3);
-      const secondPart = currentValue.substring(3, 7);
+    if (watchValue.length === 7 && watchValue.indexOf('-') === -1) {
+      const firstPart = watchValue.substring(0, 3);
+      const secondPart = watchValue.substring(3, 7);
       const formattedValue = `${firstPart}-${secondPart}` as FieldPathValue<
         FieldValues,
         FieldPath<FieldValues>
@@ -271,36 +279,34 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
       setValue(name, formattedValue);
     } else {
       // デフォルト値をセット
-      setValue(name, currentValue);
+      setValue(name, watchValue);
     }
     // バリデーションチェックを行う
     trigger(name);
   };
-
-  const isReadOnly = control?._options?.context[0];
 
   return (
     <InputLayout
       label={label}
       labelPosition={labelPosition}
       required={required}
+      size={size}
     >
       <StyledTextFiled
         id={name}
         disabled={disabled}
         fullWidth={fullWidth}
-        variant={variant}
+        variant={isReadOnly || readonly ? 'standard' : variant}
         error={!!formState.errors[name]}
         helperText={
           formState.errors[name]?.message
             ? String(formState.errors[name]?.message)
             : null
         }
-        {...register(name)}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watch(name) && (
+              {watchValue && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
@@ -309,10 +315,14 @@ export const PostalTextField = (props: PostalTextFieldProps) => {
           ),
           readOnly: isReadOnly,
         }}
-        onBlur={() => {
+        onChange={registerRet.onChange}
+        onBlur={(event) => {
+          registerRet.onBlur(event);
           onBlurHandle();
-          onBlur();
+          onBlur && onBlur(name);
         }}
+        ref={registerRet.ref}
+        name={registerRet.name}
       />
     </InputLayout>
   );

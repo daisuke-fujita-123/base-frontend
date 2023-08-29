@@ -1,10 +1,14 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 
 import { theme } from 'controls/theme';
 
-import WarningIcon from '@mui/icons-material/Warning';
+import Error from 'icons/error_headline.png';
+import Pulldown from 'icons/pulldown_arrow.png';
+import Warning from 'icons/warning_headline.png';
+
 import {
   Divider as DividerMui,
+  IconButton,
   styled,
   Typography as TypographyMui,
 } from '@mui/material';
@@ -19,6 +23,8 @@ interface TypographyProps {
   textDecoration?: string;
   fontSize?: number;
   textDecorationThickness?: number;
+  bold?: boolean;
+  openable?: boolean;
 }
 export const Typography = (props: TypographyProps) => {
   const {
@@ -30,6 +36,7 @@ export const Typography = (props: TypographyProps) => {
     textDecoration,
     fontSize,
     textDecorationThickness,
+    bold,
   } = props;
   let pricedTypography = children;
   if (price && typeof children === 'string') {
@@ -41,6 +48,7 @@ export const Typography = (props: TypographyProps) => {
       onClick={onClick}
       color={color}
       fontSize={fontSize}
+      fontWeight={bold ? 'bold' : 'normal'}
       sx={{
         textDecoration: textDecoration,
         textDecorationThickness: textDecorationThickness,
@@ -66,10 +74,29 @@ const StyledDivider = styled(DividerMui)({
 });
 
 export const SubTitle = (props: TypographyProps) => {
-  const { children } = props;
+  const { children, onClick, openable = false } = props;
+  const [flip, setFlip] = useState<boolean>(false);
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <StyledSubTitle>{children}</StyledSubTitle>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <StyledSubTitle>{children}</StyledSubTitle>
+        {openable && (
+          <IconButton
+            onClick={(e) => {
+              onClick && onClick(e);
+              setFlip(!flip);
+            }}
+            style={{
+              transform: flip ? 'rotate(0)' : 'rotate(180deg)',
+              padding: 0,
+              paddingTop: 10,
+              paddingBottom: 10,
+            }}
+          >
+            <img src={Pulldown}></img>
+          </IconButton>
+        )}
+      </div>
       <StyledDivider />
     </div>
   );
@@ -91,11 +118,11 @@ const StyledWarningDivider = styled(DividerMui)({
 });
 
 export const WarningSubTitle = (props: TypographyProps) => {
-  const { children } = props;
+  const { children, onClick } = props;
   return (
     <>
-      <StyledWarningSubTitle>
-        <WarningIcon />
+      <StyledWarningSubTitle onClick={onClick}>
+        <img src={Warning}></img>
         {children}
       </StyledWarningSubTitle>
       <StyledWarningDivider />
@@ -119,11 +146,11 @@ const StyledErrorDivider = styled(DividerMui)({
 });
 
 export const ErrorSubTitle = (props: TypographyProps) => {
-  const { children } = props;
+  const { children, onClick } = props;
   return (
     <>
-      <StyledErrorSubTitle>
-        <WarningIcon />
+      <StyledErrorSubTitle onClick={onClick}>
+        <img src={Error}></img>
         {children}
       </StyledErrorSubTitle>
       <StyledErrorDivider />
@@ -144,7 +171,8 @@ export const AccordionSubTitle = (props: TypographyProps) => {
 const StyledAccordionContentText = styled(TypographyMui)({
   margin: 0,
   marginBottom: theme.spacing(1),
-  height: theme.spacing(6),
+  paddingTop: 7,
+  paddingBottom: 7,
   display: 'flex',
   alignItems: 'center',
   '&:hover': {

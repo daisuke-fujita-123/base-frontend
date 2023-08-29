@@ -1,53 +1,35 @@
 import React, { ReactNode } from 'react';
 
-import { Box, Typography } from '@mui/material';
-import { default as StackMui } from '@mui/material/Stack';
+import { PopSection } from 'layouts/Section';
 
 interface StackModalSectionProps {
   children: ReactNode[] | ReactNode;
   titles: string[];
+  isWarning?: boolean;
+  isError?: boolean;
 }
 
 export const StackModalSection = (props: StackModalSectionProps) => {
-  const { children, titles } = props;
-  if (children && Array.isArray(children)) {
-    return (
-      <StackMui spacing={3}>
-        {children &&
-          children.map((child: ReactNode, index: number) => (
-            <Box key={index}>
-              <Typography
-                sx={{
-                  textDecoration: 'underline',
-                  fontSize: 20,
-                  textDecorationThickness: 2,
-                }}
-                variant={'h5'}
-              >
-                {titles[index]}
-              </Typography>
-              <Box>{child}</Box>
-            </Box>
-          ))}
-      </StackMui>
-    );
-  } else {
-    return (
-      <>
-        <Box>
-          <Typography
-            sx={{
-              textDecoration: 'underline',
-              fontSize: 20,
-              textDecorationThickness: 2,
-            }}
-            variant={'h5'}
+  const { children, titles, isWarning, isError } = props;
+  return (
+    <>
+      {Array.isArray(children) ? (
+        children.map((child: ReactNode, index: number) => (
+          <PopSection
+            key={index}
+            name={titles[index]}
+            isWarning={isWarning}
+            isError={isError}
           >
-            {titles[0]}
-          </Typography>
-          <Box sx={{ margin: 2 }}>{children}</Box>
-        </Box>
-      </>
-    );
-  }
+            {child}
+          </PopSection>
+        ))
+      ) : (
+        <PopSection name={titles[0]} isWarning={isWarning} isError={isError}>
+          {children}
+        </PopSection>
+      )}
+    </>
+  );
 };
+

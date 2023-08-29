@@ -1,7 +1,7 @@
 import { ComponentMeta } from '@storybook/react';
 import React from 'react';
 
-import { RequiredLabel, WarningLabel } from './Label';
+import { CaptionLabel, RequiredLabel, WarningLabel } from './Label';
 
 export default {
   component: RequiredLabel,
@@ -13,6 +13,7 @@ export const Example = () => {
     <>
       <RequiredLabel />
       <WarningLabel text='変更予約あり' />
+      <CaptionLabel text='見出し' />
     </>
   );
 };

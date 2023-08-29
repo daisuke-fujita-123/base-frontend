@@ -2,18 +2,22 @@ import React from 'react';
 
 import { theme } from 'controls/theme';
 
-import { styled, Typography as TypographyMui } from '@mui/material';
+import { Chip, styled, Typography as TypographyMui } from '@mui/material';
 
 const StyledRequiredLabel = styled('div')({
   background: theme.palette.error.main,
-  width: theme.spacing(8),
-  height: theme.spacing(4),
+  width: 30,
+  height: 13,
   marginLeft: theme.spacing(1),
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const RequiredLabelText = styled(TypographyMui)({
   color: theme.palette.error.light,
   textAlign: 'center',
+  fontSize: 11,
 });
 
 export const RequiredLabel = () => {
@@ -26,8 +30,8 @@ export const RequiredLabel = () => {
 
 const StyledWarningLabel = styled('div')({
   background: theme.palette.warning.light,
-  width: theme.spacing(30),
-  height: theme.spacing(8),
+  width: theme.spacing(18),
+  height: theme.spacing(6),
   border: `2px solid  ${theme.palette.warning.main}`,
   alignItems: 'center',
   display: 'flex',
@@ -51,5 +55,31 @@ export const WarningLabel = (props: LabelProps) => {
       <WarningLabelText>{text}</WarningLabelText>
     </StyledWarningLabel>
   );
+};
+
+const StyledCaptionLabel = styled('div')({
+  alignItems: 'center',
+  display: 'flex',
+  justifyContent: 'flex-start',
+});
+
+const CaptionLabelText = styled(TypographyMui)({
+  textAlign: 'center',
+  fontWeight: 'bold',
+  fontSize: '16px',
+});
+
+export const CaptionLabel = (props: LabelProps) => {
+  const { text } = props;
+  return (
+    <StyledCaptionLabel>
+      <CaptionLabelText>{text}</CaptionLabelText>
+    </StyledCaptionLabel>
+  );
+};
+
+export const Wappen = (props: LabelProps) => {
+  const { text } = props;
+  return <Chip size='small' color='error' label={text}></Chip>;
 };
 

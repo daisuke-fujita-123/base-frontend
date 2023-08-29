@@ -1,10 +1,11 @@
 import React, { FormEventHandler, ReactNode } from 'react';
 
 import { theme } from 'controls/theme';
-import { ErrorSubTitle, WarningSubTitle } from 'controls/Typography';
+import { ErrorSubTitle, SubTitle, WarningSubTitle } from 'controls/Typography';
 
 import { styled } from '@mui/material';
 import { default as BoxMui } from '@mui/material/Box';
+import { ResponsiveStyleValue } from '@mui/system';
 
 interface BoxProps {
   children: ReactNode;
@@ -13,6 +14,7 @@ interface BoxProps {
   onSubmit?: FormEventHandler;
   height?: string | number;
   width?: string | number;
+  display?: string;
 }
 
 export const Box = (props: BoxProps) => {
@@ -62,6 +64,7 @@ interface StyledBoxProps {
   children: ReactNode;
   transparent?: boolean;
   disable?: boolean;
+  onClick?: () => void;
 }
 
 export const ContentsBox = (props: StyledBoxProps) => {
@@ -79,15 +82,16 @@ const StyledWarningBoxOutside = styled(BoxMui)({
   background: theme.palette.warning.light,
   padding: theme.spacing(4),
   color: theme.palette.warning.main,
-  margin: `${theme.spacing(4)} ${theme.spacing(4)}  0px`,
+  marginBottom: theme.spacing(4),
 });
 
 export const WarningBox = (props: StyledBoxProps) => {
-  const { children, title } = props;
+  const { children, title, onClick } = props;
   return (
     <>
       <StyledWarningBoxOutside>
-        <WarningSubTitle>{title}</WarningSubTitle>
+        <WarningSubTitle onClick={onClick}>{title}</WarningSubTitle>
+        <div style={{ marginBottom: 20 }}></div>
         {children}
       </StyledWarningBoxOutside>
     </>
@@ -98,17 +102,37 @@ const StyledErrorBoxOutside = styled(BoxMui)({
   background: theme.palette.error.light,
   padding: theme.spacing(4),
   color: theme.palette.error.main,
-  margin: `${theme.spacing(4)} ${theme.spacing(4)}  0px`,
+  marginBottom: theme.spacing(4),
 });
 
 export const ErrorBox = (props: StyledBoxProps) => {
-  const { children, title } = props;
+  const { children, title, onClick } = props;
   return (
     <>
       <StyledErrorBoxOutside>
-        <ErrorSubTitle>{title}</ErrorSubTitle>
+        <ErrorSubTitle onClick={onClick}>{title}</ErrorSubTitle>
+        <div style={{ marginBottom: 20 }}></div>
         {children}
       </StyledErrorBoxOutside>
+    </>
+  );
+};
+
+const StyledContentsOutside = styled(BoxMui)({
+  background: `1px solid  transparent`,
+  padding: theme.spacing(4),
+  marginBottom: theme.spacing(4),
+});
+
+export const ContentsOutsideBox = (props: StyledBoxProps) => {
+  const { children, title } = props;
+  return (
+    <>
+      <StyledContentsOutside>
+        <SubTitle>{title}</SubTitle>
+        <div style={{ marginBottom: 20 }}></div>
+        {children}
+      </StyledContentsOutside>
     </>
   );
 };
@@ -158,21 +182,57 @@ export const LeftBox = (props: BoxProps) => {
   );
 };
 
+export const TopBox = (props: BoxProps) => {
+  const { children, height, width } = props;
+  return (
+    <BoxMui
+      display='flex'
+      alignItems='flex-start'
+      height={height}
+      width={width}
+    >
+      {children}
+    </BoxMui>
+  );
+};
+
+export const BottomBox = (props: BoxProps) => {
+  const { children, height, width } = props;
+  return (
+    <BoxMui display='flex' alignItems='flex-end' height={height} width={width}>
+      {children}
+    </BoxMui>
+  );
+};
+
 interface MarginBoxProps extends BoxProps {
   mt?: number;
   mb?: number;
   ml?: number;
   mr?: number;
   gap?: number;
+  justifyContent?: string;
+  textAlign?: ResponsiveStyleValue<
+    'center' | 'end' | 'left' | 'right' | 'start'
+  >;
 }
 
 export const MarginBox = (props: MarginBoxProps) => {
-  const { children, mt, mb, ml, mr, gap } = props;
+  const {
+    children,
+    mt = 0,
+    mb = 0,
+    ml = 0,
+    mr = 0,
+    gap = 0,
+    justifyContent = 'center',
+    textAlign = 'center',
+  } = props;
   return (
     <BoxMui
       display='flex'
-      justifyContent='center'
-      textAlign='center'
+      justifyContent={justifyContent}
+      textAlign={textAlign}
       sx={{ mt: mt, mb: mb, ml: ml, mr: mr, gap: gap }}
     >
       {children}
