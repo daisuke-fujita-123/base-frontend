@@ -10,7 +10,11 @@ interface changeHistoryDateCheckProps {
   // 反映予定日
   changeExpectedDate: string;
   // 変更予約日
+<<<<<<< HEAD
   changeHistoryNumber: string;
+=======
+  changeHistoryNumber: string | null;
+>>>>>>> 14cd0a35e6ea101594b475cd2c6510bf044d00d7
   // 表示切替フラグ
   isChangeHistoryBtn: boolean;
   // 変更予約日リスト
@@ -126,7 +130,7 @@ export const ChangeHistoryDateCheckUtil = (
       ) : (
         <Dialog
           open={handleDialog}
-          title={'反映予定が既にありますかが、よろしいでしょうか？'}
+          title={'反映予定が既にありますが、よろしいでしょうか？'}
           buttons={[
             {
               name: 'YES',
