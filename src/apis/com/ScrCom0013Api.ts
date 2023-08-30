@@ -185,7 +185,7 @@ export interface CommissionDiscountInfo {
   validityStartDate: string;
   validityEndDate: string;
   utilizationFlg: boolean;
-  changeReserve: string;
+  changeReserve: boolean;
 }
 
 // SCR-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス

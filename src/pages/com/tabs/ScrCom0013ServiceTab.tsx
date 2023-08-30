@@ -214,6 +214,12 @@ const ScrCom0013ServiceTab = (props: {
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
 
+  // ユーザーの編集権限
+  const userEditFlag =
+    user.editPossibleScreenIdList === undefined
+      ? ''
+      : user.editPossibleScreenIdList.includes(SCR_COM_0013);
+
   // CSV
   const apiRef = useGridApiRef();
 
@@ -455,10 +461,7 @@ const ScrCom0013ServiceTab = (props: {
         changeHistoryNumber: changeHisoryNumber,
       };
       const response = (
-        await comApiClient.post(
-          '/api/com/scr-com-9999/get-history-info',
-          request
-        )
+        await comApiClient.post('/com/scr-com-9999/get-history-info', request)
       ).data;
       const serviceBasic = convertToHistoryInfoModel(response);
       // 画面にデータを設定
@@ -736,38 +739,34 @@ const ScrCom0013ServiceTab = (props: {
               // 編集権限がない状態での表示、または履歴表示の場合の入力欄は非活性
               getCellDisabled={(params) => {
                 if (
-                  (params.field === 'serviceName' &&
-                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  (params.field === 'serviceName' && !userEditFlag) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'responsibleCategory' &&
-                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  (params.field === 'responsibleCategory' && !userEditFlag) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'targetServiceDivision' &&
-                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  (params.field === 'targetServiceDivision' && !userEditFlag) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
                   (params.field === 'cooperationInfoServiceFlg' &&
-                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                    !userEditFlag) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
                   (params.field === 'multiContractPossibleFlg' &&
-                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                    !userEditFlag) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'changeReserve' &&
-                    user.editPossibleScreenIdList.includes('SCR-COM-0013')) ||
+                  (params.field === 'changeReserve' && !userEditFlag) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;

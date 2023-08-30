@@ -19,7 +19,9 @@ import { SelectValue } from 'controls/Select';
 import { Typography } from 'controls/Typography';
 
 import {
+  BasicDiscountInfo,
   deleteTargetedList,
+  OptionDiscountInfo,
   registrationRequest,
   registTargetedList,
   ScrCom0013chkDiscount,
@@ -87,12 +89,12 @@ const optionColumnGroups: GridColumnGroupingModel = [
   {
     groupId: '期間',
     children: [
-      { field: 'fromToRadio' },
-      { field: 'LimitStartDate' },
+      { field: 'optionFromToRadio' },
+      { field: 'optionLimitStartDate' },
       { field: 'dummy' },
-      { field: 'LimitEndDate' },
-      { field: 'numberOfMonthsFromContractDateRadio' },
-      { field: 'ContractAfterMonth' },
+      { field: 'optionLimitEndDate' },
+      { field: 'optionNumberOfMonthsFromContractDateRadio' },
+      { field: 'optionContractAfterMonth' },
     ],
     headerName: '期間',
     description: '',
@@ -119,7 +121,7 @@ interface formModel {
   // サービスID
   serviceId: string;
   // １本目除外フラグ
-  firstExclusionFlg: boolean;
+  firstExclusionFlg: string;
   // 契約数量下限
   contractQuantityLowLimit: number;
   // 契約数量上限
@@ -133,7 +135,7 @@ interface formModel {
   // 稟議書ID
   approvalDocumentId: string;
   // 利用フラグ
-  utilizationFlg: boolean;
+  utilizationFlg: string;
   // 商品クレームコード
   commodityCrameCd: string;
 }
@@ -156,7 +158,7 @@ const formModelInitialValues: formModel = {
   // サービスID
   serviceId: '',
   // １本目除外フラグ
-  firstExclusionFlg: false,
+  firstExclusionFlg: '',
   // 契約数量下限
   contractQuantityLowLimit: 0,
   // 契約数量上限
@@ -170,7 +172,7 @@ const formModelInitialValues: formModel = {
   // 稟議書ID
   approvalDocumentId: '',
   // 利用フラグ
-  utilizationFlg: false,
+  utilizationFlg: '',
   // 商品クレームコード
   commodityCrameCd: '',
 };
@@ -194,7 +196,7 @@ interface searchBasicResultRowModel {
   // コースID
   courseId: string;
   // １本目除外フラグ
-  firstExclusionFlg: boolean;
+  firstExclusionFlg: string;
   // 契約数量下限
   contractQuantityLowLimit: number;
   // 契約数量上限
@@ -208,7 +210,7 @@ interface searchBasicResultRowModel {
   // 稟議書ID
   approvalDocumentId: string;
   // 利用フラグラジオボタン
-  utilizationFlg: boolean;
+  utilizationFlg: string;
   // 商品クレームコード
   commodityCrameCd: string;
   // FromToの手前のラジオボタン
@@ -226,41 +228,41 @@ interface searchOptionResultRowModel {
   // internalId
   id: string;
   // キャンペーンコード
-  campaignCd: string;
+  optionCampaignCd: string;
   // キャンペーン名
-  campaignName: string;
+  optionCampaignName: string;
   // 会費種別
-  membershipFeeType: string;
+  optionMembershipFeeType: string;
   // 値引値増金額区分
-  discountDivision: string;
+  optionDiscountDivision: string;
   // 値引値増金額
-  discountAmount: number;
+  optionDiscountAmount: number;
   // サービスID
   serviceId: string;
   // １本目除外フラグ
-  firstExclusionFlg: boolean;
+  optionFirstExclusionFlg: string;
   // 契約数量下限
-  contractQuantityLowLimit: number;
+  optionContractQuantityHighLimit: number;
   // 契約数量上限
-  contractQuantityHighLimit: number;
+  optionContractQuantityLowLimit: number;
+  // FromToの手前のラジオボタン
+  optionFromToRadio: string;
   // 期限開始日
-  LimitStartDate: string;
+  optionLimitStartDate: string;
   // FROMとTOの間の「～」
   dummy: string;
   // 期限終了日
-  LimitEndDate: string;
-  // 契約日からの月数
-  ContractAfterMonth: number;
-  // 稟議書ID
-  approvalDocumentId: string;
-  // 利用フラグ
-  utilizationFlg: boolean;
-  // 商品クレームコード
-  commodityCrameCd: string;
-  // FromToの手前のラジオボタン
-  fromToRadio: string;
+  optionLimitEndDate: string;
   // 契約日からの月数の手前のラジオボタン
-  numberOfMonthsFromContractDateRadio: string;
+  optionNumberOfMonthsFromContractDateRadio: string;
+  // 契約日からの月数
+  optionContractAfterMonth: number;
+  // 稟議書ID
+  optionApprovalDocumentId: string;
+  // 利用フラグ
+  optionUtilizationFlg: string;
+  // 商品クレームコード
+  optionCommodityCrameCd: string;
 }
 
 /**
@@ -272,19 +274,19 @@ interface searchCommissionResultRowModel {
   // 値引値増パックID
   commissionDiscountPackId: string;
   // パック名
-  packName: string;
+  commissionPackName: string;
   // 会員サービス識別区分
-  memberServiceType: string;
+  commissionMemberServiceType: string;
   // 計算書種別
-  calcurationDocType: string;
+  commissionCalcurationDocType: string;
   // 有効期間開始日
-  validityStartDate: string;
+  commissionValidityStartDate: string;
   // 有効期間終了日
-  validityEndDate: string;
+  commissionValidityEndDate: string;
   // 利用フラグ
-  utilizationFlg: boolean;
+  commissionUtilizationFlg: string;
   // 変更予約
-  changeReserve: string;
+  commissionChangeReserve: string;
 }
 
 /**
@@ -417,9 +419,10 @@ const convertToSearchBasicResultRowModel = (
       campaignName: x.campaignName,
       membershipFeeType: x.membershipFeeType,
       discountDivision: x.discountDivision,
-      discountAmount: 0,
+      discountAmount: x.discountAmount,
       courseId: x.courseId,
-      firstExclusionFlg: x.firstExclusionFlg,
+      firstExclusionFlg:
+        x.firstExclusionFlg === true ? 'firstExclusionFlgRadioValue' : '',
       contractQuantityLowLimit: x.contractQuantityLowLimit,
       contractQuantityHighLimit: x.contractQuantityHighLimit,
       LimitStartDate: x.LimitStartDate,
@@ -427,10 +430,44 @@ const convertToSearchBasicResultRowModel = (
       LimitEndDate: x.LimitEndDate,
       ContractAfterMonth: x.ContractAfterMonth,
       approvalDocumentId: x.approvalDocumentId,
-      utilizationFlg: x.utilizationFlg,
+      utilizationFlg:
+        x.utilizationFlg === true
+          ? 'basicUtilizationFlgFlagYes'
+          : x.utilizationFlg === false
+          ? 'basicUtilizationFlgFlagNo'
+          : '',
       commodityCrameCd: x.commodityCrameCd,
       numberOfMonthsFromContractDateRadio: '',
       fromToRadio: '',
+    };
+  });
+};
+
+/**
+ * 会費セクション-基本値引値増 検索結果モデル から 商品管理表示API(値引値増情報表示) レスポンスへの変換
+ */
+const convertToBasicResponseModel = (
+  response: searchBasicResultRowModel[]
+): BasicDiscountInfo[] => {
+  return response.map((x) => {
+    return {
+      campaignCd: x.campaignCd,
+      campaignName: x.campaignName,
+      membershipFeeType: x.membershipFeeType,
+      discountDivision: x.discountDivision,
+      discountAmount: x.discountAmount,
+      courseId: x.courseId,
+      firstExclusionFlg:
+        x.firstExclusionFlg === 'firstExclusionFlgRadioValue' ? true : false,
+      contractQuantityLowLimit: x.contractQuantityLowLimit,
+      contractQuantityHighLimit: x.contractQuantityHighLimit,
+      LimitStartDate: x.LimitStartDate,
+      LimitEndDate: x.LimitEndDate,
+      ContractAfterMonth: x.ContractAfterMonth,
+      approvalDocumentId: x.approvalDocumentId,
+      utilizationFlg:
+        x.utilizationFlg === 'basicUtilizationFlgFlagYes' ? true : false,
+      commodityCrameCd: x.commodityCrameCd,
     };
   });
 };
@@ -444,22 +481,62 @@ const convertToSearchOptionResultRowModel = (
   return response.optionDiscountInfo.map((x) => {
     return {
       id: x.campaignCd,
-      campaignCd: x.campaignCd,
-      campaignName: x.campaignName,
-      membershipFeeType: x.membershipFeeType,
-      discountDivision: x.discountDivision,
-      discountAmount: 0,
+      optionCampaignCd: x.campaignCd,
+      optionCampaignName: x.campaignName,
+      optionMembershipFeeType: x.membershipFeeType,
+      optionDiscountDivision: x.discountDivision,
+      optionDiscountAmount: x.discountAmount,
       serviceId: x.serviceId,
-      firstExclusionFlg: x.firstExclusionFlg,
-      contractQuantityLowLimit: x.contractQuantityLowLimit,
-      contractQuantityHighLimit: x.contractQuantityHighLimit,
-      LimitStartDate: x.LimitStartDate,
+      optionFirstExclusionFlg:
+        x.firstExclusionFlg === true ? 'optionFirstExclusionFlgRadioValue' : '',
+      optionContractQuantityLowLimit: x.contractQuantityLowLimit,
+      optionContractQuantityHighLimit: x.contractQuantityHighLimit,
+      optionFromToRadio: '',
+      optionLimitStartDate: x.LimitStartDate,
       dummy: '～',
-      LimitEndDate: x.LimitEndDate,
-      ContractAfterMonth: x.ContractAfterMonth,
-      approvalDocumentId: x.approvalDocumentId,
-      utilizationFlg: x.utilizationFlg,
-      commodityCrameCd: x.commodityCrameCd,
+      optionLimitEndDate: x.LimitEndDate,
+      optionNumberOfMonthsFromContractDateRadio: '',
+      optionContractAfterMonth: x.ContractAfterMonth,
+      optionApprovalDocumentId: x.approvalDocumentId,
+      optionUtilizationFlg:
+        x.utilizationFlg === true
+          ? 'optionUtilizationFlgYes'
+          : x.utilizationFlg === false
+          ? 'optionUtilizationFlgNo'
+          : '',
+      optionCommodityCrameCd: x.commodityCrameCd,
+    };
+  });
+};
+
+/**
+ * 会費セクション-オプション値引値増 から 商品管理表示API(値引値増情報表示) レスポンスの検索結果モデルへの変換
+ */
+const convertToOptionResponseModel = (
+  response: searchOptionResultRowModel[]
+): OptionDiscountInfo[] => {
+  return response.map((x) => {
+    return {
+      campaignCd: x.optionCampaignCd,
+      campaignName: x.optionCampaignName,
+      membershipFeeType: x.optionMembershipFeeType,
+      discountDivision: x.optionDiscountDivision,
+      discountAmount: x.optionDiscountAmount,
+      serviceId: x.serviceId,
+      firstExclusionFlg:
+        x.optionFirstExclusionFlg === 'optionFirstExclusionFlgRadioValue'
+          ? true
+          : false,
+      contractQuantityLowLimit: x.optionContractQuantityLowLimit,
+      contractQuantityHighLimit: x.optionContractQuantityHighLimit,
+      LimitStartDate: x.optionLimitStartDate,
+      dummy: '～',
+      LimitEndDate: x.optionLimitEndDate,
+      ContractAfterMonth: x.optionContractAfterMonth,
+      approvalDocumentId: x.optionApprovalDocumentId,
+      utilizationFlg:
+        x.optionUtilizationFlg === 'optionUtilizationFlgYes' ? true : false,
+      commodityCrameCd: x.optionCommodityCrameCd,
       numberOfMonthsFromContractDateRadio: '',
       fromToRadio: '',
     };
@@ -476,14 +553,15 @@ const convertToSearchCommissionResultRowModel = (
     return {
       id: x.commissionDiscountPackId,
       commissionDiscountPackId: x.commissionDiscountPackId,
-      packName: x.packName,
-      memberServiceType: x.memberServiceType,
-      calcurationDocType: x.calcurationDocType,
+      commissionPackName: x.packName,
+      commissionMemberServiceType: x.memberServiceType,
+      commissionCalcurationDocType: x.calcurationDocType,
       // 有効期間はFrom To を ~ で接続して表示
-      validityStartDate: x.validityStartDate + ' ～ ' + x.validityEndDate,
-      validityEndDate: '',
-      utilizationFlg: x.utilizationFlg,
-      changeReserve: x.changeReserve,
+      commissionValidityStartDate:
+        x.validityStartDate + ' ～ ' + x.validityEndDate,
+      commissionValidityEndDate: '',
+      commissionUtilizationFlg: x.utilizationFlg === true ? '可' : '不可',
+      commissionChangeReserve: x.changeReserve === true ? 'あり' : '',
     };
   });
 };
@@ -620,6 +698,12 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
 
+  // ユーザーの編集権限
+  const userEditFlag =
+    user.editPossibleScreenIdList === undefined
+      ? ''
+      : user.editPossibleScreenIdList.includes(SCR_COM_0013);
+
   // CSV
   const apiRef = useGridApiRef();
 
@@ -660,7 +744,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     },
     {
       field: 'membershipFeeType',
-      headerName: '会員種別',
+      headerName: '会費種別',
       size: 'l',
       cellType: 'radio',
       radioValues: [
@@ -713,7 +797,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // ラジオボタンのみのセルの為ソート不可とする
       sortable: false,
       headerName: '',
-      size: 'l',
+      size: 's',
       cellType: 'radio',
       radioValues: [{ value: 'fromToRadioValue' }],
     },
@@ -752,7 +836,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
     },
     {
-      field: 'approvalDocumentsId',
+      field: 'approvalDocumentId',
       headerName: '稟議書ID',
       size: 'l',
       cellType: 'input',
@@ -781,20 +865,20 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
    */
   const searchOptionResultColumns: GridColDef[] = [
     {
-      field: 'campaignCd',
+      field: 'optionCampaignCd',
       headerName: 'キャンペーンコード',
       size: 'l',
       cellType: 'input',
     },
     {
-      field: 'campaignName',
+      field: 'optionCampaignName',
       headerName: 'キャンペーン名',
       size: 'l',
       cellType: 'input',
     },
     {
-      field: 'membershipFeeType',
-      headerName: '会員種別',
+      field: 'optionMembershipFeeType',
+      headerName: '会費種別',
       size: 'l',
       cellType: 'radio',
       radioValues: [
@@ -803,47 +887,47 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       ],
     },
     {
-      field: 'discountDivision',
+      field: 'optionDiscountDivision',
       headerName: '金額区分',
       cellType: 'select',
       selectValues: selectValues.priceSelectValues,
       size: 'l',
     },
     {
-      field: 'discountAmount',
+      field: 'optionDiscountAmount',
       headerName: '金額',
       cellType: [{ type: 'input', helperText: '円' }],
       size: 'l',
     },
     {
-      field: 'serviceName',
+      field: 'serviceId',
       headerName: 'サービス名',
       size: 'l',
       cellType: 'select',
       selectValues: selectValues.serviceNameSelectValues,
     },
     {
-      field: 'firstExclusionFlg',
+      field: 'optionFirstExclusionFlg',
       headerName: '1本目除外',
       size: 'l',
       cellType: 'radio',
-      radioValues: [{ value: 'firstExclusionFlgRadioValue' }],
+      radioValues: [{ value: 'optionFirstExclusionFlgRadioValue' }],
       // TODO: サービス名が選択されている場合、活性。選択されてない状態でフォーカスアウトした場合、非活性とし内容をクリア
     },
     {
-      field: 'contractQuantityHighLimit',
+      field: 'optionContractQuantityHighLimit',
       headerName: '契約本数(以上)',
       cellType: [{ type: 'input', helperText: '以上' }],
       size: 'l',
     },
     {
-      field: 'contractQuantityLowLimit',
+      field: 'optionContractQuantityLowLimit',
       headerName: '契約本数(以下)',
       cellType: [{ type: 'input', helperText: '以下' }],
       size: 'l',
     },
     {
-      field: 'FromToRadio',
+      field: 'optionFromToRadio',
       // ラジオボタンのみのセルの為ソート不可とする
       sortable: false,
       headerName: '',
@@ -852,7 +936,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       radioValues: [{ value: 'FromToRadioValue' }],
     },
     {
-      field: 'LimitStartDate',
+      field: 'optionLimitStartDate',
       headerName: 'FROM',
       size: 'l',
       cellType: 'datepicker',
@@ -865,13 +949,13 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 's',
     },
     {
-      field: 'LimitEndDate',
+      field: 'optionLimitEndDate',
       headerName: 'TO',
       size: 'l',
       cellType: 'datepicker',
     },
     {
-      field: 'numberOfMonthsFromContractDateRadio',
+      field: 'optionNumberOfMonthsFromContractDateRadio',
       // ラジオボタンのみのセルの為ソート不可とする
       sortable: false,
       headerName: '',
@@ -880,19 +964,19 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       radioValues: [{ value: 'numberOfMonthsFromContractDateRadioValue' }],
     },
     {
-      field: 'ContractAfterMonth',
+      field: 'optionContractAfterMonth',
       headerName: '契約日からの月数',
       cellType: [{ type: 'input', helperText: 'ヶ月' }],
       size: 'l',
     },
     {
-      field: 'approvalDocumentsId',
+      field: 'optionApprovalDocumentId',
       headerName: '稟議書ID',
       size: 'l',
       cellType: 'input',
     },
     {
-      field: 'utilizationFlg',
+      field: 'optionUtilizationFlg',
       headerName: '利用フラグ',
       size: 'l',
       cellType: 'radio',
@@ -902,7 +986,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       ],
     },
     {
-      field: 'commodityCrameCd',
+      field: 'optionCommodityCrameCd',
       headerName: '商品コード',
       size: 'l',
       cellType: 'select',
@@ -921,32 +1005,32 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       cellType: 'link',
     },
     {
-      field: 'packName',
+      field: 'commissionPackName',
       headerName: 'パック名',
       size: 'l',
     },
     {
-      field: 'memberServiceType',
+      field: 'commissionMemberServiceType',
       headerName: '種別',
       size: 'l',
     },
     {
-      field: 'calcurationDocType',
+      field: 'commissionCalcurationDocType',
       headerName: '計算書種別',
       size: 'l',
     },
     {
-      field: 'validityStartDate',
+      field: 'commissionValidityStartDate',
       headerName: '有効期間',
       size: 'l',
     },
     {
-      field: 'utilizationFlg',
+      field: 'commissionUtilizationFlg',
       headerName: '利用フラグ',
       size: 'l',
     },
     {
-      field: 'changeReserve',
+      field: 'commissionChangeReserve',
       headerName: '変更予約',
       size: 'l',
     },
@@ -1068,10 +1152,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         changeHistoryNumber: changeHisoryNumber,
       };
       const response = (
-        await comApiClient.post(
-          '/api/com/scr-com-9999/get-history-info',
-          request
-        )
+        await comApiClient.post('/com/scr-com-9999/get-history-info', request)
       ).data;
       const commissionBasic = convertToHistoryBasicInfoModel(response);
       const commissionOption = convertToHistoryOptionInfoModel(response);
@@ -1106,14 +1187,22 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       discountDivision: response.basicDiscountDivision,
       discountAmount: response.basicDiscountAmount,
       courseId: response.basicCourseId,
-      firstExclusionFlg: response.basicFirstExclusionFlg,
+      firstExclusionFlg:
+        response.basicFirstExclusionFlg === true
+          ? 'firstExclusionFlgRadioValue'
+          : '',
       contractQuantityLowLimit: response.basicContractQuantityLowLimit,
       contractQuantityHighLimit: response.basicContractQuantityHighLimit,
       LimitStartDate: response.basicLimitStartDate,
       dummy: '～',
       LimitEndDate: response.basicLimitEndDate,
       approvalDocumentId: response.basicApprovalDocumentId,
-      utilizationFlg: response.basicUtilizationFlg,
+      utilizationFlg:
+        response.basicUtilizationFlg === true
+          ? 'basicUtilizationFlgFlagYes'
+          : response.basicUtilizationFlg === false
+          ? 'basicUtilizationFlgFlagNo'
+          : '',
       commodityCrameCd: response.basicCommodityCrameCd,
       fromToRadio: '',
       ContractAfterMonth: response.basicContractAfterMonth,
@@ -1130,24 +1219,32 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   ): searchOptionResultRowModel => {
     return {
       id: response.optionCampaignCd,
-      campaignCd: response.optionCampaignCd,
-      campaignName: response.optionCampaignName,
-      membershipFeeType: response.optionMembershipFeeType,
-      discountDivision: response.optionDiscountDivision,
-      discountAmount: response.optionDiscountAmount,
+      optionCampaignCd: response.optionCampaignCd,
+      optionCampaignName: response.optionCampaignName,
+      optionMembershipFeeType: response.optionMembershipFeeType,
+      optionDiscountDivision: response.optionDiscountDivision,
+      optionDiscountAmount: response.optionDiscountAmount,
       serviceId: response.optionServiceId,
-      firstExclusionFlg: response.optionFirstExclusionFlg,
-      contractQuantityLowLimit: response.optionContractQuantityLowLimit,
-      contractQuantityHighLimit: response.optionContractQuantityHighLimit,
-      LimitStartDate: response.optionLimitStartDate,
+      optionFirstExclusionFlg:
+        response.optionFirstExclusionFlg === true
+          ? 'optionFirstExclusionFlgRadioValue'
+          : '',
+      optionContractQuantityHighLimit: response.optionContractQuantityHighLimit,
+      optionContractQuantityLowLimit: response.optionContractQuantityLowLimit,
+      optionFromToRadio: '',
+      optionLimitStartDate: response.optionLimitStartDate,
       dummy: '～',
-      LimitEndDate: response.optionLimitEndDate,
-      approvalDocumentId: response.optionApprovalDocumentId,
-      utilizationFlg: response.optionUtilizationFlg,
-      commodityCrameCd: response.optionCommodityCrameCd,
-      fromToRadio: '',
-      ContractAfterMonth: response.optionContractAfterMonth,
-      numberOfMonthsFromContractDateRadio: '',
+      optionLimitEndDate: response.optionLimitEndDate,
+      optionNumberOfMonthsFromContractDateRadio: '',
+      optionContractAfterMonth: response.optionContractAfterMonth,
+      optionApprovalDocumentId: response.optionApprovalDocumentId,
+      optionUtilizationFlg:
+        response.optionUtilizationFlg === true
+          ? 'optionUtilizationFlgYes'
+          : response.optionUtilizationFlg === false
+          ? 'optionUtilizationFlgNo'
+          : '',
+      optionCommodityCrameCd: response.optionCommodityCrameCd,
     };
   };
 
@@ -1160,13 +1257,15 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     return {
       id: response.commissionDiscountPackId,
       commissionDiscountPackId: response.commissionDiscountPackId,
-      packName: response.packName,
-      memberServiceType: response.memberServiceType,
-      calcurationDocType: response.calcurationDocType,
-      validityStartDate: response.validityStartDate,
-      validityEndDate: response.validityEndDate,
-      utilizationFlg: response.commissionDiscountPacksCommissionUtilizationFlg,
-      changeReserve: response.commissionDiscountPacksCommissionChangeReserve,
+      commissionPackName: response.packName,
+      commissionMemberServiceType: response.memberServiceType,
+      commissionCalcurationDocType: response.calcurationDocType,
+      commissionValidityStartDate: response.validityStartDate,
+      commissionValidityEndDate: response.validityEndDate,
+      commissionUtilizationFlg:
+        response.optionUtilizationFlg === true ? '可' : '',
+      commissionChangeReserve:
+        response.commissionDiscountPacksCommissionChangeReserve,
     };
   };
 
@@ -1204,7 +1303,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // コースID
       courseId: '',
       // １本目除外フラグ
-      firstExclusionFlg: false,
+      firstExclusionFlg: '',
       // 契約数量下限
       contractQuantityLowLimit: 0,
       // 契約数量上限
@@ -1220,7 +1319,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // 稟議書ID
       approvalDocumentId: '',
       // 利用フラグ ラジオボタン
-      utilizationFlg: false,
+      utilizationFlg: '',
       // 商品クレームコード
       commodityCrameCd: '',
       // FromToのラジオボタン
@@ -1246,41 +1345,41 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     copyContractRow.push({
       id: String(newOptionCount),
       // キャンペーンコード
-      campaignCd: '',
+      optionCampaignCd: '',
       // キャンペーン名
-      campaignName: '',
+      optionCampaignName: '',
       // 会費種別
-      membershipFeeType: '',
+      optionMembershipFeeType: '',
       // 値引値増金額区分
-      discountDivision: '',
+      optionDiscountDivision: '',
       // 値引値増金額
-      discountAmount: 0,
+      optionDiscountAmount: 0,
       // サービスID
       serviceId: '',
       // １本目除外フラグ
-      firstExclusionFlg: false,
+      optionFirstExclusionFlg: '',
       // 契約数量下限
-      contractQuantityLowLimit: 0,
+      optionContractQuantityLowLimit: 0,
       // 契約数量上限
-      contractQuantityHighLimit: 0,
+      optionContractQuantityHighLimit: 0,
       // 期限開始日
-      LimitStartDate: '',
+      optionLimitStartDate: '',
       // 「～」
       dummy: '～',
       // 期限終了日
-      LimitEndDate: '',
+      optionLimitEndDate: '',
       // 契約日からの月数
-      ContractAfterMonth: 0,
+      optionContractAfterMonth: 0,
       // 稟議書ID
-      approvalDocumentId: '',
+      optionApprovalDocumentId: '',
       // 利用フラグラジオボタン
-      utilizationFlg: false,
+      optionUtilizationFlg: '',
       // 商品クレームコード
-      commodityCrameCd: '',
+      optionCommodityCrameCd: '',
       // FromToのラジオボタン
-      fromToRadio: '',
+      optionFromToRadio: '',
       // 契約日からの月数ラジオボタン
-      numberOfMonthsFromContractDateRadio: '',
+      optionNumberOfMonthsFromContractDateRadio: '',
     });
     setOptionCount(newOptionCount);
     setAddedOptionSearchResult(copyContractRow);
@@ -1341,8 +1440,10 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // 契約本数(以上) < 契約本数(以下)であることを確認
       // 契約本数(以上) > 1であることを確認
       if (
-        !(e.contractQuantityHighLimit < e.contractQuantityLowLimit) ||
-        !(e.contractQuantityHighLimit > 1)
+        !(
+          e.optionContractQuantityHighLimit < e.optionContractQuantityLowLimit
+        ) ||
+        !(e.optionContractQuantityHighLimit > 1)
       ) {
         errorList.push({
           errorCode: 'ERR-0089',
@@ -1366,10 +1467,10 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     // オプション値引値増
     optionSearchResult.forEach((e) => {
       tempList.push({
-        campaignCd: e.campaignCd,
-        campaignName: e.campaignName,
-        periodFrom: e.LimitStartDate,
-        periodTo: e.LimitEndDate,
+        campaignCd: e.optionCampaignCd,
+        campaignName: e.optionCampaignName,
+        periodFrom: e.optionLimitStartDate,
+        periodTo: e.optionLimitEndDate,
       });
     });
     // チェックAPI用の検索結果リストに格納
@@ -1465,58 +1566,67 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     // オプション値引値増
     addedOptionSearchResult.forEach((value) => {
       // 確定時のレコードのキャンペーンIDの内、初期表示時に存在する場合のレコード(更新レコード)
-      if (tempOptionCampaingCdListBefore.includes(value.campaignCd)) {
+      if (tempOptionCampaingCdListBefore.includes(value.optionCampaignCd)) {
         optionSearchResult.forEach((initialValue) => {
           // キャンペーンIDで初期表示時のレコードと比較を行い 一致したレコードのフィールドを1つずつ全て比較
-          if (initialValue.campaignCd === value.campaignCd) {
+          if (initialValue.optionCampaignCd === value.optionCampaignCd) {
             // キャンペーン名
             if (
-              initialValue.campaignName !== value.campaignName ||
+              initialValue.optionCampaignName !== value.optionCampaignName ||
               // 会費種別
-              initialValue.membershipFeeType !== value.membershipFeeType ||
+              initialValue.optionMembershipFeeType !==
+                value.optionMembershipFeeType ||
               // 値引値増金額区分
-              initialValue.discountDivision !== value.discountDivision ||
+              initialValue.optionDiscountDivision !==
+                value.optionDiscountDivision ||
               // 値引値増金額
-              initialValue.discountAmount !== value.discountAmount ||
+              initialValue.optionDiscountAmount !==
+                value.optionDiscountAmount ||
               // サービスID
               initialValue.serviceId !== value.serviceId ||
               // １本目除外フラグ
-              initialValue.firstExclusionFlg !== value.firstExclusionFlg ||
+              initialValue.optionFirstExclusionFlg !==
+                value.optionFirstExclusionFlg ||
               // 契約数量下限
-              initialValue.contractQuantityLowLimit !==
-                value.contractQuantityLowLimit ||
+              initialValue.optionContractQuantityLowLimit !==
+                value.optionContractQuantityLowLimit ||
               // 契約数量上限
-              initialValue.contractQuantityHighLimit !==
-                value.contractQuantityHighLimit ||
+              initialValue.optionContractQuantityHighLimit !==
+                value.optionContractQuantityHighLimit ||
               // 期限開始日
-              initialValue.LimitStartDate !== value.LimitStartDate ||
+              initialValue.optionLimitStartDate !==
+                value.optionLimitStartDate ||
               // 期限終了日
-              initialValue.LimitEndDate !== value.LimitEndDate ||
+              initialValue.optionLimitEndDate !== value.optionLimitEndDate ||
               // 契約後月数
-              initialValue.ContractAfterMonth !== value.ContractAfterMonth ||
+              initialValue.optionContractAfterMonth !==
+                value.optionContractAfterMonth ||
               // 稟議書ID
-              initialValue.approvalDocumentId !== value.approvalDocumentId ||
+              initialValue.optionApprovalDocumentId !==
+                value.optionApprovalDocumentId ||
               // 利用フラグ
-              initialValue.utilizationFlg !== value.utilizationFlg ||
+              initialValue.optionUtilizationFlg !==
+                value.optionUtilizationFlg ||
               // 商品クレームコード
-              initialValue.commodityCrameCd !== value.commodityCrameCd
+              initialValue.optionCommodityCrameCd !==
+                value.optionCommodityCrameCd
             ) {
               // 相違したフィールドが存在する場合更新レコードへ格納
-              updatedTempList.push({ campaignCd: value.campaignCd });
+              updatedTempList.push({ campaignCd: value.optionCampaignCd });
             }
           }
         });
         // 確定時のレコードのキャンペーンIDの内、初期表示時に存在しない場合のレコード(追加レコードリスト)
       } else {
-        addedTempList.push({ campaignCd: value.campaignCd });
+        addedTempList.push({ campaignCd: value.optionCampaignCd });
       }
     });
 
     // チェックAPI用の削除レコードリストの作成
     optionSearchResult.forEach((value) => {
       // 初期表示時のレコードのキャンペーンIDの内、確定時に存在しない場合のレコード(削除レコード)
-      if (!tempOptionCampaingCdListAfter.includes(value.campaignCd)) {
-        deletedTempList.push({ campaignCd: value.campaignCd });
+      if (!tempOptionCampaingCdListAfter.includes(value.optionCampaignCd)) {
+        deletedTempList.push({ campaignCd: value.optionCampaignCd });
       }
     });
 
@@ -1618,9 +1728,9 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     // SCR-COM-0013-0010: 値引値増情報登録更新API
     const mergeDiscountRequest: ScrCom0013MergeDiscountRequest = {
       /** 基本値引値増 */
-      baseDiscountInfo: basicSearchResult,
+      baseDiscountInfo: convertToBasicResponseModel(basicSearchResult),
       /** オプション値引値増情報 */
-      optionDiscountInfo: optionSearchResult,
+      optionDiscountInfo: convertToOptionResponseModel(optionSearchResult),
       /** 登録対象リスト */
       registTargetedList: registTargetedList,
       /** 更新対象リスト */
@@ -1647,8 +1757,16 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     ScrCom0013MergeDiscount(mergeDiscountRequest);
   };
 
+  /**
+   * 登録内容確認ポップアップのキャンセルボタンクリックのイベントハンドラ
+   */
   const handleApplicationPopupCancel = () => {
     setIsOpenApplicationPopup(false);
+  };
+
+  // データグリッドのフォーカスアウトのイベントハンドラ
+  const handleOnCellBlur = (params: any) => {
+    console.log(params);
   };
 
   return (
@@ -1686,98 +1804,82 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               getCellDisabled={(params) => {
                 if (
                   params.field === 'campaignName' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'membershipFeeType' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountDivision' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountAmount' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'courseId' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'firstExclusionFlg' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityHighLimit' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityLowLimit' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'fromToRadio' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitStartDate' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitEndDate' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'numberOfMonthsFromContractDateRadio' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'ContractAfterMonth' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'approvalDocumentsId' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'utilizationFlg' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'commodityCrameCd' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 return false;
@@ -1810,98 +1912,82 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               getCellDisabled={(params) => {
                 if (
                   params.field === 'campaignName' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'membershipFeeType' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountDivision' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'discountAmount' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'courseId' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'firstExclusionFlg' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityHighLimit' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'contractQuantityLowLimit' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'fromToRadio' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitStartDate' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'LimitEndDate' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'numberOfMonthsFromContractDateRadio' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'ContractAfterMonth' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'approvalDocumentsId' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'utilizationFlg' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 if (
                   params.field === 'commodityCrameCd' &&
-                  (!user.editPossibleScreenIdList.includes('SCR-COM-0013') ||
-                    props.changeHisoryNumber !== '')
+                  (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
                 return false;
@@ -1933,6 +2019,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               rows={commissionSearchResult}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
+              onCellBlur={handleOnCellBlur}
             />
           </Section>
         </MainLayout>

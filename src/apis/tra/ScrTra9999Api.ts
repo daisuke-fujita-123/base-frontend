@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 import { traApiClient } from 'providers/ApiClient';
-
-=======
-import { traApiClient } from 'providers/ApiClient';
->>>>>>> 14cd0a35e6ea101594b475cd2c6510bf044d00d7
 
 /** API-TRA-9999-0001: コードマスタ(取引会計)情報取得API リクエスト */
 export interface ScrTra9999GetCodeValueRequest {
