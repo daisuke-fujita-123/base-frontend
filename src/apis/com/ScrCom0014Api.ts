@@ -150,8 +150,6 @@ export interface checkCommissionConditionList {
 export interface ScrCom0014ApplyRegistrationCommissionInfoRequest {
   /** 変更履歴番号 */
   changeHistoryNumber: string;
-  /** 削除済み条件リスト */
-  deletedList: deletedList[];
   /** 手数料ID */
   commissionId: string;
   /** 手数料名 */
@@ -194,14 +192,6 @@ export interface ScrCom0014ApplyRegistrationCommissionInfoRequest {
   changeExpectDate: string;
   /** 画面ID */
   screenId: string;
-}
-
-/** API-COM-0014-0007: 手数料テーブル登録申請API リクエスト(リスト行) */
-export interface deletedList {
-  /** 削除済み手数料ID */
-  deletedCommissionId: string;
-  /** 削除済み手数料種類No */
-  deletedCommissionConditionNo: number;
 }
 
 /** API-COM-0014-0001: 手数料表示API */

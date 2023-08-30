@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
 
-import { MarginBox } from 'layouts/Box';
+import { CenterBox, MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
@@ -72,8 +72,10 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { comApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
+import { MessageContext } from 'providers/MessageProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
+import { Format } from 'utils/FormatUtil';
 
 import { ThemeProvider } from '@mui/material/styles';
 import { useGridApiRef } from '@mui/x-data-grid';
@@ -307,11 +309,6 @@ const ScrCom0014Page = () => {
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
-  // TODO: 削除済み条件を格納するリスト
-  const [deletedList, setDeletedList] = useState([]);
-  // TODO: 削除比較用の初期表示時点の条件設定セクションのリスト
-  const [initialCommissionDisplayList, setInitialCommissionDisplayList] =
-    useState<commissionConditionList[]>([]);
 
   // 項目の活性化・非活性化を判定するフラグ
   const [activeFlag, setActiveFlag] = useState(false);
@@ -322,12 +319,15 @@ const ScrCom0014Page = () => {
   const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
   const [changeHistoryDateCheckisOpen, setChangeHistoryDateCheckisOpen] =
     useState<boolean>(false);
+  // 条件設定セクションの編集中を管理するフラグ
+  const [editFlg, setEditFlg] = useState<boolean>(false);
+
   // user情報
   const { user } = useContext(AuthContext);
   const userEditFlag =
     user.editPossibleScreenIdList === undefined
       ? ''
-      : user.editPossibleScreenIdList.includes('SCR-COM-0013');
+      : user.editPossibleScreenIdList.includes(SCR_COM_0014);
 
   const apiRef = useGridApiRef();
 
@@ -366,6 +366,9 @@ const ScrCom0014Page = () => {
   const [isOpenCsvPopup, setIsOpenCsvPopup] = useState(false);
 
   const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
+  // メッセージの取得
+  const { getMessage } = useContext(MessageContext);
 
   useEffect(() => {
     setMaxSectionWidth(
@@ -469,11 +472,6 @@ const ScrCom0014Page = () => {
       const commissionResult = convertToCommissionTableDetailModel(
         getCommissionDisplayResponse,
         commissionId
-      );
-
-      // 削除比較用の初期表示時点の条件設定セクションを設定する
-      setInitialCommissionDisplayList(
-        getCommissionDisplayResponse.commissionConditionList
       );
 
       // 条件テーブルに取得データを設定
@@ -830,6 +828,8 @@ const ScrCom0014Page = () => {
     indexRow: number,
     indexCol?: number
   ) => {
+    // 編集中であることをフラグで設定
+    setEditFlg(true);
     const newArray: ConditionModel[] = rows.map(
       (row: ConditionModel, rowIndex: number) => {
         if (field === 'conditionType' && typeof value === 'string') {
@@ -987,8 +987,6 @@ const ScrCom0014Page = () => {
     return {
       /** 変更履歴番号 */
       changeHistoryNumber: commissionTableDetail.changeHistoryNumber,
-      /** TODO: 削除済み条件リスト */
-      deletedList: deletedList,
       /** 手数料ID */
       commissionId: commissionTableDetail.commissionId,
       /** 手数料名 */
@@ -1079,6 +1077,27 @@ const ScrCom0014Page = () => {
       /** 画面ID */
       screenId: SCR_COM_0014,
     };
+  };
+
+  // 反映ボタン押下時に価格設定セクションへと渡す条件設定セクションの形式変換
+  const convertFromConditionToPriceModel = (
+    // 手数料テーブル詳細 入力情報
+    condition: CommissionTableDetailModel
+  ): commissionConditionList[] => {
+    const tempList: commissionConditionList[] = [];
+    // 条件設定セクションの値をループして価格設定セクション用にデータを変換する
+    condition.commissionConditionList.map((x) => {
+      tempList.push({
+        commissionConditionKindNo: x.commissionConditionKindNo,
+        conditionKindCode: x.conditionKindCode,
+        conditionKindName: x.conditionKindName,
+        commissionConditionNo: x.commissionConditionNo,
+        commissionConditionKind: x.commissionConditionKind,
+        commissionConditionKindName: x.commissionConditionKindName,
+        commissionConditionValue: x.commissionConditionValue,
+      });
+    });
+    return tempList;
   };
 
   /**
@@ -1355,45 +1374,27 @@ const ScrCom0014Page = () => {
     });
   };
 
-  // 条件テーブル 削除比較用データ変換処理
-  // const convertFromRowsToRefrectionModel = (
-  //   condition: ConditionModel[]
-  // ): commissionConditionList[] => {
-  //   return condition.map((value, i: number) => {
-  //     return {
-  //       commissionConditionKindNo: i + 1,
-  //       conditionKindCode: '',
-  //       conditionKindName: value.conditionType,
-  //       commissionConditionNo: 0,
-  //       commissionConditionKind: '',
-  //       commissionConditionKindName: '',
-  //       commissionConditionValue: String(
-  //         condition[i].condition[i].value
-  //       ),
-  //     };
-  //   });
-  // };
+  /**
+   * 反映ボタンクリック時のイベントハンドラ
+   */
+  const onClickReflect = () => {
+    // 編集中のフラグを編集完了に設定
+    setEditFlg(false);
+
+    // 価格設定に渡す為、条件設定セクションの形式を変換する
+    const formatConditionModel = convertFromConditionToPriceModel(
+      // 手数料テーブル詳細 入力情報
+      getValues()
+    );
+
+    // TODO: 価格設定セクションに条件設定セクションの設定値を反映する
+    // TemplateMethod(formatConditionModel);
+  };
 
   /**
    * 確定ボタンクリック時のイベントハンドラ
    */
   const onClickConfirm = () => {
-    // TODO：一旦ここに反映ボタンの削除リスト
-    // TODO: 削除比較用の反映ボタン押下時点の条件設定セクションのリスト
-    const afterReflectionCommissionDisplayList: commissionConditionList[] = [];
-    // console.log(rows);
-    console.log(getValues('commissionConditionList'));
-    // console.log(convertFromRowsToRefrectionModel(rows));
-
-    // for (let i = 0; i < initialCommissionDisplayList.length; i++) {
-    //   if (
-    //     initialCommissionDisplayList[i].commissionConditionKind !==
-    //     afterReflectionCommissionDisplayList[i].commissionConditionKind
-    //   ) {
-    //     ;
-    //   }
-    // }
-
     if (Object.keys(errors).length) return;
     // 反映予定日整合性チェック
     setChangeHistoryDateCheckisOpen(true);
@@ -1451,10 +1452,16 @@ const ScrCom0014Page = () => {
    * 一括登録アイコンクリック時のイベントハンドラ
    */
   const handleIconBulkAddClick = () => {
-    // TODO: 条件設定セクションの内容と、価格セクションの表示内容が一致しているか確認する。(初期表示時の変数を保持した項目(★)との比較)
+    // 反映ボタンが押下されているか(編集中かどうか)を確認=>編集中ならエラーメッセージを表示する
+    if (editFlg) {
+      // TODO： エラー表示形式・表示場所について確認中
+      Format(getMessage('MSG-FR-INF-00009'), ['']);
+    }
 
     // CSV読込ポップアップを表示
     setIsOpenCsvPopup(true);
+
+    // TODO: 一括登録の処理を詳細設計の「一括登録からの再表示」を元に記載
   };
 
   /**
@@ -1713,13 +1720,15 @@ const ScrCom0014Page = () => {
                   conditionTypes={getItems}
                   operators={conditions}
                   onValueChange={handleChange}
-                  // TODO: 初期表示
                   rows={rows}
                   handleSetItem={handleSetItem}
                   handleVisibleTable={handleVisibleTable}
                   handleGetConditionData={handleGetConditionData}
                 />
               </ThemeProvider>
+              <CenterBox>
+                <PrimaryButton onClick={onClickReflect}>反映</PrimaryButton>
+              </CenterBox>
             </Section>
 
             {/* 価格設定セクション */}
