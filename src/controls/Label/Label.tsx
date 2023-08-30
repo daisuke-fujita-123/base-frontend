@@ -4,34 +4,21 @@ import { theme } from 'controls/theme';
 
 import { Chip, styled, Typography as TypographyMui } from '@mui/material';
 
-const StyledRequiredLabel = styled('div')({
-  background: theme.palette.error.main,
-  width: 30,
-  height: 13,
-  marginLeft: theme.spacing(1),
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-});
-
 const RequiredLabelText = styled(TypographyMui)({
-  color: theme.palette.error.light,
+  color: theme.palette.error.main,
   textAlign: 'center',
   fontSize: 11,
+  fontWeight: 'bold',
 });
 
 export const RequiredLabel = () => {
-  return (
-    <StyledRequiredLabel>
-      <RequiredLabelText>必須</RequiredLabelText>
-    </StyledRequiredLabel>
-  );
+  return <RequiredLabelText>＊</RequiredLabelText>;
 };
 
 const StyledWarningLabel = styled('div')({
+  width: 105,
+  height: 30,
   background: theme.palette.warning.light,
-  width: theme.spacing(18),
-  height: theme.spacing(6),
   border: `2px solid  ${theme.palette.warning.main}`,
   alignItems: 'center',
   display: 'flex',
@@ -42,17 +29,21 @@ const WarningLabelText = styled(TypographyMui)({
   color: theme.palette.warning.main,
   textAlign: 'center',
   fontWeight: 'bold',
+  fontSize: 14,
 });
 
 interface LabelProps {
   text?: string;
+  header?: boolean;
 }
 
 export const WarningLabel = (props: LabelProps) => {
-  const { text } = props;
+  const { text, header } = props;
+  const labelStyle = header ? { width: 84, height: 24 } : {};
+  const fontStyle = header ? { fontSize: 13 } : {};
   return (
-    <StyledWarningLabel>
-      <WarningLabelText>{text}</WarningLabelText>
+    <StyledWarningLabel style={{ ...labelStyle }}>
+      <WarningLabelText style={{ ...fontStyle }}>{text}</WarningLabelText>
     </StyledWarningLabel>
   );
 };
@@ -66,7 +57,7 @@ const StyledCaptionLabel = styled('div')({
 const CaptionLabelText = styled(TypographyMui)({
   textAlign: 'center',
   fontWeight: 'bold',
-  fontSize: '16px',
+  fontSize: 14,
 });
 
 export const CaptionLabel = (props: LabelProps) => {
@@ -78,8 +69,17 @@ export const CaptionLabel = (props: LabelProps) => {
   );
 };
 
+const StyledChip = styled(Chip)({
+  background: '#f37246',
+  color: '#fff',
+  marginLeft: 5,
+  '.MuiChip-label': {
+    fontSize: 11,
+  },
+});
+
 export const Wappen = (props: LabelProps) => {
   const { text } = props;
-  return <Chip size='small' color='error' label={text}></Chip>;
+  return <StyledChip size='small' label={text} />;
 };
 

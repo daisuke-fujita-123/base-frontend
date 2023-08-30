@@ -49,10 +49,14 @@ export default {
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface InputSample {
   sampleName: string;
+  samplePrice: number;
+  samplePostal: string | number;
 }
 
 const schema = yup.object({
   sampleName: yup.string().required('入力してください'),
+  samplePrice: yup.string().required('入力してください'),
+  samplePostal: yup.string().required('入力してください'),
 });
 // TDOO クラッシュ原因の特定
 // const Template: Story<TextFieldProps<InputSample>> = (args) => {
@@ -89,6 +93,8 @@ export const Example = () => {
     reValidateMode: 'onBlur',
     defaultValues: {
       sampleName: 'デフォルト値',
+      samplePrice: 0,
+      samplePostal: '',
     },
     resolver: yupResolver(schema),
     context: isReadOnly,
@@ -139,7 +145,7 @@ export const Example = () => {
         <PriceTextField
           label='サンプルラベル。'
           required={true}
-          name='sampleName'
+          name='samplePrice'
           disabled={false}
           fullWidth={true}
           variant='outlined'
@@ -147,7 +153,7 @@ export const Example = () => {
         <PostalTextField
           label='サンプルラベル。'
           required={true}
-          name='sampleName'
+          name='samplePostal'
           disabled={false}
           fullWidth={true}
           variant='outlined'
