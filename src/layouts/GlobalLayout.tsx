@@ -6,6 +6,10 @@ import TopBar from 'pages/TopBar';
 import { AccordionButton } from 'controls/Button';
 import TreeView from 'controls/TreeView';
 
+import { useNavigate } from 'hooks/useNavigate';
+
+import logo from 'icons/logo.png';
+
 import { Box } from '@mui/material';
 
 /**
@@ -15,6 +19,12 @@ const GlobalLayout = () => {
   const flexColSx = { display: 'flex', flexDirection: 'column' };
   const flexRowSx = { display: 'flex', flexDirection: 'row' };
   const [isOpen, setIsOpen] = useState<boolean>(true);
+
+  // TOP画面に遷移
+  const navigate = useNavigate();
+  const toTop = () => {
+    navigate('/com/top');
+  };
 
   const topWidth = `calc(100vw - 301px)`;
   return (
@@ -29,7 +39,21 @@ const GlobalLayout = () => {
       {/* Top */}
       <Box sx={{ ...flexRowSx, minHeight: 58, height: 58 }}>
         {/* Logo */}
-        <Box sx={{ ...flexColSx, width: 236, mr: 10, ml: 3 }}>Logo</Box>
+        <Box
+          sx={{
+            ...flexColSx,
+            width: 236,
+            mr: 10,
+            ml: 3,
+            justifyContent: 'center',
+            '&:hover': {
+              cursor: 'pointer',
+            },
+          }}
+          onClick={toTop}
+        >
+          <img src={logo}></img>
+        </Box>
         <Box
           sx={{
             ...flexRowSx,
