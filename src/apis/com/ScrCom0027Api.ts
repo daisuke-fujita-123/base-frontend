@@ -38,7 +38,7 @@ export const getScreenPermission = async (
   request: ScrCom0027GetScreenPermissionRequest
 ): Promise<ScrCom0027GetScreenPermissionResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0027/get-screen-permission',
+    '/api/com/scr-com-0027/get-screen-permission',
     request
   );
   return response.data;
@@ -62,7 +62,7 @@ export const getScreen = async (
   request: undefined
 ): Promise<ScrCom0027GetScreenResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0027/get-screen',
+    '/api/com/scr-com-0027/get-screen',
     request
   );
   return response.data;
@@ -101,7 +101,7 @@ export const checkScreenPermission = async (
   request: ScrCom0027InputCheckScreenPermissionRequest
 ): Promise<ScrCom0027InputCheckScreenPermissionResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0027/input-check-screen-permission',
+    '/api/com/scr-com-0027/input-check-screen-permission',
     request
   );
   return response.data;
@@ -132,7 +132,7 @@ export const registScreenPermission = async (
   request: ScrCom0027RegistScreenPermissionRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0027/regist-screen-permission',
+    '/api/com/scr-com-0027/regist-screen-permission',
     request
   );
   return response.data;
@@ -184,7 +184,7 @@ export const getScreenPermissionOrganization = async (
   request: ScrCom0027GetScreenPermissionOrganizationRequest
 ): Promise<ScrCom0027GetScreenPermissionOrganizationResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0027/get-screen-permission-organization',
+    '/api/com/scr-com-0027/get-screen-permission-organization',
     request
   );
   return response.data;
@@ -215,7 +215,7 @@ export const ScrCom9999GetHistoryInfo = async (
   request: ScrCom9999GetHistoryInfoRequest
 ): Promise<ScrCom9999GetHistoryInfoResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-9999/get-history-info',
+    '/api/com/scr-com-9999/get-history-info',
     request
   );
   return response.data;
