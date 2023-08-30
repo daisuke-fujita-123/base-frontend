@@ -20,6 +20,7 @@ import {
 import { DatePicker } from 'controls/DatePicker';
 import { Icon } from 'controls/Icon/Icon';
 import { WarningLabel } from 'controls/Label';
+import { PricingTable, PricingTableModel } from 'controls/PricingTable';
 import { Radio } from 'controls/Radio';
 import { Select, SelectValue } from 'controls/Select';
 import { TableColDef } from 'controls/Table';
@@ -321,6 +322,9 @@ const ScrCom0014Page = () => {
     useState<boolean>(false);
   // 条件設定セクションの編集中を管理するフラグ
   const [editFlg, setEditFlg] = useState<boolean>(false);
+  // 反映ボタン押下時のエラーメッセージ表示⇔非表示を管理するフラグ
+  const [errorMessageFlag, setErrorMessageFlag] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // user情報
   const { user } = useContext(AuthContext);
@@ -331,18 +335,14 @@ const ScrCom0014Page = () => {
 
   const apiRef = useGridApiRef();
 
-  /**
-   * APIから取得した検索データ
-   */
+  // APIから取得した検索データ
   const setterConditions = (conditionParams: any) => {
     const conditions = conditionParams;
     // 条件を設定
     setConditions(conditions);
   };
 
-  /**
-   * APIから取得した検索データ
-   */
+  // APIから取得した検索データ
   const setterItems = (getItemParams: any) => {
     const getItem: any = getItemParams;
     // 条件種類を設定
@@ -474,12 +474,19 @@ const ScrCom0014Page = () => {
         commissionId
       );
 
-      // 条件テーブルに取得データを設定
+      // TODO: 条件テーブルに取得データを設定
+      setRows(
+        convertToCommissionConditionRowModel(
+          getCommissionConditionResponse.commissionConditionList
+        )
+      );
+      // 条件テーブルの条件の設定
       setterConditions(
         convertToCommissionConditionSelectValueModel(
           getCommissionConditionResponse.commissionConditionList
         )
       );
+      // 条件テーブルの条件種類の設定
       setterItems(
         getItemsModel(
           getComCodeValueResponse.resultList,
@@ -804,7 +811,7 @@ const ScrCom0014Page = () => {
     return getItems.find((val) => val.type === select) ?? null;
   };
 
-  // conditionalテーブルのデータ
+  // 条件設定テーブルのデータ
   const [rows, setRows] = useState<ConditionModel[]>([
     {
       // 条件種類コード値
@@ -821,41 +828,27 @@ const ScrCom0014Page = () => {
     },
   ]);
 
+  // 価格設定テーブルのデータ
+  const [pricingRows, setPricingRows] = useState<PricingTableModel[]>([]);
+
   // 値の変更を検知する
-  const handleChange = (
-    value: string | number,
-    field: DeepKey<ConditionModel>,
+  const handleOnValueChange = (
+    val: string | number,
+    changeVal: DeepKey<ConditionModel>,
     indexRow: number,
     indexCol?: number
   ) => {
-    // 編集中であることをフラグで設定
-    setEditFlg(true);
-    const newArray: ConditionModel[] = rows.map(
-      (row: ConditionModel, rowIndex: number) => {
-        if (field === 'conditionType' && typeof value === 'string') {
-          if (rowIndex === indexRow) {
-            return { ...row, [field]: value };
-          }
-          return row;
-        } else if (indexCol !== undefined) {
-          if (rowIndex === indexRow) {
-            const newCondition = row.condition.map(
-              (rowCondition, rowConditionIndex) => {
-                if (rowConditionIndex === indexCol) {
-                  return { ...rowCondition, [field]: value };
-                }
-                return rowCondition;
-              }
-            );
-            return { ...row, condition: newCondition };
-          }
-          return row;
-        } else {
-          return row;
-        }
-      }
-    );
-    setRows(newArray);
+    if (changeVal === 'conditionType') {
+      rows[indexRow][changeVal] = val;
+    }
+    if (changeVal === 'operator' && indexCol !== undefined) {
+      rows[indexRow].condition[indexCol][changeVal] = val;
+      setRows(rows);
+    }
+    if (changeVal === 'value' && indexCol !== undefined) {
+      rows[indexRow].condition[indexCol][changeVal] = val;
+    }
+    setRows([...rows]);
   };
 
   // テーブル行変更処理
@@ -871,31 +864,6 @@ const ScrCom0014Page = () => {
   const handleVisibleTable = () => {
     setPricingTableVisible(!pricingTableVisible);
   };
-
-  // const changeCodeToValue = (code: string | number): string => {
-  //   for (const r of getItems) {
-  //     if (r.value === code) {
-  //       return r.displayValue;
-  //     }
-  //     if (r.conditions) {
-  //       for (const c of r.conditions) {
-  //         if (c.value === Number(code)) {
-  //           return c.displayValue;
-  //         }
-  //       }
-  //     }
-  //     if (typeof r.conditionVal === 'string') {
-  //       return String(code);
-  //     } else if (r.conditionVal) {
-  //       for (const v of r.conditionVal) {
-  //         if (v?.value === code) {
-  //           return v.displayValue;
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return '';
-  // };
 
   // API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI用 リクエストデータ作成
   const commissionCheckRequest = (
@@ -1082,19 +1050,15 @@ const ScrCom0014Page = () => {
   // 反映ボタン押下時に価格設定セクションへと渡す条件設定セクションの形式変換
   const convertFromConditionToPriceModel = (
     // 手数料テーブル詳細 入力情報
-    condition: CommissionTableDetailModel
-  ): commissionConditionList[] => {
-    const tempList: commissionConditionList[] = [];
+    rows: ConditionModel[]
+  ): PricingTableModel[] => {
+    const tempList: PricingTableModel[] = [];
     // 条件設定セクションの値をループして価格設定セクション用にデータを変換する
-    condition.commissionConditionList.map((x) => {
+    rows.map((x) => {
       tempList.push({
-        commissionConditionKindNo: x.commissionConditionKindNo,
-        conditionKindCode: x.conditionKindCode,
-        conditionKindName: x.conditionKindName,
-        commissionConditionNo: x.commissionConditionNo,
-        commissionConditionKind: x.commissionConditionKind,
-        commissionConditionKindName: x.commissionConditionKindName,
-        commissionConditionValue: x.commissionConditionValue,
+        conditionType: x.conditionType,
+        conditionTypeName: 'aaaa',
+        condition: x.condition,
       });
     });
     return tempList;
@@ -1345,7 +1309,31 @@ const ScrCom0014Page = () => {
     });
   };
 
-  // 条件セクション内 手数料条件値 データ変換処理(テキストボックス/リストボックス)
+  /**
+   * TODO: 初期表示条件設定セクション変換用
+   */
+  const convertToCommissionConditionRowModel = (
+    commissionConditionList: comCommissionConditionList[]
+  ): ConditionModel[] => {
+    const tempConditions = conditions.map((x) => {
+      return {
+        operator: x.value,
+        value: x.displayValue,
+      };
+    });
+
+    return commissionConditionList.map((x) => {
+      return {
+        // 手数料種類
+        conditionType: x.codeName,
+        condition: tempConditions,
+      };
+    });
+  };
+
+  /**
+   * 条件セクション内 手数料条件値 データ変換処理(テキストボックス/リストボックス)
+   */
   const getItemsModel = (
     // 条件種類
     conditionKind: ResultList[],
@@ -1381,14 +1369,17 @@ const ScrCom0014Page = () => {
     // 編集中のフラグを編集完了に設定
     setEditFlg(false);
 
+    // 価格設定テーブル表示
+    setPricingTableVisible(true);
+
     // 価格設定に渡す為、条件設定セクションの形式を変換する
     const formatConditionModel = convertFromConditionToPriceModel(
       // 手数料テーブル詳細 入力情報
-      getValues()
+      rows
     );
 
-    // TODO: 価格設定セクションに条件設定セクションの設定値を反映する
-    // TemplateMethod(formatConditionModel);
+    // 価格設定セクションに条件設定セクションの設定値を反映する
+    setPricingRows(formatConditionModel);
   };
 
   /**
@@ -1454,8 +1445,10 @@ const ScrCom0014Page = () => {
   const handleIconBulkAddClick = () => {
     // 反映ボタンが押下されているか(編集中かどうか)を確認=>編集中ならエラーメッセージを表示する
     if (editFlg) {
-      // TODO： エラー表示形式・表示場所について確認中
-      Format(getMessage('MSG-FR-INF-00009'), ['']);
+      // 画面上にエラーメッセージを表示する
+      setErrorMessageFlag(true);
+      setErrorMessage(Format(getMessage('MSG-FR-INF-00009'), ['']));
+      return;
     }
 
     // CSV読込ポップアップを表示
@@ -1719,7 +1712,7 @@ const ScrCom0014Page = () => {
                   columns={columns}
                   conditionTypes={getItems}
                   operators={conditions}
-                  onValueChange={handleChange}
+                  onValueChange={handleOnValueChange}
                   rows={rows}
                   handleSetItem={handleSetItem}
                   handleVisibleTable={handleVisibleTable}
@@ -1738,11 +1731,11 @@ const ScrCom0014Page = () => {
                 decoration={decoration}
                 width={maxSectionWidth}
               >
-                {/* <PricingTable
-                  setCondition={rows}
-                  changeCodeToValue={changeCodeToValue}
-                  handleVisibleTable={handleVisibleTable}
-                /> */}
+                {/* 反映ボタン押下時のエラーメッセージ */}
+                {errorMessageFlag && (
+                  <Typography variant='h6'>{errorMessage}</Typography>
+                )}
+                <PricingTable dataset={pricingRows} operators={conditions} />
               </Section>
             )}
           </FormProvider>
