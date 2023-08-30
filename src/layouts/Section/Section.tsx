@@ -13,7 +13,7 @@ import {
 import { theme } from 'controls/theme';
 import { SubTitle } from 'controls/Typography';
 
-import { Box, Stack, styled } from '@mui/material';
+import { Stack, styled } from '@mui/material';
 import { default as AccordionMui } from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
@@ -38,6 +38,7 @@ interface SectionProps {
   isError?: boolean;
   openable?: boolean;
   width?: number;
+  small?: boolean;
 }
 export interface SectionClose {
   closeSection: () => void;
@@ -59,6 +60,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
     serchLabels,
     openable = true,
     width,
+    small,
   } = props;
 
   const [expanded, setExpanded] = useState<boolean>(true);
@@ -78,7 +80,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
   const flexColSx = { display: 'flex', flexDirection: 'column' };
 
   return (
-    <Box width={width}>
+    <Stack direction='column' sx={{ ...flexColSx, flexGrow: 1 }} width={width}>
       <SubTitle onClick={onClick} openable={openable}>
         {name}
       </SubTitle>
@@ -89,19 +91,24 @@ export const Section = forwardRef((props: SectionProps, ref) => {
               <SearchTextBox>{serchLabels}</SearchTextBox>
             </AccordionSummary>
           )}
-          {expanded && (
+          {expanded && decoration && (
             <RightBox>
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 {decoration}
               </MarginBox>
             </RightBox>
           )}
-          <AccordionDetails sx={{ m: theme.spacing(4) }}>
+          <AccordionDetails
+            sx={{
+              marginX: theme.spacing(4),
+              marginY: small ? theme.spacing(2) : theme.spacing(4),
+            }}
+          >
             <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
           </AccordionDetails>
         </StyledAccordion>
       </ContentsBox>
-    </Box>
+    </Stack>
   );
 });
 
