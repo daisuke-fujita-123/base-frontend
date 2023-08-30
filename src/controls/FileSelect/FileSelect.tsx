@@ -30,7 +30,7 @@ export const FileSelect = <T extends FieldValues>(
     trigger(name);
   };
 
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+  const { acceptedFiles, getRootProps, getInputProps, open } = useDropzone({
     accept: {
       'text/csv': ['.csv'],
     },
@@ -41,39 +41,38 @@ export const FileSelect = <T extends FieldValues>(
   return (
     <InputLayout label={label} labelPosition={labelPosition} size={size}>
       <FormControl error={!!formState.errors[name]}>
-        <Stack spacing={2}>
-          <CaptionLabel text='ファイルパス'></CaptionLabel>
-          <Stack direction='row' alignItems='center' marginBottom={4}>
-            <PrimaryButton type='submit'>
-              ファイルを選択
-              <input {...getInputProps()} />
-            </PrimaryButton>
-            <Typography>
-              {acceptedFiles.length > 0 ? acceptedFiles[0].name : '未選択'}
-            </Typography>
-          </Stack>
-          <Box
-            sx={{
-              border: '1px dashed #bbbbbb',
-              backgroundColor: '#F5F5F5',
-              minHeight: 300,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            {...getRootProps()}
-          >
-            <input {...getInputProps()} />
-            <Typography>
-              ファイルをドラッグアンドドロップしてください
-            </Typography>
-          </Box>
-          {formState.errors[name]?.message && (
-            <FormHelperText>
-              {String(formState.errors[name]?.message)}
-            </FormHelperText>
-          )}
+        <CaptionLabel text='ファイルパス'></CaptionLabel>
+        <Stack
+          direction='row'
+          alignItems='center'
+          marginBottom={4}
+          marginTop={2}
+          spacing={2}
+        >
+          <PrimaryButton onClick={open}>ファイルを選択</PrimaryButton>
+          <Typography>
+            {acceptedFiles.length > 0 ? acceptedFiles[0].name : '未選択'}
+          </Typography>
         </Stack>
+        <Box
+          sx={{
+            border: '1px dashed #bbbbbb',
+            backgroundColor: '#F5F5F5',
+            minHeight: 300,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          {...getRootProps()}
+        >
+          <input {...getInputProps()} />
+          <Typography>ファイルをドラッグアンドドロップしてください</Typography>
+        </Box>
+        {formState.errors[name]?.message && (
+          <FormHelperText>
+            {String(formState.errors[name]?.message)}
+          </FormHelperText>
+        )}
       </FormControl>
     </InputLayout>
   );
