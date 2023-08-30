@@ -141,7 +141,7 @@ const ScrCom0023Page = () => {
   const convertToSearchResultRowModel = (
     response: ScrCom0023GetPlaceResponse
   ): SearchResultRowModel[] => {
-    return response.searchResult.map((x) => {
+    return response.placeList.map((x) => {
       return {
         id: x.placeCd,
         placeCd: x.placeCd,
@@ -189,14 +189,8 @@ const ScrCom0023Page = () => {
    */
   useEffect(() => {
     const initialize = async () => {
-      const request = {
-        businessDate: user.taskDate,
-        sortKey: 'placeCd',
-        sortDirection: 'asc',
-        limit: 100,
-        offset: 0,
-      };
-      const response = await getPlace(request);
+      // API-COM-0023-0001：ライブ会場一覧取得API
+      const response = await getPlace();
       const searchResult = convertToSearchResultRowModel(response);
 
       // 画面にデータを設定

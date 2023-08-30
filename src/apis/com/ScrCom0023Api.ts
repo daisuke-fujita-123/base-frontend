@@ -1,23 +1,9 @@
 import { comApiClient } from 'providers/ApiClient';
 
-// ライブ会場一覧取得API リクエスト
-export interface ScrCom0023GetPlaceRequest {
-  // 業務日付
-  businessDate: string;
-  // ソートキー
-  sortKey: string;
-  // ソート方向
-  sortDirection: string;
-  // リミット
-  limit: number;
-  // オフセット
-  offset: number;
-}
-
 // ライブ会場一覧取得API レスポンス
 export interface ScrCom0023GetPlaceResponse {
   // リスト
-  searchResult: SearchResult[];
+  placeList: SearchResult[];
 }
 
 // ライブ会場一覧取得API レスポンス（リスト行）
@@ -44,13 +30,8 @@ export interface SearchResult {
   useFlag: boolean;
 }
 
-// SCR-COM-0023-0001：ライブ会場一覧取得API
-export const getPlace = async (
-  request: ScrCom0023GetPlaceRequest
-): Promise<ScrCom0023GetPlaceResponse> => {
-  const response = await comApiClient.post(
-    '/api/com/scr-com-0023/get-place',
-    request
-  );
+// API-COM-0023-0001：ライブ会場一覧取得API
+export const getPlace = async (): Promise<ScrCom0023GetPlaceResponse> => {
+  const response = await comApiClient.post('/api/com/scr-com-0023/get-place');
   return response.data;
 };
