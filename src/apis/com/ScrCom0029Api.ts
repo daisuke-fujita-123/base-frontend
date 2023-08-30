@@ -54,7 +54,7 @@ export const getApprovalPermissionList = async (
   request: ScrCom0029GetApprovalPermissionRequest
 ): Promise<ScrCom0029GetApprovalPermissionResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0029/get-approval-permission',
+    '/api/com/scr-com-0029/get-approval-permission',
     request
   );
   return response.data;
@@ -88,7 +88,7 @@ export const getApprovalPermissionCreateList = async (
   request: undefined
 ): Promise<ScrCom0029GetApprovalPermissionCreateResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0029/get-approval',
+    '/api/com/scr-com-0029/get-approval',
     request
   );
   return response.data;
@@ -139,7 +139,7 @@ export const checkApprovalPermission = async (
   request: ScrCom0029CheckApprovalPermissionRequest
 ): Promise<ScrCom0029CheckApprovalPermissionResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0029/input-check-approval-permission',
+    '/api/com/scr-com-0029/input-check-approval-permission',
     request
   );
   return response.data;
@@ -195,7 +195,7 @@ export const registApprovalPermission = async (
   request: ScrCom0029RegistApprovalPermissionRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0029/registration-approval-prmssn',
+    '/api/com/scr-com-0029/registration-approval-prmssn',
     request
   );
   return response.data;
@@ -260,7 +260,7 @@ export const getApprovalPermissionMultiList = async (
   request: ScrCom0029GetApprovalPermissionMultiRequest
 ): Promise<ScrCom0029GetApprovalPermissionMultiResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0029/get-approval-permission-organization',
+    '/api/com/scr-com-0029/get-approval-permission-organization',
     request
   );
   return response.data;
@@ -291,7 +291,7 @@ export const ScrCom9999GetHistoryInfo = async (
   request: ScrCom9999GetHistoryInfoRequest
 ): Promise<ScrCom9999GetHistoryInfoResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-9999/get-history-info',
+    '/api/com/scr-com-9999/get-history-info',
     request
   );
   return response.data;
