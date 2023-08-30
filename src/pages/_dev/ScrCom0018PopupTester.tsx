@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import ScrCom0018Popup from 'pages/com/popups/ScrCom0018Popup';
+import ScrCom0018Popup, {
+  SelectServiceInfoModel,
+} from 'pages/com/popups/ScrCom0018Popup';
 
 /**
  * SCR-COM-0018 サービス一覧（ポップアップ）
  */
 const ScrCom0018PopupTester = () => {
-  return <ScrCom0018Popup />;
+  const [isOpenPopup, setIsOpenPopup] = useState<boolean>(true);
+  const [test, setTest] = useState<SelectServiceInfoModel[]>([]);
+  return (
+    <ScrCom0018Popup
+      isOpen={isOpenPopup}
+      setIsOpen={setIsOpenPopup}
+      selectServiceInfo={setTest}
+    />
+  );
 };
 
 export default ScrCom0018PopupTester;
