@@ -106,6 +106,7 @@ const optionColumnGroups: GridColumnGroupingModel = [
  * form データモデル
  */
 interface formModel {
+  /** 基本値引値増 */
   // キャンペーンコード
   campaignCd: string;
   // キャンペーン名
@@ -118,8 +119,6 @@ interface formModel {
   discountAmount: number;
   // コースID
   courseId: string;
-  // サービスID
-  serviceId: string;
   // １本目除外フラグ
   firstExclusionFlg: string;
   // 契約数量下限
@@ -138,6 +137,52 @@ interface formModel {
   utilizationFlg: string;
   // 商品クレームコード
   commodityCrameCd: string;
+  /** オプション値引値増 */
+  // キャンペーンコード
+  optionCampaignCd: string;
+  // キャンペーン名
+  optionCampaignName: string;
+  // 会費種別
+  optionMembershipFeeType: string;
+  // 値引値増金額区分
+  optionDiscountDivision: string;
+  // 値引値増金額
+  optionDiscountAmount: number;
+  // サービスID
+  serviceId: string;
+  // １本目除外フラグ
+  optionFirstExclusionFlg: string;
+  // 契約数量下限
+  optionContractQuantityLowLimit: number;
+  // 契約数量上限
+  optionContractQuantityHighLimit: number;
+  // 期限開始日
+  optionLimitStartDate: string;
+  // 期限終了日
+  optionLimitEndDate: string;
+  // 契約後月数
+  optionContractAfterMonth: number;
+  // 稟議書ID
+  optionApprovalDocumentId: string;
+  // 利用フラグ
+  optionUtilizationFlg: string;
+  // 商品クレームコード
+  optionCommodityCrameCd: string;
+  /** 手数料値引値増 */
+  // 値引値増パックID
+  commissionDiscountPackId: string;
+  // パック名
+  commissionPackName: string;
+  // 種別
+  commissionMemberServiceType: string;
+  // 計算書種別
+  commissionCalcurationDocType: string;
+  // 有効期間
+  commissionValidityStartDate: string;
+  // 利用フラグ
+  commissionUtilizationFlg: string;
+  // 変更予約
+  commissionChangeReserve: string;
 }
 
 /**
@@ -155,8 +200,6 @@ const formModelInitialValues: formModel = {
   discountAmount: 0,
   // コースID
   courseId: '',
-  // サービスID
-  serviceId: '',
   // １本目除外フラグ
   firstExclusionFlg: '',
   // 契約数量下限
@@ -175,6 +218,51 @@ const formModelInitialValues: formModel = {
   utilizationFlg: '',
   // 商品クレームコード
   commodityCrameCd: '',
+  // キャンペーンコード
+  optionCampaignCd: '',
+  // キャンペーン名
+  optionCampaignName: '',
+  // 会費種別
+  optionMembershipFeeType: '',
+  // 値引値増金額区分
+  optionDiscountDivision: '',
+  // 値引値増金額
+  optionDiscountAmount: 0,
+  // サービスID
+  serviceId: '',
+  // １本目除外フラグ
+  optionFirstExclusionFlg: '',
+  // 契約数量下限
+  optionContractQuantityLowLimit: 0,
+  // 契約数量上限
+  optionContractQuantityHighLimit: 0,
+  // 期限開始日
+  optionLimitStartDate: '',
+  // 期限終了日
+  optionLimitEndDate: '',
+  // 契約後月数
+  optionContractAfterMonth: 0,
+  // 稟議書ID
+  optionApprovalDocumentId: '',
+  // 利用フラグ
+  optionUtilizationFlg: '',
+  // 商品クレームコード
+  optionCommodityCrameCd: '',
+  /** 手数料値引値増 */
+  // 値引値増パックID
+  commissionDiscountPackId: '',
+  // パック名
+  commissionPackName: '',
+  // 種別
+  commissionMemberServiceType: '',
+  // 計算書種別
+  commissionCalcurationDocType: '',
+  // 有効期間
+  commissionValidityStartDate: '',
+  // 利用フラグ
+  commissionUtilizationFlg: '',
+  // 変更予約
+  commissionChangeReserve: '',
 };
 
 /**
@@ -778,7 +866,6 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'radio',
       radioValues: [{ value: 'firstExclusionFlgRadioValue' }],
-      // TODO: セット対象コースが選択されている場合、活性。選択されてない状態でフォーカスアウトした場合、非活性とし内容をクリア
     },
     {
       field: 'contractQuantityHighLimit',
@@ -912,7 +999,6 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'radio',
       radioValues: [{ value: 'optionFirstExclusionFlgRadioValue' }],
-      // TODO: サービス名が選択されている場合、活性。選択されてない状態でフォーカスアウトした場合、非活性とし内容をクリア
     },
     {
       field: 'optionContractQuantityHighLimit',
@@ -1152,15 +1238,14 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         changeHistoryNumber: changeHisoryNumber,
       };
       const response = (
-        await comApiClient.post('/com/scr-com-9999/get-history-info', request)
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-history-info',
+          request
+        )
       ).data;
-      const commissionBasic = convertToHistoryBasicInfoModel(response);
-      const commissionOption = convertToHistoryOptionInfoModel(response);
-      const commission = convertToHistoryCommissionInfoModel(response);
+      const commissionHistoryInfo = convertToHistoryInfoModel(response);
       // 画面にデータを設定
-      reset(commissionBasic);
-      reset(commissionOption);
-      reset(commission);
+      reset(commissionHistoryInfo);
       props.setGoodsBaseValue(response);
     };
 
@@ -1176,7 +1261,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   /**
    * 変更履歴情報取得APIから基本値引値増データモデルへの変換
    */
-  const convertToHistoryBasicInfoModel = (
+  const convertToHistoryInfoModel = (
     response: registrationRequest
   ): searchBasicResultRowModel => {
     return {
@@ -1211,63 +1296,63 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     };
   };
 
-  /**
-   * 変更履歴情報取得APIからオプション値引値増データモデルへの変換
-   */
-  const convertToHistoryOptionInfoModel = (
-    response: registrationRequest
-  ): searchOptionResultRowModel => {
-    return {
-      id: response.optionCampaignCd,
-      optionCampaignCd: response.optionCampaignCd,
-      optionCampaignName: response.optionCampaignName,
-      optionMembershipFeeType: response.optionMembershipFeeType,
-      optionDiscountDivision: response.optionDiscountDivision,
-      optionDiscountAmount: response.optionDiscountAmount,
-      serviceId: response.optionServiceId,
-      optionFirstExclusionFlg:
-        response.optionFirstExclusionFlg === true
-          ? 'optionFirstExclusionFlgRadioValue'
-          : '',
-      optionContractQuantityHighLimit: response.optionContractQuantityHighLimit,
-      optionContractQuantityLowLimit: response.optionContractQuantityLowLimit,
-      optionFromToRadio: '',
-      optionLimitStartDate: response.optionLimitStartDate,
-      dummy: '～',
-      optionLimitEndDate: response.optionLimitEndDate,
-      optionNumberOfMonthsFromContractDateRadio: '',
-      optionContractAfterMonth: response.optionContractAfterMonth,
-      optionApprovalDocumentId: response.optionApprovalDocumentId,
-      optionUtilizationFlg:
-        response.optionUtilizationFlg === true
-          ? 'optionUtilizationFlgYes'
-          : response.optionUtilizationFlg === false
-          ? 'optionUtilizationFlgNo'
-          : '',
-      optionCommodityCrameCd: response.optionCommodityCrameCd,
-    };
-  };
+  // /**
+  //  * 変更履歴情報取得APIからオプション値引値増データモデルへの変換
+  //  */
+  // const convertToHistoryOptionInfoModel = (
+  //   response: registrationRequest
+  // ): searchOptionResultRowModel => {
+  //   return {
+  //     id: response.optionCampaignCd,
+  //     optionCampaignCd: response.optionCampaignCd,
+  //     optionCampaignName: response.optionCampaignName,
+  //     optionMembershipFeeType: response.optionMembershipFeeType,
+  //     optionDiscountDivision: response.optionDiscountDivision,
+  //     optionDiscountAmount: response.optionDiscountAmount,
+  //     serviceId: response.optionServiceId,
+  //     optionFirstExclusionFlg:
+  //       response.optionFirstExclusionFlg === true
+  //         ? 'optionFirstExclusionFlgRadioValue'
+  //         : '',
+  //     optionContractQuantityHighLimit: response.optionContractQuantityHighLimit,
+  //     optionContractQuantityLowLimit: response.optionContractQuantityLowLimit,
+  //     optionFromToRadio: '',
+  //     optionLimitStartDate: response.optionLimitStartDate,
+  //     dummy: '～',
+  //     optionLimitEndDate: response.optionLimitEndDate,
+  //     optionNumberOfMonthsFromContractDateRadio: '',
+  //     optionContractAfterMonth: response.optionContractAfterMonth,
+  //     optionApprovalDocumentId: response.optionApprovalDocumentId,
+  //     optionUtilizationFlg:
+  //       response.optionUtilizationFlg === true
+  //         ? 'optionUtilizationFlgYes'
+  //         : response.optionUtilizationFlg === false
+  //         ? 'optionUtilizationFlgNo'
+  //         : '',
+  //     optionCommodityCrameCd: response.optionCommodityCrameCd,
+  //   };
+  // };
 
-  /**
-   * 変更履歴情報取得APIから手数料データモデルへの変換
-   */
-  const convertToHistoryCommissionInfoModel = (
-    response: registrationRequest
-  ): searchCommissionResultRowModel => {
-    return {
-      id: response.commissionDiscountPackId,
-      commissionDiscountPackId: response.commissionDiscountPackId,
-      commissionPackName: response.packName,
-      commissionMemberServiceType: response.memberServiceType,
-      commissionCalcurationDocType: response.calcurationDocType,
-      commissionValidityStartDate: response.validityStartDate,
-      commissionValidityEndDate: response.validityEndDate,
-      commissionUtilizationFlg:
-        response.optionUtilizationFlg === true ? '可' : '',
-      commissionChangeReserve:
-        response.commissionDiscountPacksCommissionChangeReserve,
-    };
-  };
+  // /**
+  //  * 変更履歴情報取得APIから手数料データモデルへの変換
+  //  */
+  // const convertToHistoryInfoModel = (
+  //   response: registrationRequest
+  // ): searchCommissionResultRowModel => {
+  //   return {
+  //     id: response.commissionDiscountPackId,
+  //     commissionDiscountPackId: response.commissionDiscountPackId,
+  //     commissionPackName: response.packName,
+  //     commissionMemberServiceType: response.memberServiceType,
+  //     commissionCalcurationDocType: response.calcurationDocType,
+  //     commissionValidityStartDate: response.validityStartDate,
+  //     commissionValidityEndDate: response.validityEndDate,
+  //     commissionUtilizationFlg:
+  //       response.optionUtilizationFlg === true ? '可' : '',
+  //     commissionChangeReserve:
+  //       response.commissionDiscountPacksCommissionChangeReserve,
+  //   };
+  // };
 
   /**
    * リンククリック時のイベントハンドラ
@@ -1764,9 +1849,20 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     setIsOpenApplicationPopup(false);
   };
 
-  // データグリッドのフォーカスアウトのイベントハンドラ
-  const handleOnCellBlur = (params: any) => {
-    console.log(params);
+  // データグリッド(基本値引値増)のフォーカスアウトのイベントハンドラ
+  const basicHandleOnCellBlur = (params: any) => {
+    // フォーカスアウト時にセット対象コースプルダウンが空の際は一本目除外フラグを空に設定
+    if (params.field === 'courseId') {
+      setValue('firstExclusionFlg', '');
+    }
+  };
+
+  // データグリッド(オプション値引値増)のフォーカスアウトのイベントハンドラ
+  const optionHandleOnCellBlur = (params: any) => {
+    // フォーカスアウト時にセット対象コースプルダウンが空の際は一本目除外フラグを空に設定
+    if (params.field === 'serviceId') {
+      setValue('optionFirstExclusionFlg', '');
+    }
   };
 
   return (
@@ -1798,6 +1894,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               pagination={true}
               columns={searchBasicResultColumns}
               rows={addedBasicSearchResult}
+              onCellBlur={basicHandleOnCellBlur}
               // DataGridのヘッダーを2列定義する設定
               columnGroupingModel={basicColumnGroups}
               // 編集権限なし/履歴表示の場合にcampaignCd以外の入力部分全てのカラムを非活性にする
@@ -1822,16 +1919,16 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
                   (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
-                if (
-                  params.field === 'courseId' &&
-                  (!userEditFlag || props.changeHisoryNumber !== '')
-                )
-                  return true;
-                if (
-                  params.field === 'firstExclusionFlg' &&
-                  (!userEditFlag || props.changeHisoryNumber !== '')
-                )
-                  return true;
+                // if (
+                //   params.field === 'courseId' &&
+                //   (!userEditFlag || props.changeHisoryNumber !== '')
+                // )
+                //   return true;
+                // if (
+                //   params.field === 'firstExclusionFlg' &&
+                //   (!userEditFlag || props.changeHisoryNumber !== '')
+                // )
+                //   return true;
                 if (
                   params.field === 'contractQuantityHighLimit' &&
                   (!userEditFlag || props.changeHisoryNumber !== '')
@@ -1907,6 +2004,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               columns={searchOptionResultColumns}
               rows={addedOptionSearchResult}
               // DataGridのヘッダーを2列定義する設定
+              onCellBlur={optionHandleOnCellBlur}
               columnGroupingModel={optionColumnGroups}
               // 編集権限なし/履歴表示の場合にcampaignCd以外の入力部分全てのカラムを非活性にする
               getCellDisabled={(params) => {
@@ -2019,7 +2117,6 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               rows={commissionSearchResult}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
-              onCellBlur={handleOnCellBlur}
             />
           </Section>
         </MainLayout>
