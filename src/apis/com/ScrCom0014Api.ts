@@ -37,85 +37,85 @@ export interface ScrCom0014GetCommissionDisplayResponse {
 /** API-COM-0014-0001: 手数料表示API 条件設定セクションレスポンス(リスト行) */
 export interface commissionConditionList {
   /** 手数料条件種類No */
-  commissionConditionKindNo: number;
+  commissionConditionKindNo: string | number;
   /** 条件種類コード */
-  conditionKindCode: string;
+  conditionKindCode: string | number;
   /** 手数料条件種類名 */
-  conditionKindName: string;
+  conditionKindName: string | number;
   /** 手数料条件No */
-  commissionConditionNo: number;
+  commissionConditionNo: string | number;
   /** 手数料条件区分 */
-  commissionConditionKind: string;
+  commissionConditionKind: string | number;
   /** 手数料条件区分名 */
-  commissionConditionKindName: string;
+  commissionConditionKindName: string | number;
   /** 手数料条件値 */
-  commissionConditionValue: string;
+  commissionConditionValue: string | number;
 }
 
 /** API-COM-0014-0001: 手数料表示API 価格設定セクションレスポンス(リスト行) */
 export interface commissionPriceList {
   /** 手数料条件種類名No1 */
-  commissionConditionKindNo1: string;
+  commissionConditionKindNo1: string | number;
   /** 手数料条件区分名No1 */
-  commissionConditionNo1: string;
+  commissionConditionNo1: string | number;
   /** 手数料条件値No1 */
-  commissionConditionValueNo1: string;
+  commissionConditionValueNo1: string | number;
   /** 手数料条件種類名No2 */
-  commissionConditionKindNo2: string;
+  commissionConditionKindNo2: string | number;
   /** 手数料条件区分名No2 */
-  commissionConditionNo2: string;
+  commissionConditionNo2: string | number;
   /** 手数料条件値No2 */
-  commissionConditionValueNo2: string;
+  commissionConditionValueNo2: string | number;
   /** 手数料条件種類名No3 */
-  commissionConditionKindNo3: string;
+  commissionConditionKindNo3: string | number;
   /** 手数料条件区分名No3 */
-  commissionConditionNo3: string;
+  commissionConditionNo3: string | number;
   /** 手数料条件値No3 */
-  commissionConditionValueNo3: string;
+  commissionConditionValueNo3: string | number;
   /** 手数料条件種類名No4 */
-  commissionConditionKindNo4: string;
+  commissionConditionKindNo4: string | number;
   /** 手数料条件区分名No4 */
-  commissionConditionNo4: string;
+  commissionConditionNo4: string | number;
   /** 手数料条件値No4 */
-  commissionConditionValueNo4: string;
+  commissionConditionValueNo4: string | number;
   /** 手数料条件種類名No5 */
-  commissionConditionKindNo5: string;
+  commissionConditionKindNo5: string | number;
   /** 手数料条件区分名No5 */
-  commissionConditionNo5: string;
+  commissionConditionNo5: string | number;
   /** 手数料条件値No5 */
-  commissionConditionValueNo5: string;
+  commissionConditionValueNo5: string | number;
   /** 手数料条件種類名No6 */
-  commissionConditionKindNo6: string;
+  commissionConditionKindNo6: string | number;
   /** 手数料条件区分名No6 */
-  commissionConditionNo6: string;
+  commissionConditionNo6: string | number;
   /** 手数料条件値No6 */
-  commissionConditionValueNo6: string;
+  commissionConditionValueNo6: string | number;
   /** 手数料条件種類名No7 */
-  commissionConditionKindNo7: string;
+  commissionConditionKindNo7: string | number;
   /** 手数料条件区分名No7 */
-  commissionConditionNo7: string;
+  commissionConditionNo7: string | number;
   /** 手数料条件値No7 */
-  commissionConditionValueNo7: string;
+  commissionConditionValueNo7: string | number;
   /** 手数料条件種類名No8 */
-  commissionConditionKindNo8: string;
+  commissionConditionKindNo8: string | number;
   /** 手数料条件区分名No8 */
-  commissionConditionNo8: string;
+  commissionConditionNo8: string | number;
   /** 手数料条件値No8 */
-  commissionConditionValueNo8: string;
+  commissionConditionValueNo8: string | number;
   /** 手数料条件種類名No9 */
-  commissionConditionKindNo9: string;
+  commissionConditionKindNo9: string | number;
   /** 手数料条件区分名No9 */
-  commissionConditionNo9: string;
+  commissionConditionNo9: string | number;
   /** 手数料条件値No9 */
-  commissionConditionValueNo9: string;
+  commissionConditionValueNo9: string | number;
   /** 手数料条件種類名No10 */
-  commissionConditionKindNo10: string;
+  commissionConditionKindNo10: string | number;
   /** 手数料条件区分名No10 */
-  commissionConditionNo10: string;
+  commissionConditionNo10: string | number;
   /** 手数料条件値No10 */
-  commissionConditionValueNo10: string;
+  commissionConditionValueNo10: string | number;
   /** 手数料金額 */
-  commissionPrice: number;
+  commissionPrice: string | number;
 }
 
 /** API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI リクエスト */
@@ -135,15 +135,15 @@ export interface ScrCom0014CommissionCheckRequest {
 /** API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI レスポンス 条件設定セクション(リスト行) */
 export interface checkCommissionConditionList {
   /** 手数料条件種類No */
-  commissionConditionKindNo: number;
+  commissionConditionKindNo: string | number;
   /** 条件種類コード */
-  conditionKindCode: string;
+  conditionKindCode: string | number;
   /** 手数料条件No */
-  commissionConditionNo: number;
+  commissionConditionNo: string | number;
   /** 手数料条件区分 */
-  commissionConditionKind: string;
+  commissionConditionKind: string | number;
   /** 手数料条件値 */
-  commissionConditionValue: string;
+  commissionConditionValue: string | number;
 }
 
 /** API-COM-0014-0007: 手数料テーブル登録申請API リクエスト */
