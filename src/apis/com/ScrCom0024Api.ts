@@ -211,7 +211,7 @@ export const ScrCom0024GetPlaceData = async (
   request: ScrCom0024GetPlaceDataRequest
 ): Promise<ScrCom0024GetPlaceDataResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0024/get-place-data',
+    '/api/com/scr-com-0024/get-place-data',
     request
   );
   return response.data;
@@ -222,7 +222,7 @@ export const ScrCom0024GetContractData = async (
   request: ScrCom0024GetContractDataRequest
 ): Promise<ScrCom0024GetContractDataResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0024/get-contract-data',
+    '/api/com/scr-com-0024/get-contract-data',
     request
   );
   return response.data;
@@ -233,7 +233,7 @@ export const ScrCom0024PlaceDetailCheck = async (
   request: ScrCom0024PlaceDetailCheckRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0024/place-detail-check',
+    '/api/com/scr-com-0024/place-detail-check',
     request
   );
   return response.data;
@@ -244,7 +244,7 @@ export const ScrCom0024RegistUpdatePlaceDetail = async (
   request: ScrCom0024RegistUpdatePlaceDetailRequest
 ): Promise<void> => {
   await comApiClient.post(
-    '/com/scr-com-0024/regist-update-place-detail',
+    '/api/com/scr-com-0024/regist-update-place-detail',
     request
   );
 };

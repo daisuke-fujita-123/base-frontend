@@ -318,7 +318,12 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
 };
 
 /**
- * CODE_ID 定数
+ * 画面ID 定数定義
+ */
+const SCR_COM_0024 = 'SCR-COM-0024';
+
+/**
+ * CODE_ID 定数定義
  */
 // 開催曜日区分
 const SCR_TRA_0018 = 'SCR-TRA-0018';
@@ -365,6 +370,12 @@ const ScrCom0024Page = () => {
 
   // user情報
   const { user } = useContext(AuthContext);
+
+  // ユーザーの編集権限
+  const userEditFlag =
+    user.editPossibleScreenIdList === undefined
+      ? ''
+      : user.editPossibleScreenIdList.includes(SCR_COM_0024);
 
   // popup
   const [isOpenPopup, setIsOpenPopup] = useState(false);
@@ -792,7 +803,7 @@ const ScrCom0024Page = () => {
   ): SelectValue[] => {
     return resultList.map((x) => {
       return {
-        value: '',
+        value: x.codeId,
         displayValue: x.entityName,
       };
     });
@@ -929,24 +940,18 @@ const ScrCom0024Page = () => {
                     required={
                       placeCode === undefined ||
                       placeCode === 'new' ||
-                      user.editPossibleScreenIdList.includes('SCR-COM-0024')
+                      !userEditFlag
                         ? true
                         : false
                     }
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Radio
                     label='おまとめ会場'
                     name='omatomePlaceValue'
                     disabled={
                       // 編集権限なしの場合 非活性
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
+                      !userEditFlag ? true : false
                     }
                     required
                     radioValues={[
@@ -967,20 +972,14 @@ const ScrCom0024Page = () => {
                     // おまとめ会場が対象の場合必須
                     required={omatomePlaceFlag ? true : false}
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Radio
                     label='利用フラグ'
                     name='useValue'
                     disabled={
                       // 編集権限なしの場合 非活性
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
+                      !userEditFlag ? true : false
                     }
                     required
                     radioValues={[
@@ -999,11 +998,7 @@ const ScrCom0024Page = () => {
                     name='partnerStartDate'
                     required
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Select
                     label='開催曜日'
@@ -1012,22 +1007,14 @@ const ScrCom0024Page = () => {
                     blankOption
                     required
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <TextField
                     label='契約ID'
                     name='contractId'
                     required
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                 </ColStack>
                 {/* 縦 2列目 */}
@@ -1036,42 +1023,26 @@ const ScrCom0024Page = () => {
                     label='法人ID'
                     name='corporationId'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <TextField
                     label='法人名'
                     name='corporationName'
                     size='l'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <TextField
                     label='請求先ID'
                     name='billingId'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <TextField
                     label='TEL'
                     name='telephoneNumber'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Select
                     label='会場グループ'
@@ -1080,11 +1051,7 @@ const ScrCom0024Page = () => {
                     selectValues={selectValues.placeGroupCodeSelectValues}
                     blankOption
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Select
                     label='支払先会場名'
@@ -1097,11 +1064,7 @@ const ScrCom0024Page = () => {
                     // おまとめ会場が対象の場合必須
                     required={omatomePlaceFlag ? true : false}
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Select
                     label='POSまとめ会場'
@@ -1112,11 +1075,7 @@ const ScrCom0024Page = () => {
                     }
                     blankOption
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Select
                     label='ライブ会場グループコード'
@@ -1125,11 +1084,7 @@ const ScrCom0024Page = () => {
                     selectValues={selectValues.livePlaceGroupCodeSelectValues}
                     blankOption
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                 </ColStack>
                 <ColStack>
@@ -1138,9 +1093,7 @@ const ScrCom0024Page = () => {
                     name='hondaGroupValue'
                     disabled={
                       // 編集権限なしの場合 非活性
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
+                      !userEditFlag ? true : false
                     }
                     required={omatomePlaceFlag ? true : false}
                     radioValues={[
@@ -1159,10 +1112,7 @@ const ScrCom0024Page = () => {
                     name='guaranteeDeposit'
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合 非活性
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                 </ColStack>
@@ -1178,10 +1128,7 @@ const ScrCom0024Page = () => {
                     name='documentShippingInstructionValue'
                     disabled={
                       // 編集権限なしの場合 非活性
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                     radioValues={[
                       {
@@ -1203,14 +1150,9 @@ const ScrCom0024Page = () => {
                     required={
                       documentShippingInstructionFlag === true ? true : false
                     }
-                    // TODO: 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                    // TODO: おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      !omatomePlaceFlag
-                        ? true
-                        : false
-                    }
+                    // 編集権限なしの場合非活性
+                    // おまとめ会場が対象外の場合、"AUC宛のみ"選択状態で非活性
+                    disabled={!userEditFlag || !omatomePlaceFlag ? true : false}
                     radioValues={[
                       {
                         value: 'meberDirectDelivery',
@@ -1227,10 +1169,7 @@ const ScrCom0024Page = () => {
                     name='documentShippingStaff'
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                   <TextField
@@ -1246,10 +1185,7 @@ const ScrCom0024Page = () => {
                     }
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                   <TextField
@@ -1264,10 +1200,7 @@ const ScrCom0024Page = () => {
                     }
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                 </ColStack>
@@ -1285,10 +1218,7 @@ const ScrCom0024Page = () => {
                     unit={'日'}
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                   <Radio
@@ -1296,10 +1226,7 @@ const ScrCom0024Page = () => {
                     name='paymentAllValue'
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                     radioValues={[
                       {
@@ -1325,32 +1252,20 @@ const ScrCom0024Page = () => {
                     name='bankName'
                     size='l'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <TextField
                     label='支店名'
                     name='branchName'
                     size='l'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <TextField
                     label='種別'
                     name='accountKind'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                 </ColStack>
                 {/* 縦 2列目 */}
@@ -1359,32 +1274,21 @@ const ScrCom0024Page = () => {
                     label='口座番号'
                     name='accountNumber'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <TextField
                     label='口座名義'
                     name='accountNameKana'
                     size='m'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Select
                     label='バーチャル口座付与ルール'
                     name='virtualAccountGiveRuleCode'
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                     selectValues={selectValues.livePlaceGroupCodeSelectValues}
                     blankOption
@@ -1402,10 +1306,7 @@ const ScrCom0024Page = () => {
                     name='paymentNoticeValue'
                     disabled={
                       // 編集権限なしの場合、またはおまとめ会場が対象外の場合
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                     radioValues={[
                       {
@@ -1423,10 +1324,7 @@ const ScrCom0024Page = () => {
                     name='paymentNoticeStaff'
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                   <TextField
@@ -1439,10 +1337,7 @@ const ScrCom0024Page = () => {
                     }
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                   <TextField
@@ -1456,10 +1351,7 @@ const ScrCom0024Page = () => {
                     }
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                 </ColStack>
@@ -1478,10 +1370,7 @@ const ScrCom0024Page = () => {
                     blankOption
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                   <Select
@@ -1492,10 +1381,7 @@ const ScrCom0024Page = () => {
                     blankOption
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                   <TextField
@@ -1504,10 +1390,7 @@ const ScrCom0024Page = () => {
                     size='m'
                     // 編集権限なしの場合、またはおまとめ会場が対象外の場合
                     disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024') ||
-                      omatomePlaceFlag === false
-                        ? true
-                        : false
+                      !userEditFlag || omatomePlaceFlag === false ? true : false
                     }
                   />
                 </ColStack>
@@ -1523,11 +1406,7 @@ const ScrCom0024Page = () => {
                     name='placeMemberManagementStaffMailAddress'
                     size='l'
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                   <Select
                     label='おまとめ会場連絡不可対象'
@@ -1537,11 +1416,7 @@ const ScrCom0024Page = () => {
                     }
                     blankOption
                     // 編集権限なしの場合 非活性
-                    disabled={
-                      !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                        ? true
-                        : false
-                    }
+                    disabled={!userEditFlag ? true : false}
                   />
                 </ColStack>
               </RowStack>
@@ -1554,11 +1429,7 @@ const ScrCom0024Page = () => {
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
             <ConfirmButton
               onClick={handleConfirm}
-              disable={
-                !user.editPossibleScreenIdList.includes('SCR-COM-0024')
-                  ? true
-                  : false
-              }
+              disable={!userEditFlag ? true : false}
             >
               確定
             </ConfirmButton>
