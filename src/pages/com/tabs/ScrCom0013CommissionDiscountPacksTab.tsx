@@ -1919,16 +1919,16 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
                   (!userEditFlag || props.changeHisoryNumber !== '')
                 )
                   return true;
-                // if (
-                //   params.field === 'courseId' &&
-                //   (!userEditFlag || props.changeHisoryNumber !== '')
-                // )
-                //   return true;
-                // if (
-                //   params.field === 'firstExclusionFlg' &&
-                //   (!userEditFlag || props.changeHisoryNumber !== '')
-                // )
-                //   return true;
+                if (
+                  params.field === 'courseId' &&
+                  (!userEditFlag || props.changeHisoryNumber !== '')
+                )
+                  return true;
+                if (
+                  params.field === 'firstExclusionFlg' &&
+                  (!userEditFlag || props.changeHisoryNumber !== '')
+                )
+                  return true;
                 if (
                   params.field === 'contractQuantityHighLimit' &&
                   (!userEditFlag || props.changeHisoryNumber !== '')
