@@ -2,10 +2,15 @@ import { ComponentMeta } from '@storybook/react';
 import React, { useState } from 'react';
 
 import { CenterBox, MarginBox } from 'layouts/Box';
-import { Section } from 'layouts/Section';
+import { ColStack } from 'layouts/Stack';
 
 import { PrimaryButton } from 'controls/Button';
 import { Icon } from 'controls/Icon';
+import {
+  convertFromConditionToPricingTableRows,
+  PricingTable,
+  PricingTableModel,
+} from 'controls/PricingTable';
 import { SelectValue } from 'controls/Select';
 import { TableColDef } from 'controls/Table';
 import { theme } from 'controls/theme';
@@ -17,7 +22,6 @@ import {
   ConditionModel,
   ConditionType,
   DeepKey,
-  PricingTable,
 } from './ConditionalTable';
 
 export default {
@@ -73,7 +77,6 @@ export const Example = () => {
     {
       type: 'ITM_PR_004',
       typeName: '検査台数(1台出品F)',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_005',
@@ -88,12 +91,10 @@ export const Example = () => {
     {
       type: 'ITM_PR_006',
       typeName: '成約区分',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_013',
       typeName: '再出品F',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_014',
@@ -106,17 +107,14 @@ export const Example = () => {
     {
       type: 'ITM_PR_016',
       typeName: 'イベント（車種）',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_017',
       typeName: 'デポフラグ',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_018',
       typeName: '開催イベント区分',
-      selectValues: '',
     },
   ];
 
@@ -168,8 +166,9 @@ export const Example = () => {
 
   // state
   const [rows, setRows] = useState<ConditionModel[]>(initialRows);
-  const [pricingTableVisible, setPricingTableVisible] =
-    useState<boolean>(false);
+  const [dataset, setDataset] = useState<PricingTableModel[]>([]);
+  // const [pricingTableVisible, setPricingTableVisible] =
+  //   useState<boolean>(false);
 
   // 条件種類変更後にAPIより条件、値を取得する
   const handleGetConditionData = (select: string) => {
@@ -200,9 +199,9 @@ export const Example = () => {
     setRows(sortValues);
   };
 
-  const handleVisibleTable = () => {
-    setPricingTableVisible(!pricingTableVisible);
-  };
+  // const handleVisibleTable = () => {
+  //   setPricingTableVisible(!pricingTableVisible);
+  // };
 
   const onClickExport = () => {
     console.log('exportCSV');
@@ -210,32 +209,34 @@ export const Example = () => {
 
   const handleOnClick = () => {
     console.log(rows);
+    const dataset = convertFromConditionToPricingTableRows(rows, operators);
+    setDataset(dataset);
   };
 
-  const changeCodeToValue = (code: string | number): string => {
-    for (const r of conditionTypes) {
-      if (r.type === code) {
-        return r.typeName;
-      }
-      // if (r.operators) {
-      //   for (const c of r.operators) {
-      //     if (c.value === Number(code)) {
-      //       return c.displayValue;
-      //     }
-      //   }
-      // }
-      if (typeof r.selectValues === 'string') {
-        return String(code);
-      } else if (r.selectValues) {
-        for (const v of r.selectValues) {
-          if (v?.value === code) {
-            return v.displayValue;
-          }
-        }
-      }
-    }
-    return '';
-  };
+  // const changeCodeToValue = (code: string | number): string => {
+  //   for (const r of conditionTypes) {
+  //     if (r.type === code) {
+  //       return r.typeName;
+  //     }
+  //     if (r.operators) {
+  //       for (const c of r.operators) {
+  //         if (c.value === Number(code)) {
+  //           return c.displayValue;
+  //         }
+  //       }
+  //     }
+  //     if (typeof r.selectValues === 'string') {
+  //       return String(code);
+  //     } else if (r.selectValues) {
+  //       for (const v of r.selectValues) {
+  //         if (v?.value === code) {
+  //           return v.displayValue;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return '';
+  // };
 
   const decoration = (
     <MarginBox mr={5} gap={2}>
@@ -246,7 +247,7 @@ export const Example = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Section name='条件設定' width={800}>
+      <ColStack>
         <ConditionalTable
           columns={columns}
           conditionTypes={conditionTypes}
@@ -254,23 +255,23 @@ export const Example = () => {
           rows={rows}
           onValueChange={handleOnValueChange}
           handleSetItem={handleSetItem}
-          handleVisibleTable={handleVisibleTable}
+          // handleVisibleTable={handleVisibleTable}
           handleGetConditionData={handleGetConditionData}
           // readOnly={true}
         />
         <CenterBox>
           <PrimaryButton onClick={handleOnClick}>反映</PrimaryButton>
         </CenterBox>
-      </Section>
-      {pricingTableVisible && (
-        <Section name='価格設定' decoration={decoration}>
-          <PricingTable
-            setCondition={rows}
-            changeCodeToValue={changeCodeToValue}
-            handleVisibleTable={handleVisibleTable}
-          />
-        </Section>
-      )}
+        <PricingTable
+          conditions={rows}
+          dataset={dataset}
+          conditionTypes={conditionTypes}
+          operators={operators}
+        />
+        <CenterBox>
+          <PrimaryButton onClick={handleOnClick}>CSV出力</PrimaryButton>
+        </CenterBox>
+      </ColStack>
     </ThemeProvider>
   );
 };
