@@ -4,14 +4,11 @@ import { FieldValues, Path, useFormContext } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
 
-import {
-  Box,
-  Button,
-  FormControl,
-  FormHelperText,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { PrimaryButton } from 'controls/Button';
+import { CaptionLabel } from 'controls/Label';
+import { Typography } from 'controls/Typography';
+
+import { Box, FormControl, FormHelperText, Stack } from '@mui/material';
 
 export interface FileSelectProps<T extends FieldValues> {
   name: Path<T>;
@@ -33,7 +30,7 @@ export const FileSelect = <T extends FieldValues>(
     trigger(name);
   };
 
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+  const { acceptedFiles, getRootProps, getInputProps, open } = useDropzone({
     accept: {
       'text/csv': ['.csv'],
     },
@@ -44,26 +41,32 @@ export const FileSelect = <T extends FieldValues>(
   return (
     <InputLayout label={label} labelPosition={labelPosition} size={size}>
       <FormControl error={!!formState.errors[name]}>
-        <Stack direction='row' spacing={3} alignItems='center' marginBottom={2}>
-          <Button variant='outlined' color='inherit' component='label'>
-            ファイル選択
-            <input {...getInputProps()} />
-          </Button>
+        <CaptionLabel text='ファイルパス'></CaptionLabel>
+        <Stack
+          direction='row'
+          alignItems='center'
+          marginBottom={4}
+          marginTop={2}
+          spacing={2}
+        >
+          <PrimaryButton onClick={open}>ファイルを選択</PrimaryButton>
           <Typography>
             {acceptedFiles.length > 0 ? acceptedFiles[0].name : '未選択'}
           </Typography>
         </Stack>
         <Box
           sx={{
-            border: 1,
-            padding: 2,
+            border: '1px dashed #bbbbbb',
             backgroundColor: '#F5F5F5',
             minHeight: 300,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           {...getRootProps()}
         >
           <input {...getInputProps()} />
-          <p>ファイルをドラッグアンドドロップ</p>
+          <Typography>ファイルをドラッグアンドドロップしてください</Typography>
         </Box>
         {formState.errors[name]?.message && (
           <FormHelperText>
