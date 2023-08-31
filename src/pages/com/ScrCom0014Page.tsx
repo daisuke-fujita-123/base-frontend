@@ -476,9 +476,7 @@ const ScrCom0014Page = () => {
 
       // TODO: 条件テーブルに取得データを設定
       setRows(
-        convertToCommissionConditionRowModel(
-          getCommissionConditionResponse.commissionConditionList
-        )
+        convertToCommissionConditionRowModel(getCommissionDisplayResponse)
       );
       // 条件テーブルの条件の設定
       setterConditions(
@@ -813,19 +811,19 @@ const ScrCom0014Page = () => {
 
   // 条件設定テーブルのデータ
   const [rows, setRows] = useState<ConditionModel[]>([
-    {
-      // 条件種類コード値
-      conditionType: '',
-      // 条件と値の配列
-      condition: [
-        {
-          // 条件のコード値
-          operator: '',
-          // プルダウンのコード値orテキストボックスの値
-          value: '',
-        },
-      ],
-    },
+    // {
+    //   // 条件種類コード値
+    //   conditionType: '',
+    //   // 条件と値の配列
+    //   condition: [
+    //     {
+    //       // 条件のコード値
+    //       operator: '',
+    //       // プルダウンのコード値orテキストボックスの値
+    //       value: '',
+    //     },
+    //   ],
+    // },
   ]);
 
   // 価格設定テーブルのデータ
@@ -1313,20 +1311,15 @@ const ScrCom0014Page = () => {
    * TODO: 初期表示条件設定セクション変換用
    */
   const convertToCommissionConditionRowModel = (
-    commissionConditionList: comCommissionConditionList[]
+    commissionConditionList: ScrCom0014GetCommissionDisplayResponse
   ): ConditionModel[] => {
-    const tempConditions = conditions.map((x) => {
+    commissionConditionList.commissionConditionList.map((x) => {
       return {
-        operator: x.value,
-        value: x.displayValue,
-      };
-    });
-
-    return commissionConditionList.map((x) => {
-      return {
-        // 手数料種類
-        conditionType: x.codeName,
-        condition: tempConditions,
+        conditionType: x.conditionKindName,
+        condition: {
+          operator: x.commissionConditionKindName,
+          value: x.commissionConditionValue,
+        },
       };
     });
   };
