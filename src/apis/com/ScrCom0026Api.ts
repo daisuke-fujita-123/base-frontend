@@ -32,7 +32,7 @@ export const ScrCom0026GetScreenPermission = async (
   req: ScrCom0026GetScreenPermissionRequest
 ): Promise<ScrCom0026GetScreenPermissionResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0026/get-screen-permission',
+    '/api/com/scr-com-0026/get-screen-permission',
     req
   );
   return response.data;
@@ -68,7 +68,7 @@ export const ScrCom0026GetMasterPermission = async (
   req: ScrCom0026GetMasterPermissionRequest
 ): Promise<ScrCom0026GetMasterPermissionResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0026/get-master-permission',
+    '/api/com/scr-com-0026/get-master-permission',
     req
   );
   return response.data;
@@ -122,7 +122,7 @@ export const ScrCom0026GetApprovalKind = async (
   req: ScrCom0026GetApprovalKindRequest
 ): Promise<ScrCom0026GetApprovalKindResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0026/get-approval-kind',
+    '/api/com/scr-com-0026/get-approval-kind',
     req
   );
   return response.data;
@@ -166,7 +166,7 @@ export const ScrCom0026RegistApprovalKind = async (
   req: ScrCom0026RegistApprovalKindRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0026/get-approval-kind',
+    '/api/com/scr-com-0026/get-approval-kind',
     req
   );
   return response.data;
@@ -202,7 +202,7 @@ export const ScrCom0026GetApprovalPermission = async (
   req: ScrCom0026GetApprovalPermissionRequest
 ): Promise<ScrCom0026GetApprovalPermissionResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0026/get-approval-permission',
+    '/api/com/scr-com-0026/get-approval-permission',
     req
   );
   return response.data;
@@ -248,7 +248,7 @@ export const ScrCom0026GetChangeHistory = async (
   req: ScrCom0026GetChangeHistoryRequest
 ): Promise<ScrCom0026GetChangeHistoryResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0026/get-change-history',
+    '/api/com/scr-com-0026/get-change-history',
     req
   );
   return response.data;
@@ -271,7 +271,7 @@ export const ScrCom9999GetHistoryInfo = async (
   request: ScrCom9999GetHistoryInfoRequest
 ): Promise<ScrCom9999GetHistoryInfoResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-9999/get-history-info',
+    '/api/com/scr-com-9999/get-history-info',
     request
   );
   return response.data;
