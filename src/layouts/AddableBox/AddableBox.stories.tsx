@@ -43,9 +43,6 @@ export const Example = () => {
     { field: 'conditionVal', headerName: '値', width: 150 },
   ];
 
-  /**
-   * APIから取得した検索データ
-   */
   const operators: SelectValue[] = [
     { displayValue: '＝', value: 1 },
     { displayValue: '≠', value: 2 },
@@ -92,12 +89,10 @@ export const Example = () => {
     {
       type: 'ITM_PR_006',
       typeName: '成約区分',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_013',
       typeName: '再出品F',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_014',
@@ -110,17 +105,14 @@ export const Example = () => {
     {
       type: 'ITM_PR_016',
       typeName: 'イベント（車種）',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_017',
       typeName: 'デポフラグ',
-      selectValues: '',
     },
     {
       type: 'ITM_PR_018',
       typeName: '開催イベント区分',
-      selectValues: '',
     },
   ];
 

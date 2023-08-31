@@ -10,11 +10,16 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section, SectionClose } from 'layouts/Section';
 import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 
-import { Button, PrimaryButton, SearchButton } from 'controls/Button';
+import {
+  AddButton,
+  Button,
+  PrimaryButton,
+  SearchButton,
+} from 'controls/Button';
 import { DataGrid, GridColDef, GridTooltipsModel } from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
 import { ContentsDivider } from 'controls/Divider';
-import { WarningLabel } from 'controls/Label';
+import { CaptionLabel, WarningLabel } from 'controls/Label';
 import { Select, SelectValue } from 'controls/Select';
 import { TextField } from 'controls/TextField';
 import { Typography } from 'controls/Typography';
@@ -457,7 +462,42 @@ const Scroll = () => {
             </CenterBox>
           </Section>
         </FormProvider>
-        <Section name='検索結果' width={maxSectionWidth}>
+        <Section
+          name='検索結果'
+          width={maxSectionWidth}
+          decoration={
+            <>
+              <AddButton
+                onClick={() => {
+                  console.log('');
+                }}
+              >
+                追加
+              </AddButton>
+              <AddButton
+                onClick={() => {
+                  console.log('');
+                }}
+              >
+                一括登録
+              </AddButton>
+              <AddButton
+                onClick={() => {
+                  console.log('');
+                }}
+              >
+                帳票出力
+              </AddButton>
+              <AddButton
+                onClick={() => {
+                  console.log('');
+                }}
+              >
+                CSV出力
+              </AddButton>
+            </>
+          }
+        >
           <Typography>search result</Typography>
           <DataGrid
             columns={searchResultColDef}
@@ -509,10 +549,11 @@ const Scroll = () => {
           <RowStack>
             <ColStack>
               <RightElementStack>
-                <Stack>
-                  <Typography bold>変更予約情報</Typography>
+                <Stack spacing={1}>
+                  <CaptionLabel text='変更予約情報' />
                   <WarningLabel text='変更予約あり' />
                   <Select
+                    label={'　'}
                     name='changeHistoryNumber'
                     selectValues={[]}
                     blankOption

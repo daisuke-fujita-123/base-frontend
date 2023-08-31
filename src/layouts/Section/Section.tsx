@@ -5,7 +5,6 @@ import {
   ContentsOutsideBox,
   ErrorBox,
   MarginBox,
-  RightBox,
   SearchTextBox,
   WarningBox,
 } from 'layouts/Box';
@@ -13,7 +12,7 @@ import {
 import { theme } from 'controls/theme';
 import { SubTitle } from 'controls/Typography';
 
-import { Stack, styled } from '@mui/material';
+import { Box, Stack, styled } from '@mui/material';
 import { default as AccordionMui } from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
@@ -92,11 +91,18 @@ export const Section = forwardRef((props: SectionProps, ref) => {
             </AccordionSummary>
           )}
           {expanded && decoration && (
-            <RightBox>
+            <Box
+              sx={{
+                width: '80vw',
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 {decoration}
               </MarginBox>
-            </RightBox>
+            </Box>
           )}
           <AccordionDetails
             sx={{
