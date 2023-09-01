@@ -131,7 +131,7 @@ export interface TableRowModel {
   value: string;
   condition: {
     operators: SelectValue[];
-    values: SelectValue[] | string;
+    values: SelectValue[] | string | undefined;
   }[];
 }
 
@@ -141,7 +141,7 @@ export interface TableRowModel {
 export interface ConditionType {
   type: string;
   typeName: string;
-  selectValues: SelectValue[] | string;
+  selectValues?: SelectValue[];
 }
 
 /**
@@ -556,7 +556,7 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
                   {tableData[indexRow].condition.map(
                     (conditionRow, indexCol) => {
                       if (
-                        isConditionVal(conditionRow.values[indexRow]) &&
+                        // isConditionVal(conditionRow.values[indexRow]) &&
                         Array.isArray(conditionRow.values)
                       ) {
                         return (
@@ -603,7 +603,7 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
                             )}
                           </div>
                         );
-                      } else if (typeof conditionRow.values === 'string') {
+                      } else if (conditionRow.values === undefined) {
                         return (
                           <div key={indexCol} style={{ display: 'flex' }}>
                             <StyledInput
