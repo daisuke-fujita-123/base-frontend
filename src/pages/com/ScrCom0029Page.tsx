@@ -434,7 +434,7 @@ const ScrCom0029Page = () => {
     context: isReadOnly,
   });
   const {
-    formState: { dirtyFields },
+    formState: { dirtyFields, errors },
     getValues,
     setValue,
     reset,
@@ -795,6 +795,7 @@ const ScrCom0029Page = () => {
    * 確定ボタンクリック時のイベントハンドラ
    */
   const handleConfirm = async () => {
+    if (Object.keys(errors).length) return;
     // 画面入力チェック
     const errList: ErrorList[] = [];
     const approvalResultRequest: ApprovalPermissionListModel[] = [];
@@ -874,7 +875,7 @@ const ScrCom0029Page = () => {
         {
           screenId: 'SCR-COM-0029',
           screenName: '承認権限詳細',
-          tabId: '',
+          tabId: 0,
           tabName: '',
           sectionList: convertToChngedSections(
             dirtyFields,
@@ -1026,13 +1027,16 @@ const ScrCom0029Page = () => {
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      {isOpenPopup && (
+      {isOpenPopup ? (
         <ScrCom0032Popup
           isOpen={isOpenPopup}
           data={scrCom0032PopupData}
-          handleConfirm={handlePopupConfirm}
+          handleRegistConfirm={handlePopupConfirm}
+          handleApprovalConfirm={handlePopupConfirm}
           handleCancel={handlePopupCancel}
         />
+      ) : (
+        ''
       )}
     </>
   );
