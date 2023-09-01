@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@emotion/react';
 import { ComponentMeta, Story } from '@storybook/react';
 import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -5,7 +6,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
-import { Button } from 'controls/Button';
+import { theme } from 'controls/theme';
 
 import { FileSelect, FileSelectProps } from './FileSelect';
 
@@ -67,14 +68,13 @@ export const Example = () => {
     console.log(data);
   };
   return (
-    <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
-        <FileSelect name='sampleFileSelect' />
-        <Button type='submit' variant='outlined'>
-          submit
-        </Button>
-      </form>
-    </FormProvider>
+    <ThemeProvider theme={theme}>
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <FileSelect name='sampleFileSelect' />
+        </form>
+      </FormProvider>
+    </ThemeProvider>
   );
 };
 
