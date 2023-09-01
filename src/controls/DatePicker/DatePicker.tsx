@@ -1,11 +1,5 @@
 import React, { ChangeEventHandler, FocusEventHandler } from 'react';
-import {
-  FieldValues,
-  Path,
-  useController,
-  useFormContext,
-  useWatch,
-} from 'react-hook-form';
+import { FieldValues, Path, useController, useFormContext, useWatch } from 'react-hook-form';
 
 import { InputLayout } from 'layouts/InputLayout';
 
@@ -17,21 +11,13 @@ import Calendar from 'icons/button_calendar.png';
 
 import { Box, IconButton, styled } from '@mui/material';
 import {
-  BaseSingleInputFieldProps,
-  DatePicker as DatePickerMui,
-  DateValidationError,
-  FieldSection,
-  LocalizationProvider,
-  UseDateFieldProps,
+    BaseSingleInputFieldProps, DatePicker as DatePickerMui, DateValidationError, FieldSection,
+    LocalizationProvider, UseDateFieldProps
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
 
 import { ja } from 'date-fns/locale';
-import {
-  convertFromDateToDisplay,
-  isInvalidDate,
-  transformWareki,
-} from './DatePickerHelper';
+import { convertFromDateToDisplay, isInvalidDate, transformWareki } from './DatePickerHelper';
 
 /**
  * DatePickerFieldPropsコンポーネントのProps
@@ -105,6 +91,9 @@ const StyledButton = styled(IconButton)({
   width: 30,
   height: 30,
   marginRight: theme.spacing(-2),
+  '&:hover': {
+    ...theme.palette.calender,
+  },
 });
 
 const CalenderIcon = () => {

@@ -1,17 +1,16 @@
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 
-import { CenterBox, MarginBox, RightBox } from 'layouts/Box';
+import { MarginBox, RightBox } from 'layouts/Box';
 import { RowStack, Stack } from 'layouts/Stack';
 
-import {
-  AddButton,
-  AddIconButton,
-  PrimaryButton,
-  RemoveIconButton,
-} from 'controls/Button';
+import { AddButton, AddIconButton, RemoveIconButton } from 'controls/Button';
 import { TableDivider, TableSpaceDivider } from 'controls/Divider';
 import { RequiredLabel } from 'controls/Label';
-import { StyledFormControl, StyledMenuItem } from 'controls/Select';
+import {
+  SelectValue,
+  StyledFormControl,
+  StyledMenuItem,
+} from 'controls/Select';
 import { TableColDef } from 'controls/Table';
 import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
@@ -126,39 +125,33 @@ const PulldownIcon = () => {
 /**
  * 行データモデル
  */
-interface ConditionVal {
-  displayValue: string;
-  value: string | number;
-}
-
 export interface TableRowModel {
   id: number;
   displayValue: string;
   value: string;
   condition: {
-    conditions: ConditionVal[];
-    conditionVal: ConditionVal[] | string;
+    operators: SelectValue[];
+    values: SelectValue[] | string | undefined;
   }[];
 }
 
 /**
- * 検索条件データモデル
+ * 条件種類データモデル
  */
-interface ConditionProps {
-  displayValue: string;
-  value: string;
-  conditions: ConditionVal[];
-  conditionVal: ConditionVal[] | string;
+export interface ConditionType {
+  type: string;
+  typeName: string;
+  selectValues?: SelectValue[];
 }
 
 /**
  * 条件データモデル
  */
 export interface ConditionModel {
-  conditionType: string;
+  conditionType: string | number;
   condition: {
-    conditions: string | number;
-    conditionVal: string | number;
+    operator: string | number;
+    value: string | number;
   }[];
 }
 
@@ -171,28 +164,27 @@ interface ContitionalTableProps {
    */
   columns: TableColDef[];
   /**
-   * 行データ
+   * 検索条件データ
    */
-  getItems: ConditionProps[];
+  conditionTypes: ConditionType[];
   /**
-   * 条件式データ
+   * 演算子データ
    */
-  conditions: ConditionVal[];
-
-  /**
-   * 条件追加関数
-   */
-  handleChange: (
-    val: string | number,
-    changeVal: DeepKey<ConditionModel>,
-    indexRow: number,
-    indexCol?: number
-  ) => void;
-
+  operators: SelectValue[];
   /**
    * テーブル表示内容（行）
    */
   rows: ConditionModel[];
+
+  /**
+   * 条件追加関数
+   */
+  onValueChange: (
+    value: string | number,
+    field: DeepKey<ConditionModel>,
+    indexRow: number,
+    indexCol?: number
+  ) => void;
 
   /**
    * テーブル行変更
@@ -207,11 +199,15 @@ interface ContitionalTableProps {
   /**
    * 検索条件設定
    */
-  handleGetConditionData: (select: string) => ConditionProps | null;
+  handleGetConditionData: (select: string) => ConditionType | null;
   /**
    * 明細の詳細設定の可否
    */
   isEditable?: boolean;
+  /**
+   * 明細を読み取り専用にする
+   */
+  readOnly?: boolean;
 }
 
 /**
@@ -222,81 +218,67 @@ interface ContitionalTableProps {
 export const ConditionalTable = (props: ContitionalTableProps) => {
   const {
     columns,
-    getItems,
-    conditions,
-    handleChange,
-    rows,
-    handleSetItem,
-    handleVisibleTable,
-    handleGetConditionData,
-  } = props;
-
-  return (
-    <Stack>
-      <SetConditionTable
-        columns={columns}
-        getItems={getItems}
-        conditions={conditions}
-        handleChange={handleChange}
-        rows={rows}
-        handleSetItem={handleSetItem}
-        handleVisibleTable={handleVisibleTable}
-        handleGetConditionData={handleGetConditionData}
-      />
-      <CenterBox>
-        <PrimaryButton disable={false} onClick={handleVisibleTable}>
-          反映
-        </PrimaryButton>
-      </CenterBox>
-    </Stack>
-  );
-};
-
-export const SetConditionTable = (props: ContitionalTableProps) => {
-  const {
-    columns,
-    getItems,
-    conditions,
-    handleChange,
+    conditionTypes,
+    operators,
+    onValueChange: handleChange,
     rows,
     handleSetItem,
     handleGetConditionData,
     isEditable = true,
+    readOnly,
   } = props;
 
-  // 検索条件格納
-  const initialValCondition = {
-    conditions: conditions,
-    conditionVal: '',
-  };
-  const initialVal = {
-    id: 0,
-    displayValue: '',
-    value: '',
-    condition: [initialValCondition],
-  };
-  const [tableData, setTableData] = useState<TableRowModel[]>([initialVal]);
-
-  // 検索条件・テーブル行追加
-  const onClickRow = () => {
-    const addId = tableData.length;
-    const newArray = tableData.concat(initialVal).map((row, index) => {
-      if (addId === index) {
-        return { ...row, id: addId };
-      }
-      return row;
+  const initialValues: TableRowModel[] = rows.map((x, i) => {
+    const condition = x.condition.map((y, j) => {
+      // const conditions: ConditionVal[] = [];
+      const conditionVal = conditionTypes.find(
+        (z) => z.type === x.conditionType
+      );
+      return {
+        operators: operators,
+        values: conditionVal !== undefined ? conditionVal.selectValues : '',
+      };
     });
-    setTableData(newArray);
-    const newItem = rows.concat({
-      conditionType: '',
+    return {
+      id: i,
+      value: '',
+      displayValue: '',
+      condition: condition,
+    };
+  });
+  const [tableData, setTableData] = useState<TableRowModel[]>(initialValues);
+
+  // テーブル行追加
+  const onClickRow = () => {
+    tableData.push({
+      id: tableData.length,
+      displayValue: '',
+      value: '',
       condition: [
         {
-          conditions: 0,
-          conditionVal: '',
+          operators: operators,
+          values: '',
         },
       ],
     });
-    handleSetItem(newItem);
+    setTableData([...tableData]);
+
+    rows.push({
+      conditionType: '',
+      condition: [
+        {
+          operator: 0,
+          value: '',
+        },
+      ],
+    });
+    handleSetItem(rows);
+  };
+
+  // テーブル行削除
+  const onClickRowRemove = (indexRow: number) => {
+    setTableData(tableData.filter((_, index) => index !== indexRow));
+    handleSetItem(rows.filter((_, index) => index !== indexRow));
   };
 
   // 検索条件（セル内）追加
@@ -313,11 +295,12 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
       }
     });
     setTableData(newArray);
+
     const newItem = rows.map((val, index) => {
       if (indexRow === index) {
         const addSearchCondition = val.condition.concat({
-          conditions: 0,
-          conditionVal: '',
+          operator: 0,
+          value: '',
         });
         return { ...val, condition: addSearchCondition };
       } else {
@@ -355,23 +338,17 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
     );
   };
 
-  // テーブル行削除
-  const onClickRowRemove = (indexRow: number) => {
-    setTableData(tableData.filter((_, index) => index !== indexRow));
-    handleSetItem(rows.filter((_, index) => index !== indexRow));
-  };
-
   // 検索条件更新
   const onChangeRow = (select: string, indexRow: number) => {
     const newCondition = handleGetConditionData(select);
     const conditionVal: TableRowModel = {
       id: indexRow,
-      displayValue: newCondition?.displayValue ?? '',
-      value: newCondition?.value ?? '',
+      displayValue: newCondition?.typeName ?? '',
+      value: newCondition?.type ?? '',
       condition: [
         {
-          conditions: newCondition?.conditions ?? conditions,
-          conditionVal: newCondition?.conditionVal ?? '',
+          operators: operators,
+          values: newCondition?.selectValues ?? '',
         },
       ],
     };
@@ -410,11 +387,11 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
   };
 
   // ConditionVal型かどうかの判定式
-  const isConditionVal = (val: ConditionVal | string): val is ConditionVal => {
+  const isConditionVal = (val: SelectValue | string): val is SelectValue => {
     if (typeof val !== 'object' || !val) {
       return false;
     }
-    const { displayValue, value } = val as Record<keyof ConditionVal, unknown>;
+    const { displayValue, value } = val as Record<keyof SelectValue, unknown>;
     if (
       typeof displayValue !== 'string' ||
       (typeof value !== 'string' && typeof value !== 'number')
@@ -435,6 +412,7 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
 
   return (
     <TableMui>
+      {/* ヘッダー */}
       <TableHead>
         <TableRow>
           <TableLeftHeader width='70px'></TableLeftHeader>
@@ -467,6 +445,7 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
         {rows.map((row, indexRow) => {
           return (
             <TableRow key={indexRow}>
+              {/* 条件 */}
               <TableLeftHeader>
                 {isEditable ? (
                   <StyledColmun>
@@ -498,6 +477,7 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                   </>
                 )}
               </TableLeftHeader>
+              {/* 条件種類 */}
               <TableCell>
                 <StyledFormControl>
                   <StyledSelect
@@ -513,43 +493,48 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                     }}
                     value={row.conditionType}
                     IconComponent={PulldownIcon}
+                    inputProps={{
+                      readOnly: readOnly,
+                    }}
                   >
                     <StyledMenuItem value=''>{'　'}</StyledMenuItem>
-                    {getItems.map((conditionType, index) => {
+                    {conditionTypes.map((conditionType, index) => {
                       return (
                         <StyledMenuItem
-                          key={conditionType.value + index}
-                          value={conditionType.value}
+                          key={conditionType.type + index}
+                          value={conditionType.type}
                         >
-                          {conditionType.displayValue}
+                          {conditionType.typeName}
                         </StyledMenuItem>
                       );
                     })}
                   </StyledSelect>
                 </StyledFormControl>
               </TableCell>
+              {/* 条件 */}
               <TableCell>
                 {tableData[indexRow].condition.map((conditionRow, indexCol) => {
                   return (
                     <StyledFormControl key={indexCol}>
                       <StyledSelect
-                        open={isOpen === 'conditions' + indexRow + indexCol}
+                        open={isOpen === 'operator' + indexRow + indexCol}
                         onClick={() =>
-                          handleMenuOpen('conditions', indexRow, indexCol)
+                          handleMenuOpen('operator', indexRow, indexCol)
                         }
                         IconComponent={PulldownIcon}
                         onChange={(e) =>
                           handleChange(
                             e.target.value as string | number,
-                            'conditions',
+                            'operator',
                             indexRow,
                             indexCol
                           )
                         }
-                        value={row.condition[indexCol]?.conditions}
+                        value={row.condition[indexCol]?.operator}
+                        inputProps={{ readOnly: readOnly }}
                       >
                         <StyledMenuItem value=''>{'　'}</StyledMenuItem>
-                        {conditionRow.conditions.map((rowVal, index) => {
+                        {conditionRow.operators.map((rowVal, index) => {
                           return (
                             <StyledMenuItem key={index} value={rowVal.value}>
                               {rowVal.displayValue}
@@ -561,6 +546,7 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                   );
                 })}
               </TableCell>
+              {/* 値 */}
               <TableCell>
                 <Stack
                   spacing={5}
@@ -570,38 +556,32 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                   {tableData[indexRow].condition.map(
                     (conditionRow, indexCol) => {
                       if (
-                        isConditionVal(conditionRow.conditionVal[indexRow]) &&
-                        Array.isArray(conditionRow.conditionVal)
+                        // isConditionVal(conditionRow.values[indexRow]) &&
+                        Array.isArray(conditionRow.values)
                       ) {
                         return (
                           <div key={indexCol} style={{ display: 'flex' }}>
                             <StyledFormControl>
                               <StyledSelect
-                                open={
-                                  isOpen ===
-                                  'conditionVal' + indexRow + indexCol
-                                }
+                                open={isOpen === 'value' + indexRow + indexCol}
                                 onClick={() =>
-                                  handleMenuOpen(
-                                    'conditionVal',
-                                    indexRow,
-                                    indexCol
-                                  )
+                                  handleMenuOpen('value', indexRow, indexCol)
                                 }
                                 IconComponent={PulldownIcon}
                                 onChange={(e) => {
                                   handleChange(
                                     e.target.value as string | number,
-                                    'conditionVal',
+                                    'value',
                                     indexRow,
                                     indexCol
                                   );
                                 }}
-                                value={row.condition[indexCol]?.conditionVal}
+                                value={row.condition[indexCol]?.value}
+                                inputProps={{ readOnly: readOnly }}
                               >
                                 <StyledMenuItem value=''>{'　'}</StyledMenuItem>
-                                {conditionRow.conditionVal.map(
-                                  (rowVal: ConditionVal, index: number) => {
+                                {conditionRow.values.map(
+                                  (rowVal: SelectValue, index: number) => {
                                     return (
                                       <StyledMenuItem
                                         key={index}
@@ -623,9 +603,7 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                             )}
                           </div>
                         );
-                      } else if (
-                        typeof conditionRow.conditionVal === 'string'
-                      ) {
+                      } else if (conditionRow.values === undefined) {
                         return (
                           <div key={indexCol} style={{ display: 'flex' }}>
                             <StyledInput
@@ -637,7 +615,8 @@ export const SetConditionTable = (props: ContitionalTableProps) => {
                                   indexCol
                                 );
                               }}
-                              value={row.condition[indexCol]?.conditionVal}
+                              value={row.condition[indexCol]?.value}
+                              InputProps={{ readOnly: readOnly }}
                             />
                             {indexCol > 0 && isEditable && (
                               <RemoveIconButton
@@ -707,8 +686,8 @@ export const PricingTable = (props: PriceTableProps) => {
           for (let i = 0; i <= condisitionCount; i++) {
             const pushItem: ConditionModel['condition'] = val.condition.map(
               (val) => ({
-                conditions: val.conditions,
-                conditionVal: val.conditionVal,
+                operator: val.operator,
+                value: val.value,
               })
             );
             newVal.condition.push({ ...pushItem[i] });
@@ -736,7 +715,7 @@ export const PricingTable = (props: PriceTableProps) => {
         <TableRow>
           {outputCsvdata.map((column, index) => {
             return (
-              <TableCell key={column.conditionType + index}>
+              <TableCell key={index}>
                 条件{index + 1}
                 <TableDivider />
                 {changeCodeToValue(column.conditionType)}
@@ -754,10 +733,10 @@ export const PricingTable = (props: PriceTableProps) => {
                 {row.condition.map((column, indexColumn: number) => {
                   return (
                     <>
-                      <RowStack key={`${column.conditionVal}-${indexColumn}`}>
-                        {changeCodeToValue(column.conditions)}
+                      <RowStack key={`${column.value}-${indexColumn}`}>
+                        {changeCodeToValue(column.operator)}
                         <TableSpaceDivider isBlack />
-                        {changeCodeToValue(column.conditionVal)}
+                        {changeCodeToValue(column.value)}
                       </RowStack>
                       {indexColumn <= row.condition.length - 2 && (
                         <TableDivider isBlack />

@@ -41,6 +41,7 @@ interface ButtonProps {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   size?: 'small' | 'medium' | 'large';
   onBlur?: (e: React.FocusEvent<HTMLButtonElement>) => void;
+  header?: boolean;
 }
 
 const ButonIcon = (icon: string) => {
@@ -109,7 +110,8 @@ export const AddButton = (props: ButtonProps) => {
 };
 
 export const OutputButton = (props: ButtonProps) => {
-  const { children, disable = false, onClick } = props;
+  const { children, disable = false, onClick, header } = props;
+  const headerButton = header ? { width: 110, minWidth: 110, height: 22 } : {};
   return (
     <StyledAddButton
       startIcon={
@@ -118,6 +120,7 @@ export const OutputButton = (props: ButtonProps) => {
       disabled={disable}
       onClick={onClick}
       size='medium'
+      style={{ ...headerButton }}
     >
       {children}
     </StyledAddButton>
@@ -125,7 +128,8 @@ export const OutputButton = (props: ButtonProps) => {
 };
 
 export const RegisterButton = (props: ButtonProps) => {
-  const { children, disable = false, onClick } = props;
+  const { children, disable = false, onClick, header } = props;
+  const headerButton = header ? { width: 110, minWidth: 110, height: 22 } : {};
   return (
     <StyledAddButton
       startIcon={
@@ -134,6 +138,7 @@ export const RegisterButton = (props: ButtonProps) => {
       disabled={disable}
       onClick={onClick}
       size='medium'
+      style={{ ...headerButton }}
     >
       {children}
     </StyledAddButton>
@@ -141,7 +146,8 @@ export const RegisterButton = (props: ButtonProps) => {
 };
 
 export const MailButton = (props: ButtonProps) => {
-  const { children, disable = false, onClick } = props;
+  const { children, disable = false, onClick, header } = props;
+  const headerButton = header ? { width: 110, minWidth: 110, height: 22 } : {};
   return (
     <StyledAddButton
       startIcon={
@@ -150,6 +156,7 @@ export const MailButton = (props: ButtonProps) => {
       disabled={disable}
       onClick={onClick}
       size='medium'
+      style={{ ...headerButton }}
     >
       {children}
     </StyledAddButton>
@@ -157,7 +164,8 @@ export const MailButton = (props: ButtonProps) => {
 };
 
 export const PrintButton = (props: ButtonProps) => {
-  const { children, disable = false, onClick } = props;
+  const { children, disable = false, onClick, header } = props;
+  const headerButton = header ? { width: 110, minWidth: 110, height: 22 } : {};
   return (
     <StyledAddButton
       startIcon={
@@ -166,6 +174,7 @@ export const PrintButton = (props: ButtonProps) => {
       disabled={disable}
       onClick={onClick}
       size='medium'
+      style={{ ...headerButton }}
     >
       {children}
     </StyledAddButton>
