@@ -1,11 +1,10 @@
 import { ComponentMeta } from '@storybook/react';
 import React, { useState } from 'react';
 
-import { CenterBox, MarginBox } from 'layouts/Box';
+import { CenterBox } from 'layouts/Box';
 import { ColStack } from 'layouts/Stack';
 
 import { PrimaryButton } from 'controls/Button';
-import { Icon } from 'controls/Icon';
 import {
   convertFromConditionToPricingTableRows,
   PricingTable,
@@ -19,9 +18,9 @@ import { ThemeProvider } from '@mui/material';
 
 import {
   ConditionalTable,
+  ConditionKind,
   ConditionModel,
-  ConditionType,
-  DeepKey,
+  exportCsv,
 } from './ConditionalTable';
 
 export default {
@@ -48,10 +47,10 @@ export const Example = () => {
     { displayValue: '≧', value: 6 },
   ];
 
-  const conditionTypes: ConditionType[] = [
+  const conditionKinds: ConditionKind[] = [
     {
-      type: 'ITM_PR_001',
-      typeName: '落札金額',
+      value: 'ITM_PR_001',
+      displayValue: '落札金額',
       selectValues: [
         { displayValue: '3000000', value: 3000000 },
         { displayValue: '5000000', value: 5000000 },
@@ -60,8 +59,8 @@ export const Example = () => {
       ],
     },
     {
-      type: 'ITM_PR_002',
-      typeName: '申告コーナー区分',
+      value: 'ITM_PR_002',
+      displayValue: '申告コーナー区分',
       selectValues: [
         { displayValue: '998', value: '998' },
         { displayValue: 'トラックレンタ・リース', value: '6' },
@@ -75,12 +74,12 @@ export const Example = () => {
       ],
     },
     {
-      type: 'ITM_PR_004',
-      typeName: '検査台数(1台出品F)',
+      value: 'ITM_PR_004',
+      displayValue: '検査台数(1台出品F)',
     },
     {
-      type: 'ITM_PR_005',
-      typeName: 'トラック区分',
+      value: 'ITM_PR_005',
+      displayValue: 'トラック区分',
       selectValues: [
         { displayValue: '大型', value: 1 },
         { displayValue: '中型', value: 2 },
@@ -89,39 +88,39 @@ export const Example = () => {
       ],
     },
     {
-      type: 'ITM_PR_006',
-      typeName: '成約区分',
+      value: 'ITM_PR_006',
+      displayValue: '成約区分',
     },
     {
-      type: 'ITM_PR_013',
-      typeName: '再出品F',
+      value: 'ITM_PR_013',
+      displayValue: '再出品F',
     },
     {
-      type: 'ITM_PR_014',
-      typeName: '出品料区分',
+      value: 'ITM_PR_014',
+      displayValue: '出品料区分',
       selectValues: [
         { displayValue: '有料', value: 0 },
         { displayValue: '無料', value: 9 },
       ],
     },
     {
-      type: 'ITM_PR_016',
-      typeName: 'イベント（車種）',
+      value: 'ITM_PR_016',
+      displayValue: 'イベント（車種）',
     },
     {
-      type: 'ITM_PR_017',
-      typeName: 'デポフラグ',
+      value: 'ITM_PR_017',
+      displayValue: 'デポフラグ',
     },
     {
-      type: 'ITM_PR_018',
-      typeName: '開催イベント区分',
+      value: 'ITM_PR_018',
+      displayValue: '開催イベント区分',
     },
   ];
 
-  const initialRows: ConditionModel[] = [
+  const initialConditions: ConditionModel[] = [
     {
-      conditionType: 'ITM_PR_004',
-      condition: [
+      conditionKind: 'ITM_PR_004',
+      subConditions: [
         {
           operator: 1,
           value: '1',
@@ -133,8 +132,8 @@ export const Example = () => {
       ],
     },
     {
-      conditionType: 'ITM_PR_005',
-      condition: [
+      conditionKind: 'ITM_PR_005',
+      subConditions: [
         {
           operator: 1,
           value: '1',
@@ -154,8 +153,8 @@ export const Example = () => {
       ],
     },
     {
-      conditionType: '',
-      condition: [
+      conditionKind: '',
+      subConditions: [
         {
           operator: 0,
           value: '',
@@ -165,111 +164,137 @@ export const Example = () => {
   ];
 
   // state
-  const [rows, setRows] = useState<ConditionModel[]>(initialRows);
+  const [conditions, setConditions] =
+    useState<ConditionModel[]>(initialConditions);
   const [dataset, setDataset] = useState<PricingTableModel[]>([]);
-  // const [pricingTableVisible, setPricingTableVisible] =
-  //   useState<boolean>(false);
-
-  // 条件種類変更後にAPIより条件、値を取得する
-  const handleGetConditionData = (select: string) => {
-    return conditionTypes.find((val) => val.type === select) ?? null;
-  };
-
-  // 値の変更を検知する
-  const handleOnValueChange = (
-    val: string | number,
-    changeVal: DeepKey<ConditionModel>,
-    indexRow: number,
-    indexCol?: number
-  ) => {
-    if (changeVal === 'conditionType') {
-      rows[indexRow][changeVal] = val;
-    }
-    if (changeVal === 'operator' && indexCol !== undefined) {
-      rows[indexRow].condition[indexCol][changeVal] = val;
-      setRows(rows);
-    }
-    if (changeVal === 'value' && indexCol !== undefined) {
-      rows[indexRow].condition[indexCol][changeVal] = val;
-    }
-    setRows([...rows]);
-  };
-
-  const handleSetItem = (sortValues: ConditionModel[]) => {
-    setRows(sortValues);
-  };
-
-  // const handleVisibleTable = () => {
-  //   setPricingTableVisible(!pricingTableVisible);
-  // };
 
   const onClickExport = () => {
+    exportCsv('filename.csv', dataset, []);
     console.log('exportCSV');
   };
 
   const handleOnClick = () => {
-    console.log(rows);
-    const dataset = convertFromConditionToPricingTableRows(rows, operators);
+    console.log(conditions);
+    const dataset = convertFromConditionToPricingTableRows(
+      conditions,
+      conditionKinds,
+      operators
+    );
     setDataset(dataset);
   };
 
-  // const changeCodeToValue = (code: string | number): string => {
-  //   for (const r of conditionTypes) {
-  //     if (r.type === code) {
-  //       return r.typeName;
-  //     }
-  //     if (r.operators) {
-  //       for (const c of r.operators) {
-  //         if (c.value === Number(code)) {
-  //           return c.displayValue;
-  //         }
-  //       }
-  //     }
-  //     if (typeof r.selectValues === 'string') {
-  //       return String(code);
-  //     } else if (r.selectValues) {
-  //       for (const v of r.selectValues) {
-  //         if (v?.value === code) {
-  //           return v.displayValue;
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return '';
-  // };
+  const handleOnConditionTypeChange = (
+    type: string | number,
+    index: number
+  ) => {
+    conditions[index] = {
+      conditionKind: type,
+      subConditions: [
+        {
+          operator: '',
+          value: '',
+        },
+      ],
+    };
+    setConditions([...conditions]);
+  };
 
-  const decoration = (
-    <MarginBox mr={5} gap={2}>
-      <Icon iconName='一括登録' iconType='import' onClick={onClickExport} />
-      <Icon iconName='CSV出力' iconType='export' onClick={onClickExport} />
-    </MarginBox>
-  );
+  const handleOnSubConditionChange = (
+    value: string | number,
+    index: number,
+    subIndex: number,
+    field: string
+  ) => {
+    if (field === 'operator') {
+      conditions[index].subConditions[subIndex].operator = value;
+    }
+    if (field === 'value') {
+      conditions[index].subConditions[subIndex].value = value;
+    }
+    setConditions([...conditions]);
+  };
+
+  const handleOnDrderChangeClick = (index: number, direction: string) => {
+    if (direction === 'up') {
+      [conditions[index - 1], conditions[index]] = [
+        conditions[index],
+        conditions[index - 1],
+      ];
+    }
+    if (direction === 'down') {
+      [conditions[index + 1], conditions[index]] = [
+        conditions[index],
+        conditions[index + 1],
+      ];
+    }
+    setConditions([...conditions]);
+  };
+
+  const handleOnConditionCountChangeClick = (
+    operation: string,
+    index?: number
+  ) => {
+    if (operation === 'add') {
+      conditions.push({
+        conditionKind: '',
+        subConditions: [
+          {
+            operator: '',
+            value: '',
+          },
+        ],
+      });
+    }
+    if (operation === 'remove' && index !== undefined) {
+      conditions.splice(index, 1);
+    }
+    setConditions([...conditions]);
+  };
+
+  const handleOnSubConditionCoountChangeClick = (
+    index: number,
+    operation: string,
+    subIndex?: number
+  ) => {
+    if (operation === 'add') {
+      conditions[index].subConditions.push({
+        operator: '',
+        value: '',
+      });
+    }
+    if (operation === 'remove' && subIndex !== undefined) {
+      conditions[index].subConditions.splice(subIndex, 1);
+    }
+    setConditions([...conditions]);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <ColStack>
         <ConditionalTable
           columns={columns}
-          conditionTypes={conditionTypes}
+          conditionKinds={conditionKinds}
           operators={operators}
-          rows={rows}
-          onValueChange={handleOnValueChange}
-          handleSetItem={handleSetItem}
-          // handleVisibleTable={handleVisibleTable}
-          handleGetConditionData={handleGetConditionData}
-          // readOnly={true}
+          rows={conditions}
+          onConditionKindChange={handleOnConditionTypeChange}
+          onSubConditionChange={handleOnSubConditionChange}
+          onOrderChangeClick={handleOnDrderChangeClick}
+          onConditionCountChangeClick={handleOnConditionCountChangeClick}
+          onSubConditionCoountChangeClick={
+            handleOnSubConditionCoountChangeClick
+          }
         />
         <CenterBox>
           <PrimaryButton onClick={handleOnClick}>反映</PrimaryButton>
         </CenterBox>
         <PricingTable
-          conditions={rows}
+          conditions={initialConditions}
           dataset={dataset}
-          conditionTypes={conditionTypes}
+          conditionkinds={conditionKinds}
           operators={operators}
         />
         <CenterBox>
-          <PrimaryButton onClick={handleOnClick}>CSV出力</PrimaryButton>
+          <PrimaryButton onClick={onClickExport}>CSV出力</PrimaryButton>
         </CenterBox>
       </ColStack>
     </ThemeProvider>

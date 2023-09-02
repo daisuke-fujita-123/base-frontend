@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import {
   DataGridPro as MuiDataGridPro,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
   gridPageCountSelector,
   gridPaginationModelSelector,
   GridValidRowModel,
@@ -195,6 +196,12 @@ export const GridToolbar = (props: GridToolbarProps) => {
       ? { ...headerRow, internalId: -1 }
       : { internalId: -1 };
 
+  console.log(GRID_CHECKBOX_SELECTION_COL_DEF);
+
+  const displayColumns = headerCheckboxSelection
+    ? [{ field: '__empty__', headerName: '', width: 50 }, ...headerColumns]
+    : headerColumns;
+
   return (
     <>
       {pagination && <GridPagination />}
@@ -203,13 +210,12 @@ export const GridToolbar = (props: GridToolbarProps) => {
       ))}
       {showHeaderRow && (
         <StyledDataGrid
-          columns={headerColumns}
+          columns={displayColumns}
           rows={[displayRow]}
           columnHeaderHeight={0}
           showCellVerticalBorder
           rowHeight={30}
           getRowId={(row) => row.internalId}
-          checkboxSelection={headerCheckboxSelection}
           hideFooter
           apiRef={headerApiRef}
         />

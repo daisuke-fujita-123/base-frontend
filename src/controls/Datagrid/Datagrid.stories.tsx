@@ -358,6 +358,7 @@ export const UpdatableHeaderRow = () => {
       field: 'button',
       headerName: '',
       cellType: 'button',
+      width: 200,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ) => {
@@ -463,6 +464,7 @@ export const UpdatableHeaderRow = () => {
           columns={columns}
           rows={rows}
           controlled={false}
+          checkboxSelection
           showHeaderRow
           headerRow={headerRow}
           apiRef={apiRef}
