@@ -4,13 +4,24 @@ import { ObjectSchema, ValidationError } from 'yup';
 
 import { InfoButton } from 'controls/Button';
 import {
-    GridCellForTooltip as MuiGridCellForTooltip, GridCheckboxCell, GridCustomizableRadiioCell,
-    GridDatepickerCell, GridFromtoCell, GridInputCell, GridRadioCell, GridSelectCell
+  GridCellForTooltip as MuiGridCellForTooltip,
+  GridCheckboxCell,
+  GridCustomizableRadiioCell,
+  GridDatepickerCell,
+  GridFromtoCell,
+  GridInputCell,
+  GridRadioCell,
+  GridSelectCell,
 } from 'controls/Datagrid/DataGridCell';
 import { GridToolbar } from 'controls/Datagrid/DataGridToolbar';
 import {
-    appendErrorToInvalids, convertFromInvalidToMessage, convertFromResolverToInvalids,
-    convertFromSizeToWidth, InvalidModel, removeIdFromInvalids, resolveGridWidth
+  appendErrorToInvalids,
+  convertFromInvalidToMessage,
+  convertFromResolverToInvalids,
+  convertFromSizeToWidth,
+  InvalidModel,
+  removeIdFromInvalids,
+  resolveGridWidth,
 } from 'controls/Datagrid/DataGridUtil';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
@@ -20,8 +31,13 @@ import SortDesc from 'icons/content_sort_descend.png';
 
 import { Box, Stack, styled, Tooltip } from '@mui/material';
 import {
-    DataGridPro as MuiDataGridPro, DataGridProProps, GridColDef as MuiGridColDef,
-    GridColumnHeaderParams, GridRenderCellParams, GridRowsProp, GridValidRowModel
+  DataGridPro as MuiDataGridPro,
+  DataGridProProps,
+  GridColDef as MuiGridColDef,
+  GridColumnHeaderParams,
+  GridRenderCellParams,
+  GridRowsProp,
+  GridValidRowModel,
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 
@@ -693,6 +709,7 @@ export const DataGrid = (props: DataGridProps) => {
               showHeaderRow: showHeaderRow,
               headerColumns: muiColumns,
               headerRow: headerRow,
+              headerCheckboxSelection: checkboxSelection,
               headerApiRef: headerApiRef,
             },
           }}
