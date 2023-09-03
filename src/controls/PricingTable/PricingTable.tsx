@@ -89,9 +89,16 @@ export const convertFromConditionToPricingTableRows = (
       x.subConditions.forEach((y, k) => {
         const operator = operators.find((e) => e.value === y.operator);
         for (let l = 0; l < tailCount; l++) {
+          let value = y.value as string;
+          if (kind?.selectValues !== undefined) {
+            const selectValue = kind.selectValues.find(
+              (e) => e.value === Number(y.value)
+            );
+            value = selectValue?.displayValue ? selectValue.displayValue : '';
+          }
           tempRows[
             j * x.subConditions.length * tailCount + k * tailCount + l
-          ].push(kind?.displayValue, operator?.displayValue, y.value);
+          ].push(kind?.displayValue, operator?.displayValue, value);
         }
       });
     }
@@ -142,15 +149,13 @@ export const convertFromConditionToPricingTableRows = (
 export interface PricingTableProps {
   conditions: ConditionModel[];
   dataset: PricingTableModel[];
-  conditionkinds: ConditionKind[];
-  operators: SelectValue[];
 }
 
 /**
  * PricingTableコンポーネント
  */
 export const PricingTable = (props: PricingTableProps) => {
-  const { conditions, dataset, conditionkinds, operators } = props;
+  const { conditions, dataset } = props;
 
   // 各条件の中の条件の数
   const conditionCounts = conditions.map((x) => x.subConditions.length);

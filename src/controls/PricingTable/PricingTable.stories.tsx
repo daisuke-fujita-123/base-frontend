@@ -27,7 +27,7 @@ export const Example = () => {
     { displayValue: '≧', value: 6 },
   ];
 
-  const conditionTypes: ConditionKind[] = [
+  const conditionKinds: ConditionKind[] = [
     {
       value: 'ITM_PR_001',
       displayValue: '落札金額',
@@ -183,18 +183,13 @@ export const Example = () => {
 
   const rows: PricingTableModel[] = convertFromConditionToPricingTableRows(
     conditions,
-    conditionTypes,
+    conditionKinds,
     operators
   );
 
   return (
     <ThemeProvider theme={theme}>
-      <PricingTable
-        conditions={conditions}
-        dataset={rows}
-        conditionTypes={conditionTypes}
-        operators={operators}
-      />
+      <PricingTable conditions={conditions} dataset={rows} />
     </ThemeProvider>
   );
 };

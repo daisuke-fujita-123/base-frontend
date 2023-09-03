@@ -1,14 +1,15 @@
 import { ComponentMeta } from '@storybook/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
 
+import { CenterBox } from 'layouts/Box';
 import { RowStack, Stack } from 'layouts/Stack';
 
+import { PrimaryButton } from 'controls/Button';
 import {
   ConditionalTable,
   ConditionKind,
   ConditionModel,
-  DeepKey,
 } from 'controls/ConditionalTable';
 import { Radio } from 'controls/Radio';
 import { Select, SelectValue } from 'controls/Select';
@@ -16,7 +17,6 @@ import { TableColDef } from 'controls/Table';
 import { PriceTextField } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
-import { Button } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 
 import { AddableBox } from './AddableBox';
@@ -52,7 +52,7 @@ export const Example = () => {
     { displayValue: '≧', value: 6 },
   ];
 
-  const conditionTypes: ConditionKind[] = [
+  const conditionKinds: ConditionKind[] = [
     {
       value: 'ITM_PR_001',
       displayValue: '落札金額',
@@ -177,42 +177,6 @@ export const Example = () => {
     control: methods.control,
   });
 
-  // 条件種類変更後にAPIより条件、値を取得する
-  const handleGetConditionData = (select: string) => {
-    return conditionTypes.find((val) => val.value === select) ?? null;
-  };
-
-  // 値の変更を検知する
-  const handleChange = (
-    val: string | number,
-    changeVal: DeepKey<ConditionModel>,
-    index: number,
-    indexRow: number,
-    indexCol?: number
-  ) => {
-    const row = rows[index][indexRow];
-    if (changeVal === 'conditionType' && typeof val === 'string') {
-      row.conditionKind = val;
-    }
-    if (changeVal === 'conditions' && indexCol !== undefined) {
-      row.subConditions[indexCol].operator = val;
-    }
-    if (changeVal === 'conditionVal' && indexCol !== undefined) {
-      row.subConditions[indexCol].value = val;
-    }
-
-    setRows([...rows]);
-  };
-
-  const handleSetItem = (sortValues: ConditionModel[], index: number) => {
-    rows[index] = sortValues;
-    setRows([...rows]);
-  };
-
-  useEffect(() => {
-    methods.setValue('conditions', datalist.conditions);
-  }, [methods, datalist]);
-
   // 明細追加
   const handleAddClick = () => {
     rows.push([
@@ -238,8 +202,82 @@ export const Example = () => {
 
   // 明細削除
   const handleRemoveClick = (index: number) => {
-    // setDatalist(datalist.conditions.filter((_, i) => index !== i));
     arrayMethods.remove(index);
+    rows.splice(index, 1);
+    setRows([...rows]);
+  };
+
+  const handleOnConditionTypeChange = (
+    boxIndex: number,
+    kind: string | number,
+    index: number
+  ) => {
+    rows[boxIndex][index] = {
+      conditionKind: kind,
+      subConditions: [
+        {
+          operator: '',
+          value: '',
+        },
+      ],
+    };
+    setRows([...rows]);
+  };
+
+  const handleOnSubConditionChange = (
+    boxIndex: number,
+    value: string | number,
+    index: number,
+    subIndex: number,
+    field: string
+  ) => {
+    if (field === 'operator') {
+      rows[boxIndex][index].subConditions[subIndex].operator = value;
+    }
+    if (field === 'value') {
+      rows[boxIndex][index].subConditions[subIndex].value = value;
+    }
+    setRows([...rows]);
+  };
+
+  const handleOnConditionCountChangeClick = (
+    boxIndex: number,
+    operation: string,
+    index?: number
+  ) => {
+    if (operation === 'add') {
+      rows[boxIndex].push({
+        conditionKind: '',
+        subConditions: [
+          {
+            operator: '',
+            value: '',
+          },
+        ],
+      });
+    }
+    if (operation === 'remove' && index !== undefined) {
+      rows[boxIndex].splice(index, 1);
+    }
+    setRows([...rows]);
+  };
+
+  const handleOnSubConditionCoountChangeClick = (
+    boxIndex: number,
+    index: number,
+    operation: string,
+    subIndex?: number
+  ) => {
+    if (operation === 'add') {
+      rows[boxIndex][index].subConditions.push({
+        operator: '',
+        value: '',
+      });
+    }
+    if (operation === 'remove' && subIndex !== undefined) {
+      rows[boxIndex][index].subConditions.splice(subIndex, 1);
+    }
+    setRows([...rows]);
   };
 
   const handleOnClick = () => {
@@ -255,7 +293,7 @@ export const Example = () => {
           handleRemoveClick={handleRemoveClick}
         >
           {arrayMethods.fields.map((val, i) => (
-            <Stack spacing={6} key={val.id}>
+            <Stack spacing={6} key={i}>
               <RowStack>
                 <Select
                   required
@@ -272,15 +310,26 @@ export const Example = () => {
               </RowStack>
               <ConditionalTable
                 columns={columns}
-                conditionKinds={conditionTypes}
+                conditionKinds={conditionKinds}
                 operators={operators}
-                onValueChange={(val, changeVal, indexRow, indexCol) =>
-                  handleChange(val, changeVal, i, indexRow, indexCol)
-                }
                 rows={rows[i]}
-                handleSetItem={(sortValues) => handleSetItem(sortValues, i)}
-                handleGetConditionData={handleGetConditionData}
-                isEditable={false}
+                onConditionKindChange={(kind, index) =>
+                  handleOnConditionTypeChange(i, kind, index)
+                }
+                onSubConditionChange={(value, index, subIndex, field) =>
+                  handleOnSubConditionChange(i, value, index, subIndex, field)
+                }
+                onConditionCountChangeClick={(operation, index) =>
+                  handleOnConditionCountChangeClick(i, operation, index)
+                }
+                onSubConditionCoountChangeClick={(index, operation, subIndex) =>
+                  handleOnSubConditionCoountChangeClick(
+                    i,
+                    index,
+                    operation,
+                    subIndex
+                  )
+                }
               />
               <RowStack spacing={2}>
                 <Radio
@@ -298,7 +347,9 @@ export const Example = () => {
             </Stack>
           ))}
         </AddableBox>
-        <Button onClick={handleOnClick}>log</Button>
+        <CenterBox>
+          <PrimaryButton onClick={handleOnClick}>log</PrimaryButton>
+        </CenterBox>
       </ThemeProvider>
     </FormProvider>
   );
