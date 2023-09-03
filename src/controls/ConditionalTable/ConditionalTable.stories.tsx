@@ -168,21 +168,6 @@ export const Example = () => {
     useState<ConditionModel[]>(initialConditions);
   const [dataset, setDataset] = useState<PricingTableModel[]>([]);
 
-  const onClickExport = () => {
-    exportCsv('filename.csv', dataset, []);
-    console.log('exportCSV');
-  };
-
-  const handleOnClick = () => {
-    console.log(conditions);
-    const dataset = convertFromConditionToPricingTableRows(
-      conditions,
-      conditionKinds,
-      operators
-    );
-    setDataset(dataset);
-  };
-
   const handleOnConditionTypeChange = (
     type: string | number,
     index: number
@@ -210,22 +195,6 @@ export const Example = () => {
     }
     if (field === 'value') {
       conditions[index].subConditions[subIndex].value = value;
-    }
-    setConditions([...conditions]);
-  };
-
-  const handleOnDrderChangeClick = (index: number, direction: string) => {
-    if (direction === 'up') {
-      [conditions[index - 1], conditions[index]] = [
-        conditions[index],
-        conditions[index - 1],
-      ];
-    }
-    if (direction === 'down') {
-      [conditions[index + 1], conditions[index]] = [
-        conditions[index],
-        conditions[index + 1],
-      ];
     }
     setConditions([...conditions]);
   };
@@ -268,6 +237,37 @@ export const Example = () => {
     setConditions([...conditions]);
   };
 
+  const handleOnDrderChangeClick = (index: number, direction: string) => {
+    if (direction === 'up') {
+      [conditions[index - 1], conditions[index]] = [
+        conditions[index],
+        conditions[index - 1],
+      ];
+    }
+    if (direction === 'down') {
+      [conditions[index + 1], conditions[index]] = [
+        conditions[index],
+        conditions[index + 1],
+      ];
+    }
+    setConditions([...conditions]);
+  };
+
+  const onClickExport = () => {
+    exportCsv('filename.csv', dataset, []);
+    console.log('exportCSV');
+  };
+
+  const handleOnClick = () => {
+    console.log(conditions);
+    const dataset = convertFromConditionToPricingTableRows(
+      conditions,
+      conditionKinds,
+      operators
+    );
+    setDataset(dataset);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <ColStack>
@@ -278,21 +278,17 @@ export const Example = () => {
           rows={conditions}
           onConditionKindChange={handleOnConditionTypeChange}
           onSubConditionChange={handleOnSubConditionChange}
-          onOrderChangeClick={handleOnDrderChangeClick}
           onConditionCountChangeClick={handleOnConditionCountChangeClick}
           onSubConditionCoountChangeClick={
             handleOnSubConditionCoountChangeClick
           }
+          onOrderChangeClick={handleOnDrderChangeClick}
+          reorderable
         />
         <CenterBox>
           <PrimaryButton onClick={handleOnClick}>反映</PrimaryButton>
         </CenterBox>
-        <PricingTable
-          conditions={initialConditions}
-          dataset={dataset}
-          conditionkinds={conditionKinds}
-          operators={operators}
-        />
+        <PricingTable conditions={initialConditions} dataset={dataset} />
         <CenterBox>
           <PrimaryButton onClick={onClickExport}>CSV出力</PrimaryButton>
         </CenterBox>

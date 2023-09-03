@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 import {
   DataGridPro as MuiDataGridPro,
-  GRID_CHECKBOX_SELECTION_COL_DEF,
   gridPageCountSelector,
   gridPaginationModelSelector,
   GridValidRowModel,
@@ -192,11 +191,7 @@ export const GridToolbar = (props: GridToolbarProps) => {
   } = props;
 
   const displayRow =
-    headerRow !== undefined
-      ? { ...headerRow, internalId: -1 }
-      : { internalId: -1 };
-
-  console.log(GRID_CHECKBOX_SELECTION_COL_DEF);
+    headerRow !== undefined ? { ...headerRow, id: -1 } : { id: -1 };
 
   const displayColumns = headerCheckboxSelection
     ? [{ field: '__empty__', headerName: '', width: 50 }, ...headerColumns]
@@ -215,7 +210,7 @@ export const GridToolbar = (props: GridToolbarProps) => {
           columnHeaderHeight={0}
           showCellVerticalBorder
           rowHeight={30}
-          getRowId={(row) => row.internalId}
+          // getRowId={(row) => row.internalId}
           hideFooter
           apiRef={headerApiRef}
         />
