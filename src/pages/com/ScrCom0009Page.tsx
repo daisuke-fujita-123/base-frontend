@@ -40,7 +40,7 @@ import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
 
-import { GridRowSelectionModel, useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridRowSelectionModel } from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件データモデル
@@ -512,13 +512,6 @@ const ScrCom0009Page = () => {
     setCheckList(RowSelections);
   };
 
-  // データグリットの幅指定
-  const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 40;
-
   return (
     <>
       <MainLayout>
@@ -587,6 +580,7 @@ const ScrCom0009Page = () => {
             {/* 再出力対象選択セクション */}
             <Section
               name='再出力対象選択'
+              fitInside
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                   {searchResult.length !== 0 ? (
@@ -596,7 +590,6 @@ const ScrCom0009Page = () => {
                   )}
                 </MarginBox>
               }
-              width={maxSectionWidth}
             >
               {searchResult.length !== 0 ? (
                 <DataGrid
@@ -605,7 +598,6 @@ const ScrCom0009Page = () => {
                   pagination
                   checkboxSelection
                   onRowSelectionModelChange={handRowSelectionModelChange}
-                  apiRef={apiRef}
                 />
               ) : (
                 ''
