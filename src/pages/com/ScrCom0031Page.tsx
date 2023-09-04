@@ -18,6 +18,7 @@ import { useNavigate } from 'hooks/useNavigate';
 import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
+import saveAs from 'file-saver';
 
 /**
  * ダウンロードリンク(ZIP)データモデル
@@ -201,10 +202,6 @@ const ScrCom0031Page = () => {
   const [searchResult, setSearchResult] = useState<SearchResultList[]>([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
   const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 40;
 
   // router
   const navigate = useNavigate();
@@ -249,8 +246,11 @@ const ScrCom0031Page = () => {
     const urlLength = url.length;
     const result = url.substring(urlLength - 4, urlLength);
 
-    if (result === '.pdf' || result === '.csv') {
+    if (result === '.pdf') {
       navigate(url, true);
+    } else if (result === '.csv') {
+      const blob = new Blob([url], { type: 'text/csv' });
+      saveAs(blob, url);
     } else if (result === '.zip') {
       // zipファイル処理API
       const downlodLinkValues: DownlodLinkModel[] = [];
@@ -277,7 +277,7 @@ const ScrCom0031Page = () => {
         {/* main */}
         <MainLayout main>
           {/* 処理結果レポート */}
-          <Section name='処理結果レポート' width={maxSectionWidth}>
+          <Section name='処理結果レポート' fitInside>
             <DataGrid
               columns={searchResultColumns}
               rows={searchResult}
