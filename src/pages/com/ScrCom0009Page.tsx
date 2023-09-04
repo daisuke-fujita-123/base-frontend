@@ -194,8 +194,14 @@ const convertFromSearchConditionModel = (
     corporationId: searchCondition.corporationId,
     billingId: searchCondition.billingId,
     systemKind: searchCondition.systemKind,
-    reportCreateDateFrom: searchCondition.reportCreateDateFrom,
-    reportCreateDateTo: searchCondition.reportCreateDateTo,
+    reportCreateDateFrom:
+      searchCondition.reportCreateDateFrom === ''
+        ? searchCondition.reportCreateDateTo
+        : searchCondition.reportCreateDateFrom,
+    reportCreateDateTo:
+      searchCondition.reportCreateDateTo === ''
+        ? searchCondition.reportCreateDateFrom
+        : searchCondition.reportCreateDateTo,
     reportId: searchCondition.reportId,
     limitCount: 15000,
   };
@@ -354,7 +360,7 @@ const ScrCom0009Page = () => {
   const handleSearchClick = async () => {
     // 帳票作成日チェック（FROM＞TOでないこと）
     if (
-      getValues('reportCreateDateFrom') !== '' ||
+      getValues('reportCreateDateFrom') !== '' &&
       getValues('reportCreateDateTo') !== ''
     ) {
       if (getValues('reportCreateDateFrom') > getValues('reportCreateDateTo')) {
@@ -381,6 +387,7 @@ const ScrCom0009Page = () => {
     const request = convertFromSearchConditionModel(getValues());
     const response = await ScrCom0009GetReportList(request);
     const searchResult = convertToSearchResultRowModel(response);
+    console.log(request);
     if (searchResult.length != 0) {
       // 制限件数 <  取得件数の場合
       if (response.count < response.acquisitionCount) {
