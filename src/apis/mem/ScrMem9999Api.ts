@@ -19,7 +19,7 @@ export const ScrMem9999GetBillingContract = async (
   request: ScrMem9999GetBillingContractRequest
 ): Promise<ScrMem9999GetBillingContractResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-billing-contract',
+    '/api/mem/scr-mem-9999/get-billing-contract',
     request
   );
   return response.data;
@@ -41,7 +41,10 @@ export interface ScrMem9999GetBillResponse {
 export const ScrMem9999GetBill = async (
   request: ScrMem9999GetBillRequest
 ): Promise<ScrMem9999GetBillResponse> => {
-  const response = await memApiClient.post('/scr-mem-9999/get-bill', request);
+  const response = await memApiClient.post(
+    '/api/mem/scr-mem-9999/get-bill',
+    request
+  );
   return response.data;
 };
 
@@ -88,7 +91,7 @@ export const ScrMem9999GetBusinessInfo = async (
   request: ScrMem9999GetBusinessInfoRequest
 ): Promise<ScrMem9999GetBusinessInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-business-info',
+    '/api/mem/scr-mem-9999/get-business-info',
     request
   );
   return response.data;
@@ -135,7 +138,7 @@ export const ScrMem9999GetCodeValue = async (
   request: ScrMem9999GetCodeValueRequest
 ): Promise<ScrMem9999GetCodeValueResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-code-value',
+    '/api/mem/scr-mem-9999/get-code-value',
     request
   );
   return response.data;
@@ -168,7 +171,7 @@ export const ScrMem9999GetEmployeeFromDistrict = async (
   request: ScrMem9999GetEmployeeFromDistrictRequest
 ): Promise<ScrMem9999GetEmployeeFromDistrictResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-employee-from-district',
+    '/api/mem/scr-mem-9999/get-employee-from-district',
     request
   );
   return response.data;
@@ -193,7 +196,7 @@ export const ScrMem9999GetEmployeeFromBusinessBase = async (
   request: ScrMem9999GetEmployeeFromBusinessBaseRequest
 ): Promise<ScrMem9999GetEmployeeFromBusinessBaseResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-employee-from-business-base',
+    '/api/mem/scr-mem-9999/get-employee-from-business-base',
     request
   );
   return response.data;
@@ -216,7 +219,7 @@ export const ScrMem9999GetLogisticsBaseRepresentativeContract = async (
   request: ScrMem9999GetLogisticsBaseRepresentativeContractRequest
 ): Promise<ScrMem9999GetLogisticsBaseRepresentativeContractResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-logistics-base-representative-contract',
+    '/api/mem/scr-mem-9999/get-logistics-base-representative-contract',
     request
   );
   return response.data;
@@ -251,7 +254,7 @@ export const ScrMem9999OutputReport = async (
   request: ScrMem9999OutputReportRequest
 ): Promise<ScrMem9999OutputReportResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/output-report',
+    '/api/mem/scr-mem-9999/get-history-info',
     request
   );
   return response.data;
@@ -294,7 +297,7 @@ export const ScrMem9999GetCorpBasicInfo = async (
   request: ScrMem9999GetCorpBasicInfoRequest
 ): Promise<ScrMem9999GetCorpBasicInfoResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/get-corp-basic-info',
+    '/api/mem/scr-mem-9999/get-corp-basic-info',
     request
   );
   return response.data;
@@ -320,6 +323,7 @@ export interface ScrMem9999SearchconditionRefineResponse {
   contractId: string[];
 }
 
+// 法人リスト
 export interface CorporationList {
   // 法人ID
   corporationId: string;
@@ -332,7 +336,7 @@ export const ScrMem9999SearchconditionRefine = async (
   request: ScrMem9999SearchconditionRefineRequest
 ): Promise<ScrMem9999SearchconditionRefineResponse> => {
   const response = await memApiClient.post(
-    '/scr-mem-9999/searchcondition-refine',
+    '/api/mem/scr-mem-9999/searchcondition-refine',
     request
   );
   return response.data;
@@ -356,7 +360,9 @@ export interface List {
 /** API-MEM-9999-0024:営業担当情報取得API(市区郡マスタ)*/
 export const ScrMem9999GetEmployee =
   async (): Promise<ScrMem9999GetEmployeeResponse> => {
-    const response = await memApiClient.post('/scr-mem-9999/get-employee');
+    const response = await memApiClient.post(
+      '/api/mem/scr-mem-9999/get-employee'
+    );
     return response.data;
   };
 
@@ -378,7 +384,8 @@ export interface CorporationGroupList {
 export const ScrMem9999GetCorporationGroup =
   async (): Promise<ScrMem9999GetCorporationGroupResponse> => {
     const response = await memApiClient.post(
-      '/scr-mem-9999/get-corporation-group'
+      '/api/mem/scr-mem-9999/get-corporation-group'
     );
     return response.data;
   };
+
