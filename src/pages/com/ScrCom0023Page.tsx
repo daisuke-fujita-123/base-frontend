@@ -18,7 +18,11 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
-import { useGridApiRef } from '@mui/x-data-grid-pro';
+import {
+  GridCellParams,
+  GridTreeNode,
+  useGridApiRef,
+} from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件列定義
@@ -176,6 +180,7 @@ const ScrCom0023Page = () => {
     });
   };
 
+  // セクション幅修正
   useEffect(() => {
     setMaxSectionWidth(
       Number(
@@ -230,6 +235,13 @@ const ScrCom0023Page = () => {
     exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
   };
 
+  const handleGetCellClassName = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ) => {
+    if (params.row.useFlag === '不可') return 'use-flag-false';
+    return '';
+  };
+
   return (
     <>
       <MainLayout>
@@ -258,11 +270,12 @@ const ScrCom0023Page = () => {
               rows={searchResult}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
-              // TODO: 利用フラグがfalseの場合は該当レコードグレーアウト
-              // => グレーアウトする色のデザインが出来次第修正
-              getRowClassName={(params) => {
-                if (params.row.useFlag === '不可') return 'hot';
-                return '';
+              // 利用フラグがfalseの場合は該当レコードグレーアウト
+              getCellClassName={handleGetCellClassName}
+              sx={{
+                '& .use-flag-false': {
+                  backgroundColor: '#dddddd',
+                },
               }}
             />
           </Section>
