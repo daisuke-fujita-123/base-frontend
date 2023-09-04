@@ -470,8 +470,9 @@ const DatagridColumnGroups = () => {
       const request = {
         changeHistoryNumber: applicationId,
       };
-      const response = (await memApiClient.post('/get-history-info', request))
-        .data;
+      const response = (
+        await memApiClient.post('/scr-mem-9999/get-history-info', request)
+      ).data;
       const contract = convertToContractRowModel(response);
       const tvaaHrefs: GridHrefsModel[] = [];
       tvaaHrefs.push({
