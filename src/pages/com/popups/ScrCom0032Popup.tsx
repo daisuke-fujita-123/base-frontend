@@ -168,16 +168,18 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   // state
   // 承認要否フラグ(確定ボタンの活性・非活性を判定)
   const [approvalFlag, setApprovalFlag] = useState(false);
-  // 項目名のパラメータが渡されたかどうかを判定するフラグ
-  const [hasColumnNameParamFlag, setHasColumnNameParamFlag] = useState(true);
   // 登録・変更内容確認のテーブルモデル リスト
   const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>([]);
-  // ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
+  // 判定用 ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
   const [isWarningChecked, setIsWarningChecked] = useState<boolean>();
-
+  // 判定用 項目名のパラメータが渡されたかどうかを判定するフラグ 渡されている => true
+  const [hasColumnNameParamFlag, setHasColumnNameParamFlag] = useState(false);
+  // 判定用 セクション名が存在する => true
   const [isSectionName, setIsSectionName] = useState(false);
+  // 判定用 カラム名が存在する => true
   const [isColumnName, setIsColumnName] = useState(false);
-  const [isExistColumns, setisExistColumns] = useState(false);
+  // 判定用 画面名・タブ名・セクション名・項目名の内いずれかが存在する => true
+  const [isExistColumns, setisExistColumns] = useState<boolean>();
 
   // 初回レンダリング判定フラグ
   const renderFlgRef = useRef(false);
@@ -265,7 +267,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     // テーブルに表示するRowモデルに変換する
     for (let i = 0; i < rowColumnNameList.length; i++) {
       tempList.push({
-        id: i,
+        id: initialValues.registrationChangeList[0].tabId,
         screenName: initialValues.registrationChangeList[0].screenName,
         tabName: initialValues.registrationChangeList[0].tabName,
         sectionName: rowSectionNameList[i],
@@ -297,14 +299,8 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       const approvalResponse = await ScrCom0032GetApproval(approvalRequest);
       // ボタンのラベルを判定するフラグ設定
       setApprovalFlag(approvalResponse.approval);
-    };
 
-    // 遷移元画面遷移時には処理を実行しない
-    if (renderFlgRef.current) {
-      // 初期表示処理
-      initialize();
-
-      // 登録・変更内容テーブル表示用のモデルに変換する
+      // 登録・変更内容テーブル表示用のモデルに変換し、セクション名カラム名が存在するか判定
       convertToSearchResultRowModel(initialValues);
 
       // テーブルに設定した一時配列の内、該当する条件の項目名をカウント
@@ -316,7 +312,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       });
 
       // 項目名が呼び出し画面から一つもない場合(false)エラーメッセージを出力するフラグを設定
-      if (tempList.length === 0 || blankCount === tempList.length) {
+      if (blankCount === tempList.length) {
         setHasColumnNameParamFlag(false);
       } else {
         setHasColumnNameParamFlag(true);
@@ -333,9 +329,16 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       } else {
         setisExistColumns(true);
       }
-    } else {
-      renderFlgRef.current = true;
-    }
+
+      // ワーニングのチェックボックスの初期化
+      if (data.warningList.length === 0) {
+        setIsWarningChecked(true);
+      } else {
+        setIsWarningChecked(false);
+      }
+    };
+
+    initialize();
   }, []);
 
   // ワーニングチェックボックス処理
@@ -387,72 +390,60 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
           <FormProvider {...methods}>
             <Popup open={isOpen}>
               <Popup main>
-                {/* 項目名が一つも渡されていない場合はエラー内容を変更する */}
-                {hasColumnNameParamFlag ? (
-                  // エラー発生無の場合は非表示
-                  data.errorList.length > 0 ? (
-                    <PopSection name='エラー内容' isError>
-                      {data.errorList.map(
-                        (errorList: errorList, errorIndex: number) => {
-                          return (
-                            <Typography
-                              key={
-                                errorList.errorMessage + String(errorIndex + 1)
-                              }
-                              variant='h6'
-                            >
-                              {'エラーメッセージ' +
-                                Number(errorIndex + 1) +
-                                ':' +
-                                errorList.errorMessage}
-                            </Typography>
-                          );
-                        }
-                      )}
-                    </PopSection>
-                  ) : (
-                    ''
-                  )
-                ) : (
+                {/* エラー発生無の場合は非表示 */}
+                {data.errorList.length > 0 ? (
                   <PopSection name='エラー内容' isError>
-                    <Typography key={'index'} variant='h6'>
-                      エラーメッセージ{1}：{'項目がありません。'}
-                    </Typography>
+                    {data.errorList.map(
+                      (errorList: errorList, errorIndex: number) => {
+                        return (
+                          <Typography
+                            key={
+                              errorList.errorMessage + String(errorIndex + 1)
+                            }
+                            variant='h6'
+                          >
+                            {'エラーメッセージ' +
+                              Number(errorIndex + 1) +
+                              ':' +
+                              errorList.errorMessage}
+                          </Typography>
+                        );
+                      }
+                    )}
                   </PopSection>
+                ) : (
+                  <br />
                 )}
-                {/* ワーニング発生無の場合かパラメータの内 項目名が一つもない場合は非表示 */}
+
+                {/* ワーニング発生無の場合は非表示 */}
                 {data.warningList.length > 0 ? (
-                  hasColumnNameParamFlag ? (
-                    <PopSection name='ワーニング内容' isWarning>
-                      {data.warningList.map(
-                        (warningList: warningList, warningIndex: number) => {
-                          return (
-                            <>
-                              {/* エラー発生有の場合は非活性 */}
-                              <Checkbox
-                                key={
-                                  warningList.warningMessage +
-                                  String(warningIndex)
-                                }
-                                name={'checkbox' + warningIndex + 1}
-                                label={
-                                  'ワーニングメッセージ' +
-                                  Number(warningIndex + 1) +
-                                  ':' +
-                                  warningList.warningMessage
-                                }
-                                disabled={
-                                  data.errorList.length > 0 ? true : false
-                                }
-                              />
-                            </>
-                          );
-                        }
-                      )}
-                    </PopSection>
-                  ) : (
-                    ''
-                  )
+                  <PopSection name='ワーニング内容' isWarning>
+                    {data.warningList.map(
+                      (warningList: warningList, warningIndex: number) => {
+                        return (
+                          <>
+                            {/* エラー発生有の場合は非活性 */}
+                            <Checkbox
+                              key={
+                                warningList.warningMessage +
+                                String(warningIndex)
+                              }
+                              name={'checkbox' + warningIndex + 1}
+                              label={
+                                'ワーニングメッセージ' +
+                                Number(warningIndex + 1) +
+                                ':' +
+                                warningList.warningMessage
+                              }
+                              disabled={
+                                data.errorList.length > 0 ? true : false
+                              }
+                            />
+                          </>
+                        );
+                      }
+                    )}
+                  </PopSection>
                 ) : (
                   <br />
                 )}
@@ -460,22 +451,29 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                   <Section name='登録・変更内容' width={maxSectionWidth}>
                     {/* "TODO: 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
                     {/* ①項目が設定されない ②非表示と表示が聞かない */}
-                    {/* {isExistColumns && rowValuesList ? ( */}
-                    <>
-                      <DataGrid
-                        columns={columns}
-                        rows={rowValuesList}
-                        apiRef={apiRef}
-                      />
-                      <br />
-                    </>
-                    {/* ) : (
-                      ''
-                    )} */}
-                    {/* 変更予約有の場合は表示・無の場合は非表示 */}
-                    {data.changeExpectDate !== '' ? (
+                    {hasColumnNameParamFlag ? (
+                      isExistColumns && (
+                        <>
+                          <DataGrid
+                            columns={columns}
+                            rows={rowValuesList}
+                            apiRef={apiRef}
+                          />
+                          <br />
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <Typography key={'index'} variant='h6'>
+                          {'項目がありません。'}
+                        </Typography>
+                        <br />
+                      </>
+                    )}
+                    {/* 項目名がなく変更予約有の場合は表示・無の場合は非表示 */}
+                    {hasColumnNameParamFlag && data.changeExpectDate !== '' ? (
                       <Box>
-                        <Typography variant='h5'>変更予定日</Typography>
+                        <Typography variant='h6'>変更予定日</Typography>
                         <Typography variant='body1'>
                           {data.changeExpectDate}
                         </Typography>
@@ -485,7 +483,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                       <br />
                     )}
                     {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
-                    {isExistColumns ? (
+                    {hasColumnNameParamFlag ? (
                       <Box>
                         <Typography variant='h5'>登録変更メモ</Typography>
                         <Textarea
@@ -513,8 +511,11 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
+                    // TODO: 項目がありません。のエラー表示時 -> 非活性
                     disable={
-                      data.errorList.length >= 1 || !isWarningChecked
+                      data.errorList.length >= 1 ||
+                      !hasColumnNameParamFlag ||
+                      !isWarningChecked
                         ? true
                         : false
                     }
@@ -528,8 +529,11 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
+                    // TODO: 項目がありません。のエラー表示時 -> 非活性
                     disable={
-                      data.errorList.length >= 1 || !isWarningChecked
+                      data.errorList.length >= 1 ||
+                      !hasColumnNameParamFlag ||
+                      !isWarningChecked
                         ? true
                         : false
                     }
