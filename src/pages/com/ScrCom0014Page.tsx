@@ -13,9 +13,9 @@ import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 import { CancelButton, ConfirmButton, PrimaryButton } from 'controls/Button';
 import {
   ConditionalTable,
+  ConditionKind,
   ConditionModel,
-  ConditionType,
-  DeepKey,
+  exportCsv,
 } from 'controls/ConditionalTable';
 import { DatePicker } from 'controls/DatePicker';
 import { Icon } from 'controls/Icon/Icon';
@@ -44,8 +44,13 @@ import {
   ScrCom0014GetCommissionDisplayResponse,
 } from 'apis/com/ScrCom0014Api';
 import {
+  ScrCom0034DeleteAllRegistrationWork,
+  ScrCom0034DeleteAllRegistrationWorkRequest,
+  ScrCom0034GetAllRegistrationWork,
+  ScrCom0034GetAllRegistrationWorkRequest,
+} from 'apis/com/ScrCom0034Api';
+import {
   ChangeExpectDateInfo,
-  CodeValueList,
   comCommissionConditionList,
   CommissionDiscountConditionValueList,
   ResultList,
@@ -63,7 +68,6 @@ import {
   ScrCom9999GetStatementKindRequest,
   ScrCom9999ValueAttributeConversion,
   ScrCom9999ValueAttributeConversionRequest,
-  ScrCom9999ValueAttributeConversionResponse,
   statementKindList,
 } from 'apis/com/ScrCom9999Api';
 import {
@@ -147,44 +151,45 @@ const initialValues: CommissionTableDetailModel = {
 };
 
 /**
- * プルダウンデータモデル
+ * 手数料種類以外 プルダウンデータモデル
  */
 interface SelectValuesModel {
-  // 手数料種類
-  commissionKindSelectValues: SelectValue[];
   // 商品コード
   goodsClaimCodeSelectValues: SelectValue[];
   // 計算書種別
   statementKindSelectValues: SelectValue[];
-  // 条件種類
-  commissionConditionKindSelectValues: SelectValue[];
-  // 条件
-  commissionConditionSelectValues: SelectValue[];
-  // 条件値
-  commissionValueSelectValues: SelectValue[];
   // 変更予約情報
   changeReservationInfoSelectValues: SelectValue[];
 }
 
 /**
- * 検索条件(プルダウン)初期データ
+ * 手数料種類 プルダウン データモデル
+ */
+interface commissionKindSelectValuesModel {
+  // 手数料種類
+  commissionKindSelectValues: SelectValue[];
+}
+
+/**
+ * 手数料種類以外 プルダウン 初期データ
  */
 const selectValuesInitialValues: SelectValuesModel = {
-  // 手数料種類
-  commissionKindSelectValues: [],
   // 商品コード
   goodsClaimCodeSelectValues: [],
   // 計算書種別
   statementKindSelectValues: [],
-  // 条件種類
-  commissionConditionKindSelectValues: [],
-  // 条件
-  commissionConditionSelectValues: [],
-  // 条件値
-  commissionValueSelectValues: [],
   // 変更予約情報
   changeReservationInfoSelectValues: [],
 };
+
+/**
+ * 手数料種類 プルダウン 初期データ
+ */
+const commissionKindSelectValuesInitialValue: commissionKindSelectValuesModel =
+  {
+    // 手数料種類
+    commissionKindSelectValues: [],
+  };
 
 // 取込対象選択（一括登録定義）
 const allRegistrationDefinitions = [
@@ -196,12 +201,13 @@ const allRegistrationDefinitions = [
  */
 const validationSchema = {
   commissionId: yup.string().label('手数料ID').max(6).half(),
-  commissionName: yup.string().label('手数料名').max(30),
-  commissionKind: yup.array().label('手数料種類'),
+  commissionName: yup.string().label('手数料名').max(30).required(),
+  commissionKind: yup.array().label('手数料種類').required(),
   approvalDocumentId: yup.string().label('稟議書ID').max(20).half(),
-  goodsClaimCode: yup.array().label('商品クレームコード'),
-  statementKind: yup.array().label('計算書種別'),
-  useStartDate: yup.string().label('利用開始日').date(),
+  goodsClaimCode: yup.array().label('商品クレームコード').required(),
+  statementKind: yup.array().label('計算書種別').required(),
+  useStartDate: yup.string().label('利用開始日').date().required(),
+  useFlag: yup.boolean().label('利用フラグ').required(),
   // 条件設定セクション
   conditionType: yup.array().label('条件種類'),
   conditions: yup.array().label('条件'),
@@ -258,7 +264,6 @@ const SCR_COM_0014 = 'SCR-COM-0014';
  * コードID 定数定義
  */
 const CDE_TRA_0001 = 'CDE-TRA-0001';
-const CDE_COM_0010 = 'CDE-COM-0010';
 
 /**
  * 条件セクション
@@ -270,27 +275,18 @@ const columns: TableColDef[] = [
 ];
 
 /**
- * 条件セクションプルダウンデータモデル
- */
-// interface ConditionProps {
-//   displayValue: string;
-//   value: string;
-//   conditions: ConditionVal[];
-//   conditionVal: ConditionVal[] | string;
-// }
-
-/**
- * 行データモデル
- */
-interface ConditionVal {
-  displayValue: string;
-  value: string | number;
-}
-
-/**
- * SCR-COM-0014 手数料テーブル詳細画面
+ * API-COM-0014 手数料テーブル詳細画面
  */
 const ScrCom0014Page = () => {
+  /**
+   * クエリパラメータ
+   */
+  const [searchParams] = useSearchParams();
+  // 変更履歴番号
+  const changeHistoryNumber = searchParams.get('change-history-number');
+  // 一括登録ID
+  const allRegistrationId = searchParams.get('all-registration-id');
+
   // form
   const methods = useForm<CommissionTableDetailModel>({
     defaultValues: initialValues,
@@ -303,11 +299,11 @@ const ScrCom0014Page = () => {
     setValue,
     getValues,
     reset,
+    watch,
   } = methods;
 
   // router
   const { commissionId } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   // state
@@ -315,11 +311,16 @@ const ScrCom0014Page = () => {
     selectValuesInitialValues
   );
 
+  const [commissionKindSelectValues, setCommissionKindSelectValues] =
+    useState<commissionKindSelectValuesModel>(
+      commissionKindSelectValuesInitialValue
+    );
+
   // 項目の活性化・非活性化を判定するフラグ
   const [activeFlag, setActiveFlag] = useState(false);
   // 条件セクションの設定値
   // 条件種類
-  const [conditionTypes, setConditionTypes] = useState<ConditionType[]>([]);
+  const [conditionKinds, setConditionKinds] = useState<ConditionKind[]>([]);
   // 条件
   const [operators, setOperators] = useState<SelectValue[]>([]);
   // 反映予定日チェック用
@@ -340,20 +341,6 @@ const ScrCom0014Page = () => {
       : user.editPossibleScreenIdList.includes(SCR_COM_0014);
 
   const apiRef = useGridApiRef();
-
-  // APIから取得した検索データを条件に設定
-  const setterOperators = (operatorParams: any) => {
-    const operator = operatorParams;
-    // 条件を設定
-    setOperators(operator);
-  };
-
-  // APIから取得した検索データを条件種類に設定
-  const setterConditionTypes = (conditionTypeParams: any) => {
-    const conditionType: any = conditionTypeParams;
-    // 条件種類を設定
-    setConditionTypes(conditionType);
-  };
 
   // 登録内容確認ポップアップ
   const [isOpenPopup, setIsOpenPopup] = useState(false);
@@ -376,6 +363,7 @@ const ScrCom0014Page = () => {
   // メッセージの取得
   const { getMessage } = useContext(MessageContext);
 
+  // セクションの横幅調整
   useEffect(() => {
     setMaxSectionWidth(
       Number(
@@ -384,13 +372,14 @@ const ScrCom0014Page = () => {
     );
   }, [apiRef, apiRef.current.rootElementRef]);
 
+  // 初期表示時の処理
   useEffect(() => {
     // 初期表示処理(現在情報の表示)
     const initializeCurrent = async (commissionId: string) => {
       // 計算書種別・手数料種類を非活性化するフラグ
       setActiveFlag(false);
 
-      // SCR-COM-0014-0001: 手数料表示API
+      // API-COM-0014-0001: 手数料表示API
       const getCommissionDisplayRequest: ScrCom0014GetCommissionDisplayRequest =
         {
           businessDate: user.taskDate,
@@ -448,24 +437,6 @@ const ScrCom0014Page = () => {
         getComCodeValueRequest
       );
 
-      // API-COM-9999-0013: 手数料条件情報取得API
-      const getCommissionConditionRequest: ScrCom9999GetCommissionConditionRequest =
-        {
-          commissionId: commissionId,
-        };
-      const getCommissionConditionResponse =
-        await ScrCom9999GetCommissionCondition(getCommissionConditionRequest);
-
-      // API-COM-9999-0020: 値属性変換API
-      const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
-        {
-          conditionKindCode: CDE_COM_0010,
-        };
-      const valueAttributeConversionResponse =
-        await ScrCom9999ValueAttributeConversion(
-          valueAttributeConversionRequest
-        );
-
       // API-COM-9999-0019: 手数料種類導出API
       const getCommissionKindRequest: ScrCom9999GetCommissionKindRequest = {
         statementKind: getValues('statementKind'),
@@ -474,45 +445,68 @@ const ScrCom0014Page = () => {
         getCommissionKindRequest
       );
 
+      // API-COM-9999-0013: 手数料条件取得API
+      const getCommissionConditionRequest: ScrCom9999GetCommissionConditionRequest =
+        {
+          commissionId: commissionId,
+        };
+      const getCommissionConditionResponse =
+        await ScrCom9999GetCommissionCondition(getCommissionConditionRequest);
+
+      // 条件設定セクションの条件をセレクトモデルに変換する
+      const operators = convertToCommissionConditionSelectValueModel(
+        getCommissionConditionResponse.commissionConditionList
+      );
+      // 条件を設定
+      setOperators(operators);
+
+      // 条件テーブルの条件種類・条件・値の初期表示時の値設定
+      const conditions = convertToCommissionConditionRowModel(
+        getCommissionDisplayResponse
+      );
+      setConditions(conditions);
+
+      // 条件種類と条件を設定し値を[]で設定
+      const conditionTypes = changeCommissionsNothingValueModel(
+        // 条件種類
+        getComCodeValueResponse.resultList
+      );
+
+      for (let i = 0; i < conditionTypes.length; i++) {
+        // API-COM-9999-0020: 値属性変換API
+        const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
+          {
+            // 条件種類コード
+            // conditionKindCode: x.value,
+            conditionKindCode: conditionTypes[i].value,
+          };
+        const valueAttributeConversionResponse =
+          await ScrCom9999ValueAttributeConversion(
+            valueAttributeConversionRequest
+          );
+
+        // 型区分が1の場合のみリストボックスで項目を表示
+        if (valueAttributeConversionResponse.typeKind === '1') {
+          conditionTypes[i].selectValues = convertToConversionSelectValueModel(
+            valueAttributeConversionResponse.commissionDiscountConditionValueList
+          );
+        }
+      }
+
+      // 条件種類を設定
+      setConditionKinds(conditionTypes);
+
       // API-COM-0014-0001: 手数料表示API レスポンスデータを 手数料詳細情報に変換
       const commissionResult = convertToCommissionTableDetailModel(
         getCommissionDisplayResponse,
         commissionId
       );
 
-      // 条件テーブルの複数条件(条件・値)を変数に保存
-      setConditions(
-        convertToCommissionConditionRowModel(getCommissionDisplayResponse)
-      );
-
-      // 条件テーブルの条件を変数に保存
-      setterOperators(
-        convertToCommissionConditionSelectValueModel(
-          getCommissionConditionResponse.commissionConditionList
-        )
-      );
-
-      // 条件テーブルに条件種類・条件・値を設定
-      // 値はリストボックスorテキストボックスに変換する
-      setterConditionTypes(
-        changeCommissionsModel(
-          getComCodeValueResponse.resultList,
-          convertToCommissionConditionSelectValueModel(
-            getCommissionConditionResponse.commissionConditionList
-          ),
-          valueAttributeConversionResponse
-        )
-      );
-
       // 画面にデータを設定
       reset(commissionResult);
 
-      // プルダウンにデータを設定
+      // プルダウンにデータを設定（手数料種類以外）
       setSelectValues({
-        // 手数料種類
-        commissionKindSelectValues: convertToCommissionKindSelectValuesModel(
-          getCommissionKindResponse
-        ),
         // 商品コード
         goodsClaimCodeSelectValues: convertToTraCodeValueSelectValueModel(
           getTraCodeValueResponse.codes[0].codeList
@@ -521,24 +515,19 @@ const ScrCom0014Page = () => {
         statementKindSelectValues: convertToStatementKindSelectValueModel(
           getStatementKindResponse.statementKindList
         ),
-        // 条件種類
-        commissionConditionKindSelectValues: convertToCodeValueSelectValueModel(
-          getComCodeValueResponse.resultList[0].codeValueList
-        ),
-        // 条件
-        commissionConditionSelectValues:
-          convertToCommissionConditionSelectValueModel(
-            getCommissionConditionResponse.commissionConditionList
-          ),
-        // 値
-        commissionValueSelectValues: convertToConversionSelectValueModel(
-          valueAttributeConversionResponse.commissionDiscountConditionValueList
-        ),
         // 変更予約情報
         changeReservationInfoSelectValues:
           convertToChangeExpectDateSelectValueModel(
             getChangeDateResponse.changeExpectDateInfo
           ),
+      });
+
+      // プルダウンにデータを設定（手数料種類）
+      setCommissionKindSelectValues({
+        // 手数料種類
+        commissionKindSelectValues: convertToCommissionKindSelectValuesModel(
+          getCommissionKindResponse
+        ),
       });
     };
 
@@ -555,7 +544,7 @@ const ScrCom0014Page = () => {
         getCommissionKindRequest
       );
 
-      // SCR-COM-9999-0025: 変更履歴情報取得API
+      // API-COM-9999-0025: 変更履歴情報取得API
       const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
         changeHistoryNumber: getValues('changeHistoryNumber'),
       };
@@ -630,38 +619,44 @@ const ScrCom0014Page = () => {
       const getCommissionConditionResponse =
         await ScrCom9999GetCommissionCondition(getCommissionConditionRequest);
 
-      // API-COM-9999-0020: 値属性変換API
-      const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
-        {
-          conditionKindCode: CDE_COM_0010,
-        };
-      const valueAttributeConversionResponse =
-        await ScrCom9999ValueAttributeConversion(
-          valueAttributeConversionRequest
-        );
-
-      // 条件テーブルに取得データを設定
-      setterOperators(
-        convertToCommissionConditionSelectValueModel(
-          getCommissionConditionResponse.commissionConditionList
-        )
+      // 条件設定セクションの条件をセレクトモデルに変換する
+      const operators = convertToCommissionConditionSelectValueModel(
+        getCommissionConditionResponse.commissionConditionList
       );
-      setterConditionTypes(
-        changeCommissionsModel(
-          getComCodeValueResponse.resultList,
-          convertToCommissionConditionSelectValueModel(
-            getCommissionConditionResponse.commissionConditionList
-          ),
-          valueAttributeConversionResponse
-        )
+      // 条件を設定
+      setOperators(operators);
+
+      // 条件種類と条件を設定し値を[]で設定
+      const conditionTypes = changeCommissionsNothingValueModel(
+        // 条件種類
+        getComCodeValueResponse.resultList
       );
 
-      // プルダウンにデータを設定
+      conditionTypes.forEach(async (x) => {
+        // API-COM-9999-0020: 値属性変換API
+        const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
+          {
+            // 条件種類コード
+            conditionKindCode: x.value,
+          };
+        const valueAttributeConversionResponse =
+          await ScrCom9999ValueAttributeConversion(
+            valueAttributeConversionRequest
+          );
+
+        // 型区分が1の場合のみリストボックスで項目を表示
+        if (valueAttributeConversionResponse.typeKind === '1') {
+          x.selectValues = convertToConversionSelectValueModel(
+            valueAttributeConversionResponse.commissionDiscountConditionValueList
+          );
+        }
+      });
+
+      // 条件種類を設定
+      setConditionKinds(conditionTypes);
+
+      // プルダウンにデータを設定(手数料種類以外)
       setSelectValues({
-        // 手数料種類
-        commissionKindSelectValues: convertToCommissionKindSelectValuesModel(
-          getCommissionKindResponse
-        ),
         // 商品コード
         goodsClaimCodeSelectValues: convertToTraCodeValueSelectValueModel(
           getTraCodeValueResponse.codes[0].codeList
@@ -670,28 +665,23 @@ const ScrCom0014Page = () => {
         statementKindSelectValues: convertToStatementKindSelectValueModel(
           getStatementKindResponse.statementKindList
         ),
-        // 条件種類
-        commissionConditionKindSelectValues: convertToCodeValueSelectValueModel(
-          getComCodeValueResponse.resultList[0].codeValueList
-        ),
-        // 条件区分
-        commissionConditionSelectValues:
-          convertToCommissionConditionSelectValueModel(
-            getCommissionConditionResponse.commissionConditionList
-          ),
-        // 条件値
-        commissionValueSelectValues: convertToConversionSelectValueModel(
-          valueAttributeConversionResponse.commissionDiscountConditionValueList
-        ),
         // 変更予約情報
         changeReservationInfoSelectValues:
           convertToChangeExpectDateSelectValueModel(
             getChangeDateResponse.changeExpectDateInfo
           ),
       });
+
+      // プルダウンにデータを設定（手数料種類）
+      setCommissionKindSelectValues({
+        // 手数料種類
+        commissionKindSelectValues: convertToCommissionKindSelectValuesModel(
+          getCommissionKindResponse
+        ),
+      });
     };
 
-    // 初期表示処理(新規追加)
+    // 初期表示処理(新規登録)
     const initializeNew = async () => {
       // 計算書種別・手数料種類を活性化するフラグ
       setActiveFlag(true);
@@ -703,15 +693,6 @@ const ScrCom0014Page = () => {
       const getCommissionKindResponse = await ScrCom9999GetCommissionKind(
         getCommissionKindRequest
       );
-
-      const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
-        {
-          conditionKindCode: CDE_COM_0010,
-        };
-      const valueAttributeConversionResponse =
-        await ScrCom9999ValueAttributeConversion(
-          valueAttributeConversionRequest
-        );
 
       // API-TRA-9999-0001: コードマスタ（取引会計）情報取得API
       const getTraCodeValueRequest: ScrTra9999GetCodeValueRequest = {
@@ -745,30 +726,27 @@ const ScrCom0014Page = () => {
       const getCommissionConditionResponse =
         await ScrCom9999GetCommissionCondition();
 
+      // 条件設定セクションの条件をセレクトモデルに変換する
+      const operators = convertToCommissionConditionSelectValueModel(
+        getCommissionConditionResponse.commissionConditionList
+      );
+      // 条件を設定
+      setOperators(operators);
+
+      // 条件種類と条件を設定し値を[]で設定
+      const conditionTypes = changeCommissionsNothingValueModel(
+        // 条件種類
+        getComCodeValueResponse.resultList
+      );
+
+      // 条件種類を設定
+      setConditionKinds(conditionTypes);
+
       // 画面にデータを設定(空)
       reset(initialValues);
 
-      // 条件テーブルに取得データを設定
-      setterOperators(
-        convertToCommissionConditionSelectValueModel(
-          getCommissionConditionResponse.commissionConditionList
-        )
-      );
-      setterConditionTypes(
-        changeCommissionsModel(
-          getComCodeValueResponse.resultList,
-          convertToCommissionConditionSelectValueModel(
-            getCommissionConditionResponse.commissionConditionList
-          ),
-          valueAttributeConversionResponse
-        )
-      );
-
+      // プルダウンにデータを設定(手数料種類以外)
       setSelectValues({
-        // 手数料種類
-        commissionKindSelectValues: convertToCommissionKindSelectValuesModel(
-          getCommissionKindResponse
-        ),
         // 商品コード
         goodsClaimCodeSelectValues: convertToTraCodeValueSelectValueModel(
           getTraCodeValueResponse.codes[0].codeList
@@ -777,19 +755,16 @@ const ScrCom0014Page = () => {
         statementKindSelectValues: convertToStatementKindSelectValueModel(
           getStatementKindResponse.statementKindList
         ),
-        // 条件種類
-        commissionConditionKindSelectValues: convertToCodeValueSelectValueModel(
-          getComCodeValueResponse.resultList[0].codeValueList
-        ),
-        // 条件区分
-        commissionConditionSelectValues:
-          convertToCommissionConditionSelectValueModel(
-            getCommissionConditionResponse.commissionConditionList
-          ),
-        // 条件値
-        commissionValueSelectValues: [],
         // 変更予約情報
         changeReservationInfoSelectValues: [],
+      });
+
+      // プルダウンにデータを設定（手数料種類）
+      setCommissionKindSelectValues({
+        // 手数料種類
+        commissionKindSelectValues: convertToCommissionKindSelectValuesModel(
+          getCommissionKindResponse
+        ),
       });
     };
 
@@ -801,8 +776,6 @@ const ScrCom0014Page = () => {
       initializeCurrent(commissionId);
     }
 
-    // 履歴表示の初期化処理
-    const changeHistoryNumber = searchParams.get('change-history-number');
     if (
       changeHistoryNumber !== undefined &&
       changeHistoryNumber !== null &&
@@ -813,54 +786,52 @@ const ScrCom0014Page = () => {
     }
   }, []);
 
-  // 条件種類変更後にAPIより条件、値を取得する
-  const handleGetConditionData = (select: string) => {
-    return conditionTypes.find((val) => val.type === select) ?? null;
-  };
+  // 計算書種別のリストボックス変更時の処理
+  useEffect(() => {
+    const subscription = watch(async (value, { name, type }) => {
+      // textの変更も監視対象のため、setValueでtextを変更した場合を無視しないと無弁ループする
+      if (name !== 'statementKind') return;
+      const omatomePlaceValue = String(value.statementKind);
+      if (omatomePlaceValue === undefined) return;
+
+      // API-COM-9999-0019: 手数料種類導出API
+      const getCommissionKindRequest: ScrCom9999GetCommissionKindRequest = {
+        statementKind: getValues('statementKind'),
+      };
+      const getCommissionKindResponse = await ScrCom9999GetCommissionKind(
+        getCommissionKindRequest
+      );
+
+      // プルダウンにデータを設定（手数料種類）
+      setCommissionKindSelectValues({
+        // 手数料種類
+        commissionKindSelectValues: convertToCommissionKindSelectValuesModel(
+          getCommissionKindResponse
+        ),
+      });
+    });
+    return () => subscription.unsubscribe();
+  }, [setValue, watch]);
 
   // 条件設定テーブルのデータ
-  const [conditions, setConditions] = useState<ConditionModel[]>([]);
+  const [conditions, setConditions] = useState<ConditionModel[]>([
+    {
+      conditionKind: '',
+      subConditions: [
+        {
+          operator: '',
+          value: '',
+        },
+      ],
+    },
+  ]);
 
   // 価格設定テーブルのデータ
   const [pricingRows, setPricingRows] = useState<PricingTableModel[]>([]);
 
-  // TODO: 値の変更を検知する
-  const handleOnValueChange = (
-    val: string | number,
-    changeVal: DeepKey<ConditionModel>,
-    indexRow: number,
-    indexCol?: number
-  ) => {
-    // 条件種類を変更した場合の処理
-    if (changeVal === 'conditionType') {
-      conditions[indexRow][changeVal] = val;
-      // TODO: 型番号によってリストボックスかテキストボックスかを判定する
-    }
-    // 条件を変更した場合の処理
-    if (changeVal === 'operator' && indexCol !== undefined) {
-      conditions[indexRow].condition[indexCol][changeVal] = val;
-      setConditions(conditions);
-    }
-    // 値を変更した場合の処理
-    if (changeVal === 'value' && indexCol !== undefined) {
-      conditions[indexRow].condition[indexCol][changeVal] = val;
-    }
-    setConditions([...conditions]);
-  };
-
-  // テーブル行変更処理
-  const handleSetItem = (sortValues: ConditionModel[]) => {
-    setConditions(sortValues);
-  };
-
   // 価格テーブル表示・非表示を管理するフラグ
   const [pricingTableVisible, setPricingTableVisible] =
     useState<boolean>(false);
-
-  // 価格設定テーブル表示
-  const handleVisibleTable = () => {
-    setPricingTableVisible(!pricingTableVisible);
-  };
 
   // API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI用 リクエストデータ作成
   const commissionCheckRequest = (
@@ -953,6 +924,29 @@ const ScrCom0014Page = () => {
     // 申請コメント
     applicationComment: string
   ): ScrCom0014ApplyRegistrationCommissionInfoRequest => {
+    const tempList: commissionConditionList[] = [];
+    conditions.forEach((condition, i) => {
+      condition.subConditions.forEach((y, j) => {
+        const temp = {
+          /** 手数料条件種類No */
+          commissionConditionKindNo: i,
+          /** 条件種類コード */
+          conditionKindCode: condition.conditionKind,
+          /** 手数料条件種類名 */
+          conditionKindName: '',
+          /** 手数料条件No */
+          commissionConditionNo: j,
+          /** 手数料条件区分 */
+          commissionConditionKind: condition.subConditions[j].operator,
+          /** 手数料条件区分名 */
+          commissionConditionKindName: '',
+          /** 手数料条件値 */
+          commissionConditionValue: condition.subConditions[j].value,
+        };
+        tempList.push(temp);
+      });
+    });
+
     return {
       /** 変更履歴番号 */
       changeHistoryNumber: getValues.changeHistoryNumber,
@@ -974,25 +968,8 @@ const ScrCom0014Page = () => {
       statementKind: getValues.statementKind,
       /** 利用開始日 */
       useStartDate: getValues.useStartDate,
-      /** TODO: 条件設定セクション */
-      commissionConditionList: conditions.map((condition, i) => {
-        return {
-          /** 手数料条件種類No */
-          commissionConditionKindNo: i,
-          /** 条件種類コード */
-          conditionKindCode: condition.conditionType,
-          /** 手数料条件種類名 */
-          conditionKindName: '',
-          /** 手数料条件No */
-          commissionConditionNo: i,
-          /** 手数料条件区分 */
-          commissionConditionKind: condition.condition[i].operator,
-          /** 手数料条件区分名 */
-          commissionConditionKindName: '',
-          /** 手数料条件値 */
-          commissionConditionValue: condition.condition[i].value,
-        };
-      }),
+      /** 条件設定セクション */
+      commissionConditionList: tempList,
       /** 価格設定セクション */
       commissionPriceList: pricingRows.map((pricingRow, j) => {
         return {
@@ -1054,23 +1031,6 @@ const ScrCom0014Page = () => {
       screenId: SCR_COM_0014,
     };
   };
-
-  // 反映ボタン押下時に価格設定セクションへと渡す条件設定セクションの形式変換
-  // const convertFromConditionToPriceModel = (
-  //   // 手数料テーブル詳細 入力情報
-  //   rows: ConditionModel[]
-  // ): PricingTableModel[] => {
-  //   const tempList: PricingTableModel[] = [];
-  //   // 条件設定セクションの値をループして価格設定セクション用にデータを変換する
-  //   rows.forEach((x) => {
-  //     tempList.push({
-  //       conditionType: x.conditionType,
-  //       conditionTypeName: 'aaaa',
-  //       condition: x.condition,
-  //     });
-  //   });
-  //   return tempList;
-  // };
 
   /**
    * 変更履歴情報からデータモデルへの変換
@@ -1304,70 +1264,57 @@ const ScrCom0014Page = () => {
   };
 
   /**
-   * API-COM-9999-0031: コード値取得API レスポンスから SelectValueモデルへの変換
-   */
-  const convertToCodeValueSelectValueModel = (
-    codeValueList: CodeValueList[]
-  ): SelectValue[] => {
-    return codeValueList.map((x) => {
-      return {
-        value: String(x.codeValue),
-        displayValue: x.codeValueName,
-      };
-    });
-  };
-
-  /**
-   * TODO: 初期表示条件設定セクション変換用
+   * 初期表示条件設定セクション変換用
    */
   const convertToCommissionConditionRowModel = (
-    commissionConditionList: ScrCom0014GetCommissionDisplayResponse
+    request: ScrCom0014GetCommissionDisplayResponse
   ): ConditionModel[] => {
-    const temp = commissionConditionList.commissionConditionList.map((x) => {
-      return {
-        // 条件種類
-        conditionType: x.conditionKindCode,
-        // 条件(複数) TODO: ループさせる
-        condition: [
-          {
-            // 条件
-            operator: x.commissionConditionKindName,
-            // 値
-            value: x.commissionConditionValue,
-          },
-        ],
-      };
+    const temp: ConditionModel[] = [];
+    request.commissionConditionList.forEach((obj) => {
+      const hasConditionKindCode = temp.find(
+        (x) => x.conditionKind === obj.conditionKindCode
+      );
+      if (hasConditionKindCode) {
+        hasConditionKindCode.subConditions.push({
+          // 条件
+          operator: obj.commissionConditionKindName,
+          // 値
+          value: obj.commissionConditionValue,
+        });
+      } else {
+        const conditionModel = {
+          // 条件種類
+          conditionKind: obj.conditionKindCode,
+          // 条件・値(複数)
+          subConditions: [
+            {
+              // 条件
+              operator: obj.commissionConditionKindName,
+              // 値
+              value: obj.commissionConditionValue,
+            },
+          ],
+        };
+        temp.push(conditionModel);
+      }
     });
+
     return temp;
   };
 
   /**
-   * 条件セクション内 手数料条件値 データ変換処理(テキストボックス/リストボックス)
+   * 条件セクション データ変換処理(手数料条件値以外)
    */
-  const changeCommissionsModel = (
+  const changeCommissionsNothingValueModel = (
     // 条件種類
-    conditionType: ResultList[],
-    // 条件
-    operators: ConditionVal[],
-    // 値
-    value: ScrCom9999ValueAttributeConversionResponse
-  ): ConditionType[] => {
-    return conditionType[0].codeValueList.map((x) => {
+    conditionKind: ResultList[]
+  ): ConditionKind[] => {
+    return conditionKind[0].codeValueList.map((x) => {
       return {
-        type: x.codeValue,
-        typeName: x.codeValueName,
-        operators: operators,
-        selectValues:
-          value.typeKind === '2' || value.typeKind === '3'
-            ? undefined
-            : value === undefined
-            ? undefined
-            : value.commissionDiscountConditionValueList.map((y) => {
-                return {
-                  value: y.commissionConditionID,
-                  displayValue: y.commissionConditionValue,
-                };
-              }),
+        value: x.codeValue,
+        displayValue: x.codeValueName,
+        // 空[]で設定
+        selectValues: undefined,
       };
     });
   };
@@ -1386,6 +1333,8 @@ const ScrCom0014Page = () => {
     const formatConditionModel = convertFromConditionToPricingTableRows(
       // 手数料テーブル詳細 入力情報
       conditions,
+      // 手数料種類
+      conditionKinds,
       // 条件設定セクション 条件
       operators
     );
@@ -1407,7 +1356,7 @@ const ScrCom0014Page = () => {
    * 確定ボタンクリック時（反映予定日整合性チェック後）のイベントハンドラ
    */
   const handleConfirm = async () => {
-    // SCR-COM-0014-0003: 手数料テーブル詳細入力チェックAPI
+    // API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI
     const checkResult = await ScrCom0014CommissionCheck(
       commissionCheckRequest(getValues())
     );
@@ -1428,7 +1377,7 @@ const ScrCom0014Page = () => {
   const handleSwichDisplay = async () => {
     if (!commissionId) return;
 
-    // SCR-COM-9999-0025: 変更履歴情報取得API
+    // API-COM-9999-0025: 変更履歴情報取得API
     const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
       changeHistoryNumber: getValues('changeHistoryNumber'),
     };
@@ -1454,27 +1403,52 @@ const ScrCom0014Page = () => {
   /**
    * 一括登録アイコンクリック時のイベントハンドラ
    */
-  const handleIconBulkAddClick = () => {
+  const handleIconBulkAddClick = async () => {
     // 反映ボタンが押下されているか(編集中かどうか)を確認=>編集中ならエラーメッセージを表示する
     if (editFlg) {
       // 画面上にエラーメッセージを表示する
       setErrorMessageFlag(true);
       setErrorMessage(Format(getMessage('MSG-FR-INF-00009'), ['']));
       return;
+    } else {
+      // CSV読込ポップアップを表示
+      setIsOpenCsvPopup(true);
     }
 
-    // CSV読込ポップアップを表示
-    setIsOpenCsvPopup(true);
+    // API-COM-0034-0004: 一括登録参照API
+    const getCommissionKindRequest: ScrCom0034GetAllRegistrationWorkRequest = {
+      screenId: SCR_COM_0014,
+      allRegistrationId: String(allRegistrationId),
+      changeHistoryNumber: Number(getValues('changeHistoryNumber')),
+    };
+    const getAllRegistrationWorkResponse =
+      await ScrCom0034GetAllRegistrationWork(getCommissionKindRequest);
 
-    // TODO: 一括登録の処理を詳細設計の「一括登録からの再表示」を元に記載
+    // 価格設定セクションの手数料欄に一括登録参照した値を設定する
+    pricingRows.forEach((pricingRow, i) => {
+      // 条件行10 + 条件内条件行10 + 手数料1 = 21
+      pricingRow['commission'] = String(
+        getAllRegistrationWorkResponse.allRegistrationWorkTrans[i]
+          .allImportColumnValue21
+      );
+    });
+
+    // API-COM-0034-0002：一括登録ワークトランクリアAPI
+    const deleteAllRegistrationWorkRequest: ScrCom0034DeleteAllRegistrationWorkRequest =
+      {
+        allRegistrationId: String(allRegistrationId),
+      };
+    const deleteAllRegistrationWorkResponse =
+      await ScrCom0034DeleteAllRegistrationWork(
+        deleteAllRegistrationWorkRequest
+      );
   };
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    // TODO: DataGridを使用していない為apiRefがエラーになる(確認中)
-    // exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
+    exportCsv(user.employeeId + '_' + user.taskDate, pricingRows, []);
   };
 
   // 価格セクションに設定する一括登録・CSVアイコン
@@ -1605,6 +1579,137 @@ const ScrCom0014Page = () => {
     setIsOpenPopup(false);
   };
 
+  /**
+   * 条件種類を変更した際のイベントハンドラ
+   */
+  const handleOnConditionTypeChange = async (
+    type: string | number,
+    index: number
+  ) => {
+    // 条件種類を変更した場合の処理
+    // API-COM-9999-0020: 値属性変換API
+    const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
+      {
+        // 条件種類コード
+        conditionKindCode: String(type),
+      };
+    const valueAttributeConversionResponse =
+      await ScrCom9999ValueAttributeConversion(valueAttributeConversionRequest);
+
+    conditionKinds.forEach((x) => {
+      // 選択されたプルダウンの選択肢のIDと一致するIDのみ処理
+      if (x.value === type) {
+        // 型区分が1の場合のみリストボックスで項目を表示
+        if (valueAttributeConversionResponse.typeKind === '1') {
+          x.selectValues = convertToConversionSelectValueModel(
+            valueAttributeConversionResponse.commissionDiscountConditionValueList
+          );
+        }
+      }
+    });
+
+    // 編集中のフラグを編集中に設定
+    setEditFlg(false);
+
+    setConditions([...conditions]);
+  };
+
+  /**
+   * 条件・値を変更した際のイベントハンドラ
+   */
+  const handleOnSubConditionChange = (
+    value: string | number,
+    index: number,
+    subIndex: number,
+    field: string
+  ) => {
+    if (field === 'operator') {
+      conditions[index].subConditions[subIndex].operator = value;
+    }
+    if (field === 'value') {
+      conditions[index].subConditions[subIndex].value = value;
+    }
+
+    // 編集中のフラグを編集中に設定
+    setEditFlg(false);
+
+    setConditions([...conditions]);
+  };
+
+  /**
+   * 条件行を上下移動した際のイベントハンドラ
+   */
+  const handleOnDrderChangeClick = (index: number, direction: string) => {
+    if (direction === 'up') {
+      [conditions[index - 1], conditions[index]] = [
+        conditions[index],
+        conditions[index - 1],
+      ];
+    }
+    if (direction === 'down') {
+      [conditions[index + 1], conditions[index]] = [
+        conditions[index],
+        conditions[index + 1],
+      ];
+    }
+    // 編集中のフラグを編集中に設定
+    setEditFlg(false);
+
+    setConditions([...conditions]);
+  };
+
+  /**
+   * 条件行を増減した際のイベントハンドラ
+   */
+  const handleOnConditionCountChangeClick = (
+    operation: string,
+    index?: number
+  ) => {
+    if (operation === 'add') {
+      conditions.push({
+        conditionKind: '',
+        subConditions: [
+          {
+            operator: '',
+            value: '',
+          },
+        ],
+      });
+    }
+    if (operation === 'remove' && index !== undefined) {
+      conditions.splice(index, 1);
+    }
+
+    // 編集中のフラグを編集中に設定
+    setEditFlg(false);
+
+    setConditions([...conditions]);
+  };
+
+  /**
+   * 条件内(条件・値)行を増減した際のイベントハンドラ
+   */
+  const handleOnSubConditionCoountChangeClick = (
+    index: number,
+    operation: string,
+    subIndex?: number
+  ) => {
+    if (operation === 'add') {
+      conditions[index].subConditions.push({
+        operator: '',
+        value: '',
+      });
+    }
+    if (operation === 'remove' && subIndex !== undefined) {
+      conditions[index].subConditions.splice(subIndex, 1);
+    }
+
+    // 編集中のフラグを編集中に設定
+    setEditFlg(false);
+
+    setConditions([...conditions]);
+  };
+
   return (
     <>
       <MainLayout>
@@ -1623,8 +1728,7 @@ const ScrCom0014Page = () => {
                     required
                     // 履歴表示or編集権限なしの場合は非活性
                     disabled={
-                      searchParams.get('change-history-number') !== null ||
-                      !userEditFlag
+                      changeHistoryNumber !== null || !userEditFlag
                         ? true
                         : false
                     }
@@ -1647,8 +1751,7 @@ const ScrCom0014Page = () => {
                     name='commissionName'
                     // 履歴表示or編集権限なしの場合は非活性
                     disabled={
-                      searchParams.get('change-history-number') !== null ||
-                      !userEditFlag
+                      changeHistoryNumber !== null || !userEditFlag
                         ? true
                         : false
                     }
@@ -1671,7 +1774,9 @@ const ScrCom0014Page = () => {
                     name='commissionKind'
                     // 新規作成時のみ活性化する
                     disabled={activeFlag ? false : true}
-                    selectValues={selectValues.commissionKindSelectValues}
+                    selectValues={
+                      commissionKindSelectValues.commissionKindSelectValues
+                    }
                     blankOption
                     required
                   />
@@ -1680,8 +1785,7 @@ const ScrCom0014Page = () => {
                     name='useStartDate'
                     // 履歴表示or編集権限なしの場合は非活性
                     disabled={
-                      searchParams.get('change-history-number') !== null ||
-                      !userEditFlag
+                      changeHistoryNumber !== null || !userEditFlag
                         ? true
                         : false
                     }
@@ -1695,8 +1799,7 @@ const ScrCom0014Page = () => {
                     name='approvalDocumentId'
                     // 履歴表示or編集権限なしの場合は非活性
                     disabled={
-                      searchParams.get('change-history-number') !== null ||
-                      !userEditFlag
+                      changeHistoryNumber !== null || !userEditFlag
                         ? true
                         : false
                     }
@@ -1710,8 +1813,7 @@ const ScrCom0014Page = () => {
                     selectValues={selectValues.goodsClaimCodeSelectValues}
                     // 履歴表示or編集権限なしの場合は非活性
                     disabled={
-                      searchParams.get('change-history-number') !== null ||
-                      !userEditFlag
+                      changeHistoryNumber !== null || !userEditFlag
                         ? true
                         : false
                     }
@@ -1727,16 +1829,21 @@ const ScrCom0014Page = () => {
               <ThemeProvider theme={theme}>
                 <ConditionalTable
                   columns={columns}
-                  // 条件種類 & 値 の選択肢
-                  conditionTypes={conditionTypes}
-                  // 条件の選択肢
+                  // 条件種類 & 値 選択肢
+                  conditionKinds={conditionKinds}
+                  // 条件 選択肢
                   operators={operators}
-                  onValueChange={handleOnValueChange}
                   // 条件種類,条件,値の初期値
                   rows={conditions}
-                  handleSetItem={handleSetItem}
-                  handleVisibleTable={handleVisibleTable}
-                  handleGetConditionData={handleGetConditionData}
+                  onConditionKindChange={handleOnConditionTypeChange}
+                  onSubConditionChange={handleOnSubConditionChange}
+                  onOrderChangeClick={handleOnDrderChangeClick}
+                  onConditionCountChangeClick={
+                    handleOnConditionCountChangeClick
+                  }
+                  onSubConditionCoountChangeClick={
+                    handleOnSubConditionCoountChangeClick
+                  }
                 />
               </ThemeProvider>
               <CenterBox>
@@ -1758,7 +1865,7 @@ const ScrCom0014Page = () => {
                 <PricingTable
                   conditions={conditions}
                   dataset={pricingRows}
-                  conditionTypes={conditionTypes}
+                  conditionkinds={conditionKinds}
                   operators={operators}
                 />
               </Section>
