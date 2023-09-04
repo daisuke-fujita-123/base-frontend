@@ -1546,7 +1546,7 @@ const ScrMem0008BasicTab = (props: {
             <Grid container height='100%'>
               <Grid item size='s'>
                 <RightElementStack>
-                  {changeHistory.length <= 0 ? (
+                  {changeHistory.length >= 0 ? (
                     <Stack>
                       <Typography bold>変更予約情報</Typography>
                       <WarningLabel text='変更予約あり' />
