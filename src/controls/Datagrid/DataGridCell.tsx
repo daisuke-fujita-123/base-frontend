@@ -136,7 +136,7 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
       } else {
         row[field] = newValue;
       }
-      !controlled && setText(newValue);
+      controlled && setText(newValue);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
@@ -206,7 +206,7 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
       } else {
         row[field] = newSelection;
       }
-      !controlled && setSelection(newSelection);
+      controlled && setSelection(newSelection);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
@@ -278,7 +278,7 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
         typeof selection === 'number' ? Number(value) : value;
       const row = apiRef.current.getRow(id);
       row[field] = newSelection;
-      !controlled && setSelection(newSelection);
+      controlled && setSelection(newSelection);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
@@ -462,7 +462,7 @@ export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
       const row = apiRef.current.getRow(id);
       const newSelection = !row[field];
       row[field] = newSelection;
-      !controlled && setSelection(newSelection);
+      controlled && setSelection(newSelection);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
@@ -530,7 +530,7 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
     const row = apiRef.current.getRow(id);
     row[field] = value;
     setDisplayValue(value);
-    !controlled && setDate(value);
+    controlled && setDate(value);
     setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
     onRowValueChange && onRowValueChange(row);
   };
