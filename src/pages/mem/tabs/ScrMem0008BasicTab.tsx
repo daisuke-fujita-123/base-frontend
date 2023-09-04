@@ -705,6 +705,38 @@ const ScrMem0008BasicTab = (props: {
       { value: 0, displayValue: '可' },
       { value: 1, displayValue: '不可' },
     ]);
+  const [
+    tvaaDemandFaxSendFlagBackgroundColor,
+    setTvaaDemandFaxSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
+  const [
+    tvaaDemandMailSendFlagBackgroundColor,
+    setTvaaDemandMailSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
+  const [
+    tvaaStatementFaxSendFlagBackgroundColor,
+    setTvaaStatementFaxSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
+  const [
+    tvaaStatementMailSendFlagBackgroundColor,
+    setTvaaStatementMailSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
+  const [
+    bikeDemandFaxSendFlagBackgroundColor,
+    setBikeDemandFaxSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
+  const [
+    bikeDemandMailSendFlagBackgroundColor,
+    setBikeDemandMailSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
+  const [
+    bikeStatementFaxSendFlagBackgroundColor,
+    setBikeStatementFaxSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
+  const [
+    bikeStatementMailSendFlagBackgroundColor,
+    setBikeStatementMailSendFlagBackgroundColor,
+  ] = useState<string | undefined>();
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(
@@ -740,22 +772,56 @@ const ScrMem0008BasicTab = (props: {
         '',
         ''
       );
+      // チェックボックスのラベル背景色変更
+      // 四輪督促状発行FAX
+      if (billingInfo.tvaaDemandFaxSendFlag) {
+        setTvaaDemandFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 四輪督促状発行メール
+      if (billingInfo.tvaaDemandMailSendFlag) {
+        setTvaaDemandMailSendFlagBackgroundColor('#b7ffea');
+      }
+      // 四輪計算書送信フラグFAX
+      if (billingInfo.tvaaStatementFaxSendFlag) {
+        setTvaaStatementFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 四輪計算書送信フラグメール
+      if (billingInfo.tvaaStatementMailSendFlag) {
+        setTvaaStatementMailSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪督促状発行FAX
+      if (billingInfo.bikeDemandFaxSendFlag) {
+        setBikeDemandFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪督促状発行メール
+      if (billingInfo.bikeDemandMailSendFlag) {
+        setBikeDemandMailSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪計算書送信フラグFAX
+      if (billingInfo.bikeStatementFaxSendFlag) {
+        setBikeStatementFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪計算書送信フラグメール
+      if (billingInfo.bikeStatementMailSendFlag) {
+        setBikeStatementMailSendFlagBackgroundColor('#b7ffea');
+      }
+
       // ラジオボタンのラベル背景色変更
       // 四輪即払可否
       const newTvaaImmediatePaymentFlagRadio = tvaaImmediatePaymentFlagRadio;
       if (billingInfo.tvaaImmediatePaymentFlag === '0') {
-        newTvaaImmediatePaymentFlagRadio[0].backgroundColor = '#6fb9ff';
+        newTvaaImmediatePaymentFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.tvaaImmediatePaymentFlag === '1') {
-        newTvaaImmediatePaymentFlagRadio[1].backgroundColor = '#6fb9ff';
+        newTvaaImmediatePaymentFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setTvaaImmediatePaymentFlagRadio(newTvaaImmediatePaymentFlagRadio);
 
       // 四輪書類先出し
       const newTvaaDocumentAdvanceFlagRadio = tvaaDocumentAdvanceFlagRadio;
       if (billingInfo.tvaaDocumentAdvanceFlag === '0') {
-        newTvaaDocumentAdvanceFlagRadio[0].backgroundColor = '#6fb9ff';
+        newTvaaDocumentAdvanceFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.tvaaDocumentAdvanceFlag === '1') {
-        newTvaaDocumentAdvanceFlagRadio[1].backgroundColor = '#6fb9ff';
+        newTvaaDocumentAdvanceFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setTvaaDocumentAdvanceFlagRadio(newTvaaDocumentAdvanceFlagRadio);
 
@@ -764,10 +830,10 @@ const ScrMem0008BasicTab = (props: {
         tvaaArrearsPriceAutomaticOccurrenceFlagRadio;
       if (billingInfo.tvaaArrearsPriceAutomaticOccurrenceFlag === '0') {
         newTvaaArrearsPriceAutomaticOccurrenceFlagRadio[0].backgroundColor =
-          '#6fb9ff';
+          '#b7ffea';
       } else if (billingInfo.tvaaArrearsPriceAutomaticOccurrenceFlag === '1') {
         newTvaaArrearsPriceAutomaticOccurrenceFlagRadio[1].backgroundColor =
-          '#6fb9ff';
+          '#b7ffea';
       }
       setTvaaArrearsPriceAutomaticOccurrenceFlagRadio(
         newTvaaArrearsPriceAutomaticOccurrenceFlagRadio
@@ -776,36 +842,36 @@ const ScrMem0008BasicTab = (props: {
       // 四輪相殺要否
       const newTvaaOffsettingFlagRadio = tvaaOffsettingFlagRadio;
       if (billingInfo.tvaaOffsettingFlag === '0') {
-        newTvaaOffsettingFlagRadio[0].backgroundColor = '#6fb9ff';
+        newTvaaOffsettingFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.tvaaOffsettingFlag === '1') {
-        newTvaaOffsettingFlagRadio[1].backgroundColor = '#6fb9ff';
+        newTvaaOffsettingFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setTvaaOffsettingFlagRadio(newTvaaOffsettingFlagRadio);
 
       // 四輪オークション参加制限可否
       const newTvaaAuctionEntryLimitFlagRadio = tvaaAuctionEntryLimitFlagRadio;
       if (billingInfo.tvaaAuctionEntryLimitFlag === '0') {
-        newTvaaAuctionEntryLimitFlagRadio[0].backgroundColor = '#6fb9ff';
+        newTvaaAuctionEntryLimitFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.tvaaAuctionEntryLimitFlag === '1') {
-        newTvaaAuctionEntryLimitFlagRadio[1].backgroundColor = '#6fb9ff';
+        newTvaaAuctionEntryLimitFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setTvaaAuctionEntryLimitFlagRadio(newTvaaAuctionEntryLimitFlagRadio);
 
       // 二輪即払可否
       const newBikeImmediatePaymentFlagRadio = bikeImmediatePaymentFlagRadio;
       if (billingInfo.bikeImmediatePaymentFlag === '0') {
-        newBikeImmediatePaymentFlagRadio[0].backgroundColor = '#6fb9ff';
+        newBikeImmediatePaymentFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.bikeImmediatePaymentFlag === '1') {
-        newBikeImmediatePaymentFlagRadio[1].backgroundColor = '#6fb9ff';
+        newBikeImmediatePaymentFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setBikeImmediatePaymentFlagRadio(newBikeImmediatePaymentFlagRadio);
 
       // 四輪書類先出し
       const newBikeDocumentAdvanceFlagRadio = bikeDocumentAdvanceFlagRadio;
       if (billingInfo.bikeDocumentAdvanceFlag === '0') {
-        newBikeDocumentAdvanceFlagRadio[0].backgroundColor = '#6fb9ff';
+        newBikeDocumentAdvanceFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.bikeDocumentAdvanceFlag === '1') {
-        newBikeDocumentAdvanceFlagRadio[1].backgroundColor = '#6fb9ff';
+        newBikeDocumentAdvanceFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setBikeDocumentAdvanceFlagRadio(newBikeDocumentAdvanceFlagRadio);
 
@@ -814,10 +880,10 @@ const ScrMem0008BasicTab = (props: {
         bikeArrearsPriceAutomaticOccurrenceFlagRadio;
       if (billingInfo.bikeArrearsPriceAutomaticOccurrenceFlag === '0') {
         newBikeArrearsPriceAutomaticOccurrenceFlagRadio[0].backgroundColor =
-          '#6fb9ff';
+          '#b7ffea';
       } else if (billingInfo.bikeArrearsPriceAutomaticOccurrenceFlag === '1') {
         newBikeArrearsPriceAutomaticOccurrenceFlagRadio[1].backgroundColor =
-          '#6fb9ff';
+          '#b7ffea';
       }
       setBikeArrearsPriceAutomaticOccurrenceFlagRadio(
         newBikeArrearsPriceAutomaticOccurrenceFlagRadio
@@ -826,18 +892,18 @@ const ScrMem0008BasicTab = (props: {
       // 四輪相殺要否
       const newBikeOffsettingFlagRadio = bikeOffsettingFlagRadio;
       if (billingInfo.bikeOffsettingFlag === '0') {
-        newBikeOffsettingFlagRadio[0].backgroundColor = '#6fb9ff';
+        newBikeOffsettingFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.bikeOffsettingFlag === '1') {
-        newBikeOffsettingFlagRadio[1].backgroundColor = '#6fb9ff';
+        newBikeOffsettingFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setBikeOffsettingFlagRadio(newBikeOffsettingFlagRadio);
 
       // 四輪オークション参加制限可否
       const newBikeAuctionEntryLimitFlagRadio = bikeAuctionEntryLimitFlagRadio;
       if (billingInfo.bikeAuctionEntryLimitFlag === '0') {
-        newBikeAuctionEntryLimitFlagRadio[0].backgroundColor = '#6fb9ff';
+        newBikeAuctionEntryLimitFlagRadio[0].backgroundColor = '#b7ffea';
       } else if (billingInfo.bikeAuctionEntryLimitFlag === '1') {
-        newBikeAuctionEntryLimitFlagRadio[1].backgroundColor = '#6fb9ff';
+        newBikeAuctionEntryLimitFlagRadio[1].backgroundColor = '#b7ffea';
       }
       setBikeAuctionEntryLimitFlagRadio(newBikeAuctionEntryLimitFlagRadio);
 
@@ -1351,16 +1417,33 @@ const ScrMem0008BasicTab = (props: {
                   />
                   <InputLayout label='督促状発行' size='s'>
                     <InputRowStack>
-                      <Checkbox name='tvaaDemandFaxSendFlag' label='FAX' />
-                      <Checkbox name='tvaaDemandMailSendFlag' label='メール' />
+                      <Checkbox
+                        name='tvaaDemandFaxSendFlag'
+                        label='FAX'
+                        backgroundColor={tvaaDemandFaxSendFlagBackgroundColor}
+                      />
+                      <Checkbox
+                        name='tvaaDemandMailSendFlag'
+                        label='メール'
+                        backgroundColor={tvaaDemandMailSendFlagBackgroundColor}
+                      />
                     </InputRowStack>
                   </InputLayout>
                   <InputLayout label='計算書送信フラグ' size='s'>
                     <InputRowStack>
-                      <Checkbox name='tvaaStatementFaxSendFlag' label='FAX' />
+                      <Checkbox
+                        name='tvaaStatementFaxSendFlag'
+                        label='FAX'
+                        backgroundColor={
+                          tvaaStatementFaxSendFlagBackgroundColor
+                        }
+                      />
                       <Checkbox
                         name='tvaaStatementMailSendFlag'
                         label='メール'
+                        backgroundColor={
+                          tvaaStatementMailSendFlagBackgroundColor
+                        }
                       />
                     </InputRowStack>
                   </InputLayout>
@@ -1409,16 +1492,33 @@ const ScrMem0008BasicTab = (props: {
                   />
                   <InputLayout label='督促状発行' size='s'>
                     <InputRowStack>
-                      <Checkbox name='bikeDemandFaxSendFlag' label='FAX' />
-                      <Checkbox name='bikeDemandMailSendFlag' label='メール' />
+                      <Checkbox
+                        name='bikeDemandFaxSendFlag'
+                        label='FAX'
+                        backgroundColor={bikeDemandFaxSendFlagBackgroundColor}
+                      />
+                      <Checkbox
+                        name='bikeDemandMailSendFlag'
+                        label='メール'
+                        backgroundColor={bikeDemandMailSendFlagBackgroundColor}
+                      />
                     </InputRowStack>
                   </InputLayout>
                   <InputLayout label='計算書送信フラグ' size='s'>
                     <InputRowStack>
-                      <Checkbox name='bikeStatementFaxSendFlag' label='FAX' />
+                      <Checkbox
+                        name='bikeStatementFaxSendFlag'
+                        label='FAX'
+                        backgroundColor={
+                          bikeStatementFaxSendFlagBackgroundColor
+                        }
+                      />
                       <Checkbox
                         name='bikeStatementMailSendFlag'
                         label='メール'
+                        backgroundColor={
+                          bikeStatementMailSendFlagBackgroundColor
+                        }
                       />
                     </InputRowStack>
                   </InputLayout>
