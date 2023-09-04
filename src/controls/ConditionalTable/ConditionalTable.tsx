@@ -181,10 +181,6 @@ interface ContitionalTableProps {
     field: string
   ) => void;
   /**
-   * 順序変更クリックイベント
-   */
-  onOrderChangeClick: (index: number, direction: string) => void;
-  /**
    * 条件数変更クリックイベント
    */
   onConditionCountChangeClick: (operation: string, index?: number) => void;
@@ -197,11 +193,15 @@ interface ContitionalTableProps {
     subIndex?: number
   ) => void;
   /**
-   * 明細の詳細設定の可否
+   * 順序変更クリックイベント
    */
-  isEditable?: boolean;
+  onOrderChangeClick?: (index: number, direction: string) => void;
   /**
-   * 明細を読み取り専用にする
+   * 順序変更を有効にする
+   */
+  reorderable?: boolean;
+  /**
+   * 読み取り専用にする
    */
   readonly?: boolean;
 }
@@ -222,7 +222,7 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
     onOrderChangeClick,
     onConditionCountChangeClick,
     onSubConditionCoountChangeClick,
-    isEditable = true,
+    reorderable: isEditable = false,
     readonly,
   } = props;
 
@@ -282,14 +282,20 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
                     <SetIconButton>
                       {indexRow !== 0 && (
                         <StyledButton
-                          onClick={() => onOrderChangeClick(indexRow, 'up')}
+                          onClick={() =>
+                            onOrderChangeClick &&
+                            onOrderChangeClick(indexRow, 'up')
+                          }
                         >
                           <SortedAscIcon />
                         </StyledButton>
                       )}
                       {indexRow !== rows.length - 1 && (
                         <StyledButton
-                          onClick={() => onOrderChangeClick(indexRow, 'down')}
+                          onClick={() =>
+                            onOrderChangeClick &&
+                            onOrderChangeClick(indexRow, 'down')
+                          }
                         >
                           <SortedDescIcon />
                         </StyledButton>

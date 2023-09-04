@@ -350,6 +350,7 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
+          controlled={controlled}
           width={params.colDef.width - 10}
           helperText={params.colDef.cellHelperText}
           disabled={disabled || cellDisabled}
@@ -466,6 +467,7 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
+          controlled={controlled}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
         />
@@ -501,6 +503,8 @@ export const DataGrid = (props: DataGridProps) => {
   const generateMultiInputCell = (params: any) => {
     if (params.value === undefined) return <></>;
 
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
     const cellTypes = params.colDef.cellType;
     const stackWidth = params.colDef.width - 10;
     const elementWidth =
@@ -522,12 +526,14 @@ export const DataGrid = (props: DataGridProps) => {
                   id={params.id}
                   value={params.value[i]}
                   field={[params.field, i]}
+                  controlled={controlled}
                   width={
                     x.helperText === undefined
                       ? elementWidth
                       : elementWidth - 40
                   }
                   helperText={x.helperText}
+                  disabled={disabled || cellDisabled}
                   onRowValueChange={handleRowValueChange}
                 />
               );
@@ -542,6 +548,7 @@ export const DataGrid = (props: DataGridProps) => {
                   selectValues={x.selectValues}
                   controlled={controlled}
                   width={elementWidth}
+                  disabled={disabled || cellDisabled}
                   onRowValueChange={handleRowValueChange}
                 />
               );
@@ -578,7 +585,7 @@ export const DataGrid = (props: DataGridProps) => {
 
   // 独自のカラム定義からMUI DataGridのカラム定義へ変換
   const muiColumns: MuiGridColDef[] = columns.map((value) => {
-    const width =
+    let width =
       value.width !== undefined
         ? value.width
         : convertFromSizeToWidth(value.size);
@@ -603,9 +610,11 @@ export const DataGrid = (props: DataGridProps) => {
     }
     if (value.cellType === 'datepicker') {
       renderCell = generateDatepickerCell;
+      width = 200;
     }
     if (value.cellType === 'fromto') {
       renderCell = generateFromtoCell;
+      width = 400;
     }
     if (value.cellType === 'link') {
       renderCell = generateLinkCell;
@@ -658,15 +667,6 @@ export const DataGrid = (props: DataGridProps) => {
           width: width
             ? width
             : resolveGridWidth(muiColumns, checkboxSelection),
-          '& .cold': {
-            backgroundColor: '#b9d5ff91',
-          },
-          '& .hot': {
-            backgroundColor: '#ff943975',
-          },
-          '& .disabled': {
-            backgroundColor: '#D8D8D8',
-          },
           overflowX: 'hidden',
         }}
       >
