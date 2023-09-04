@@ -856,7 +856,7 @@ const ScrMem0008BasicTab = (props: {
       // 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: 'SCR-MEM-0008',
-        tabId: 'B-13',
+        tabId: 13,
         masterId: corporationId + ',' + billingId,
         businessDate: user.taskDate,
       };
