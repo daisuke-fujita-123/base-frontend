@@ -619,6 +619,7 @@ const DatagridColumnGroups = () => {
         {/* 【四輪】契約情報セクション */}
         <Section
           name='【四輪】契約情報'
+          fitInside={true}
           decoration={
             <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
               <AddButton onClick={tvaaHandleIconOutputCsvClick}>
