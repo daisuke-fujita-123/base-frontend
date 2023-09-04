@@ -690,7 +690,7 @@ const ScrMem0008BankTab = (props: {
       getAccountType1BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType1branchSelectValues.push({
           value: x.branchCode,
-          displayValue: x.branchCode + '　' + x.branchName,
+          displayValue: x.branchCode + '　' + x.branchHame,
         });
       });
       accountType1Columns[1].selectValues = accountType1branchSelectValues;
@@ -706,7 +706,7 @@ const ScrMem0008BankTab = (props: {
       getAccountType2BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType2branchSelectValues.push({
           value: x.branchCode,
-          displayValue: x.branchCode + '　' + x.branchName,
+          displayValue: x.branchCode + '　' + x.branchHame,
         });
       });
       accountType2Columns[1].selectValues = accountType2branchSelectValues;
@@ -844,7 +844,7 @@ const ScrMem0008BankTab = (props: {
       getAccountType1BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType1branchSelectValues.push({
           value: x.branchCode,
-          displayValue: x.branchCode + '　' + x.branchName,
+          displayValue: x.branchCode + '　' + x.branchHame,
         });
       });
       accountType1Columns[1].selectValues = accountType1branchSelectValues;
@@ -860,7 +860,7 @@ const ScrMem0008BankTab = (props: {
       getAccountType2BranchMasterResponse.searchGetBranchMaster.map((x) => {
         accountType2branchSelectValues.push({
           value: x.branchCode,
-          displayValue: x.branchCode + '　' + x.branchName,
+          displayValue: x.branchCode + '　' + x.branchHame,
         });
       });
       accountType2Columns[1].selectValues = accountType2branchSelectValues;
@@ -909,7 +909,7 @@ const ScrMem0008BankTab = (props: {
       getBranchMasterResponse.searchGetBranchMaster.map((x) => {
         branchSelectValues.push({
           value: x.branchCode,
-          displayValue: x.branchCode + '　' + x.branchName,
+          displayValue: x.branchCode + '　' + x.branchHame,
         });
       });
       accountType1Columns[1].selectValues = branchSelectValues;
@@ -931,7 +931,7 @@ const ScrMem0008BankTab = (props: {
       getBranchMasterResponse.searchGetBranchMaster.map((x) => {
         branchSelectValues.push({
           value: x.branchCode,
-          displayValue: x.branchCode + '　' + x.branchName,
+          displayValue: x.branchCode + '　' + x.branchHame,
         });
       });
       accountType2Columns[1].selectValues = branchSelectValues;
@@ -1028,7 +1028,7 @@ const ScrMem0008BankTab = (props: {
     getAccountType1BranchMasterResponse.searchGetBranchMaster.map((x) => {
       accountType1branchSelectValues.push({
         value: x.branchCode,
-        displayValue: x.branchCode + '　' + x.branchName,
+        displayValue: x.branchCode + '　' + x.branchHame,
       });
     });
     accountType1Columns[1].selectValues = accountType1branchSelectValues;
@@ -1045,7 +1045,7 @@ const ScrMem0008BankTab = (props: {
     getAccountType2BranchMasterResponse.searchGetBranchMaster.map((x) => {
       accountType2branchSelectValues.push({
         value: x.branchCode,
-        displayValue: x.branchCode + '　' + x.branchName,
+        displayValue: x.branchCode + '　' + x.branchHame,
       });
     });
     accountType2Columns[1].selectValues = accountType2branchSelectValues;
