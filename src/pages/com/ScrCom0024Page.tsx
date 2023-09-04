@@ -252,19 +252,21 @@ const selectValuesInitialValues: SelectValuesModel = {
  * バリデーションスキーマ
  */
 const validationSchema = {
-  placeCd: yup.string().label('会場コード').max(2).half(),
-  placeName: yup.string().label('会場名').max(15),
-  statementDisplayPlaceName: yup.string().label('計算書表示会場名').max(8),
-  partnerStartDate: yup.string().label('提携開始日（FROM）').date(),
-  sessionWeekKind: yup.array().label('開催曜日'),
-  contractId: yup.string().label('契約ID').max(7).half(),
+  placeCd: yup.string().label('会場コード').max(2).half().required(),
+  placeName: yup.string().label('会場名').max(15).required(),
+  omatomePlaceValue: yup.string().label('おまとめ会場').required(),
+  statementDisplayPlaceName: yup.string().label('計算書表示会場名').max(8).required(),
+  partnerStartDate: yup.string().label('提携開始日（FROM）').date().required(),
+  sessionWeekKind: yup.array().label('開催曜日').required(),
+  contractId: yup.string().label('契約ID').max(7).half().required(),
   corporationId: yup.string().label('法人ID').max(8).half(),
   corporationName: yup.string().label('法人名').max(30),
   billingId: yup.string().label('請求先ID').max(4).half(),
   telephoneNumber: yup.string().label('TEL').max(13).half().phone(),
   placeGroupCode: yup.array().label('会場グループ'),
-  paymentDestinationPlaceName: yup.array().label('支払先会場名'),
+  paymentDestinationPlaceName: yup.array().label('支払先会場名').required(),
   posPutTogetherPlaceCode: yup.array().label('POSまとめ会場'),
+  hondaGroupValue: yup.array().label('ホンダグループ').required(),
   guaranteeDeposit: yup.string().label('保証金').max(6).number(),
   documentShippingStaff: yup.string().label('担当者').max(30),
   documentShippingMailAddress: yup
