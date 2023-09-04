@@ -17,7 +17,11 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
-import { useGridApiRef } from '@mui/x-data-grid-pro';
+import {
+  GridCellParams,
+  GridTreeNode,
+  useGridApiRef,
+} from '@mui/x-data-grid-pro';
 import saveAs from 'file-saver';
 
 /**
@@ -271,6 +275,14 @@ const ScrCom0031Page = () => {
     }
   };
 
+  const handleGetCellClassName = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ) => {
+    if (params.field === 'statusName' && params.row.statusName === '処理中')
+      return 'statusName-syorityu';
+    return '';
+  };
+
   return (
     <>
       <MainLayout>
@@ -285,6 +297,12 @@ const ScrCom0031Page = () => {
               pagination={true}
               onLinkClick={handleLinkClick}
               apiRef={apiRef}
+              getCellClassName={handleGetCellClassName}
+              sx={{
+                '& .statusName-syorityu': {
+                  backgroundColor: '#b9e7da',
+                },
+              }}
             />
           </Section>
         </MainLayout>
