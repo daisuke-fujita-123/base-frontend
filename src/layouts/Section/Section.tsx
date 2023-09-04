@@ -37,6 +37,7 @@ interface SectionProps {
   isError?: boolean;
   openable?: boolean;
   width?: number;
+  fitInside?: boolean;
   small?: boolean;
 }
 export interface SectionClose {
@@ -59,6 +60,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
     serchLabels,
     openable = true,
     width,
+    fitInside = false,
     small,
   } = props;
 
@@ -79,7 +81,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
   const flexColSx = { display: 'flex', flexDirection: 'column' };
 
   return (
-    <Stack direction='column' sx={{ ...flexColSx, flexGrow: 1 }} width={width}>
+    <Box width={width} display={fitInside ? 'inline-table' : undefined}>
       <SubTitle onClick={onClick} openable={openable}>
         {name}
       </SubTitle>
@@ -114,7 +116,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
           </AccordionDetails>
         </StyledAccordion>
       </ContentsBox>
-    </Stack>
+    </Box>
   );
 });
 
