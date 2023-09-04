@@ -411,7 +411,7 @@ const DatagridColumnGroups = () => {
           href: '-?contractId=' + x.id + '#basic',
         };
       });
-      contract.bikeContractList.map((x) => {
+      contract.bikeContractList.forEach((x) => {
         hrefs.push({
           field: 'contractId',
           id: x.id,

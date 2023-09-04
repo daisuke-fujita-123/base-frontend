@@ -547,7 +547,7 @@ const convertFromCorporationBasicModel = (
 
 const convertToErrorMessages = (response: errorResult[]): errorList[] => {
   const list: errorList[] = [];
-  response.map((x) => {
+  response.forEach((x) => {
     list.push({
       errorCode: x.errorCode,
       errorMessage: x.errorMessage,
@@ -558,7 +558,7 @@ const convertToErrorMessages = (response: errorResult[]): errorList[] => {
 
 const convertTowarningMessages = (response: errorResult[]): warningList[] => {
   const list: warningList[] = [];
-  response.map((x) => {
+  response.forEach((x) => {
     list.push({
       warningCode: x.errorCode,
       warningMessage: x.errorMessage,
@@ -638,7 +638,11 @@ const ScrMem0010BasicTab = () => {
       setLinkHref('/mem/corporations/' + corporationId);
 
       // リスト取得
-      const selectValues = selectValuesInitialValues;
+      const selectValues: SelectValuesModel = {
+        tvaaSalesStaffSelectValues: [],
+        bikeSalesStaffSelectValues: [],
+        prefectureCodeSelectValues: [],
+      };
       // 共通管理コード値取得（コード管理マスタ以外）
       const getCodeValueRequest = {
         entityList: [{ entityName: 'prefecture_master' }],
@@ -646,9 +650,9 @@ const ScrMem0010BasicTab = () => {
       const getCodeValueResponse = await ScrMem9999GetCodeValue(
         getCodeValueRequest
       );
-      getCodeValueResponse.resultList.map((x) => {
+      getCodeValueResponse.resultList.forEach((x) => {
         if (x.entityName === 'prefecture_master') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.prefectureCodeSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeValueName,
@@ -659,13 +663,13 @@ const ScrMem0010BasicTab = () => {
 
       // 営業担当情報取得(市区郡マスタ)
       const getEmployeeResponse = await ScrMem9999GetEmployee();
-      getEmployeeResponse.tvaaSalesInfo.map((x) => {
+      getEmployeeResponse.tvaaSalesInfo.forEach((x) => {
         selectValues.tvaaSalesStaffSelectValues.push({
           value: x.salesId,
           displayValue: x.salesId + '　' + x.salesName,
         });
       });
-      getEmployeeResponse.bikeSalesInfo.map((x) => {
+      getEmployeeResponse.bikeSalesInfo.forEach((x) => {
         selectValues.bikeSalesStaffSelectValues.push({
           value: x.salesId,
           displayValue: x.salesId + '　' + x.salesName,
@@ -711,7 +715,11 @@ const ScrMem0010BasicTab = () => {
       setLinkHref('/mem/corporations/' + corporationId);
 
       // リスト取得
-      const selectValues = selectValuesInitialValues;
+      const selectValues: SelectValuesModel = {
+        tvaaSalesStaffSelectValues: [],
+        bikeSalesStaffSelectValues: [],
+        prefectureCodeSelectValues: [],
+      };
       // 共通管理コード値取得（コード管理マスタ以外）
       const getCodeValueRequest = {
         entityList: [{ entityName: 'prefecture_master' }],
@@ -719,9 +727,9 @@ const ScrMem0010BasicTab = () => {
       const getCodeValueResponse = await ScrMem9999GetCodeValue(
         getCodeValueRequest
       );
-      getCodeValueResponse.resultList.map((x) => {
+      getCodeValueResponse.resultList.forEach((x) => {
         if (x.entityName === 'prefecture_master') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.prefectureCodeSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeValueName,
@@ -732,13 +740,13 @@ const ScrMem0010BasicTab = () => {
 
       // 営業担当情報取得(市区郡マスタ)
       const getEmployeeResponse = await ScrMem9999GetEmployee();
-      getEmployeeResponse.tvaaSalesInfo.map((x) => {
+      getEmployeeResponse.tvaaSalesInfo.forEach((x) => {
         selectValues.tvaaSalesStaffSelectValues.push({
           value: x.salesId,
           displayValue: x.salesId + '　' + x.salesName,
         });
       });
-      getEmployeeResponse.bikeSalesInfo.map((x) => {
+      getEmployeeResponse.bikeSalesInfo.forEach((x) => {
         selectValues.bikeSalesStaffSelectValues.push({
           value: x.salesId,
           displayValue: x.salesId + '　' + x.salesName,
@@ -794,7 +802,11 @@ const ScrMem0010BasicTab = () => {
       setContractList(response);
 
       // リスト取得
-      const selectValues = selectValuesInitialValues;
+      const selectValues: SelectValuesModel = {
+        tvaaSalesStaffSelectValues: [],
+        bikeSalesStaffSelectValues: [],
+        prefectureCodeSelectValues: [],
+      };
       // 共通管理コード値取得（コード管理マスタ以外）
       const getCodeValueRequest = {
         entityList: [{ entityName: 'prefecture_master' }],
@@ -802,9 +814,9 @@ const ScrMem0010BasicTab = () => {
       const getCodeValueResponse = await ScrMem9999GetCodeValue(
         getCodeValueRequest
       );
-      getCodeValueResponse.resultList.map((x) => {
+      getCodeValueResponse.resultList.forEach((x) => {
         if (x.entityName === 'prefecture_master') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.prefectureCodeSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeValueName,
@@ -815,13 +827,13 @@ const ScrMem0010BasicTab = () => {
 
       // 営業担当情報取得(市区郡マスタ)
       const getEmployeeResponse = await ScrMem9999GetEmployee();
-      getEmployeeResponse.tvaaSalesInfo.map((x) => {
+      getEmployeeResponse.tvaaSalesInfo.forEach((x) => {
         selectValues.tvaaSalesStaffSelectValues.push({
           value: x.salesId,
           displayValue: x.salesId + '　' + x.salesName,
         });
       });
-      getEmployeeResponse.bikeSalesInfo.map((x) => {
+      getEmployeeResponse.bikeSalesInfo.forEach((x) => {
         selectValues.bikeSalesStaffSelectValues.push({
           value: x.salesId,
           displayValue: x.salesId + '　' + x.salesName,
@@ -1036,7 +1048,12 @@ const ScrMem0010BasicTab = () => {
                   />
                 </ColStack>
                 <ColStack>
-                  <TextField label='法人名称' name='corporationName' readonly />
+                  <TextField
+                    label='法人名称'
+                    name='corporationName'
+                    readonly
+                    size='m'
+                  />
                   <MarginBox mt={17}>
                     <TextField
                       label='FAX'
