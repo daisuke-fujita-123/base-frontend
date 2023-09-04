@@ -23,6 +23,8 @@ import {
   ScrCom0032GetApprovalRequest,
 } from 'apis/com/ScrCom0032Api';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+
 /**
  * 登録内容確認ポップアップデータモデル
  */
@@ -144,22 +146,22 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     {
       field: 'screenName',
       headerName: '画面名',
-      size: 'm',
+      size: 'l',
     },
     {
       field: 'tabName',
       headerName: 'タブ名',
-      size: 'm',
+      size: 'l',
     },
     {
       field: 'sectionName',
       headerName: 'セクション名',
-      size: 'm',
+      size: 'l',
     },
     {
       field: 'columnName',
       headerName: '項目名',
-      size: 'm',
+      size: 'l',
     },
   ];
 
@@ -169,7 +171,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   // 項目名のパラメータが渡されたかどうかを判定するフラグ
   const [hasColumnNameParamFlag, setHasColumnNameParamFlag] = useState(true);
   // 登録・変更内容確認のテーブルモデル リスト
-  const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>();
+  const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>([]);
   // ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
   const [isWarningChecked, setIsWarningChecked] = useState<boolean>();
 
@@ -179,6 +181,11 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
 
   // 初回レンダリング判定フラグ
   const renderFlgRef = useRef(false);
+
+  // セクションサイズ
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
+  const apiRef = useGridApiRef();
 
   // form
   const methods = useForm<formModel>({
@@ -268,6 +275,15 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     setRowValuesList(tempList);
   };
 
+  // セクション幅調整
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
+
   // 登録内容確認ポップアップ表示時の処理
   useEffect(() => {
     const initialize = async () => {
@@ -322,24 +338,29 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     }
   }, []);
 
-  // チェックボックス処理
+  // ワーニングチェックボックス処理
   useEffect(() => {
     const subscription = watch((value, { name, type }) => {
-      // 全てのチェックボックスの値を取得
-      Object.entries(value).map((x, key) => {
-        // 存在するチェックボックスの頭の一つが余分の為削除
-        if (key >= 1) {
-          // 値がtrue以外の場合は未選択状態のチェックボックスあり
-          if (!x[1]) {
-            // 確定ボタンの非活性化
-            setIsWarningChecked(false);
-          } else {
-            // 確定ボタンの活性化
-            setIsWarningChecked(true);
-          }
-        }
-      });
+      // 全てのチェックボックスの数を取得
+      const checkboxCount = document.querySelectorAll(
+        "input[name^='checkbox']"
+      ).length;
+
+      // 全てのチェックボックスのチェックされている値のみを取得
+      const checkboxList = document.querySelectorAll(
+        "input[name^='checkbox']:checked"
+      );
+
+      // チェックされている数が全てのチェックボックスの数と一致したらボタンを活性化
+      if (checkboxList.length === checkboxCount) {
+        // 確定ボタンの活性化
+        setIsWarningChecked(true);
+      } else {
+        // 確定ボタンの非活性化
+        setIsWarningChecked(false);
+      }
     });
+
     return () => subscription.unsubscribe();
   }, [setValue, watch]);
 
@@ -413,7 +434,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                                   warningList.warningMessage +
                                   String(warningIndex)
                                 }
-                                name={'checkbox' + warningIndex}
+                                name={'checkbox' + warningIndex + 1}
                                 label={
                                   'ワーニングメッセージ' +
                                   Number(warningIndex + 1) +
@@ -435,44 +456,53 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                 ) : (
                   <br />
                 )}
-                <Section name='登録・変更内容'>
-                  {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
-                  {isExistColumns && rowValuesList ? (
+                {data.registrationChangeList.length > 0 ? (
+                  <Section name='登録・変更内容' width={maxSectionWidth}>
+                    {/* "TODO: 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
+                    {/* ①項目が設定されない ②非表示と表示が聞かない */}
+                    {/* {isExistColumns && rowValuesList ? ( */}
                     <>
-                      <DataGrid columns={columns} rows={rowValuesList} />
+                      <DataGrid
+                        columns={columns}
+                        rows={rowValuesList}
+                        apiRef={apiRef}
+                      />
                       <br />
                     </>
-                  ) : (
-                    ''
-                  )}
-                  {/* 変更予約有の場合は表示・無の場合は非表示 */}
-                  {data.changeExpectDate !== '' ? (
-                    <Box>
-                      <Typography variant='h5'>変更予定日</Typography>
-                      <Typography variant='body1'>
-                        {data.changeExpectDate}
-                      </Typography>
+                    {/* ) : (
+                      ''
+                    )} */}
+                    {/* 変更予約有の場合は表示・無の場合は非表示 */}
+                    {data.changeExpectDate !== '' ? (
+                      <Box>
+                        <Typography variant='h5'>変更予定日</Typography>
+                        <Typography variant='body1'>
+                          {data.changeExpectDate}
+                        </Typography>
+                        <br />
+                      </Box>
+                    ) : (
                       <br />
-                    </Box>
-                  ) : (
-                    <br />
-                  )}
-                  {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
-                  {isExistColumns ? (
-                    <Box>
-                      <Typography variant='h5'>登録変更メモ</Typography>
-                      <Textarea
-                        name='registrationChangeMemo'
-                        maxRows={30}
-                        size='l'
-                        // エラー発生有の場合は非活性・エラー発生無の場合は活性
-                        disabled={data.errorList.length > 0 ? true : false}
-                      ></Textarea>
-                    </Box>
-                  ) : (
-                    ''
-                  )}
-                </Section>
+                    )}
+                    {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
+                    {isExistColumns ? (
+                      <Box>
+                        <Typography variant='h5'>登録変更メモ</Typography>
+                        <Textarea
+                          name='registrationChangeMemo'
+                          maxRows={30}
+                          size='l'
+                          // エラー発生有の場合は非活性・エラー発生無の場合は活性
+                          disabled={data.errorList.length > 0 ? true : false}
+                        ></Textarea>
+                      </Box>
+                    ) : (
+                      ''
+                    )}
+                  </Section>
+                ) : (
+                  ''
+                )}
               </Popup>
               <Popup bottom>
                 <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
@@ -484,11 +514,9 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
                     disable={
-                      data.errorList.length >= 1
+                      data.errorList.length >= 1 || !isWarningChecked
                         ? true
-                        : isWarningChecked
-                        ? false
-                        : true
+                        : false
                     }
                   >
                     確定
@@ -501,11 +529,9 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
                     disable={
-                      data.errorList.length >= 1
+                      data.errorList.length >= 1 || !isWarningChecked
                         ? true
-                        : isWarningChecked
-                        ? false
-                        : true
+                        : false
                     }
                   >
                     承認申請
