@@ -754,7 +754,7 @@ const ScrMem0010BasicTab = () => {
       // 変更履歴情報
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0010',
-        tabId: 'B-16',
+        tabId: 16,
         masterId: '',
         businessDate: user.taskDate,
       };
