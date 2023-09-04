@@ -579,14 +579,14 @@ const DatagridColumnGroups = () => {
     if (params.field === 'courseFeeTotal') {
       tvaaContract.map((x) => {
         if (x.id === params.row.id) {
-          CellClassName = x.courseFeeDiscountFlag ? 'cold' : '';
+          CellClassName = x.courseFeeDiscountFlag ? 'discount-flag' : '';
         }
       });
     }
     if (params.field === 'optionFeeTotal') {
       tvaaContract.map((x) => {
         if (x.id === params.row.id) {
-          CellClassName = x.optionFeeTotalDiscountFlag ? 'cold' : '';
+          CellClassName = x.optionFeeTotalDiscountFlag ? 'discount-flag' : '';
         }
       });
     }
@@ -599,14 +599,14 @@ const DatagridColumnGroups = () => {
     if (params.field === 'courseFeeTotal') {
       bikeContract.map((x) => {
         if (x.id === params.id) {
-          CellClassName = x.courseFeeDiscountFlag ? 'cold' : '';
+          CellClassName = x.courseFeeDiscountFlag ? 'discount-flag' : '';
         }
       });
     }
     if (params.field === 'optionFeeTotal') {
       bikeContract.map((x) => {
         if (x.id === params.id) {
-          CellClassName = x.optionFeeTotalDiscountFlag ? 'cold' : '';
+          CellClassName = x.optionFeeTotalDiscountFlag ? 'discount-flag' : '';
         }
       });
     }
@@ -634,11 +634,17 @@ const DatagridColumnGroups = () => {
             hrefs={tvaaHrefs}
             onLinkClick={handleLinkClick}
             getCellClassName={getCellClassNameTvaaContract}
+            sx={{
+              '& .discount-flag': {
+                backgroundColor: '#b9e7da',
+              },
+            }}
             apiRef={apiRefTvaaContract}
           />
         </Section>
         <Section
           name='【二輪】契約情報'
+          fitInside={true}
           decoration={
             <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
               <AddButton onClick={bikeHandleIconOutputCsvClick}>
@@ -654,6 +660,11 @@ const DatagridColumnGroups = () => {
             hrefs={bikeHrefs}
             onLinkClick={handleLinkClick}
             getCellClassName={getCellClassNameBikeContract}
+            sx={{
+              '& .discount-flag': {
+                backgroundColor: '#b9e7da',
+              },
+            }}
             apiRef={apiRefBikeContract}
           />
         </Section>
