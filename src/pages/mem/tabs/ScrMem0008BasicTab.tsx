@@ -993,6 +993,145 @@ const ScrMem0008BasicTab = (props: {
         applicationId,
         ''
       );
+
+      // チェックボックスのラベル背景色変更
+      // 四輪督促状発行FAX
+      if (corporationBasic.tvaaDemandFaxSendFlag) {
+        setTvaaDemandFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 四輪督促状発行メール
+      if (corporationBasic.tvaaDemandMailSendFlag) {
+        setTvaaDemandMailSendFlagBackgroundColor('#b7ffea');
+      }
+      // 四輪計算書送信フラグFAX
+      if (corporationBasic.tvaaStatementFaxSendFlag) {
+        setTvaaStatementFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 四輪計算書送信フラグメール
+      if (corporationBasic.tvaaStatementMailSendFlag) {
+        setTvaaStatementMailSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪督促状発行FAX
+      if (corporationBasic.bikeDemandFaxSendFlag) {
+        setBikeDemandFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪督促状発行メール
+      if (corporationBasic.bikeDemandMailSendFlag) {
+        setBikeDemandMailSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪計算書送信フラグFAX
+      if (corporationBasic.bikeStatementFaxSendFlag) {
+        setBikeStatementFaxSendFlagBackgroundColor('#b7ffea');
+      }
+      // 二輪計算書送信フラグメール
+      if (corporationBasic.bikeStatementMailSendFlag) {
+        setBikeStatementMailSendFlagBackgroundColor('#b7ffea');
+      }
+
+      // ラジオボタンのラベル背景色変更
+      // 四輪即払可否
+      const newTvaaImmediatePaymentFlagRadio = tvaaImmediatePaymentFlagRadio;
+      if (corporationBasic.tvaaImmediatePaymentFlag === '0') {
+        newTvaaImmediatePaymentFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.tvaaImmediatePaymentFlag === '1') {
+        newTvaaImmediatePaymentFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setTvaaImmediatePaymentFlagRadio(newTvaaImmediatePaymentFlagRadio);
+
+      // 四輪書類先出し
+      const newTvaaDocumentAdvanceFlagRadio = tvaaDocumentAdvanceFlagRadio;
+      if (corporationBasic.tvaaDocumentAdvanceFlag === '0') {
+        newTvaaDocumentAdvanceFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.tvaaDocumentAdvanceFlag === '1') {
+        newTvaaDocumentAdvanceFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setTvaaDocumentAdvanceFlagRadio(newTvaaDocumentAdvanceFlagRadio);
+
+      // 四輪延滞金の自動発生可否フラグ
+      const newTvaaArrearsPriceAutomaticOccurrenceFlagRadio =
+        tvaaArrearsPriceAutomaticOccurrenceFlagRadio;
+      if (corporationBasic.tvaaArrearsPriceAutomaticOccurrenceFlag === '0') {
+        newTvaaArrearsPriceAutomaticOccurrenceFlagRadio[0].backgroundColor =
+          '#b7ffea';
+      } else if (
+        corporationBasic.tvaaArrearsPriceAutomaticOccurrenceFlag === '1'
+      ) {
+        newTvaaArrearsPriceAutomaticOccurrenceFlagRadio[1].backgroundColor =
+          '#b7ffea';
+      }
+      setTvaaArrearsPriceAutomaticOccurrenceFlagRadio(
+        newTvaaArrearsPriceAutomaticOccurrenceFlagRadio
+      );
+
+      // 四輪相殺要否
+      const newTvaaOffsettingFlagRadio = tvaaOffsettingFlagRadio;
+      if (corporationBasic.tvaaOffsettingFlag === '0') {
+        newTvaaOffsettingFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.tvaaOffsettingFlag === '1') {
+        newTvaaOffsettingFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setTvaaOffsettingFlagRadio(newTvaaOffsettingFlagRadio);
+
+      // 四輪オークション参加制限可否
+      const newTvaaAuctionEntryLimitFlagRadio = tvaaAuctionEntryLimitFlagRadio;
+      if (corporationBasic.tvaaAuctionEntryLimitFlag === '0') {
+        newTvaaAuctionEntryLimitFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.tvaaAuctionEntryLimitFlag === '1') {
+        newTvaaAuctionEntryLimitFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setTvaaAuctionEntryLimitFlagRadio(newTvaaAuctionEntryLimitFlagRadio);
+
+      // 二輪即払可否
+      const newBikeImmediatePaymentFlagRadio = bikeImmediatePaymentFlagRadio;
+      if (corporationBasic.bikeImmediatePaymentFlag === '0') {
+        newBikeImmediatePaymentFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.bikeImmediatePaymentFlag === '1') {
+        newBikeImmediatePaymentFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setBikeImmediatePaymentFlagRadio(newBikeImmediatePaymentFlagRadio);
+
+      // 四輪書類先出し
+      const newBikeDocumentAdvanceFlagRadio = bikeDocumentAdvanceFlagRadio;
+      if (corporationBasic.bikeDocumentAdvanceFlag === '0') {
+        newBikeDocumentAdvanceFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.bikeDocumentAdvanceFlag === '1') {
+        newBikeDocumentAdvanceFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setBikeDocumentAdvanceFlagRadio(newBikeDocumentAdvanceFlagRadio);
+
+      // 四輪延滞金の自動発生可否フラグ
+      const newBikeArrearsPriceAutomaticOccurrenceFlagRadio =
+        bikeArrearsPriceAutomaticOccurrenceFlagRadio;
+      if (corporationBasic.bikeArrearsPriceAutomaticOccurrenceFlag === '0') {
+        newBikeArrearsPriceAutomaticOccurrenceFlagRadio[0].backgroundColor =
+          '#b7ffea';
+      } else if (
+        corporationBasic.bikeArrearsPriceAutomaticOccurrenceFlag === '1'
+      ) {
+        newBikeArrearsPriceAutomaticOccurrenceFlagRadio[1].backgroundColor =
+          '#b7ffea';
+      }
+      setBikeArrearsPriceAutomaticOccurrenceFlagRadio(
+        newBikeArrearsPriceAutomaticOccurrenceFlagRadio
+      );
+
+      // 四輪相殺要否
+      const newBikeOffsettingFlagRadio = bikeOffsettingFlagRadio;
+      if (corporationBasic.bikeOffsettingFlag === '0') {
+        newBikeOffsettingFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.bikeOffsettingFlag === '1') {
+        newBikeOffsettingFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setBikeOffsettingFlagRadio(newBikeOffsettingFlagRadio);
+
+      // 四輪オークション参加制限可否
+      const newBikeAuctionEntryLimitFlagRadio = bikeAuctionEntryLimitFlagRadio;
+      if (corporationBasic.bikeAuctionEntryLimitFlag === '0') {
+        newBikeAuctionEntryLimitFlagRadio[0].backgroundColor = '#b7ffea';
+      } else if (corporationBasic.bikeAuctionEntryLimitFlag === '1') {
+        newBikeAuctionEntryLimitFlagRadio[1].backgroundColor = '#b7ffea';
+      }
+      setBikeAuctionEntryLimitFlagRadio(newBikeAuctionEntryLimitFlagRadio);
       reset(corporationBasic);
 
       const selectValues = selectValuesInitialValues;
