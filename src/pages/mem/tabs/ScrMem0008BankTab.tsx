@@ -1193,25 +1193,23 @@ const ScrMem0008BankTab = (props: {
       accountType1Row[0].accountNumber.match(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/) ===
         null
     )
-      if (
-        accountType2Row[0].accountNumber.length > 7 ||
-        accountType2Row[0].accountNumber.match(
-          /^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/
-        ) === null
-      )
-        if (
-          accountType1Row[0].accountNameKana.length > 40 ||
-          accountType1Row[0].accountNameKana.match(
-            /^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/
-          ) === null
-        )
-          if (
-            accountType2Row[0].accountNameKana.length > 40 ||
-            accountType2Row[0].accountNameKana.match(
-              /^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/
-            ) === null
-          )
-            return;
+      return;
+    if (
+      accountType2Row[0].accountNumber.length > 7 ||
+      accountType2Row[0].accountNumber.match(/^[a-zA-Z0-9!-/:-@¥[-`{-~]*$/) ===
+        null
+    )
+      return;
+    if (
+      accountType1Row[0].accountNameKana.length > 40 ||
+      accountType1Row[0].accountNameKana.match(/^[!-~ｦ-ﾟ]*$/) === null
+    )
+      return;
+    if (
+      accountType2Row[0].accountNameKana.length > 40 ||
+      accountType2Row[0].accountNameKana.match(/^[!-~ｦ-ﾟ]*$/) === null
+    )
+      return;
     // 反映予定日整合性チェック
     setChangeHistoryDateCheckIsOpen(true);
   };
