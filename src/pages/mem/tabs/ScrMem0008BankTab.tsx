@@ -535,6 +535,12 @@ const ScrMem0008BankTab = (props: {
   const apiRef = useGridApiRef();
 
   // state
+  const [getBranchMasterFlag1, setGetBranchMasterFlag1] =
+    useState<boolean>(false);
+  const [getBranchMasterFlag2, setGetBranchMasterFlag2] =
+    useState<boolean>(false);
+  const [accountType1BankCode, setAccountType1BankCode] = useState<string>();
+  const [accountType2BankCode, setAccountType2BankCode] = useState<string>();
   const [accountType1Row, setAccountType1Row] = useState<
     AccountType1RowModel[]
   >([]);
@@ -600,6 +606,7 @@ const ScrMem0008BankTab = (props: {
           accountNameKana: accountType1.accountNameKana,
         },
       ]);
+      setAccountType1BankCode(accountType1.bankCode);
       setValue('accountType1', accountType1);
       const accountType2 = getBillingInfoResponse.accountType2;
       setAccountType2Row([
@@ -612,6 +619,7 @@ const ScrMem0008BankTab = (props: {
           accountNameKana: accountType2.accountNameKana,
         },
       ]);
+      setAccountType2BankCode(accountType2.bankCode);
       setValue('accountType2', accountType2);
       const accountType3 = getBillingInfoResponse.accountType3;
       setAccountType3Row(
@@ -754,6 +762,7 @@ const ScrMem0008BankTab = (props: {
           accountNameKana: accountType1.accountNameKana,
         },
       ]);
+      setAccountType1BankCode(accountType1.bankCode);
       setValue('accountType1', accountType1);
       const accountType2 = response.accountType2;
       setAccountType2Row([
@@ -766,6 +775,7 @@ const ScrMem0008BankTab = (props: {
           accountNameKana: accountType2.accountNameKana,
         },
       ]);
+      setAccountType2BankCode(accountType2.bankCode);
       setValue('accountType2', accountType2);
       const accountType3 = response.accountType3;
       setAccountType3Row(
@@ -895,12 +905,14 @@ const ScrMem0008BankTab = (props: {
   /**
    * 銀行変更時のイベントハンドラ
    */
-  const onRowValueChangeAccountType1 = async (row: any) => {
-    if (row.bankCode.length === 4) {
+  useEffect(() => {
+    const getBranchMaster1 = async () => {
+      if (accountType1Row[0].bankCode === accountType1BankCode) return;
+      if (accountType1Row[0].bankCode.length !== 4) return;
       // 支店名情報取得
       const branchSelectValues: SelectValue[] = [];
       const getBranchMasterRequest = {
-        bankCode: row.bankCode,
+        bankCode: accountType1Row[0].bankCode,
         businessDate: user.taskDate,
       };
       const getBranchMasterResponse = await ScrCom9999GetBranchMaster(
@@ -913,16 +925,18 @@ const ScrMem0008BankTab = (props: {
         });
       });
       accountType1Columns[1].selectValues = branchSelectValues;
-      accountType1Row[0].bankCode = branchSelectValues[0].value.toString();
-    }
-  };
+      accountType1Row[0].branchCode = branchSelectValues[0].value.toString();
+      setAccountType1BankCode(accountType1Row[0].bankCode);
+      setGetBranchMasterFlag1(false);
+    };
 
-  const onRowValueChangeAccountType2 = async (row: any) => {
-    if (row.bankCode.length === 4) {
+    const getBranchMaster2 = async () => {
+      if (accountType2Row[0].bankCode === accountType2BankCode) return;
+      if (accountType2Row[0].bankCode.length !== 4) return;
       // 支店名情報取得
       const branchSelectValues: SelectValue[] = [];
       const getBranchMasterRequest = {
-        bankCode: row.bankCode,
+        bankCode: accountType2Row[0].bankCode,
         businessDate: user.taskDate,
       };
       const getBranchMasterResponse = await ScrCom9999GetBranchMaster(
@@ -935,7 +949,25 @@ const ScrMem0008BankTab = (props: {
         });
       });
       accountType2Columns[1].selectValues = branchSelectValues;
+      accountType2Row[0].branchCode = branchSelectValues[0].value.toString();
+      setAccountType2BankCode(accountType2Row[0].bankCode);
+      setGetBranchMasterFlag2(false);
+    };
+
+    if (getBranchMasterFlag1) {
+      getBranchMaster1();
     }
+    if (getBranchMasterFlag2) {
+      getBranchMaster2();
+    }
+  }, [getBranchMasterFlag1, getBranchMasterFlag2]);
+
+  const onRowValueChangeAccountType1 = (row: any) => {
+    setGetBranchMasterFlag1(true);
+  };
+
+  const onRowValueChangeAccountType2 = (row: any) => {
+    setGetBranchMasterFlag2(true);
   };
 
   /**
@@ -959,6 +991,7 @@ const ScrMem0008BankTab = (props: {
         accountNameKana: accountType1.accountNameKana,
       },
     ]);
+    setAccountType1BankCode(accountType1.bankCode);
     setValue('accountType1', accountType1);
     const accountType2 = response.accountType2;
     setAccountType2Row([
@@ -971,6 +1004,7 @@ const ScrMem0008BankTab = (props: {
         accountNameKana: accountType2.accountNameKana,
       },
     ]);
+    setAccountType2BankCode(accountType2.bankCode);
     setValue('accountType2', accountType2);
     const accountType3 = response.accountType3;
     setAccountType3Row(
@@ -1218,6 +1252,7 @@ const ScrMem0008BankTab = (props: {
    * 確定ボタンクリック時（反映予定日整合性チェック後）のイベントハンドラ
    */
   const ChangeHistoryDateCheckUtilHandleConfirm = (checkFlg: boolean) => {
+    setChangeHistoryDateCheckIsOpen(false);
     if (!checkFlg) return;
     setScrCom0032PopupData({
       errorList: [],
@@ -1249,7 +1284,7 @@ const ScrMem0008BankTab = (props: {
         <MainLayout main>
           <FormProvider {...methods}>
             {/* 口座情報セクション */}
-            <Section name='口座情報' width={maxSectionWidth}>
+            <Section name='口座情報'>
               <RowStack>
                 <ColStack>
                   <InputLayout
