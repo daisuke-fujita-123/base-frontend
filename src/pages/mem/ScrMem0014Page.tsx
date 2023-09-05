@@ -740,7 +740,6 @@ const ScrMem0014Page = () => {
     ScrMem0014LiveTab: false,
   });
 
-  // TODO hashを実際のハッシュ値に変更する
   const tabDefs: TabDef[] = [
     {
       title: '基本情報',

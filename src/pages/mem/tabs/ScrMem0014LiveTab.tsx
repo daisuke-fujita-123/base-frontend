@@ -35,7 +35,7 @@ import {
 } from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
 import { CaptionLabel, WarningLabel } from 'controls/Label';
-import { Select } from 'controls/Select';
+import { Select, SelectValue } from 'controls/Select';
 import { Textarea } from 'controls/Textarea';
 import { TextField } from 'controls/TextField';
 import { Typography } from 'controls/Typography';
@@ -943,7 +943,7 @@ const ScrMem0014LiveTab = (props: {
   const [placeInfoListRow, setPlaceInfoListRow] = useState<
     placeInfoListRowModel[]
   >([]);
-  const [changeHistory, setChangeHistory] = useState<any>([]);
+  const [changeHistory, setChangeHistory] = useState<SelectValue[]>([]);
   const [tooltips, setTooltips] = useState<GridTooltipsModel[]>([]);
   const [scrCom0011PopupIsOpen, setScrCom0011PopupIsOpen] =
     useState<boolean>(false);
@@ -1044,7 +1044,7 @@ const ScrMem0014LiveTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0014',
-        tabId: 'B-25',
+        tabId: 25,
         masterId: corporationId,
         businessDate: user.taskDate,
       };
@@ -1762,6 +1762,7 @@ const ScrMem0014LiveTab = (props: {
             {/* 会場情報セクション */}
             <Section
               name='会場情報'
+              fitInside={true}
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                   <MarginBox mr={10} gap={2}>

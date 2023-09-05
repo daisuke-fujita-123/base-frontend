@@ -39,7 +39,6 @@ import {
   LogisticsBase,
   registrationRequest,
   ScrMem0014ContractBase,
-  ScrMem0014ContractBaseRequest,
   ScrMem0014GetContractInfo,
   ScrMem0014GetContractInfoResponse,
   ScrMem0014GetLogisticsBaseInfo,
@@ -1047,7 +1046,7 @@ const ScrMem0014BasicTab = (props: {
     LogisticsBaseRowModel[]
   >([]);
   const [businessInfo, setBusinessInfo] = useState<BusinessInfo[]>([]);
-  const [changeHistory, setChangeHistory] = useState<any>([]);
+  const [changeHistory, setChangeHistory] = useState<SelectValue[]>([]);
   const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
   const [scrCom00032PopupIsOpen, setScrCom00032PopupIsOpen] =
     useState<boolean>(false);
@@ -1055,8 +1054,6 @@ const ScrMem0014BasicTab = (props: {
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
   const [changeHistoryDateCheckIsOpen, setChangeHistoryDateCheckIsOpen] =
     useState<boolean>(false);
-  const [historyInfo, setHistoryInfo] =
-    useState<ScrMem0014ContractBaseRequest>();
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(
@@ -1232,7 +1229,7 @@ const ScrMem0014BasicTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0014',
-        tabId: 'B-24',
+        tabId: 24,
         masterId: corporationId,
         businessDate: user.taskDate,
       };

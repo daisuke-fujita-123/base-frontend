@@ -16,12 +16,11 @@ import ScrCom0033Popup, {
   ScrCom0033PopupModel,
 } from 'pages/com/popups/ScrCom0033Popup';
 
-import { MarginBox } from 'layouts/Box';
+import { ContentsBox, MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
-import { InputLayout } from 'layouts/InputLayout';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { ColStack, RowStack, Stack } from 'layouts/Stack';
+import { ColStack, LabelStack, RowStack, Stack } from 'layouts/Stack';
 
 import {
   AddIconButton,
@@ -36,6 +35,7 @@ import { CaptionLabel } from 'controls/Label';
 import { Radio } from 'controls/Radio';
 import { Select, SelectValue } from 'controls/Select';
 import { TextField } from 'controls/TextField';
+import { Typography } from 'controls/Typography';
 
 import {
   ScrCom9999getCodeManagementMasterMultiple,
@@ -71,6 +71,7 @@ import { AuthContext } from 'providers/AuthProvider';
 import {
   GridRenderCellParams,
   GridTreeNodeWithRender,
+  useGridApiRef,
 } from '@mui/x-data-grid-pro';
 
 /**
@@ -2636,6 +2637,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
   const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const apiRef = useGridApiRef();
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -4789,10 +4791,13 @@ const ScrMem0014ServiceDiscountTab = (props: {
         {/* main */}
         <MainLayout main>
           {/* サービス基本情報セクション */}
-          <Section name='サービス基本情報'>
+          <Section name='サービス基本情報' fitInside={true}>
             <RowStack>
               <ColStack>
-                <InputLayout label='コース情報' size='l'>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'コース情報'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={courseInfomationColumns}
                     rows={courseInfomationRow}
@@ -4803,16 +4808,22 @@ const ScrMem0014ServiceDiscountTab = (props: {
                     getCellDisabled={courseInfomationRowGetCellDisabled}
                     disabled={isReadOnly[0]}
                   />
-                </InputLayout>
-                <InputLayout label='基本サービス情報' size='l'>
+                </ContentsBox>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'基本サービス情報'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={baseServiceInfomationColumns}
                     rows={baseServiceInfomationRow}
                     resolver={baseServiceInfomationValidationSchema}
                     disabled={isReadOnly[0]}
                   />
-                </InputLayout>
-                <InputLayout label='オプション情報' size='l'>
+                </ContentsBox>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'オプション情報'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={optionInfomationColumns}
                     rows={optionInfomationRow}
@@ -4823,8 +4834,9 @@ const ScrMem0014ServiceDiscountTab = (props: {
                     getCellDisabled={optionInfomationRowGetCellDisabled}
                     getCellReadonly={handleGetCellReadonly}
                     disabled={isReadOnly[0]}
+                    apiRef={apiRef}
                   />
-                </InputLayout>
+                </ContentsBox>
               </ColStack>
             </RowStack>
           </Section>
@@ -5067,7 +5079,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
             </Section>
           )}
           {/* 会費値引値増セクション */}
-          <Section name='会費値引値増'>
+          <Section name='会費値引値増' fitInside={true}>
             <RowStack>
               <ColStack>
                 <PrimaryButton
@@ -5079,22 +5091,31 @@ const ScrMem0014ServiceDiscountTab = (props: {
                 <FormProvider {...methods}>
                   <Checkbox name='courseTypeSetting' label='コース個別設定' />
                 </FormProvider>
-                <InputLayout label='基本値引値増' size='l'>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'基本値引値増'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={individualCourseSettingBasicDiscountPriceColumns}
                     rows={individualCourseSettingBasicDiscountPriceRow}
                     disabled={isReadOnly[0]}
                   />
-                </InputLayout>
-                <InputLayout label='オプション値引値増' size='l'>
+                </ContentsBox>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'オプション値引値増'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={individualCourseSettingOptionDiscountPriceColumns}
                     rows={individualCourseSettingOptionDiscountPriceRow}
                     disabled={isReadOnly[0]}
                   />
-                </InputLayout>
+                </ContentsBox>
                 <CaptionLabel text='契約個別設定' />
-                <InputLayout label='基本値引値増' size='l'>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'基本値引値増'}</Typography>
+                  </LabelStack>
                   <RowStack>
                     <ColStack>
                       <DataGrid
@@ -5111,7 +5132,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
                       />
                     </ColStack>
                     <ColStack>
-                      {!isReadOnly[0] ? (
+                      {isReadOnly[0] ? (
                         ''
                       ) : (
                         <AddIconButton
@@ -5122,8 +5143,11 @@ const ScrMem0014ServiceDiscountTab = (props: {
                       )}
                     </ColStack>
                   </RowStack>
-                </InputLayout>
-                <InputLayout label='オプション値引値増' size='l'>
+                </ContentsBox>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'オプション値引値増'}</Typography>
+                  </LabelStack>
                   <RowStack>
                     <ColStack>
                       <DataGrid
@@ -5140,7 +5164,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
                       />
                     </ColStack>
                     <ColStack>
-                      {!isReadOnly[0] ? (
+                      {isReadOnly[0] ? (
                         ''
                       ) : (
                         <AddIconButton
@@ -5151,34 +5175,42 @@ const ScrMem0014ServiceDiscountTab = (props: {
                       )}
                     </ColStack>
                   </RowStack>
-                </InputLayout>
-                <InputLayout label='《最終値引値増金額》' size='l'>
+                </ContentsBox>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'《最終値引値増金額》'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={finalFeeDiscountColumns}
                     rows={finalFeeDiscountRow}
                   />
-                </InputLayout>
+                </ContentsBox>
                 <RowStack>
                   <ColStack>
-                    <InputLayout label='値引値増適用前　料金表' size='m'>
+                    <ContentsBox transparent={true}>
+                      <LabelStack>
+                        <Typography bold>{'値引値増適用前　料金表'}</Typography>
+                      </LabelStack>
                       <DataGrid
                         columns={feeDiscountColumns}
                         rows={beforeFeeDiscountRow}
                       />
-                    </InputLayout>
-
+                    </ContentsBox>
                     <DataGrid
                       columns={optionInfoColumns}
                       rows={beforeOptionInfoRow}
                     />
                   </ColStack>
                   <ColStack>
-                    <InputLayout label='値引値増適用後　料金表' size='m'>
+                    <ContentsBox transparent={true}>
+                      <LabelStack>
+                        <Typography bold>{'値引値増適用後　料金表'}</Typography>
+                      </LabelStack>
                       <DataGrid
                         columns={feeDiscountColumns}
                         rows={afterFeeDiscountRow}
                       />
-                    </InputLayout>
+                    </ContentsBox>
                     <DataGrid
                       columns={optionInfoColumns}
                       rows={afterOptionInfoRow}
@@ -5224,27 +5256,36 @@ const ScrMem0014ServiceDiscountTab = (props: {
               </FormProvider>
               <ColStack>
                 <CaptionLabel text='会員個別設定' />
-                <InputLayout label='四輪' size='m'>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'四輪'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={memberTypeSettingTvaaColumns}
                     rows={memberTypeSettingTvaaRow}
                     disabled={isReadOnly[0]}
                   />
-                </InputLayout>
-                <InputLayout label='二輪' size='m'>
+                </ContentsBox>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'二輪'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={memberTypeSettingBikeColumns}
                     rows={memberTypeSettingBikeRow}
                     disabled={isReadOnly[0]}
                   />
-                </InputLayout>
-                <InputLayout label='おまとめ' size='m'>
+                </ContentsBox>
+                <ContentsBox transparent={true}>
+                  <LabelStack>
+                    <Typography bold>{'おまとめ'}</Typography>
+                  </LabelStack>
                   <DataGrid
                     columns={memberTypeSettingOmatomeColumns}
                     rows={memberTypeSettingOmatomeRow}
                     disabled={isReadOnly[0]}
                   />
-                </InputLayout>
+                </ContentsBox>
               </ColStack>
             </RowStack>
           </Section>
