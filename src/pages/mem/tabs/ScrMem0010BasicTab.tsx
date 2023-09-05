@@ -577,7 +577,7 @@ const ScrMem0010BasicTab = () => {
   const { user } = useContext(AuthContext);
 
   //state
-  const [changeHistory, setChangeHistory] = useState<any>([]);
+  const [changeHistory, setChangeHistory] = useState<SelectValue[]>([]);
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
