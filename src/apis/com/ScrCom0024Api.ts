@@ -4,8 +4,6 @@ import { comApiClient } from 'providers/ApiClient';
 
 /** SCR-COM-0024-0001: ライブ会場データ取得API リクエスト */
 export interface ScrCom0024GetPlaceDataRequest {
-  /** 業務日付 */
-  businessDate: string;
   /** 会場コード */
   placeCd: string;
 }
@@ -102,8 +100,6 @@ export interface ScrCom0024GetPlaceDataResponse {
 
 /** SCR-COM-0024-0002: 契約情報リスト取得API リクエスト */
 export interface ScrCom0024GetContractDataRequest {
-  /** 業務日付 */
-  businessDate: string;
   /** 契約ID */
   contractId: string;
 }

@@ -327,10 +327,10 @@ const SCR_COM_0024 = 'SCR-COM-0024';
 /**
  * CODE_ID 定数定義
  */
-// 開催曜日区分
-const SCR_TRA_0018 = 'SCR-TRA-0018';
 // ライブ会場グループコード
 const CDE_COM_0218 = 'CDE-COM-0218';
+// 開催曜日区分
+const CDE_COM_0138 = 'CDE-COM-0138';
 // バーチャル口座ルール
 const CDE_COM_0139 = 'CDE-COM-0139';
 // おまとめ会場連絡不可対象
@@ -390,7 +390,7 @@ const ScrCom0024Page = () => {
     const sessionWeekKindRequest: ScrCom9999GetCodeManagementMasterRequest = {
       businessDate: user.taskDate,
       // 開催曜日区分
-      codeId: SCR_TRA_0018,
+      codeId: CDE_COM_0138,
     };
     const sessionWeekKindResponse = await ScrCom9999GetCodeManagementMaster(
       sessionWeekKindRequest
