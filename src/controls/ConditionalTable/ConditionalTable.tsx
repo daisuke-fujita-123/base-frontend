@@ -201,6 +201,10 @@ interface ContitionalTableProps {
    */
   reorderable?: boolean;
   /**
+   * サブ条件の増減を可能にする
+   */
+  adjustableSubConditionCount?: boolean;
+  /**
    * 読み取り専用にする
    */
   readonly?: boolean;
@@ -222,7 +226,8 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
     onOrderChangeClick,
     onConditionCountChangeClick,
     onSubConditionCoountChangeClick,
-    reorderable: isEditable = false,
+    reorderable = false,
+    adjustableSubConditionCount = false,
     readonly,
   } = props;
 
@@ -273,7 +278,7 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
             <TableRow key={indexRow}>
               {/* 条件番号 */}
               <TableLeftHeader>
-                {isEditable ? (
+                {reorderable ? (
                   <StyledColmun>
                     <div
                       style={{ textAlign: 'center', textOverflow: 'nowrap' }}
@@ -420,7 +425,7 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
                               )}
                             </StyledSelect>
                           </StyledFormControl>
-                          {indexCol > 0 && (
+                          {adjustableSubConditionCount && indexCol > 0 && (
                             <RemoveIconButton
                               onClick={() => {
                                 onSubConditionCoountChangeClick(
@@ -448,7 +453,7 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
                             value={row.subConditions[indexCol]?.value}
                             InputProps={{ readOnly: readonly }}
                           />
-                          {indexCol > 0 && isEditable && (
+                          {adjustableSubConditionCount && indexCol > 0 && (
                             <RemoveIconButton
                               onClick={() => {
                                 onSubConditionCoountChangeClick(
@@ -464,13 +469,14 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
                     }
                   })}
                   <RightBox>
-                    {row.subConditions.length <= 10 && isEditable && (
-                      <AddIconButton
-                        onClick={() => {
-                          onSubConditionCoountChangeClick(indexRow, 'add');
-                        }}
-                      />
-                    )}
+                    {adjustableSubConditionCount &&
+                      row.subConditions.length <= 10 && (
+                        <AddIconButton
+                          onClick={() => {
+                            onSubConditionCoountChangeClick(indexRow, 'add');
+                          }}
+                        />
+                      )}
                   </RightBox>
                 </Stack>
               </TableCell>
