@@ -950,7 +950,7 @@ const ScrMem0003ContractTab = (props: {
     if (params.field === 'priceTotal') {
       tvaaContractInfo.map((x) => {
         if (x.id === params.id) {
-          if (x.discountFlag) CellClassName = 'cold';
+          if (x.discountFlag) CellClassName = 'discount-flag';
         }
       });
     }
@@ -963,7 +963,7 @@ const ScrMem0003ContractTab = (props: {
     if (params.field === 'priceTotal') {
       bikeCountInfo.map((x) => {
         if (x.id === params.id) {
-          if (x.discountFlag) CellClassName = 'cold';
+          if (x.discountFlag) CellClassName = 'discount-flag';
         }
       });
     }
@@ -1006,6 +1006,7 @@ const ScrMem0003ContractTab = (props: {
                   onClick={() =>
                     handleIconOutputCsvClick(apiRefTvaaContractInfo)
                   }
+                  disable={tvaaContractInfoRows.length <= 0}
                 >
                   CSV出力
                 </OutputButton>
@@ -1021,6 +1022,11 @@ const ScrMem0003ContractTab = (props: {
               pagination
               onLinkClick={handleLinkClick}
               getCellClassName={getTvaaContractInfoCellClassName}
+              sx={{
+                '& .discount-flag': {
+                  backgroundColor: '#b9e7da',
+                },
+              }}
               apiRef={apiRefTvaaContractInfo}
             />
           </Section>
@@ -1031,6 +1037,7 @@ const ScrMem0003ContractTab = (props: {
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <OutputButton
                   onClick={() => handleIconOutputCsvClick(apiRefBikeCountInfo)}
+                  disable={bikeCountInfoRows.length <= 0}
                 >
                   CSV出力
                 </OutputButton>
@@ -1046,16 +1053,23 @@ const ScrMem0003ContractTab = (props: {
               pagination
               onLinkClick={handleLinkClick}
               getCellClassName={getBikeCountInfoRowsCellClassName}
+              sx={{
+                '& .discount-flag': {
+                  backgroundColor: '#b9e7da',
+                },
+              }}
               apiRef={apiRefBikeCountInfo}
             />
           </Section>
           {/* 請求先一覧セクション */}
           <Section
             name='請求先一覧'
+            fitInside={true}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <OutputButton
                   onClick={() => handleIconOutputCsvClick(apiRefBillingInfo)}
+                  disable={billingInfoRows.length <= 0}
                 >
                   CSV出力
                 </OutputButton>
@@ -1074,6 +1088,7 @@ const ScrMem0003ContractTab = (props: {
           {/* 譲渡書類送付先一覧セクション */}
           <Section
             name='譲渡書類送付先一覧'
+            fitInside={true}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <OutputButton
@@ -1082,6 +1097,7 @@ const ScrMem0003ContractTab = (props: {
                       apiRefAssignmentDocumentDestination
                     )
                   }
+                  disable={assignmentDocumentDestinationRows.length <= 0}
                 >
                   CSV出力
                 </OutputButton>

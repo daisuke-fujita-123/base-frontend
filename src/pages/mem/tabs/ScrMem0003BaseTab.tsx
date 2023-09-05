@@ -1023,13 +1023,13 @@ const ScrMem0003BaseTab = () => {
         <MainLayout main>
           <FormProvider {...methods}>
             {/* 物流拠点一覧セクション */}
-            <Section name='物流拠点一覧'>
+            <Section name='物流拠点一覧' fitInside={true}>
               {/* 検索条件セクション */}
               <Section
                 name='検索条件'
                 isSearch
                 serchLabels={logisticsBaseSerchLabels}
-                open={openLogisticsBaseSection}
+                openable={openLogisticsBaseSection}
               >
                 <RowStack>
                   <ColStack>
@@ -1110,7 +1110,7 @@ const ScrMem0003BaseTab = () => {
                       onClick={() =>
                         handleIconOutputCsvClick(apiRefLogisticsBase)
                       }
-                      disable={logisticsBaseSearchResult.length >= 0}
+                      disable={logisticsBaseSearchResult.length <= 0}
                     >
                       CSV出力
                     </OutputButton>
@@ -1135,13 +1135,13 @@ const ScrMem0003BaseTab = () => {
               </Section>
             </Section>
             {/* 事業拠点一覧セクション */}
-            <Section name='事業拠点一覧'>
+            <Section name='事業拠点一覧' fitInside={true}>
               {/* 検索条件セクション */}
               <Section
                 name='検索条件'
                 isSearch
                 serchLabels={businessBaseSerchLabels}
-                open={openLogisticsBaseSection}
+                openable={openLogisticsBaseSection}
               >
                 <RowStack>
                   <ColStack>
@@ -1207,7 +1207,7 @@ const ScrMem0003BaseTab = () => {
                       onClick={() =>
                         handleIconOutputCsvClick(apiRefBusinessBase)
                       }
-                      disable={businessBaseSearchResult.length >= 0}
+                      disable={businessBaseSearchResult.length <= 0}
                     >
                       CSV出力
                     </OutputButton>

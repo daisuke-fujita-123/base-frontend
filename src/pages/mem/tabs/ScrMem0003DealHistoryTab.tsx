@@ -1307,13 +1307,13 @@ const ScrMem0003DealHistoryTab = () => {
         <MainLayout main>
           <FormProvider {...methods}>
             {/* オークション取引履歴セクション */}
-            <Section name='オークション取引履歴'>
+            <Section name='オークション取引履歴' fitInside={true}>
               {/* 検索条件セクション */}
               <Section
                 name='検索条件'
                 isSearch
                 serchLabels={auctionDealHistorySerchLabels}
-                open={openAuctionDealHistorySection}
+                openable={openAuctionDealHistorySection}
               >
                 <RowStack>
                   <ColStack>
@@ -1403,7 +1403,7 @@ const ScrMem0003DealHistoryTab = () => {
                       onClick={() =>
                         handleIconOutputCsvClick(apiRefAuctionDealHistory)
                       }
-                      disable={auctionDealHistoryRows.length >= 0}
+                      disable={auctionDealHistoryRows.length <= 0}
                     >
                       CSV出力
                     </OutputButton>
@@ -1429,7 +1429,7 @@ const ScrMem0003DealHistoryTab = () => {
                 name='検索条件'
                 isSearch
                 serchLabels={billingDealHistorySerchLabels}
-                open={openBillingDealHistorySection}
+                openable={openBillingDealHistorySection}
               >
                 <RowStack>
                   <ColStack>
@@ -1509,7 +1509,7 @@ const ScrMem0003DealHistoryTab = () => {
                       onClick={() =>
                         handleIconOutputCsvClick(apiRefBillingDealHistory)
                       }
-                      disable={billingDealHistoryRows.length >= 0}
+                      disable={billingDealHistoryRows.length <= 0}
                     >
                       CSV出力
                     </OutputButton>
@@ -1535,7 +1535,7 @@ const ScrMem0003DealHistoryTab = () => {
                 name='検索条件'
                 isSearch
                 serchLabels={proxyBillingHistorySerchLabels}
-                open={openProxyBillingHistorySection}
+                openable={openProxyBillingHistorySection}
               >
                 <RowStack>
                   <ColStack>
@@ -1615,7 +1615,7 @@ const ScrMem0003DealHistoryTab = () => {
                       onClick={() =>
                         handleIconOutputCsvClick(apiRefProxyBillingHistory)
                       }
-                      disable={proxyBillingHistoryRows.length >= 0}
+                      disable={proxyBillingHistoryRows.length <= 0}
                     >
                       CSV出力
                     </OutputButton>

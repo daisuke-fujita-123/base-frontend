@@ -44,7 +44,7 @@ import {
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { comApiClient, memApiClient } from 'providers/ApiClient';
+import { memApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
@@ -418,7 +418,7 @@ const ScrMem0003CreditTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
-        tabId: 'B-4',
+        tabId: 4,
         masterId: corporationId,
         businessDate: user.taskDate,
       };
@@ -467,26 +467,18 @@ const ScrMem0003CreditTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
-        tabId: 'B-4',
-        getKeyValue: corporationId,
-        businessDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
+        tabId: 4,
+        masterId: corporationId,
+        businessDate: user.taskDate,
       };
+      const getChangeDate = await ScrCom9999GetChangeDate(getChangeDateRequest);
 
-      const getChangeDate = (
-        await comApiClient.post(
-          '/api/com/scr-com-9999/get-change-date',
-          getChangeDateRequest
-        )
-      ).data;
-
-      const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
-        (e: { changeHistoryNumber: number; changeExpectDate: Date }) => {
-          return {
-            value: e.changeHistoryNumber,
-            displayValue: new Date(e.changeExpectDate).toLocaleDateString(),
-          };
-        }
-      );
+      const chabngeHistory = getChangeDate.changeExpectDateInfo.map((e) => {
+        return {
+          value: e.changeHistoryNumber,
+          displayValue: new Date(e.changeExpectDate).toLocaleDateString(),
+        };
+      });
       setChangeHistory(chabngeHistory);
     };
 

@@ -27,6 +27,7 @@ import { PostalTextField, TextField } from 'controls/TextField/TextField';
 import { Typography } from 'controls/Typography';
 
 import {
+  ScrCom9999GetChangeDate,
   ScrCom9999getCodeManagementMasterMultiple,
   ScrCom9999GetCodeValue,
 } from 'apis/com/ScrCom9999Api';
@@ -183,8 +184,6 @@ interface CorporationBasicModel {
 
   // 変更履歴番号
   changeHistoryNumber: string;
-  // 変更履歴番号+変更予定日
-  memberChangeHistories: any[];
   // 変更予定日
   changeExpectedDate: string;
 }
@@ -266,7 +265,6 @@ const initialValues: CorporationBasicModel = {
   guarantorNameKana2: '',
   changeHistoryNumber: '',
   changeExpectedDate: '',
-  memberChangeHistories: [],
 };
 
 /**
@@ -678,7 +676,6 @@ const convertToCorporationBasicModel = (
     guarantorNameKana2: guarantorMasters[1].guarantorNameKana,
 
     changeHistoryNumber: '',
-    memberChangeHistories: [],
     changeExpectedDate: '',
   };
 };
@@ -851,7 +848,6 @@ const convertToCreditInfoModel = (
     guarantorNameKana2: guarantorMasters[1].guarantorNameKana,
 
     changeHistoryNumber: changeHistoryNumber,
-    memberChangeHistories: [],
     changeExpectedDate: '',
   };
 };
@@ -1298,25 +1294,18 @@ const ScrMem0003BasicTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
-        tabId: 'B-3',
-        getKeyValue: corporationId,
-        businessDate: new Date(), // TODO:業務日付取得方法実装待ち、new Date()で登録
+        tabId: 3,
+        masterId: corporationId,
+        businessDate: user.taskDate,
       };
-      const getChangeDate = (
-        await comApiClient.post(
-          '/api/com/scr-com-9999/get-change-date',
-          getChangeDateRequest
-        )
-      ).data;
+      const getChangeDate = await ScrCom9999GetChangeDate(getChangeDateRequest);
 
-      const chabngeHistory = getChangeDate.changeExpectDateInfo.map(
-        (e: { changeHistoryNumber: number; changeExpectDate: Date }) => {
-          return {
-            value: e.changeHistoryNumber,
-            displayValue: new Date(e.changeExpectDate).toLocaleDateString(),
-          };
-        }
-      );
+      const chabngeHistory = getChangeDate.changeExpectDateInfo.map((e) => {
+        return {
+          value: e.changeHistoryNumber,
+          displayValue: new Date(e.changeExpectDate).toLocaleDateString(),
+        };
+      });
       setChangeHistory(chabngeHistory);
     };
 
@@ -1472,7 +1461,7 @@ const ScrMem0003BasicTab = (props: {
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const handlePopupConfirm = async (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
     setIsChangeHistoryBtn(false);
 
@@ -1481,8 +1470,7 @@ const ScrMem0003BasicTab = (props: {
       getValues(),
       props.scrMem0003Data,
       user.employeeId,
-      // TODO:登録変更メモ
-      ''
+      registrationChangeMemo
     );
     await ScrMem0003RegistrationCorporationInfo(request);
 
@@ -1720,7 +1708,7 @@ const ScrMem0003BasicTab = (props: {
               </RowStack>
             </Section>
             {/* 連帯保証人①セクション */}
-            <Section name='連帯保証人①' open={openGuarantorSection1}>
+            <Section name='連帯保証人①' openable={openGuarantorSection1}>
               <RowStack>
                 <ColStack>
                   <TextField label='連帯保証人名' name='guarantorName1' />
@@ -1790,7 +1778,7 @@ const ScrMem0003BasicTab = (props: {
             </Section>
 
             {/* 連帯保証人②セクション */}
-            <Section name='連帯保証人②' open={openGuarantorSection2}>
+            <Section name='連帯保証人②' openable={openGuarantorSection2}>
               <RowStack>
                 <ColStack>
                   <TextField label='連帯保証人名' name='guarantorName2' />

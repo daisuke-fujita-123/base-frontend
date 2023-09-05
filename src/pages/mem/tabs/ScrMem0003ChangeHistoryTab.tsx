@@ -23,6 +23,7 @@ import {
 import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 
 /**
  * 請求先一覧列定義
@@ -258,7 +259,8 @@ const ScrMem0003ChangeHistoryTab = () => {
   const { corporationId } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const apiRef = useGridApiRef();
+  const changeHistoryApiRef = useGridApiRef();
+  const notPermissionApiRef = useGridApiRef();
 
   // state
   const [changeHistoryRows, setChangeHistoryRows] = useState<
@@ -512,7 +514,9 @@ const ScrMem0003ChangeHistoryTab = () => {
   /**
    * CSV出力リック時のイベントハンドラ
    */
-  const handleIconOutputCsvClick = (name: string) => {
+  const handleIconOutputCsvClick = (
+    apiRef: React.MutableRefObject<GridApiPro>
+  ) => {
     const date = new Date();
     const year = date.getFullYear().toString().padStart(4, '0');
     const month = date.getMonth().toString().padStart(2, '0');
@@ -530,14 +534,6 @@ const ScrMem0003ChangeHistoryTab = () => {
       minutes +
       '.csv';
     exportCsv(fileName, apiRef);
-    // switch (name) {
-    //   case 'changeHistory':
-    //     exportCsv(changeHistoryRows, fileName);
-    //     break;
-    //   case 'notPermission':
-    //     exportCsv(notPermissionRows, fileName);
-    //     break;
-    // }
   };
 
   return (
@@ -547,10 +543,12 @@ const ScrMem0003ChangeHistoryTab = () => {
           {/* 変更履歴一覧セクション */}
           <Section
             name='変更履歴一覧'
+            fitInside={true}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <OutputButton
-                  onClick={() => handleIconOutputCsvClick('changeHistory')}
+                  onClick={() => handleIconOutputCsvClick(changeHistoryApiRef)}
+                  disable={changeHistoryRows.length <= 0}
                 >
                   CSV出力
                 </OutputButton>
@@ -563,16 +561,19 @@ const ScrMem0003ChangeHistoryTab = () => {
               tooltips={changeHistoryTooltips}
               hrefs={changeHistoryHrefs}
               onLinkClick={handleLinkClick}
+              apiRef={changeHistoryApiRef}
               pagination
             />
           </Section>
           {/* 未承認一覧セクション */}
           <Section
             name='未承認一覧'
+            fitInside={true}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <OutputButton
-                  onClick={() => handleIconOutputCsvClick('notPermission')}
+                  onClick={() => handleIconOutputCsvClick(notPermissionApiRef)}
+                  disable={notPermissionRows.length <= 0}
                 >
                   CSV出力
                 </OutputButton>
@@ -585,6 +586,7 @@ const ScrMem0003ChangeHistoryTab = () => {
               tooltips={notPermissionTooltips}
               hrefs={notPermissionHrefs}
               onLinkClick={handleLinkClick}
+              apiRef={notPermissionApiRef}
               pagination
             />
           </Section>
