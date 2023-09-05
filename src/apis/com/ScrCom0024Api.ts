@@ -132,6 +132,8 @@ export interface ScrCom0024PlaceDetailCheckRequest {
   placeCd: string;
   /** 会場名 */
   placeName: string;
+  /** 新規フラグ */
+  newFlag: boolean;
 }
 
 /** SCR-COM-0024-0004: 会場詳細登録更新API リクエスト */

@@ -327,8 +327,6 @@ const SCR_COM_0024 = 'SCR-COM-0024';
 /**
  * CODE_ID 定数定義
  */
-// ライブ会場グループコード
-const CDE_COM_0218 = 'CDE-COM-0218';
 // 開催曜日区分
 const CDE_COM_0138 = 'CDE-COM-0138';
 // バーチャル口座ルール
@@ -351,6 +349,8 @@ const ScrCom0024Page = () => {
   // 書類発送指示対象 対象・対象外
   const [documentShippingInstructionFlag, setDocumentShippingInstructionFlag] =
     useState<boolean>();
+  // 新規追加 => true 既存編集 => false
+  const [newFlag, setNewFlag] = useState<boolean>(false);
 
   // form
   const methods = useForm<PlaceBasicModel>({
@@ -404,7 +404,8 @@ const ScrCom0024Page = () => {
       {
         businessDate: user.taskDate,
         // ライブ会場グループコード
-        codeId: CDE_COM_0218,
+        // TODO: 会場コードを設定するが佐藤さん確認中
+        codeId: '',
       };
     const livePlaceGroupCodeResponse = await ScrCom9999GetCodeManagementMaster(
       livePlaceGroupCodeRequest
@@ -505,9 +506,12 @@ const ScrCom0024Page = () => {
   useEffect(() => {
     // 現在表示 初期表示
     const initialize = async (placeCd: string) => {
+
+      // 既存編集のflag設定
+      setNewFlag(false);
+
       // SCR-COM-0024-0001: ライブ会場データ取得API
       const placeBasicRequest: ScrCom0024GetPlaceDataRequest = {
-        businessDate: user.taskDate,
         placeCd: placeCd,
       };
       const placeBasicResponse = await ScrCom0024GetPlaceData(
@@ -538,7 +542,7 @@ const ScrCom0024Page = () => {
       // 出金設定
       const convertToPaymentAllValue: string =
         placeBasic.paymentAllFlag === true ? 'bulk' : 'eachTime';
-      // 出金設定
+      // 支払通知
       const convertToPaymentNoticeValue: string =
         placeBasic.paymentNoticeFlag === true
           ? 'paymentNoticeTarget'
@@ -665,6 +669,10 @@ const ScrCom0024Page = () => {
 
     // 新規追加 初期表示
     const initializeNew = () => {
+
+      // 新規追加のflag設定
+      setNewFlag(true);
+
       // 全リストボックスのAPI実行と設定
       listboxSetting();
     };
@@ -819,6 +827,7 @@ const ScrCom0024Page = () => {
     const placeDetailCheckRequest: ScrCom0024PlaceDetailCheckRequest = {
       placeCd: getValues('placeCd'),
       placeName: getValues('placeName'),
+      newFlag: newFlag
     };
     const response = await ScrCom0024PlaceDetailCheck(placeDetailCheckRequest);
 
