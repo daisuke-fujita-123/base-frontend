@@ -1586,7 +1586,9 @@ const ScrCom0014Page = () => {
     type: string | number,
     index: number
   ) => {
-    // 条件種類を変更した場合の処理
+    // 編集中のフラグを編集中に設定
+    setEditFlg(false);
+
     // API-COM-9999-0020: 値属性変換API
     const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
       {
@@ -1596,31 +1598,36 @@ const ScrCom0014Page = () => {
     const valueAttributeConversionResponse =
       await ScrCom9999ValueAttributeConversion(valueAttributeConversionRequest);
 
-    conditionKinds.forEach((x) => {
-      // 選択されたプルダウンの選択肢のIDと一致するIDのみ処理
-      if (x.value === type) {
-        // TODO: 型区分が1の場合のみリストボックスで項目を表示
-        if (valueAttributeConversionResponse.typeKind === '1') {
-          x.selectValues = convertToConversionSelectValueModel(
-            valueAttributeConversionResponse.commissionDiscountConditionValueList
-          );
-        }
-      }
-    });
-
-    // 編集中のフラグを編集中に設定
-    setEditFlg(false);
-
-    // 条件設定セクションへの値の設定
-    conditions[index] = {
-      conditionKind: type,
-      subConditions: [
-        {
-          operator: '',
-          value: '',
-        },
-      ],
-    };
+    // TODO あってもうごいてない
+    // conditionKinds.forEach((x) => {
+    // 選択されたプルダウンの選択肢のIDと一致するIDのみ処理
+    // if (x.value === type) {
+    // TODO: 型区分が1の場合のみリストボックスで項目を表示
+    if (valueAttributeConversionResponse.typeKind === '1') {
+      // 条件設定セクションへの値の設定(リストボックス)
+      conditions[index] = {
+        conditionKind: type,
+        subConditions: [
+          {
+            operator: 'aaaaa',
+            value: 'bbbbbbbbbbb',
+          },
+        ],
+      };
+    } else {
+      // 条件設定セクションへの値の設定(テキストボックス)
+      conditions[index] = {
+        conditionKind: type,
+        subConditions: [
+          {
+            operator: '',
+            value: '',
+          },
+        ],
+      };
+    }
+    // }
+    // });
     setConditions([...conditions]);
   };
 
