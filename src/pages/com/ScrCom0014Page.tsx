@@ -1580,7 +1580,7 @@ const ScrCom0014Page = () => {
   };
 
   /**
-   * 条件種類を変更した際のイベントハンドラ
+   * TODO: 条件種類を変更した際のイベントハンドラ
    */
   const handleOnConditionTypeChange = async (
     type: string | number,
@@ -1599,7 +1599,7 @@ const ScrCom0014Page = () => {
     conditionKinds.forEach((x) => {
       // 選択されたプルダウンの選択肢のIDと一致するIDのみ処理
       if (x.value === type) {
-        // 型区分が1の場合のみリストボックスで項目を表示
+        // TODO: 型区分が1の場合のみリストボックスで項目を表示
         if (valueAttributeConversionResponse.typeKind === '1') {
           x.selectValues = convertToConversionSelectValueModel(
             valueAttributeConversionResponse.commissionDiscountConditionValueList
@@ -1611,6 +1611,16 @@ const ScrCom0014Page = () => {
     // 編集中のフラグを編集中に設定
     setEditFlg(false);
 
+    // 条件設定セクションへの値の設定
+    conditions[index] = {
+      conditionKind: type,
+      subConditions: [
+        {
+          operator: '',
+          value: '',
+        },
+      ],
+    };
     setConditions([...conditions]);
   };
 
@@ -1835,9 +1845,13 @@ const ScrCom0014Page = () => {
                   operators={operators}
                   // 条件種類,条件,値の初期値
                   rows={conditions}
+                  // 条件種類変更時の処理
                   onConditionKindChange={handleOnConditionTypeChange}
+                  // 条件・値 変更時の処理
                   onSubConditionChange={handleOnSubConditionChange}
+                  // 順番
                   onOrderChangeClick={handleOnDrderChangeClick}
+                  // 上限の増減のカウント
                   onConditionCountChangeClick={
                     handleOnConditionCountChangeClick
                   }
@@ -1865,8 +1879,8 @@ const ScrCom0014Page = () => {
                 <PricingTable
                   conditions={conditions}
                   dataset={pricingRows}
-                  conditionkinds={conditionKinds}
-                  operators={operators}
+                  // conditionkinds={conditionKinds}
+                  // operators={operators}
                 />
               </Section>
             )}
