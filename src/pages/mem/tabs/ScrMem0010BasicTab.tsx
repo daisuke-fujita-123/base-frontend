@@ -581,7 +581,7 @@ const ScrMem0010BasicTab = () => {
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
-  const [linkHref, setLinkHref] = useState<any>();
+  const [linkHref, setLinkHref] = useState<string>('');
   const [contractList, setContractList] =
     useState<ScrMem0010GetContractResponse>(contractListInitialValues);
   const [scrCom00032PopupIsOpen, setScrCom00032PopupIsOpen] =

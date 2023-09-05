@@ -364,8 +364,8 @@ const DatagridColumnGroups = () => {
   const [bikeContractRow, setBikeContractRow] = useState<ContractRowModel[]>(
     []
   );
-  const [tvaaHrefs, setTvaaHrefs] = useState<any[]>([]);
-  const [bikeHrefs, setBikeHrefs] = useState<any[]>([]);
+  const [tvaaHrefs, setTvaaHrefs] = useState<GridHrefsModel[]>([]);
+  const [bikeHrefs, setBikeHrefs] = useState<GridHrefsModel[]>([]);
 
   // 初期表示処理
   useEffect(() => {
@@ -389,7 +389,10 @@ const DatagridColumnGroups = () => {
         hrefs: contract.tvaaContractList.map((x) => {
           return {
             id: x.id,
-            href: '-?contractId=' + x.id + '#basic',
+            href:
+              '/mem/corporations/new/bussiness-bases/new/contracts/' +
+              x.id +
+              '#basic',
           };
         }),
       });
@@ -400,7 +403,10 @@ const DatagridColumnGroups = () => {
         hrefs: contract.bikeContractList.map((x) => {
           return {
             id: x.id,
-            href: '-?contractId=' + x.id + '#basic',
+            href:
+              '/mem/corporations/new/bussiness-bases/new/contracts/' +
+              x.id +
+              '#basic',
           };
         }),
       });
@@ -408,14 +414,20 @@ const DatagridColumnGroups = () => {
         return {
           field: 'contractId',
           id: x.id,
-          href: '-?contractId=' + x.id + '#basic',
+          href:
+            '/mem/corporations/new/bussiness-bases/new/contracts/' +
+            x.id +
+            '#basic',
         };
       });
       contract.bikeContractList.forEach((x) => {
         hrefs.push({
           field: 'contractId',
           id: x.id,
-          href: '-?contractId=' + x.id + '#basic',
+          href:
+            '/mem/corporations/new/bussiness-bases/new/contracts/' +
+            x.id +
+            '#basic',
         });
       });
 
