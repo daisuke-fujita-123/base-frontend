@@ -39,7 +39,7 @@ export const getOrganizationList = async (
   req: null
 ): Promise<ScrCom0025GetOrganizationListResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/get-organizationlist',
+    '/api/com/scr-com-0025/get-organizationlist',
     req
   );
   return response.data;
@@ -90,7 +90,7 @@ export const getPositionList = async (
   req: null
 ): Promise<ScrCom0025GetPositionListResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/get-positionlist',
+    '/api/com/scr-com-0025/get-positionlist',
     req
   );
   return response.data;
@@ -231,7 +231,7 @@ export const getEmployeeList = async (
   req: null
 ): Promise<ScrCom0025GetEmployeeListResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/get-employeelist',
+    '/api/com/scr-com-0025/get-employeelist',
     req
   );
   return response.data;
@@ -272,7 +272,7 @@ export const ScrCom0025OrganizationInfoCheck = async (
   request: ScrCom0025CheckOrganizationRequest
 ): Promise<ScrCom0025CheckOrganizationResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/chk-organization',
+    '/api/com/scr-com-0025/chk-organization',
     request
   );
   return response.data;
@@ -314,7 +314,7 @@ export const ScrCom0025RegistUpdateOrganization = async (
   request: ScrCom0025RegistUpdateOrganizationRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/merge-organization',
+    '/api/com/scr-com-0025/merge-organization',
     request
   );
   return response.data;
@@ -338,7 +338,7 @@ export const getOrganizationHierarchy = async (
   req: ScrCom0025GetOrganizationHierarchyRequest
 ): Promise<ScrCom0025GetOrganizationHierarchyResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/get-organization-hierarchy',
+    '/api/com/scr-com-0025/get-organization-hierarchy',
     req
   );
   return response.data;
@@ -386,7 +386,7 @@ export const ScrCom0025PostInfoCheck = async (
   request: ScrCom0025CheckPostRequest
 ): Promise<ScrCom0025CheckPostResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/chk-post',
+    '/api/com/scr-com-0025/chk-post',
     request
   );
   return response.data;
@@ -431,7 +431,7 @@ export const ScrCom0025RegistUpdatePost = async (
   request: ScrCom0025RegistUpdatePostRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/merge-post',
+    '/api/com/scr-com-0025/merge-post',
     request
   );
   return response.data;
@@ -464,7 +464,7 @@ export const ScrCom0025EmployeeInfoCheck = async (
   request: ScrCom0025CheckEmployeeRequest
 ): Promise<ScrCom0025CheckEmployeeResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/chk-employee',
+    '/api/com/scr-com-0025/chk-employee',
     request
   );
   return response.data;
@@ -536,7 +536,7 @@ export const ScrCom0025RegistUpdateEmployee = async (
   request: ScrCom0025RegistUpdateEmployeeRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/merge-employee',
+    '/api/com/scr-com-0025/merge-employee',
     request
   );
   return response.data;
@@ -566,7 +566,7 @@ export const getEmployee = async (
   req: ScrCom0025GetEmployeeRequest
 ): Promise<ScrCom0025GetEmployeeResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0025/get-employee',
+    '/api/com/scr-com-0025/get-employee',
     req
   );
   return response.data;

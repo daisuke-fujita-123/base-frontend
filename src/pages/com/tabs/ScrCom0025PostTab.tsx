@@ -267,10 +267,6 @@ const ScrCom0025PostTab = () => {
   );
   const [scrCom0035PopupIsOpen, setScrCom0035PopupIsOpen] =
     useState<boolean>(false);
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 40;
 
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
@@ -415,7 +411,7 @@ const ScrCom0025PostTab = () => {
       });
     };
     initialize();
-  }, [user.taskDate, maxSectionWidth]);
+  }, [user.taskDate]);
 
   /**
    * 追加アイコンクリック時のイベントハンドラ
@@ -577,7 +573,6 @@ const ScrCom0025PostTab = () => {
     errList.concat(checkResult.errorList);
 
     // 登録更新の結果を登録確認ポップアップへ渡す
-    setIsOpenPopup(true);
     setScrCom0032PopupData({
       errorList: errList,
       warningList: [],
@@ -585,19 +580,20 @@ const ScrCom0025PostTab = () => {
         {
           screenId: 'SCR-COM-0025',
           screenName: '組織管理',
-          tabId: '2',
+          tabId: 2,
           tabName: '役職情報',
           sectionList: convertToChngedSections(dirtyFields),
         },
       ],
-      changeExpectDate: '', //getValues('changeExpectDate'),
+      changeExpectDate: '',
     });
+    setIsOpenPopup(true);
   };
 
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const scrCom00032PopupHandleConfirm = async () => {
     setIsOpenPopup(false);
 
     // SCR-COM-0025-0008: 役職情報登録更新API
@@ -648,7 +644,7 @@ const ScrCom0025PostTab = () => {
                 <AddButton onClick={handleIconAddClick}>追加</AddButton>
               </MarginBox>
             }
-            width={maxSectionWidth}
+            fitInside
           >
             <DataGrid
               columns={searchResultColumns}
@@ -678,13 +674,16 @@ const ScrCom0025PostTab = () => {
       )}
 
       {/* 登録内容確認ポップアップ */}
-      {isOpenPopup && (
+      {isOpenPopup ? (
         <ScrCom0032Popup
           isOpen={isOpenPopup}
           data={scrCom0032PopupData}
-          handleConfirm={handlePopupConfirm}
+          handleRegistConfirm={scrCom00032PopupHandleConfirm}
+          handleApprovalConfirm={scrCom00032PopupHandleConfirm}
           handleCancel={handlePopupCancel}
         />
+      ) : (
+        ''
       )}
     </>
   );

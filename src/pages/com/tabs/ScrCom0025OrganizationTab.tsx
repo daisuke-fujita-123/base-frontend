@@ -207,10 +207,6 @@ const ScrCom0025OrganizationTab = () => {
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 40;
 
   // user情報(
   const { user } = useContext(AuthContext);
@@ -329,7 +325,7 @@ const ScrCom0025OrganizationTab = () => {
       });
     };
     initialize();
-  }, [user.taskDate, maxSectionWidth]);
+  }, [user.taskDate]);
 
   /**
    * 追加アイコンクリック時のイベントハンドラ
@@ -493,7 +489,7 @@ const ScrCom0025OrganizationTab = () => {
         {
           screenId: 'SCR-COM-0025',
           screenName: '組織管理',
-          tabId: '1',
+          tabId: 1,
           tabName: '組織情報',
           sectionList: convertToChngedSections(dirtyFields),
         },
@@ -505,7 +501,7 @@ const ScrCom0025OrganizationTab = () => {
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const scrCom00032PopupHandleConfirm = async () => {
     setIsOpenPopup(false);
 
     // SCR-COM-0025-0005: SCR-COM-0025-0005: 組織情報登録更新API
@@ -556,7 +552,7 @@ const ScrCom0025OrganizationTab = () => {
                   <AddButton onClick={handleIconAddClick}>追加</AddButton>
                 </MarginBox>
               }
-              width={maxSectionWidth}
+              fitInside
             >
               <DataGrid
                 columns={searchResultColumns}
@@ -588,13 +584,16 @@ const ScrCom0025OrganizationTab = () => {
       )}
 
       {/* 登録内容確認ポップアップ */}
-      {isOpenPopup && (
+      {isOpenPopup ? (
         <ScrCom0032Popup
           isOpen={isOpenPopup}
           data={scrCom0032PopupData}
-          handleConfirm={handlePopupConfirm}
+          handleRegistConfirm={scrCom00032PopupHandleConfirm}
+          handleApprovalConfirm={scrCom00032PopupHandleConfirm}
           handleCancel={handlePopupCancel}
         />
+      ) : (
+        ''
       )}
     </>
   );

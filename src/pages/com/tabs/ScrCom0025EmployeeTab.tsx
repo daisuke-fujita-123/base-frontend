@@ -42,6 +42,7 @@ import { ThemeProvider } from '@mui/material';
 import {
   GridColumnGroupingModel,
   GridRenderCellParams,
+  GridRowId,
   GridTreeNodeWithRender,
   useGridApiRef,
 } from '@mui/x-data-grid-pro';
@@ -345,12 +346,11 @@ const ScrCom0025EmployeeTab = () => {
     selectValuesInitialValues
   );
   const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 40;
   const headerApiRef = useGridApiRef();
   const [headerRow, setHeaderRow] = useState(defaultHeaderRow);
+
+  // チェックボックス選択行
+  const [rowSelectionModel, setRowSelectionModel] = useState<GridRowId[]>([]);
 
   // router
   const navigate = useNavigate();
@@ -428,7 +428,7 @@ const ScrCom0025EmployeeTab = () => {
       });
     };
     initialize();
-  }, [user.taskDate, maxSectionWidth]);
+  }, [user.taskDate]);
 
   /**
    * 検索条件列定義
@@ -936,7 +936,7 @@ const ScrCom0025EmployeeTab = () => {
         {
           screenId: 'SCR-COM-0025',
           screenName: '組織管理',
-          tabId: '3',
+          tabId: 3,
           tabName: '従業員情報',
           sectionList: convertToChngedSections(searchResult),
         },
@@ -948,7 +948,7 @@ const ScrCom0025EmployeeTab = () => {
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const scrCom00032PopupHandleConfirm = async () => {
     setIsOpenPopup(false);
 
     // SCR-COM-0025-0010: 従業員情報登録更新API
@@ -1000,27 +1000,31 @@ const ScrCom0025EmployeeTab = () => {
   const handleIkkatsuHaneiClick = () => {
     const headerRow = headerApiRef.current.getRow(-1);
     const newRows = searchResult.map((x) => {
-      return {
-        ...x,
-        salesForceId: headerRow.salesForceId,
-        organizationId_1: headerRow.organizationId_1,
-        postId_1: headerRow.postId_1,
-        applyingStartDate_1: headerRow.applyingStartDate_1,
-        applyingEndDate_1: headerRow.applyingEndDate_1,
-        organizationId_2: headerRow.organizationId_2,
-        postId_2: headerRow.postId_2,
-        applyingStartDate_2: headerRow.applyingStartDate_2,
-        applyingEndDate_2: headerRow.applyingEndDate_2,
-        organizationId_3: headerRow.organizationId_3,
-        postId_3: headerRow.postId_3,
-        applyingStartDate_3: headerRow.applyingStartDate_3,
-        applyingEndDate_3: headerRow.applyingEndDate_3,
-        organizationId_4: headerRow.organizationId_4,
-        postId_4: headerRow.postId_4,
-        applyingStartDate_4: headerRow.applyingStartDate_4,
-        applyingEndDate_4: headerRow.applyingEndDate_4,
-        changeReason: headerRow.changeReason,
-      };
+      if (rowSelectionModel.includes(x.id)) {
+        return {
+          ...x,
+          salesForceId: headerRow.salesForceId,
+          organizationId_1: headerRow.organizationId_1,
+          postId_1: headerRow.postId_1,
+          applyingStartDate_1: headerRow.applyingStartDate_1,
+          applyingEndDate_1: headerRow.applyingEndDate_1,
+          organizationId_2: headerRow.organizationId_2,
+          postId_2: headerRow.postId_2,
+          applyingStartDate_2: headerRow.applyingStartDate_2,
+          applyingEndDate_2: headerRow.applyingEndDate_2,
+          organizationId_3: headerRow.organizationId_3,
+          postId_3: headerRow.postId_3,
+          applyingStartDate_3: headerRow.applyingStartDate_3,
+          applyingEndDate_3: headerRow.applyingEndDate_3,
+          organizationId_4: headerRow.organizationId_4,
+          postId_4: headerRow.postId_4,
+          applyingStartDate_4: headerRow.applyingStartDate_4,
+          applyingEndDate_4: headerRow.applyingEndDate_4,
+          changeReason: headerRow.changeReason,
+        };
+      } else {
+        return x;
+      }
     });
     setSearchResult(newRows);
     setHeaderRow(headerRow);
@@ -1042,7 +1046,7 @@ const ScrCom0025EmployeeTab = () => {
                 <AddButton onClick={handleIconAddClick}>追加</AddButton>
               </MarginBox>
             }
-            width={maxSectionWidth}
+            fitInside
           >
             <ThemeProvider theme={theme}>
               <DataGrid
@@ -1057,6 +1061,10 @@ const ScrCom0025EmployeeTab = () => {
                 checkboxSelection
                 onLinkClick={handleLinkClick}
                 headerApiRef={headerApiRef}
+                onRowSelectionModelChange={(newRowSelectionModel) => {
+                  setRowSelectionModel(newRowSelectionModel);
+                }}
+                rowSelectionModel={rowSelectionModel}
               />
             </ThemeProvider>
           </Section>
@@ -1070,13 +1078,16 @@ const ScrCom0025EmployeeTab = () => {
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      {isOpenPopup && (
+      {isOpenPopup ? (
         <ScrCom0032Popup
           isOpen={isOpenPopup}
           data={scrCom0032PopupData}
-          handleConfirm={handlePopupConfirm}
+          handleRegistConfirm={scrCom00032PopupHandleConfirm}
+          handleApprovalConfirm={scrCom00032PopupHandleConfirm}
           handleCancel={handlePopupCancel}
         />
+      ) : (
+        ''
       )}
     </>
   );
