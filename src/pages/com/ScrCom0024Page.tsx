@@ -400,18 +400,6 @@ const ScrCom0024Page = () => {
     const placeGroupResponse = await ScrCom9999GetPlaceMaster();
 
     // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
-    const livePlaceGroupCodeRequest: ScrCom9999GetCodeManagementMasterRequest =
-      {
-        businessDate: user.taskDate,
-        // ライブ会場グループコード
-        // TODO: 会場コードを設定するが佐藤さん確認中
-        codeId: '',
-      };
-    const livePlaceGroupCodeResponse = await ScrCom9999GetCodeManagementMaster(
-      livePlaceGroupCodeRequest
-    );
-
-    // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
     const virtualAccountGrantRuleRequest: ScrCom9999GetCodeManagementMasterRequest =
       {
         businessDate: user.taskDate,
@@ -479,8 +467,8 @@ const ScrCom0024Page = () => {
         placeGroupResponse.searchGetPlaceMasterListbox
       ),
       // ライブ会場グループコード
-      livePlaceGroupCodeSelectValues: convertFrom0010ToSelectValueModel(
-        livePlaceGroupCodeResponse.searchGetCodeManagementMasterListbox
+      livePlaceGroupCodeSelectValues: convertFrom0016ToSelectValueModel(
+        placeGroupResponse.searchGetPlaceMasterListbox
       ),
       // バーチャル口座付与ルール
       virtualAccountGrantRuleSelectValues: convertFrom0010ToSelectValueModel(
