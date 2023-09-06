@@ -68,7 +68,7 @@ export const ScrCom0009GetReportList = async (
 /** API-COM-0009-0002: ファイル出力API リクエスト */
 export interface ScrCom0009GetReportOutputRequest {
   // 帳票リスト
-  getReportList: GetReportOutput[];
+  fileOutputList: GetReportOutput[];
 }
 
 /** API-COM-0009-0002: ファイル出力API リクエスト（リスト行） */

@@ -374,8 +374,7 @@ const ScrCom0009Page = () => {
     // 関連チェック（帳票IDのシステム種別とシステム種別が一致しているか）
     if (getValues('systemKind') !== '' && getValues('reportName') !== '') {
       if (getValues('systemKind') !== getValues('reportName').slice(4, 7)) {
-        // TODO メッセージを確認
-        const messege = getMessage('MSG-FR-ERR-');
+        const messege = getMessage('MSG-FR-ERR-00133');
         // ダイアログを表示
         setTitle(messege);
         setHandleDialog(true);
@@ -420,7 +419,7 @@ const ScrCom0009Page = () => {
     // チェックボックスで選択したレコードを引数に型変換
     const createReportFile = convertToCreateReportFileParameterInfo(checkList);
     const request = {
-      getReportList: createReportFile,
+      fileOutputList: createReportFile,
     };
     await ScrCom0009GetReportOutput(request);
   };

@@ -11,7 +11,7 @@ export const MESSAGES = [
     id: 'MSG-0003',
     message: '変更内容がすべて破棄されますがよろしいでしょうか。',
   },
-    {
+  {
     id: 'MSG-FR-INF-00007',
     message: '申請データ(未提出)を登録しますがよろしいでしょうか',
   },
@@ -35,5 +35,9 @@ export const MESSAGES = [
   {
     id: 'MSG-FR-ERR-00062',
     message: '帳票作成日（FROM）以降の帳票作成日（TO）を指定してください。',
+  },
+  {
+    id: 'MSG-FR-ERR-00133',
+    message: 'システム種別と帳票名の組み合わせが正しくありません。',
   },
 ];
