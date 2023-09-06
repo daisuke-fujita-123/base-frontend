@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -172,17 +172,12 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>([]);
   // 判定用 ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
   const [isWarningChecked, setIsWarningChecked] = useState<boolean>();
-  // 判定用 項目名のパラメータが渡されたかどうかを判定するフラグ 渡されている => true
-  const [hasColumnNameParamFlag, setHasColumnNameParamFlag] = useState(false);
   // 判定用 セクション名が存在する => true
   const [isSectionName, setIsSectionName] = useState(false);
   // 判定用 カラム名が存在する => true
   const [isColumnName, setIsColumnName] = useState(false);
   // 判定用 画面名・タブ名・セクション名・項目名の内いずれかが存在する => true
   const [isExistColumns, setisExistColumns] = useState<boolean>();
-
-  // 初回レンダリング判定フラグ
-  const renderFlgRef = useRef(false);
 
   // セクションサイズ
   const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
@@ -200,9 +195,6 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   });
 
   const { getValues, setValue, watch, reset } = methods;
-
-  // 変換後のRowを格納する一時リスト
-  const tempList: TableRowModel[] = [];
 
   /**
    * 登録内容確認ポップアップ 初期データ(呼び出し元画面から受け取ったパラメータを設定)
@@ -223,7 +215,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
    */
   const convertToSearchResultRowModel = (
     initialValues: ScrCom0032PopupModel
-  ): void => {
+  ): TableRowModel[] => {
     // 変換用のセクション名と項目名のリスト
     const rowSectionNameList: string[] = [];
     const rowColumnNameList: string[] = [];
@@ -264,17 +256,18 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       setIsColumnName(true);
     }
 
-    // テーブルに表示するRowモデルに変換する
-    for (let i = 0; i < rowColumnNameList.length; i++) {
-      tempList.push({
-        id: initialValues.registrationChangeList[0].tabId,
+    // 変換後のRowを格納する一時リスト
+    const tempList: TableRowModel[] = rowColumnNameList.map((x, i) => {
+      return {
+        id: i,
         screenName: initialValues.registrationChangeList[0].screenName,
         tabName: initialValues.registrationChangeList[0].tabName,
         sectionName: rowSectionNameList[i],
         columnName: rowColumnNameList[i],
-      });
-    }
-    setRowValuesList(tempList);
+      };
+    });
+
+    return tempList;
   };
 
   // セクション幅調整
@@ -301,22 +294,8 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       setApprovalFlag(approvalResponse.approval);
 
       // 登録・変更内容テーブル表示用のモデルに変換し、セクション名カラム名が存在するか判定
-      convertToSearchResultRowModel(initialValues);
-
-      // テーブルに設定した一時配列の内、該当する条件の項目名をカウント
-      let blankCount = 0;
-      tempList.forEach((e) => {
-        if (e.columnName === '' || e.columnName === null) {
-          blankCount++;
-        }
-      });
-
-      // 項目名が呼び出し画面から一つもない場合(false)エラーメッセージを出力するフラグを設定
-      if (blankCount === tempList.length) {
-        setHasColumnNameParamFlag(false);
-      } else {
-        setHasColumnNameParamFlag(true);
-      }
+      const convertList = convertToSearchResultRowModel(initialValues);
+      setRowValuesList(convertList);
 
       // 画面名、タブ名、セクション名、項目名のいずれも設定されていないかどうかを判定する処理
       if (
@@ -449,19 +428,16 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                 )}
                 {data.registrationChangeList.length > 0 ? (
                   <Section name='登録・変更内容' width={maxSectionWidth}>
-                    {/* "TODO: 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
-                    {/* ①項目が設定されない ②非表示と表示が聞かない */}
-                    {hasColumnNameParamFlag ? (
-                      isExistColumns && (
-                        <>
-                          <DataGrid
-                            columns={columns}
-                            rows={rowValuesList}
-                            apiRef={apiRef}
-                          />
-                          <br />
-                        </>
-                      )
+                    {/* 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
+                    {isExistColumns ? (
+                      <>
+                        <DataGrid
+                          columns={columns}
+                          rows={rowValuesList}
+                          apiRef={apiRef}
+                        />
+                        <br />
+                      </>
                     ) : (
                       <>
                         <Typography key={'index'} variant='h6'>
@@ -471,7 +447,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                       </>
                     )}
                     {/* 項目名がなく変更予約有の場合は表示・無の場合は非表示 */}
-                    {hasColumnNameParamFlag && data.changeExpectDate !== '' ? (
+                    {isExistColumns && data.changeExpectDate !== '' ? (
                       <Box>
                         <Typography variant='h6'>変更予定日</Typography>
                         <Typography variant='body1'>
@@ -483,7 +459,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                       <br />
                     )}
                     {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
-                    {hasColumnNameParamFlag ? (
+                    {isExistColumns ? (
                       <Box>
                         <Typography variant='h5'>登録変更メモ</Typography>
                         <Textarea
@@ -511,10 +487,10 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
-                    // TODO: 項目がありません。のエラー表示時 -> 非活性
+                    // 条件４: 画面名、タブ名、セクション名、項目名のいずれも未設定の場合 -> 非活性
                     disable={
                       data.errorList.length >= 1 ||
-                      !hasColumnNameParamFlag ||
+                      !isExistColumns ||
                       !isWarningChecked
                         ? true
                         : false
@@ -529,10 +505,10 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
-                    // TODO: 項目がありません。のエラー表示時 -> 非活性
+                    // 条件４: 画面名、タブ名、セクション名、項目名のいずれも未設定の場合 -> 非活性
                     disable={
                       data.errorList.length >= 1 ||
-                      !hasColumnNameParamFlag ||
+                      !isExistColumns ||
                       !isWarningChecked
                         ? true
                         : false

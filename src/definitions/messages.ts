@@ -32,4 +32,16 @@ export const MESSAGES = [
     id: 'MSG-FR-ERR-00082',
     message: '価格設定が設定されておりません。',
   },
+  {
+    id: 'MSG-FR-INF-00017',
+    message: '検索結果がありません。',
+  },
+  {
+    id: 'MSG-FR-ERR-00062',
+    message: '帳票作成日（FROM）以降の帳票作成日（TO）を指定してください。',
+  },
+  {
+    id: 'MSG-FR-ERR-00133',
+    message: 'システム種別と帳票名の組み合わせが正しくありません。',
+  },
 ];

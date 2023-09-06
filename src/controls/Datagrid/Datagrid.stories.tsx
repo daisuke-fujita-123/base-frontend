@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import yup from 'utils/yup';
 import { ObjectSchema } from 'yup';
 
-import { Button } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { Button, PrimaryButton } from 'controls/Button';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material';
@@ -244,6 +244,8 @@ export const Example = () => {
     input2: yup.string().required().max(10).label('Input 2'),
   });
 
+  const apiRef = useGridApiRef();
+
   const handleGetCellReadonly = (params: any) => {
     return params.field === 'input2' && params.id % 2 === 0;
   };
@@ -271,13 +273,12 @@ export const Example = () => {
   };
 
   const handleOnClick = () => {
-    console.log(rows);
+    exportCsv('datagrid.csv', apiRef);
   };
 
   return (
     <>
       <ThemeProvider theme={theme}>
-        <Button onClick={handleOnClick}>log</Button>
         <DataGrid
           columns={columns}
           rows={rows}
@@ -291,7 +292,9 @@ export const Example = () => {
               backgroundColor: '#b9e7da',
             },
           }}
+          apiRef={apiRef}
         />
+        <PrimaryButton onClick={handleOnClick}>CSV出力</PrimaryButton>
       </ThemeProvider>
     </>
   );
