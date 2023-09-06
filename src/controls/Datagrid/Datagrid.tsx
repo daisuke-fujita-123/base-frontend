@@ -733,12 +733,13 @@ export const exportCsv = (
   // DataGridのid列の除外、囲み文字の追加
   const data = rowIds.map((x) => {
     const row = apiRef.current.getRow(x);
-    delete row.id;
+    const cloned: { [key: string]: string } = {};
     Object.keys(row).forEach((key) => {
+      if (key === 'id') return;
       const value = row[key];
-      row[key] = `"${value}"`;
+      cloned[key] = `"${value}"`;
     });
-    return row;
+    return cloned;
   });
 
   // CSVの文字列を生成
