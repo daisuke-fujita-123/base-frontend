@@ -363,15 +363,6 @@ const ScrCom0014Page = () => {
   // メッセージの取得
   const { getMessage } = useContext(MessageContext);
 
-  // セクションの横幅調整
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
-
   // 初期表示時の処理
   useEffect(() => {
     // 初期表示処理(現在情報の表示)
@@ -472,13 +463,12 @@ const ScrCom0014Page = () => {
         getComCodeValueResponse.resultList
       );
 
-      for (let i = 0; i < conditionTypes.length; i++) {
+      for (let i = 0; i < conditions.length; i++) {
         // API-COM-9999-0020: 値属性変換API
         const valueAttributeConversionRequest: ScrCom9999ValueAttributeConversionRequest =
           {
             // 条件種類コード
-            // conditionKindCode: x.value,
-            conditionKindCode: conditionTypes[i].value,
+            conditionKindCode: String(conditions[i].conditionKind),
           };
         const valueAttributeConversionResponse =
           await ScrCom9999ValueAttributeConversion(
@@ -487,7 +477,11 @@ const ScrCom0014Page = () => {
 
         // 型区分が1の場合のみリストボックスで項目を表示
         if (valueAttributeConversionResponse.typeKind === '1') {
-          conditionTypes[i].selectValues = convertToConversionSelectValueModel(
+          const temp = conditionTypes.find(
+            (x) => x.value === conditions[i].conditionKind
+          );
+          if (temp === undefined) continue;
+          temp.selectValues = convertToConversionSelectValueModel(
             valueAttributeConversionResponse.commissionDiscountConditionValueList
           );
         }
@@ -1580,7 +1574,7 @@ const ScrCom0014Page = () => {
   };
 
   /**
-   * TODO: 条件種類を変更した際のイベントハンドラ
+   * 条件種類を変更した際のイベントハンドラ
    */
   const handleOnConditionTypeChange = async (
     type: string | number,
@@ -1598,36 +1592,39 @@ const ScrCom0014Page = () => {
     const valueAttributeConversionResponse =
       await ScrCom9999ValueAttributeConversion(valueAttributeConversionRequest);
 
-    // TODO あってもうごいてない
-    // conditionKinds.forEach((x) => {
-    // 選択されたプルダウンの選択肢のIDと一致するIDのみ処理
-    // if (x.value === type) {
-    // TODO: 型区分が1の場合のみリストボックスで項目を表示
+    const newSubConditions = conditions[index].subConditions.map(
+      (condition) => {
+        return {
+          // 条件は引き継ぐ
+          operator: condition.operator,
+          value: '',
+        };
+      }
+    );
+
+    const temp = conditionKinds.find((x) => x.value === type);
+
+    // 型区分が1の場合のみリストボックスで項目を表示
     if (valueAttributeConversionResponse.typeKind === '1') {
-      // 条件設定セクションへの値の設定(リストボックス)
-      conditions[index] = {
-        conditionKind: type,
-        subConditions: [
-          {
-            operator: 'aaaaa',
-            value: 'bbbbbbbbbbb',
-          },
-        ],
-      };
+      if (temp !== undefined) {
+        temp.selectValues = convertToConversionSelectValueModel(
+          valueAttributeConversionResponse.commissionDiscountConditionValueList
+        );
+      }
     } else {
-      // 条件設定セクションへの値の設定(テキストボックス)
-      conditions[index] = {
-        conditionKind: type,
-        subConditions: [
-          {
-            operator: '',
-            value: '',
-          },
-        ],
-      };
+      if (temp !== undefined) {
+        temp.selectValues = undefined;
+      }
     }
-    // }
-    // });
+
+    conditions[index] = {
+      conditionKind: type,
+      subConditions: newSubConditions,
+    };
+
+    // 条件種類を設定
+    setConditionKinds([...conditionKinds]);
+
     setConditions([...conditions]);
   };
 
@@ -1734,7 +1731,7 @@ const ScrCom0014Page = () => {
         <MainLayout main>
           <FormProvider {...methods}>
             {/* 基本情報セクション */}
-            <Section name='基本情報' width={maxSectionWidth}>
+            <Section name='基本情報'>
               <RowStack>
                 {/* 縦 1列目 */}
                 <ColStack>
@@ -1842,9 +1839,10 @@ const ScrCom0014Page = () => {
             </Section>
 
             {/* 条件設定セクション */}
-            <Section name='条件設定' width={maxSectionWidth}>
+            <Section name='条件設定'>
               <ThemeProvider theme={theme}>
                 <ConditionalTable
+                  reorderable
                   columns={columns}
                   // 条件種類 & 値 選択肢
                   conditionKinds={conditionKinds}
@@ -1874,21 +1872,12 @@ const ScrCom0014Page = () => {
 
             {/* 価格設定セクション */}
             {pricingTableVisible && (
-              <Section
-                name='価格設定'
-                decoration={decoration}
-                width={maxSectionWidth}
-              >
+              <Section name='価格設定' decoration={decoration}>
                 {/* 反映ボタン押下時のエラーメッセージ */}
                 {errorMessageFlag && (
                   <Typography variant='h6'>{errorMessage}</Typography>
                 )}
-                <PricingTable
-                  conditions={conditions}
-                  dataset={pricingRows}
-                  // conditionkinds={conditionKinds}
-                  // operators={operators}
-                />
+                <PricingTable conditions={conditions} dataset={pricingRows} />
               </Section>
             )}
           </FormProvider>
