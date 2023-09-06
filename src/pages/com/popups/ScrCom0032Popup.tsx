@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -22,6 +22,8 @@ import {
   ScrCom0032GetApproval,
   ScrCom0032GetApprovalRequest,
 } from 'apis/com/ScrCom0032Api';
+
+import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 登録内容確認ポップアップデータモデル
@@ -144,41 +146,43 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     {
       field: 'screenName',
       headerName: '画面名',
-      size: 'm',
+      size: 'l',
     },
     {
       field: 'tabName',
       headerName: 'タブ名',
-      size: 'm',
+      size: 'l',
     },
     {
       field: 'sectionName',
       headerName: 'セクション名',
-      size: 'm',
+      size: 'l',
     },
     {
       field: 'columnName',
       headerName: '項目名',
-      size: 'm',
+      size: 'l',
     },
   ];
 
   // state
   // 承認要否フラグ(確定ボタンの活性・非活性を判定)
   const [approvalFlag, setApprovalFlag] = useState(false);
-  // 項目名のパラメータが渡されたかどうかを判定するフラグ
-  const [hasColumnNameParamFlag, setHasColumnNameParamFlag] = useState(true);
   // 登録・変更内容確認のテーブルモデル リスト
-  const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>();
-  // ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
+  const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>([]);
+  // 判定用 ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
   const [isWarningChecked, setIsWarningChecked] = useState<boolean>();
-
+  // 判定用 セクション名が存在する => true
   const [isSectionName, setIsSectionName] = useState(false);
+  // 判定用 カラム名が存在する => true
   const [isColumnName, setIsColumnName] = useState(false);
-  const [isExistColumns, setisExistColumns] = useState(false);
+  // 判定用 画面名・タブ名・セクション名・項目名の内いずれかが存在する => true
+  const [isExistColumns, setisExistColumns] = useState<boolean>();
 
-  // 初回レンダリング判定フラグ
-  const renderFlgRef = useRef(false);
+  // セクションサイズ
+  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+
+  const apiRef = useGridApiRef();
 
   // form
   const methods = useForm<formModel>({
@@ -191,9 +195,6 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   });
 
   const { getValues, setValue, watch, reset } = methods;
-
-  // 変換後のRowを格納する一時リスト
-  const tempList: TableRowModel[] = [];
 
   /**
    * 登録内容確認ポップアップ 初期データ(呼び出し元画面から受け取ったパラメータを設定)
@@ -214,7 +215,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
    */
   const convertToSearchResultRowModel = (
     initialValues: ScrCom0032PopupModel
-  ): void => {
+  ): TableRowModel[] => {
     // 変換用のセクション名と項目名のリスト
     const rowSectionNameList: string[] = [];
     const rowColumnNameList: string[] = [];
@@ -255,18 +256,28 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       setIsColumnName(true);
     }
 
-    // テーブルに表示するRowモデルに変換する
-    for (let i = 0; i < rowColumnNameList.length; i++) {
-      tempList.push({
+    // 変換後のRowを格納する一時リスト
+    const tempList: TableRowModel[] = rowColumnNameList.map((x, i) => {
+      return {
         id: i,
         screenName: initialValues.registrationChangeList[0].screenName,
         tabName: initialValues.registrationChangeList[0].tabName,
         sectionName: rowSectionNameList[i],
         columnName: rowColumnNameList[i],
-      });
-    }
-    setRowValuesList(tempList);
+      };
+    });
+
+    return tempList;
   };
+
+  // セクション幅調整
+  useEffect(() => {
+    setMaxSectionWidth(
+      Number(
+        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
+      ) + 40
+    );
+  }, [apiRef, apiRef.current.rootElementRef]);
 
   // 登録内容確認ポップアップ表示時の処理
   useEffect(() => {
@@ -281,30 +292,10 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       const approvalResponse = await ScrCom0032GetApproval(approvalRequest);
       // ボタンのラベルを判定するフラグ設定
       setApprovalFlag(approvalResponse.approval);
-    };
 
-    // 遷移元画面遷移時には処理を実行しない
-    if (renderFlgRef.current) {
-      // 初期表示処理
-      initialize();
-
-      // 登録・変更内容テーブル表示用のモデルに変換する
-      convertToSearchResultRowModel(initialValues);
-
-      // テーブルに設定した一時配列の内、該当する条件の項目名をカウント
-      let blankCount = 0;
-      tempList.forEach((e) => {
-        if (e.columnName === '' || e.columnName === null) {
-          blankCount++;
-        }
-      });
-
-      // 項目名が呼び出し画面から一つもない場合(false)エラーメッセージを出力するフラグを設定
-      if (tempList.length === 0 || blankCount === tempList.length) {
-        setHasColumnNameParamFlag(false);
-      } else {
-        setHasColumnNameParamFlag(true);
-      }
+      // 登録・変更内容テーブル表示用のモデルに変換し、セクション名カラム名が存在するか判定
+      const convertList = convertToSearchResultRowModel(initialValues);
+      setRowValuesList(convertList);
 
       // 画面名、タブ名、セクション名、項目名のいずれも設定されていないかどうかを判定する処理
       if (
@@ -317,29 +308,41 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       } else {
         setisExistColumns(true);
       }
-    } else {
-      renderFlgRef.current = true;
-    }
+
+      // ワーニングのチェックボックスの初期化
+      if (data.warningList.length === 0) {
+        setIsWarningChecked(true);
+      } else {
+        setIsWarningChecked(false);
+      }
+    };
+
+    initialize();
   }, []);
 
-  // チェックボックス処理
+  // ワーニングチェックボックス処理
   useEffect(() => {
     const subscription = watch((value, { name, type }) => {
-      // 全てのチェックボックスの値を取得
-      Object.entries(value).map((x, key) => {
-        // 存在するチェックボックスの頭の一つが余分の為削除
-        if (key >= 1) {
-          // 値がtrue以外の場合は未選択状態のチェックボックスあり
-          if (!x[1]) {
-            // 確定ボタンの非活性化
-            setIsWarningChecked(false);
-          } else {
-            // 確定ボタンの活性化
-            setIsWarningChecked(true);
-          }
-        }
-      });
+      // 全てのチェックボックスの数を取得
+      const checkboxCount = document.querySelectorAll(
+        "input[name^='checkbox']"
+      ).length;
+
+      // 全てのチェックボックスのチェックされている値のみを取得
+      const checkboxList = document.querySelectorAll(
+        "input[name^='checkbox']:checked"
+      );
+
+      // チェックされている数が全てのチェックボックスの数と一致したらボタンを活性化
+      if (checkboxList.length === checkboxCount) {
+        // 確定ボタンの活性化
+        setIsWarningChecked(true);
+      } else {
+        // 確定ボタンの非活性化
+        setIsWarningChecked(false);
+      }
     });
+
     return () => subscription.unsubscribe();
   }, [setValue, watch]);
 
@@ -366,113 +369,114 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
           <FormProvider {...methods}>
             <Popup open={isOpen}>
               <Popup main>
-                {/* 項目名が一つも渡されていない場合はエラー内容を変更する */}
-                {hasColumnNameParamFlag ? (
-                  // エラー発生無の場合は非表示
-                  data.errorList.length > 0 ? (
-                    <PopSection name='エラー内容' isError>
-                      {data.errorList.map(
-                        (errorList: errorList, errorIndex: number) => {
-                          return (
-                            <Typography
-                              key={
-                                errorList.errorMessage + String(errorIndex + 1)
-                              }
-                              variant='h6'
-                            >
-                              {'エラーメッセージ' +
-                                Number(errorIndex + 1) +
-                                ':' +
-                                errorList.errorMessage}
-                            </Typography>
-                          );
-                        }
-                      )}
-                    </PopSection>
-                  ) : (
-                    ''
-                  )
-                ) : (
+                {/* エラー発生無の場合は非表示 */}
+                {data.errorList.length > 0 ? (
                   <PopSection name='エラー内容' isError>
-                    <Typography key={'index'} variant='h6'>
-                      エラーメッセージ{1}：{'項目がありません。'}
-                    </Typography>
+                    {data.errorList.map(
+                      (errorList: errorList, errorIndex: number) => {
+                        return (
+                          <Typography
+                            key={
+                              errorList.errorMessage + String(errorIndex + 1)
+                            }
+                            variant='h6'
+                          >
+                            {'エラーメッセージ' +
+                              Number(errorIndex + 1) +
+                              ':' +
+                              errorList.errorMessage}
+                          </Typography>
+                        );
+                      }
+                    )}
                   </PopSection>
-                )}
-                {/* ワーニング発生無の場合かパラメータの内 項目名が一つもない場合は非表示 */}
-                {data.warningList.length > 0 ? (
-                  hasColumnNameParamFlag ? (
-                    <PopSection name='ワーニング内容' isWarning>
-                      {data.warningList.map(
-                        (warningList: warningList, warningIndex: number) => {
-                          return (
-                            <>
-                              {/* エラー発生有の場合は非活性 */}
-                              <Checkbox
-                                key={
-                                  warningList.warningMessage +
-                                  String(warningIndex)
-                                }
-                                name={'checkbox' + warningIndex}
-                                label={
-                                  'ワーニングメッセージ' +
-                                  Number(warningIndex + 1) +
-                                  ':' +
-                                  warningList.warningMessage
-                                }
-                                disabled={
-                                  data.errorList.length > 0 ? true : false
-                                }
-                              />
-                            </>
-                          );
-                        }
-                      )}
-                    </PopSection>
-                  ) : (
-                    ''
-                  )
                 ) : (
                   <br />
                 )}
-                <Section name='登録・変更内容'>
-                  {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
-                  {isExistColumns && rowValuesList ? (
-                    <>
-                      <DataGrid columns={columns} rows={rowValuesList} />
+
+                {/* ワーニング発生無の場合は非表示 */}
+                {data.warningList.length > 0 ? (
+                  <PopSection name='ワーニング内容' isWarning>
+                    {data.warningList.map(
+                      (warningList: warningList, warningIndex: number) => {
+                        return (
+                          <>
+                            {/* エラー発生有の場合は非活性 */}
+                            <Checkbox
+                              key={
+                                warningList.warningMessage +
+                                String(warningIndex)
+                              }
+                              name={'checkbox' + warningIndex + 1}
+                              label={
+                                'ワーニングメッセージ' +
+                                Number(warningIndex + 1) +
+                                ':' +
+                                warningList.warningMessage
+                              }
+                              disabled={
+                                data.errorList.length > 0 ? true : false
+                              }
+                            />
+                          </>
+                        );
+                      }
+                    )}
+                  </PopSection>
+                ) : (
+                  <br />
+                )}
+                {data.registrationChangeList.length > 0 ? (
+                  <Section name='登録・変更内容' width={maxSectionWidth}>
+                    {/* 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
+                    {isExistColumns ? (
+                      <>
+                        <DataGrid
+                          columns={columns}
+                          rows={rowValuesList}
+                          apiRef={apiRef}
+                        />
+                        <br />
+                      </>
+                    ) : (
+                      <>
+                        <Typography key={'index'} variant='h6'>
+                          {'項目がありません。'}
+                        </Typography>
+                        <br />
+                      </>
+                    )}
+                    {/* 項目名がなく変更予約有の場合は表示・無の場合は非表示 */}
+                    {isExistColumns && data.changeExpectDate !== '' ? (
+                      <Box>
+                        <Typography variant='h6'>変更予定日</Typography>
+                        <Typography variant='body1'>
+                          {data.changeExpectDate}
+                        </Typography>
+                        <br />
+                      </Box>
+                    ) : (
                       <br />
-                    </>
-                  ) : (
-                    ''
-                  )}
-                  {/* 変更予約有の場合は表示・無の場合は非表示 */}
-                  {data.changeExpectDate !== '' ? (
-                    <Box>
-                      <Typography variant='h5'>変更予定日</Typography>
-                      <Typography variant='body1'>
-                        {data.changeExpectDate}
-                      </Typography>
-                      <br />
-                    </Box>
-                  ) : (
-                    <br />
-                  )}
-                  {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
-                  {isExistColumns ? (
-                    <Box>
-                      <Typography variant='h5'>登録変更メモ</Typography>
-                      <Textarea
-                        name='registrationChangeMemo'
-                        maxRows={30}
-                        size='l'
-                        // エラー発生有の場合は非活性・エラー発生無の場合は活性
-                        disabled={data.errorList.length > 0 ? true : false}
-                      ></Textarea>
-                    </Box>
-                  ) : (
-                    ''
-                  )}
-                </Section>
+                    )}
+                    {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
+                    {isExistColumns ? (
+                      <Box>
+                        <Typography variant='h5'>登録変更メモ</Typography>
+                        <Textarea
+                          name='registrationChangeMemo'
+                          maxRows={30}
+                          size='l'
+                          // エラー発生有の場合は非活性・エラー発生無の場合は活性
+                          disabled={data.errorList.length > 0 ? true : false}
+                        ></Textarea>
+                      </Box>
+                    ) : (
+                      ''
+                    )}
+                  </Section>
+                ) : (
+                  ''
+                )}
               </Popup>
               <Popup bottom>
                 <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
@@ -483,12 +487,13 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
+                    // 条件４: 画面名、タブ名、セクション名、項目名のいずれも未設定の場合 -> 非活性
                     disable={
-                      data.errorList.length >= 1
+                      data.errorList.length >= 1 ||
+                      !isExistColumns ||
+                      !isWarningChecked
                         ? true
-                        : isWarningChecked
-                        ? false
-                        : true
+                        : false
                     }
                   >
                     確定
@@ -500,12 +505,13 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
                     // 条件２：ワーニングが0件の場合 -> 活性
                     // 条件３：ワーニングが1件以上存在し、全てのチェックボックスを選択済みの場合 -> 活性
+                    // 条件４: 画面名、タブ名、セクション名、項目名のいずれも未設定の場合 -> 非活性
                     disable={
-                      data.errorList.length >= 1
+                      data.errorList.length >= 1 ||
+                      !isExistColumns ||
+                      !isWarningChecked
                         ? true
-                        : isWarningChecked
-                        ? false
-                        : true
+                        : false
                     }
                   >
                     承認申請
