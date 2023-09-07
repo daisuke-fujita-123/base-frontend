@@ -62,7 +62,7 @@ const ScrDoc0005Page = () => {
   const documentBasicsNumber = location.pathname.substring(
     location.pathname.lastIndexOf('/') + 1
   );
-  console.log(documentBasicsNumber);
+
   // 編集権限がない場合
   const isNotEditable = !user.editPossibleScreenIdList.includes('SCR-DOC-0005');
 
