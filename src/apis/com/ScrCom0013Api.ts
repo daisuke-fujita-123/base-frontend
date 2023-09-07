@@ -19,7 +19,7 @@ export interface ScrCom0013DisplayComoditymanagementCourseResponse {
   /** 件数 */
   count: number;
   /** コース情報 */
-  courceInfo: courceInfo[];
+  courseList: courceInfo[];
 }
 
 // SCR-COM-0013-0001：商品管理表示API(コース情報表示） レスポンス リスト行
@@ -53,7 +53,7 @@ export interface ScrCom0013DisplayComoditymanagementServiceResponse {
   /** 件数 */
   count: number;
   /** サービス情報 */
-  serviceInfo: ServiceInfo[];
+  serviceList: ServiceInfo[];
 }
 
 // SCR-COM-0013-0002：商品管理表示API(コース情報表示） レスポンス リスト行
@@ -93,7 +93,7 @@ export interface ScrCom0013DisplayComoditymanagementCommissionResponse {
   /** 件数 */
   count: number;
   /** サービス情報 */
-  commissionInfo: CommissionInfo[];
+  commissionList: CommissionInfo[];
 }
 
 // SCR-COM-0013-0003：商品管理表示API(手数料情報表示） レスポンス(リスト行)
@@ -127,15 +127,15 @@ export interface ScrCom0013DisplayComoditymanagementDiscountResponse {
   /** 件数(基本値引値増) */
   basicCount: number;
   /** 基本値引値増情報 */
-  basicDiscountInfo: BasicDiscountInfo[];
+  basicDiscountList: BasicDiscountInfo[];
   /** 件数（オプション値引値増） */
   optionCount: number;
   /** オプション値引値増情報 */
-  optionDiscountInfo: OptionDiscountInfo[];
+  optionDiscountList: OptionDiscountInfo[];
   /** 件数（手数料値引値増） */
   commissionCount: number;
   /** 手数料値引値増情報 */
-  commissionDiscountInfo: CommissionDiscountInfo[];
+  commissionDiscountList: CommissionDiscountInfo[];
 }
 
 // SCR-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス 基本リスト行
@@ -193,11 +193,11 @@ export interface ScrCom0013DisplayComoditymanagementHistoryResponse {
   /** 件数（変更履歴一覧） */
   approveCount: number;
   /** 変更履歴（承認済）情報 */
-  chgHistoryApproveInfo: chgHistoryApproveInfo[];
+  chgHistoryApproveList: chgHistoryApproveInfo[];
   /** 件数（未承認一覧） */
   UnapproveAcquisitionCount: number;
   /** 件数（未承認一覧） */
-  chgHistoryNotApproveInfo: chgHistoryNotApproveInfo[];
+  chgHistoryNotApproveList: chgHistoryNotApproveInfo[];
 }
 
 // SCR-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス 承認済リスト行
@@ -278,10 +278,32 @@ export interface chgHistoryNotApproveInfo {
   forthApproverName: string;
 }
 
+// SCR-COM-0013-0006：サービス変更予定日取得API リクエスト
+export interface ScrCom0013GetServiceChangeDateRequest {
+  /** 画面ID */
+  screenId: string;
+  /** タブID */
+  tabId: string;
+  /** 業務日付 */
+  businessDate: string;
+}
+
+// SCR-COM-0013-0006：サービス変更予定日取得API レスポンス
+export interface ScrCom0013GetServiceChangeDateResponse {
+  /** 変更予定日情報 */
+  changeExpectDateInfo: changeExpectDateInfo[];
+}
+
+// SCR-COM-0013-0006：サービス変更予定日取得API レスポンス リスト行
+export interface changeExpectDateInfo {
+  /** 変更予定日 */
+  changeExpectDate: string;
+}
+
 // SCR-COM-0013-0007: サービス情報入力チェックAPI リクエスト
 export interface ScrCom0013chkServiceRequest {
   /** サービス情報リスト */
-  serviceInfo: serviceInfo[];
+  serviceList: serviceInfo[];
 }
 
 // SCR-COM-0013-0007: サービス情報入力チェックAPI リクエスト リスト行
@@ -402,36 +424,12 @@ export interface deleteTargetedList {
   campaignCd: string;
 }
 
-// // SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス
-// export interface ScrCom0013chkDiscountResponse {
-//   /** エラー内容リスト */
-//   errorList: errorList[];
-//   /** ワーニング内容リスト */
-//   warnList: warnList[];
-// }
-
-// // SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス リスト行
-// export interface errorList {
-//   /** エラーコード */
-//   errorCode: string;
-//   /** エラーメッセージ */
-//   errorMessage: string;
-// }
-
-// // SCR-COM-0013-0009: 値引値増情報入力チェックAPI レスポンス リスト行
-// export interface warnList {
-//   /** ワーニングコード */
-//   warnCode: string;
-//   /** ワーニングメッセージ */
-//   warnMessage: string;
-// }
-
 // SCR-COM-0013-0010: 値引値増情報登録更新API リクエスト
 export interface ScrCom0013MergeDiscountRequest {
   /** 基本値引値増情報 */
-  baseDiscountInfo: BasicDiscountInfo[];
+  baseDiscountList: BasicDiscountInfo[];
   /** オプション値引値増情報 */
-  optionDiscountInfo: OptionDiscountInfo[];
+  optionDiscountList: OptionDiscountInfo[];
   /** 登録対象リスト */
   registTargetedList: registTargetedList[];
   /** 更新対象リスト */
@@ -494,12 +492,52 @@ export interface basicInfo {
   utilizationFlg: boolean;
 }
 
+// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) リクエスト
+export interface displayComodityManagementServiceReserveRequest {
+  /** 画面ID */
+  screenId: string;
+  /** タブID */
+  tabId: number;
+  /** 変更予定日 */
+  changeReserveDate: string;
+}
+
+// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) レスポンス
+export interface displayComodityManagementServiceReserveResponse {
+  /** 件数 */
+  count: number;
+  /** ワーニング内容リスト */
+  serviceInfo: serviceInfo[];
+}
+
+// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) レスポンス リスト行
+export interface serviceInfo {
+  /** サービスID */
+  serviceId: string;
+  /** サービス名 */
+  serviceName: string;
+  /** 担当部門区分 */
+  responsibleCategory: string;
+  /** 対象サービス区分 */
+  targetServiceDivision: string;
+  /** 外部連携情報サービスフラグ */
+  cooperationInfoServiceFlg: boolean;
+  /** 複数契約可フラグ */
+  multiContractPossibleFlg: boolean;
+  /** 利用フラグ */
+  utilizationFlg: boolean;
+  /** 変更前タイムスタンプ */
+  changeBfrTimestamp: string;
+  /** 変更予約 */
+  changeReserve: string;
+}
+
 // SCR-COM-0013-0001：商品管理表示API(コース情報表示）
 export const ScrCom0013DisplayComoditymanagementCourse = async (
   request: ScrCom0013DisplayComoditymanagementCourseRequest
 ): Promise<ScrCom0013DisplayComoditymanagementCourseResponse> => {
   const response = await comApiClient.post(
-    '/com/scr-com-0013/display-comoditymanagement_course',
+    '/api/com/scr-com-0013/display-comoditymanagement_course',
     request
   );
   return response.data;
@@ -547,6 +585,17 @@ export const ScrCom0013DisplayComoditymanagementHistory =
     return response.data;
   };
 
+// SCR-COM-0013-0006：サービス変更予定日取得API
+export const ScrCom0013GetServiceChangeDate = async (
+  request: ScrCom0013GetServiceChangeDateRequest
+): Promise<ScrCom0013GetServiceChangeDateResponse> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-0013/get-service-change-date',
+    request
+  );
+  return response.data;
+};
+
 // SCR-COM-0013-0007: サービス情報入力チェックAPI
 export const ScrCom0013chkService = async (
   request: ScrCom0013chkServiceRequest
@@ -587,6 +636,16 @@ export const ScrCom0013MergeDiscount = async (
   await comApiClient.post('/api/com/scr-com-0013/merge-discount', request);
 };
 
+// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示)
+export const displayComodityManagementServiceReserve = async (
+  request: displayComodityManagementServiceReserveRequest
+): Promise<displayComodityManagementServiceReserveResponse> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-0013/display-comoditymanagement-service-reserve',
+    request
+  );
+  return response.data;
+};
 // 全タブのリクエスト情報を統括
 export interface registrationRequest {
   // コースタブ

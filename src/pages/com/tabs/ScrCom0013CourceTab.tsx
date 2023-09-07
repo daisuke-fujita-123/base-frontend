@@ -96,7 +96,7 @@ const SCR_COM_0013 = 'SCR-COM-0013';
 const convertToSearchResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementCourseResponse
 ): SearchResultRowModel[] => {
-  return response.courceInfo.map((x) => {
+  return response.courseList.map((x) => {
     return {
       id: x.courceId,
       courceId: x.courceId,
@@ -239,7 +239,7 @@ const ScrCom0013CourceTab = (props: {
    * 追加アイコンクリック時のイベントハンドラ
    */
   const handleIconAddClick = () => {
-    navigate('/com/cources/new');
+    navigate('/com/courses/new');
   };
 
   /**

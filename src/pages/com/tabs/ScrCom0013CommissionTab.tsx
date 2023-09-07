@@ -96,7 +96,7 @@ const SCR_COM_0013 = 'SCR-COM-0013';
 const convertToSearchResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementCommissionResponse
 ): SearchResultRowModel[] => {
-  return response.commissionInfo.map((x) => {
+  return response.commissionList.map((x) => {
     return {
       id: x.commissionId,
       commissionId: x.commissionId,

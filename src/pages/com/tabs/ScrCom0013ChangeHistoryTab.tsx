@@ -224,7 +224,7 @@ interface unApprovedSearchResultRowModel {
 const convertToChangeHistorySearchResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementHistoryResponse
 ): ChangeHistorySearchResultRowModel[] => {
-  return response.chgHistoryApproveInfo.map((x) => {
+  return response.chgHistoryApproveList.map((x) => {
     return {
       id: x.applicationId,
       applicationId: x.applicationId,
@@ -254,7 +254,7 @@ const convertToChangeHistorySearchResultRowModel = (
 const convertToUnApprovedSearchResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementHistoryResponse
 ): unApprovedSearchResultRowModel[] => {
-  return response.chgHistoryNotApproveInfo.map((x) => {
+  return response.chgHistoryNotApproveList.map((x) => {
     return {
       id: x.applicationId,
       applicationId: x.applicationId,
@@ -380,7 +380,7 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
 
       // ツールチップ設定
       const changeHistoryTooltips: any[] = [];
-      response.chgHistoryApproveInfo.map((x) => {
+      response.chgHistoryApproveList.map((x) => {
         changeHistoryTooltips.push({
           field: 'registrationChangeMemo',
           id: x.applicationId,
@@ -443,7 +443,7 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
       setUnApprovedHrefs(unApprovedHrefs);
 
       // ツールチップ設定
-      const notPermissionTooltips = response.chgHistoryNotApproveInfo.map(
+      const notPermissionTooltips = response.chgHistoryNotApproveList.map(
         (x) => {
           return {
             field: 'registrationChangeMemo',

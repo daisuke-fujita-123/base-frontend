@@ -457,9 +457,14 @@ const CDE_TRA_0001 = 'CDE-TRA-0001';
  */
 const validationSchema = {
   // 基本値引値増
-  campaignCd: yup.string().label('キャンペーンコード').max(15).half(),
-  campaignName: yup.string().label('キャンペーン名').max(30),
-  discountAmount: yup.string().label('金額').max(6).number(),
+  campaignCd: yup
+    .string()
+    .label('キャンペーンコード')
+    .max(15)
+    .half()
+    .required(),
+  campaignName: yup.string().label('キャンペーン名').max(30).required(),
+  discountAmount: yup.string().label('金額').max(6).number().required(),
   contractQuantityLowLimit: yup
     .string()
     .label('契約本数(以下)')
@@ -500,7 +505,7 @@ const validationSchema = {
 const convertToSearchBasicResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementDiscountResponse
 ): searchBasicResultRowModel[] => {
-  return response.basicDiscountInfo.map((x) => {
+  return response.basicDiscountList.map((x) => {
     return {
       id: x.campaignCd,
       campaignCd: x.campaignCd,
@@ -566,7 +571,7 @@ const convertToBasicResponseModel = (
 const convertToSearchOptionResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementDiscountResponse
 ): searchOptionResultRowModel[] => {
-  return response.optionDiscountInfo.map((x) => {
+  return response.optionDiscountList.map((x) => {
     return {
       id: x.campaignCd,
       optionCampaignCd: x.campaignCd,
@@ -637,7 +642,7 @@ const convertToOptionResponseModel = (
 const convertToSearchCommissionResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementDiscountResponse
 ): searchCommissionResultRowModel[] => {
-  return response.commissionDiscountInfo.map((x) => {
+  return response.commissionDiscountList.map((x) => {
     return {
       id: x.commissionDiscountPackId,
       commissionDiscountPackId: x.commissionDiscountPackId,
@@ -823,12 +828,14 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       headerName: 'キャンペーンコード',
       size: 'l',
       cellType: 'input',
+      required: true,
     },
     {
       field: 'campaignName',
       headerName: 'キャンペーン名',
       size: 'l',
       cellType: 'input',
+      required: true,
     },
     {
       field: 'membershipFeeType',
@@ -839,6 +846,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         { value: 'basicAdmissionFee', displayValue: '入会金' },
         { value: 'basicListPrice', displayValue: '定価' },
       ],
+      required: true,
     },
     {
       field: 'discountDivision',
@@ -846,12 +854,14 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       cellType: 'select',
       selectValues: selectValues.priceSelectValues,
       size: 'l',
+      required: true,
     },
     {
       field: 'discountAmount',
       headerName: '金額',
       cellType: [{ type: 'input', helperText: '円' }],
       size: 'l',
+      required: true,
     },
     {
       field: 'courseId',
@@ -956,12 +966,14 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       headerName: 'キャンペーンコード',
       size: 'l',
       cellType: 'input',
+      required: true,
     },
     {
       field: 'optionCampaignName',
       headerName: 'キャンペーン名',
       size: 'l',
       cellType: 'input',
+      required: true,
     },
     {
       field: 'optionMembershipFeeType',
@@ -972,6 +984,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         { value: 'basicAdmissionFee', displayValue: '入会金' },
         { value: 'basicListPrice', displayValue: '定価' },
       ],
+      required: true,
     },
     {
       field: 'optionDiscountDivision',
@@ -979,12 +992,14 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       cellType: 'select',
       selectValues: selectValues.priceSelectValues,
       size: 'l',
+      required: true,
     },
     {
       field: 'optionDiscountAmount',
       headerName: '金額',
       cellType: [{ type: 'input', helperText: '円' }],
       size: 'l',
+      required: true,
     },
     {
       field: 'serviceId',
@@ -992,6 +1007,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'select',
       selectValues: selectValues.serviceNameSelectValues,
+      required: true,
     },
     {
       field: 'optionFirstExclusionFlg',
@@ -1813,9 +1829,9 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     // SCR-COM-0013-0010: 値引値増情報登録更新API
     const mergeDiscountRequest: ScrCom0013MergeDiscountRequest = {
       /** 基本値引値増 */
-      baseDiscountInfo: convertToBasicResponseModel(basicSearchResult),
+      baseDiscountList: convertToBasicResponseModel(basicSearchResult),
       /** オプション値引値増情報 */
-      optionDiscountInfo: convertToOptionResponseModel(optionSearchResult),
+      optionDiscountList: convertToOptionResponseModel(optionSearchResult),
       /** 登録対象リスト */
       registTargetedList: registTargetedList,
       /** 更新対象リスト */

@@ -18,6 +18,7 @@ import { Typography } from 'controls/Typography';
 import {
   registrationRequest,
   ScrCom0013chkService,
+  ScrCom0013chkServiceRequest,
   ScrCom0013DisplayComoditymanagementService,
   ScrCom0013DisplayComoditymanagementServiceRequest,
   ScrCom0013DisplayComoditymanagementServiceResponse,
@@ -131,21 +132,6 @@ const selectValuesInitialValues: SelectValuesModel = {
 };
 
 /**
- * サービス情報入力チェックAPIリクエスト用 リスト データモデル
- */
-interface serviceInfoModel {
-  serviceInfo: serviceInfo[];
-}
-
-/**
- * サービス情報入力チェックAPIリクエスト用 リスト 初期データ
- */
-interface serviceInfo {
-  serviceId: string;
-  serviceName: string;
-}
-
-/**
  * 登録内容確認ポップアップ初期データ
  */
 const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
@@ -181,7 +167,14 @@ const CDE_COM_0013 = 'CDE-COM-0013';
  * バリデーションスキーマ
  */
 const validationSchema: ObjectSchema<any> = yup.object({
-  reportComment1: yup.string().label('サービス名').max(30),
+  serviceName: yup.string().label('サービス名').max(30).required(),
+  targetServiceDivision: yup.string().label('連携対象サービス').required(),
+  cooperationInfoServiceFlg: yup
+    .string()
+    .label('外部連携情報サービス')
+    .required(),
+  multiContractPossibleFlg: yup.string().label('複数契約可').required(),
+  utilizationFlg: yup.string().label('利用フラグ').required(),
 });
 
 /**
@@ -204,7 +197,7 @@ const ScrCom0013ServiceTab = (props: {
   const [changeHistoryDateCheckisOpen, setChangeHistoryDateCheckisOpen] =
     useState<boolean>(false);
   // サービス情報入力チェックAPIリクエスト用リスト
-  const [serviceInfo, setServiceInfo] = useState<serviceInfoModel>();
+  const [serviceInfo, setServiceInfo] = useState<ScrCom0013chkServiceRequest>();
   // DataGrid InternalId採番用変数
   const [count, setCount] = useState(0);
   // 登録内容確認ポップアップ => 登録内容申請ポップアップへと引き渡す変更予約メモ
@@ -287,36 +280,40 @@ const ScrCom0013ServiceTab = (props: {
       field: 'serviceId',
       headerName: 'サービスID',
       size: 'l',
+      required: true,
     },
     {
       field: 'serviceName',
       headerName: 'サービス名',
       size: 'l',
       cellType: 'input',
+      required: true,
     },
     {
       field: 'responsibleCategory',
-      headerName: '担当部門区分',
+      headerName: '担当部門',
       size: 'l',
       cellType: 'select',
       selectValues: selectValues.responsibleCategoryValues,
     },
     {
       field: 'targetServiceDivision',
-      headerName: '対象サービス区分',
+      headerName: '連携対象サービス',
       size: 'l',
       cellType: 'select',
       selectValues: selectValues.targetServiceDivisionValues,
+      required: true,
     },
     {
       field: 'cooperationInfoServiceFlg',
-      headerName: '外部連携情報サービスフラグ',
+      headerName: '外部連携情報サービス',
       size: 'l',
       cellType: 'radio',
       radioValues: [
         { value: 'target', displayValue: '対象' },
         { value: 'unTarget', displayValue: '対象外' },
       ],
+      required: true,
     },
     {
       field: 'multiContractPossibleFlg',
@@ -327,6 +324,7 @@ const ScrCom0013ServiceTab = (props: {
         { value: 'multiContractPossibleFlgYes', displayValue: '可' },
         { value: 'multiContractPossibleFlgNo', displayValue: '不可' },
       ],
+      required: true,
     },
     {
       field: 'utilizationFlg',
@@ -337,6 +335,7 @@ const ScrCom0013ServiceTab = (props: {
         { value: 'utilizationFlgYes', displayValue: '可' },
         { value: 'utilizationFlgNo', displayValue: '不可' },
       ],
+      required: true,
     },
     {
       field: 'changeReserve',
@@ -351,7 +350,7 @@ const ScrCom0013ServiceTab = (props: {
   const convertToSearchResultRowModel = (
     response: ScrCom0013DisplayComoditymanagementServiceResponse
   ): SearchResultRowModel[] => {
-    return response.serviceInfo.map((x) => {
+    return response.serviceList.map((x) => {
       return {
         id: x.serviceId,
         // サービスIDは新規追加の場合ブランクで設定
