@@ -160,8 +160,7 @@ const ScrTra0001BasicTab = () => {
       for (let i = 0; i < response.dealAccountingMasters.length; i++) {
         dealAccountingMastersHrefs[0].hrefs.push({
           id: i,
-          href:
-            '/tra/deal-masters/' + response.dealAccountingMasters[i].masterId,
+          href: '/tra/masters/' + response.dealAccountingMasters[i].masterId,
         });
       }
       setDealAccountingMasters(
@@ -225,7 +224,7 @@ const ScrTra0001BasicTab = () => {
                 <></>
               ) : (
                 <DataGrid
-                  height={200}
+                  // height={200}
                   pagination={true}
                   columns={dealAccountingMastersColumns}
                   rows={dealAccountingMasters}

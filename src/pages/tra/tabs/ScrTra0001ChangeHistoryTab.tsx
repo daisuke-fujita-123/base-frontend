@@ -19,6 +19,9 @@ import { ScrTra0001GetAccountingDealMasterChangeHistoryInfo } from 'apis/tra/Scr
 
 import { useNavigate } from 'hooks/useNavigate';
 
+import { useGridApiRef } from '@mui/x-data-grid-pro';
+import dayjs from 'dayjs';
+
 /** モデル定義 */
 /** 変更履歴情報データモデル */
 interface ChangeHistoriesRowModel {
@@ -236,6 +239,8 @@ const ScrTra0001ChangeHistoryTab = () => {
   // router
   const navigate = useNavigate();
 
+  const apiRef = useGridApiRef();
+
   // state
   // DataGrid：変更履歴(CSV出力用)
   const [changeHistoriesCsv, setChangeHistoriesCsv] = useState<
@@ -340,7 +345,7 @@ const ScrTra0001ChangeHistoryTab = () => {
         changeHistoriesHrefs[0].hrefs.push({
           id: i,
           href:
-            '/tra/deal-masters/' +
+            '/tra/masters/' +
             o.masterId +
             '?changeHistoryNumber=' +
             o.changeHistoryNumber.toString(),
@@ -498,32 +503,19 @@ const ScrTra0001ChangeHistoryTab = () => {
     // 画面遷移
     navigate(url);
   };
+
   // 変更履歴一覧CSV出力
   const handlChangeHistoriesCsvExport = () => {
-    exportCsv(
-      changeHistoriesCsv,
-      _formatDatetime(new Date(), 'yyyymmddhhiiss') + '.csv'
-    );
-  };
-  // 未承認一覧CSV出力
-  const handleUnapprovedChangeHistoriesCsvExport = () => {
-    exportCsv(
-      unapprovedChangeHistoriesCsv,
-      _formatDatetime(new Date(), 'yyyymmddhhiiss') + '.csv'
-    );
+    // TODO ファイル名を日時仮設定
+    const today = dayjs().format('YYYYMMDD_HHmmssSSS_');
+    exportCsv(today + '.csv', apiRef);
   };
 
-  // 日時のフォーマット変換
-  const _formatDatetime = (date: Date, format: string) => {
-    const _padStart = (value: number): string =>
-      value.toString().padStart(2, '0');
-    return format
-      .replace(/yyyy/g, _padStart(date.getFullYear()))
-      .replace(/dd/g, _padStart(date.getDate()))
-      .replace(/mm/g, _padStart(date.getMonth() + 1))
-      .replace(/hh/g, _padStart(date.getHours()))
-      .replace(/ii/g, _padStart(date.getMinutes()))
-      .replace(/ss/g, _padStart(date.getSeconds()));
+  // 未承認一覧CSV出力
+  const handleUnapprovedChangeHistoriesCsvExport = () => {
+    // TODO ファイル名を日時仮設定
+    const today = dayjs().format('YYYYMMDD_HHmmssSSS_');
+    exportCsv(today + '.csv', apiRef);
   };
 
   return (
@@ -563,6 +555,7 @@ const ScrTra0001ChangeHistoryTab = () => {
               width='100%'
               height={200}
               pagination={false}
+              apiRef={apiRef}
               columns={unapprovedChangeHistoriesColumns}
               rows={unapprovedChangeHistories}
               hrefs={unapprovedChangeHistoriesHrefs}
