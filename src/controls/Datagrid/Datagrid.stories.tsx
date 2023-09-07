@@ -4,14 +4,17 @@ import React, { useState } from 'react';
 import yup from 'utils/yup';
 import { ObjectSchema } from 'yup';
 
-import { Button } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { Button, PrimaryButton } from 'controls/Button';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material';
 import { GridRowsProp } from '@mui/x-data-grid';
 import {
+  GridCellParams,
   GridRenderCellParams,
+  GridRowSelectionModel,
+  GridTreeNode,
   GridTreeNodeWithRender,
   useGridApiRef,
 } from '@mui/x-data-grid-pro';
@@ -241,6 +244,12 @@ export const Example = () => {
     input2: yup.string().required().max(10).label('Input 2'),
   });
 
+  const apiRef = useGridApiRef();
+
+  const handleGetCellReadonly = (params: any) => {
+    return params.field === 'input2' && params.id % 2 === 0;
+  };
+
   const handleGetSelectValues = (params: any) => {
     return params.id % 2 === 0
       ? [
@@ -255,20 +264,37 @@ export const Example = () => {
         ];
   };
 
+  const handleGetCellClassName = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ) => {
+    if (params.field === 'corporationId' && params.value > 2)
+      return 'nebiki-nemashi-ari';
+    return '';
+  };
+
   const handleOnClick = () => {
-    console.log(rows);
+    exportCsv('datagrid.csv', apiRef);
   };
 
   return (
     <>
       <ThemeProvider theme={theme}>
-        <Button onClick={handleOnClick}>log</Button>
         <DataGrid
           columns={columns}
           rows={rows}
           resolver={validationSchema}
+          checkboxSelection
+          getCellReadonly={handleGetCellReadonly}
           getSelectValues={handleGetSelectValues}
+          getCellClassName={handleGetCellClassName}
+          sx={{
+            '& .nebiki-nemashi-ari': {
+              backgroundColor: '#b9e7da',
+            },
+          }}
+          apiRef={apiRef}
         />
+        <PrimaryButton onClick={handleOnClick}>CSV出力</PrimaryButton>
       </ThemeProvider>
     </>
   );
@@ -340,6 +366,7 @@ export const UpdatableHeaderRow = () => {
       field: 'button',
       headerName: '',
       cellType: 'button',
+      width: 200,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ) => {
@@ -351,7 +378,7 @@ export const UpdatableHeaderRow = () => {
     {
       field: 'soshikiIdOrMeisyo',
       headerName: '組織ID／名称',
-      cellType: 'select',
+      cellType: 'input',
       selectValues: [
         { value: 0, displayValue: '' },
         { value: 1, displayValue: 'XXXXX' },
@@ -420,23 +447,44 @@ export const UpdatableHeaderRow = () => {
     teiyoShuryoBi: '',
   };
 
-  const handleIkkatsuHaneiClick = () => {
-    const headerRow = headerApiRef.current.getRow(-1);
-    const newRows = rows.map((x) => {
-      return {
-        ...x,
-        soshikiIdOrMeisyo: headerRow.soshikiIdOrMeisyo,
-        yakushokuIdOrMeisyo: headerRow.yakushokuIdOrMeisyo,
-        teiyoKaishiBi: headerRow.teiyoKaishiBi,
-        teiyoShuryoBi: headerRow.teiyoShuryoBi,
-      };
-    });
-    setRows(newRows);
-    setHeaderRow(headerRow);
-  };
+  const defaultSelectionModel: GridRowSelectionModel = [];
 
   const [rows, setRows] = useState(defaultRows);
   const [headerRow, setHeaderRow] = useState(defaultHeaderRow);
+  const [selection, setSelection] = useState(defaultSelectionModel);
+
+  const handleIkkatsuHaneiClick = () => {
+    const headerRow = headerApiRef.current.getRow(-1);
+    const newRows = rows.map((x) => {
+      if (selection.includes(x.id)) {
+        return {
+          ...x,
+          soshikiIdOrMeisyo: headerRow.soshikiIdOrMeisyo,
+          yakushokuIdOrMeisyo: headerRow.yakushokuIdOrMeisyo,
+          teiyoKaishiBi: headerRow.teiyoKaishiBi,
+          teiyoShuryoBi: headerRow.teiyoShuryoBi,
+        };
+      } else {
+        return x;
+      }
+    });
+    setRows(newRows);
+  };
+
+  const handleOnRowValueChange = (row: any) => {
+    if (row.id === -1) {
+      setHeaderRow(row);
+    } else {
+      const newRows = rows.map((x) => (x.id === row.id ? row : x));
+      setRows(newRows);
+    }
+  };
+
+  const handleOnRowSelectionModelChange = (
+    rowSelectionModel: GridRowSelectionModel
+  ) => {
+    setSelection(rowSelectionModel);
+  };
 
   return (
     <>
@@ -444,9 +492,12 @@ export const UpdatableHeaderRow = () => {
         <DataGrid
           columns={columns}
           rows={rows}
-          controlled={false}
+          checkboxSelection
           showHeaderRow
           headerRow={headerRow}
+          onRowValueChange={handleOnRowValueChange}
+          onRowSelectionModelChange={handleOnRowSelectionModelChange}
+          controlled={false}
           apiRef={apiRef}
           headerApiRef={headerApiRef}
         />

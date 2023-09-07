@@ -1,4 +1,4 @@
-import { _expApiClient } from 'providers/ApiClient';
+import { comApiClient } from 'providers/ApiClient';
 
 /** 画面ID */
 interface ScreenId {
@@ -25,8 +25,8 @@ export interface ScrCom0002UpdateFavoriteResponse {
 export const ScrCom0002UpdateFavorite = async (
   req: ScrCom0002UpdateFavoriteRequest
 ): Promise<ScrCom0002UpdateFavoriteResponse> => {
-  const response = await _expApiClient.post(
-    '/_exp/scr-com-0002/get-update-favorite',
+  const response = await comApiClient.post(
+    '/api/com/scr-com-0002/get-update-favorite',
     req
   );
   return response.data;
@@ -54,8 +54,31 @@ export interface ScrCom0002GetMenuDetailResponse {
 export const ScrCom0002GetMenuDetail = async (
   req: ScrCom0002GetMenuDetailRequest
 ): Promise<ScrCom0002GetMenuDetailResponse> => {
-  const response = await _expApiClient.post(
-    '/_exp/scr-com-0002/get-menu-detail',
+  const response = await comApiClient.post(
+    '/api/com/scr-com-0002/get-menu-detail',
+    req
+  );
+  return response.data;
+};
+
+// API-COM-0002-0001:システムメッセージ取得API リクエスト
+export interface ScrCom0002GetSystemMessageRequest {
+  /** 業務日付 */
+  businessDate: string;
+}
+
+// API-COM-0002-0001:システムメッセージ取得API レスポンス
+export interface ScrCom0002GetSystemMessageResponse {
+  // メッセージ
+  message: string;
+}
+
+// API-COM-0002-0001:システムメッセージ取得API
+export const SystemMessage = async (
+  req: ScrCom0002GetSystemMessageRequest
+): Promise<ScrCom0002GetSystemMessageResponse> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-0002/get-system-message',
     req
   );
   return response.data;
@@ -77,6 +100,6 @@ export interface LogoutResponse {
 export const ScrCom9999Logout = async (
   req: LogoutRequest
 ): Promise<LogoutResponse> => {
-  const response = await _expApiClient.post('/_exp/logout', req);
+  const response = await comApiClient.post('/com/logout', req);
   return response.data;
 };

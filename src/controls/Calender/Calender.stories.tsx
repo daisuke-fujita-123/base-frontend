@@ -117,8 +117,17 @@ export const Example = () => {
     return undefined;
   };
 
-  const handleGetCellDisabled = (date: Date): boolean => {
-    return date.getDate() < 5;
+  const handleGetCellDisabled = (
+    date: Date,
+    field: string,
+    index?: number
+  ): boolean => {
+    // 5日以前をdisable
+    if (date.getDate() <= 5) return true;
+    // 月曜日のItem3をdisable
+    if (date.getDay() === 1 && field === 'doubleSelect' && index === 0)
+      return true;
+    return false;
   };
 
   useEffect(() => {

@@ -1,11 +1,6 @@
 import React from 'react';
 import {
-  FieldPath,
-  FieldPathValue,
-  FieldValues,
-  Path,
-  useFormContext,
-  useWatch,
+    FieldPath, FieldPathValue, FieldValues, Path, useFormContext, useWatch
 } from 'react-hook-form';
 
 import { MarginBox } from 'layouts/Box';
@@ -17,12 +12,7 @@ import { Typography } from 'controls/Typography';
 
 import ClearIcon from '@mui/icons-material/Clear';
 
-import {
-  IconButton,
-  InputAdornment,
-  styled,
-  TextField as TextFiledMui,
-} from '@mui/material';
+import { IconButton, InputAdornment, styled, TextField as TextFiledMui } from '@mui/material';
 
 export interface TextFieldProps<T extends FieldValues> {
   label?: string;
@@ -37,6 +27,7 @@ export interface TextFieldProps<T extends FieldValues> {
   size?: 's' | 'm' | 'l' | 'xl';
   onBlur?: (name: string) => void;
   unit?: string;
+  type?: 'text' | 'password';
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -66,13 +57,15 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     size = 's',
     onBlur,
     unit,
+    type = 'text',
   } = props;
 
   const { register, formState, setValue, control } = useFormContext();
   const watchValue = useWatch({ name, control });
   const isReadOnly = control?._options?.context[0];
   const registerRet = register(name);
-
+  const isNotNull =
+    watchValue !== null && watchValue !== undefined && watchValue !== '';
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
@@ -99,10 +92,11 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
                 ? String(formState.errors[name]?.message)
                 : null
             }
+            type={type}
             InputProps={{
               endAdornment: (
                 <InputAdornment position='end'>
-                  {watchValue && !readonly && (
+                  {isNotNull && !readonly && (
                     <IconButton onClick={onClickIconHandler}>
                       <ClearIcon />
                     </IconButton>
@@ -151,7 +145,8 @@ export const PriceTextField = <T extends FieldValues>(
   const watchValue = useWatch({ name, control });
   const isReadOnly = control?._options?.context[0];
   const registerRet = register(name);
-
+  const isNotNull =
+    watchValue !== null && watchValue !== undefined && watchValue !== '';
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
@@ -192,7 +187,12 @@ export const PriceTextField = <T extends FieldValues>(
       return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
     });
   };
-
+  console.log(
+    'watchValue && !readonly',
+    watchValue && !readonly,
+    watchValue,
+    !readonly
+  );
   return (
     <InputLayout
       label={label}
@@ -214,7 +214,7 @@ export const PriceTextField = <T extends FieldValues>(
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watchValue && !readonly && (
+              {isNotNull && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>
@@ -257,7 +257,8 @@ export const PostalTextField = <T extends FieldValues>(
   const watchValue = useWatch({ name, control });
   const isReadOnly = control?._options?.context[0];
   const registerRet = register(name);
-
+  const isNotNull =
+    watchValue !== null && watchValue !== undefined && watchValue !== '';
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
@@ -303,7 +304,7 @@ export const PostalTextField = <T extends FieldValues>(
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              {watchValue && !readonly && (
+              {isNotNull && !readonly && (
                 <IconButton onClick={onClickIconHandler}>
                   <ClearIcon />
                 </IconButton>

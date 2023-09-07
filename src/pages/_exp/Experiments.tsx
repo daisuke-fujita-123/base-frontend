@@ -9,8 +9,9 @@ import { CenterBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section, SectionClose } from 'layouts/Section';
+import { ColStack } from 'layouts/Stack';
 
-import { Button, SearchButton } from 'controls/Button';
+import { Button, PrimaryButton, SearchButton } from 'controls/Button';
 import { Checkbox } from 'controls/Checkbox';
 import { DataGrid, GridColDef, GridTooltipsModel } from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
@@ -29,6 +30,8 @@ import { AppContext } from 'providers/AppContextProvider';
 import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
+
+import saveAs from 'file-saver';
 
 /**
  * 検索条件データモデル
@@ -125,7 +128,7 @@ const searchConditionSchema = {
   city: yup.string().label('市町村区'),
   street: yup.string().label('番地'),
 
-  string1: yup.string().required().label('ストリング1'),
+  string1: yup.string().required().half().label('ストリング1'),
   string2: yup.string().max(5).label('ストリング2'),
   string3: yup.string().number().label('ストリング3'),
   string4: yup.string().numberWithComma().label('ストリング4'),
@@ -379,13 +382,29 @@ const Experiments = () => {
     }
   };
 
+  const handlePreviewPdfClick = async () => {
+    const response = await _expApiClient.get('/_exp/hello.pdf', {
+      responseType: 'blob',
+    });
+    const fileUrl = window.URL.createObjectURL(response.data);
+    window.open(fileUrl);
+    window.URL.revokeObjectURL(fileUrl);
+  };
+
   const handleDownloadPdfClick = async () => {
     const response = await _expApiClient.get('/_exp/hello.pdf', {
       responseType: 'blob',
     });
-    const downloadUrl = window.URL.createObjectURL(response.data);
-    window.open(downloadUrl, '__blank');
-    window.URL.revokeObjectURL(downloadUrl);
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    saveAs(blob, 'hello.pdf');
+  };
+
+  const handleDownloadCsvClick = async () => {
+    const response = await _expApiClient.get('/_exp/hello.csv', {
+      responseType: 'blob',
+    });
+    const blob = new Blob([response.data], { type: 'text/csv' });
+    saveAs(blob, 'hello.csv');
   };
 
   const handleRowValueChange = (row: any) => {
@@ -555,9 +574,17 @@ const Experiments = () => {
           />
         </Section>
         <Section name='その他'>
-          <Button onClick={handleDownloadPdfClick} variant='text'>
-            Download PDF
-          </Button>
+          <ColStack>
+            <PrimaryButton onClick={handlePreviewPdfClick}>
+              Preview PDF
+            </PrimaryButton>
+            <PrimaryButton onClick={handleDownloadPdfClick}>
+              Download PDF
+            </PrimaryButton>
+            <PrimaryButton onClick={handleDownloadCsvClick}>
+              Download CSV
+            </PrimaryButton>
+          </ColStack>
         </Section>
       </MainLayout>
     </MainLayout>

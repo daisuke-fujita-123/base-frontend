@@ -31,6 +31,7 @@ import {
   UseDateFieldProps,
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
+
 import { ja } from 'date-fns/locale';
 
 /**
@@ -97,6 +98,7 @@ interface GridInputCellProps {
   id: string | number;
   value: string;
   field: string | any[];
+  controlled: boolean;
   width: number;
   helperText?: string;
   disabled?: boolean;
@@ -113,6 +115,7 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
     id,
     value,
     field,
+    controlled,
     width,
     helperText,
     disabled = false,
@@ -121,6 +124,8 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
+
+  const [text, setText] = useState(value);
 
   const handleValueChange = useCallback(
     (event: any) => {
@@ -131,6 +136,7 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
       } else {
         row[field] = newValue;
       }
+      controlled && setText(newValue);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
@@ -141,7 +147,7 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
     <>
       <input
         style={{ width }}
-        defaultValue={value}
+        value={controlled ? text : value}
         type='text'
         onChange={handleValueChange}
         disabled={disabled}
@@ -163,6 +169,7 @@ interface GridSelectCellProps {
   width: number;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
+  onCellBlur?: (row: any) => void;
 }
 
 /**
@@ -180,6 +187,7 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
     width,
     disabled = false,
     onRowValueChange,
+    onCellBlur,
   } = props;
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
@@ -198,18 +206,24 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
       } else {
         row[field] = newSelection;
       }
-      setSelection(newSelection);
+      controlled && setSelection(newSelection);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
 
+  const handleOnBlur: FocusEventHandler<HTMLSelectElement> = () => {
+    const row = apiRef.current.getRow(id);
+    onCellBlur && onCellBlur(row);
+  };
+
   return (
     <select
       style={{ width }}
       value={controlled ? selection : value}
       onChange={handleValueChange}
+      onBlur={handleOnBlur}
       disabled={disabled}
     >
       {selectValues.map((x, i) => (
@@ -264,7 +278,7 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
         typeof selection === 'number' ? Number(value) : value;
       const row = apiRef.current.getRow(id);
       row[field] = newSelection;
-      setSelection(newSelection);
+      controlled && setSelection(newSelection);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
@@ -448,7 +462,7 @@ export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
       const row = apiRef.current.getRow(id);
       const newSelection = !row[field];
       row[field] = newSelection;
-      setSelection(newSelection);
+      controlled && setSelection(newSelection);
       setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
       onRowValueChange && onRowValueChange(row);
     },
@@ -473,6 +487,7 @@ interface GridDatepickerCellProps {
   id: string | number;
   value: string;
   field: string;
+  controlled: boolean;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
 }
@@ -483,10 +498,19 @@ interface GridDatepickerCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
-  const { id, value, field, disabled = false, onRowValueChange } = props;
+  const {
+    id,
+    value,
+    field,
+    controlled,
+    disabled = false,
+    onRowValueChange,
+  } = props;
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
+
+  const [date, setDate] = useState(value);
   const [displayValue, setDisplayValue] = useState(value);
 
   const handleOnAccept = (value: Date | null) => {
@@ -506,6 +530,7 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
     const row = apiRef.current.getRow(id);
     row[field] = value;
     setDisplayValue(value);
+    controlled && setDate(value);
     setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
     onRowValueChange && onRowValueChange(row);
   };
@@ -517,7 +542,7 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
       adapterLocale={ja}
     >
       <DatePicker
-        value={new Date(value)}
+        value={new Date(controlled ? date : value)}
         onAccept={handleOnAccept}
         slots={{
           field: DatePickerField,
@@ -525,7 +550,7 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
         }}
         slotProps={{
           field: {
-            displayValue: displayValue,
+            displayValue: controlled ? displayValue : value,
             onValueChange: handleValueChange,
           } as any,
           layout: {
