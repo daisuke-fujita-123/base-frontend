@@ -284,6 +284,7 @@ export const Example = () => {
           }
           onOrderChangeClick={handleOnDrderChangeClick}
           reorderable
+          adjustableSubConditionCount
         />
         <CenterBox>
           <PrimaryButton onClick={handleOnClick}>反映</PrimaryButton>
