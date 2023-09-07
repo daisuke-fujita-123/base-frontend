@@ -161,21 +161,20 @@ const ScrCom0007ChangeHistoryTab = () => {
           hrefs: hrefs,
         },
       ]);
+      // ツールチップ設定
+      setChangeHistoryTooltips([
+        {
+          field: 'registUpdateMemoExistence',
+          tooltips: response.changeHistoryInfoList.map((x) => {
+            return {
+              id: x.applicationId,
+              text: x.registrationChangeMemo,
+              value: 'あり',
+            };
+          }),
+        },
+      ]);
     };
-
-    // ツールチップ設定
-    setChangeHistoryTooltips([
-      {
-        field: 'registUpdateMemoExistence',
-        tooltips: searchResult.map((x) => {
-          return {
-            id: x.applicationId,
-            text: x.registUpdateMemo,
-            value: 'あり',
-          };
-        }),
-      },
-    ]);
     initialize();
   }, []);
 
