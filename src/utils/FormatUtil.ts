@@ -7,3 +7,4 @@ export const Format = (mes: string, param: any[]): string => {
   }
   return result;
 };
+
