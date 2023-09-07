@@ -11,7 +11,7 @@ export interface ScrCom0031GetMemberResponse {
   // 件数
   count: number;
   // リスト
-  searchResultList: SearchResult[];
+  resultList: SearchResult[];
 }
 
 // バッチ実行結果情報取得API レスポンス（リスト行）
@@ -54,7 +54,7 @@ export const getMember = async (
   request: ScrCom0031GetMemberRequest
 ): Promise<ScrCom0031GetMemberResponse> => {
   const response = await comApiClient.post(
-    '/api/com/scr-com-0031/get-member',
+    '/api/com/scr-com-0031/get-batch-processing-results',
     request
   );
   return response.data;

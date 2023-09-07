@@ -162,7 +162,7 @@ const convertToSearchResultRowModel = (
 ): SearchResultRowModel => {
   return {
     count: response.count,
-    searchResultList: response.searchResultList.map((x) => {
+    searchResultList: response.resultList.map((x) => {
       return {
         id: x.link,
         jobId: x.jobId,
@@ -278,8 +278,14 @@ const ScrCom0031Page = () => {
   const handleGetCellClassName = (
     params: GridCellParams<any, any, any, GridTreeNode>
   ) => {
-    if (params.field === 'statusName' && params.row.statusName === '処理中')
+    if (params.field === 'statusName' && params.row.statusName === '処理中') {
       return 'statusName-syorityu';
+    } else if (
+      params.field === 'statusName' &&
+      params.row.statusName === '異常終了'
+    ) {
+      return 'statusName-ijousyuryo';
+    }
     return '';
   };
 
@@ -301,6 +307,9 @@ const ScrCom0031Page = () => {
               sx={{
                 '& .statusName-syorityu': {
                   backgroundColor: '#b9e7da',
+                },
+                '& .statusName-ijousyuryo': {
+                  color: 'red',
                 },
               }}
             />
