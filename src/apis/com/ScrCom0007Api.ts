@@ -35,17 +35,19 @@ export interface GetChangeHistorySearchResult {
   // 申請元画面
   applicationSourceScreen: string;
   // タブ名/一括登録
-  tabAllRegist: string;
+  tabAllRegistrat: string;
   // 変更日
   changeDate: string;
-  // 申請者ID/申請者名
-  applicantIdName: string;
+  // 申請者ID
+  applicationEmployeeId: string;
+  // 申請者名
+  applicationEmployeeName: string;
   // 申請日時
-  applicantDateTime: string;
+  applicationDateTime: string;
   // 登録・変更メモ
-  registUpdateMemo: string;
+  registrationChangeMemo: string;
   // 登録・変更メモ有無
-  registUpdateMemoExistence: string;
+  registrationChangeMemoExistence: string;
   // 帳票ID
   reportId: string;
 }

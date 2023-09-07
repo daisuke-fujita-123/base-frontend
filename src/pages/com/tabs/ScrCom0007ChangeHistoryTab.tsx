@@ -21,6 +21,7 @@ import {
 import { useNavigate } from 'hooks/useNavigate';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
+import { format } from 'date-fns';
 
 /**
  * 検索条件列定義
@@ -29,38 +30,38 @@ const changeHistoryColumns: GridColDef[] = [
   {
     field: 'applicationId',
     headerName: '申請ID',
-    size: 'l',
+    size: 's',
     cellType: 'link',
   },
   {
     field: 'applicationSourceScreen',
     headerName: '申請元画面',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'tabAllRegist',
     headerName: 'タブ名/一括登録',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'changeDate',
     headerName: '変更日',
-    size: 'l',
+    size: 's',
   },
   {
     field: 'applicantIdName',
     headerName: '申請者ID/申請者名',
-    size: 'l',
+    width: 600,
   },
   {
     field: 'applicantDateTime',
     headerName: '申請日時',
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'registUpdateMemoExistence',
     headerName: '登録・変更メモ',
-    size: 'l',
+    size: 'm',
     tooltip: true,
   },
 ];
@@ -102,12 +103,16 @@ const convertToSearchResultRowModel = (
       id: x.applicationId,
       applicationId: x.applicationId,
       applicationSourceScreen: x.applicationSourceScreen,
-      tabAllRegist: x.tabAllRegist,
-      changeDate: x.changeDate,
-      applicantIdName: x.applicantIdName,
-      applicantDateTime: x.applicantDateTime,
-      registUpdateMemo: x.registUpdateMemo,
-      registUpdateMemoExistence: x.registUpdateMemoExistence,
+      tabAllRegist: x.tabAllRegistrat,
+      changeDate: format(new Date(x.changeDate), 'yyyy/MM/dd'),
+      applicantIdName:
+        x.applicationEmployeeId + ' ' + x.applicationEmployeeName,
+      applicantDateTime: format(
+        new Date(x.applicationDateTime),
+        'yyyy/MM/dd HH:MM:SS'
+      ),
+      registUpdateMemo: x.registrationChangeMemo,
+      registUpdateMemoExistence: x.registrationChangeMemoExistence,
       reportId: x.reportId,
     };
   });
@@ -124,21 +129,11 @@ const ScrCom0007ChangeHistoryTab = () => {
   const [changeHistoryTooltips, setChangeHistoryTooltips] = useState<
     GridTooltipsModel[]
   >([]);
-  // section の横幅
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
   const apiRef = useGridApiRef();
 
   // router
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -153,7 +148,11 @@ const ScrCom0007ChangeHistoryTab = () => {
       const hrefs = searchResult.map((x) => {
         return {
           id: x.id,
-          href: '/com/reports/' + x.applicationId,
+          href:
+            '/com/reports/' +
+            x.reportId +
+            '?change-history-number=' +
+            x.applicationId,
         };
       });
       setHrefs([
@@ -177,7 +176,6 @@ const ScrCom0007ChangeHistoryTab = () => {
         }),
       },
     ]);
-
     initialize();
   }, []);
 
@@ -185,7 +183,7 @@ const ScrCom0007ChangeHistoryTab = () => {
    * 申請IDリンク押下時のイベントハンドラ
    */
   const handleLinkClick = (url: string) => {
-    navigate(url);
+    navigate(url, true);
   };
 
   /**
@@ -199,7 +197,6 @@ const ScrCom0007ChangeHistoryTab = () => {
     <MainLayout>
       {/* main */}
       <MainLayout main>
-        {/* TODO: 画面遷移時に表示おかしくなる */}
         <Section
           name='変更履歴一覧'
           decoration={
@@ -207,7 +204,7 @@ const ScrCom0007ChangeHistoryTab = () => {
               <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
             </MarginBox>
           }
-          width={maxSectionWidth}
+          fitInside
         >
           <DataGrid
             apiRef={apiRef}
@@ -216,6 +213,7 @@ const ScrCom0007ChangeHistoryTab = () => {
             hrefs={hrefs}
             onLinkClick={handleLinkClick}
             tooltips={changeHistoryTooltips}
+            pagination
           />
         </Section>
       </MainLayout>
