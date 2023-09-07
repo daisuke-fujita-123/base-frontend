@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
-import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
 
 import ScrCom0032Popup, {
   columnList,
@@ -145,7 +145,7 @@ const selectValuesInitialValues: SelectValuesModel = {
 const convertToSearchResultRowModel = (
   response: ScrCom0025GetOrganizationListResponse
 ): SearchResultRowModel[] => {
-  return response.searchResult.map((x) => {
+  return response.organizationList.map((x) => {
     return {
       id: x.id,
       organizationId: x.organizationId,
@@ -179,12 +179,12 @@ const parentorganizationidSelectValuesModel = (
 /**
  * バリデーションスキーマ
  */
-const validationSchama = {
+const validationSchama: ObjectSchema<any> = yup.object({
   organizationName: yup.string().label('部署名称').max(30).required(),
   changeReason: yup.string().label('変更理由').max(30),
   applyingStartDate: yup.date().label('適用開始日').required(),
-  applyingEndDate: yup.date().label('適用終了日').required(),
-};
+  applyingEndDate: yup.date().label('適用終了日'),
+});
 
 /**
  * 登録内容確認ポップアップ初期データ
@@ -203,6 +203,9 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
 const ScrCom0025OrganizationTab = () => {
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
+  const [initSearchResult, setInitSearchResult] = useState<
+    SearchResultRowModel[]
+  >([]);
   const apiRef = useGridApiRef();
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
@@ -217,12 +220,8 @@ const ScrCom0025OrganizationTab = () => {
   // form
   const methods = useForm<SearchResultRowModel>({
     defaultValues: initialValues,
-    resolver: yupResolver(validationSchama),
     context: isReadOnly,
   });
-  const {
-    formState: { dirtyFields },
-  } = methods;
 
   // popup
   const [isOpenPopup, setIsOpenPopup] = useState(false);
@@ -307,6 +306,10 @@ const ScrCom0025OrganizationTab = () => {
       const response = await getOrganizationList(null);
       const searchResult = convertToSearchResultRowModel(response);
       setSearchResult(searchResult);
+      // 初期値格納
+      if (initSearchResult.length === 0) {
+        setInitSearchResult(searchResult);
+      }
 
       // SCR-COM-9999-0002: 親組織ID情報取得API
       const parentorganizationidRequest: ScrCom9999GetParentorganizationidListboxRequest =
@@ -325,7 +328,7 @@ const ScrCom0025OrganizationTab = () => {
       });
     };
     initialize();
-  }, [user.taskDate]);
+  }, [user.taskDate, initSearchResult]);
 
   /**
    * 追加アイコンクリック時のイベントハンドラ
@@ -420,8 +423,8 @@ const ScrCom0025OrganizationTab = () => {
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
-    const fields = Object.keys(dirtyFields);
+  const convertToChngedSections = (fields: string[]): sectionList[] => {
+    console.log(fields);
     const changedSections: sectionList[] = [];
     const columnList: columnList[] = [];
     sectionDef.forEach((d) => {
@@ -443,9 +446,97 @@ const ScrCom0025OrganizationTab = () => {
    */
   const handleConfirm = async () => {
     const errList: ErrorList[] = [];
-    searchResult.map((x) => {
+    const searchResultChange: SearchResultRowModel[] = [];
+    const fieldList: string[] = [];
+    searchResult.map((x, i) => {
+      if (initSearchResult.length > i) {
+        if (
+          x.organizationName !== initSearchResult[i].organizationName &&
+          !fieldList.includes('organizationName')
+        ) {
+          fieldList.push('organizationName');
+        }
+        if (
+          initSearchResult[i].parentOrganizationId !== x.parentOrganizationId &&
+          !fieldList.includes('parentOrganizationId')
+        ) {
+          fieldList.push('parentOrganizationId');
+        }
+        if (
+          initSearchResult[i].inspectorFlag !== x.inspectorFlag &&
+          !fieldList.includes('inspectorFlag')
+        ) {
+          fieldList.push('inspectorFlag');
+        }
+        if (
+          initSearchResult[i].salesStaffFlag !== x.salesStaffFlag &&
+          !fieldList.includes('salesStaffFlag')
+        ) {
+          fieldList.push('salesStaffFlag');
+        }
+        if (
+          initSearchResult[i].applyingStartDate !== x.applyingStartDate &&
+          !fieldList.includes('applyingStartDate')
+        ) {
+          fieldList.push('applyingStartDate');
+        }
+        if (
+          initSearchResult[i].applyingEndDate !== x.applyingEndDate &&
+          !fieldList.includes('applyingEndDate')
+        ) {
+          fieldList.push('applyingEndDate');
+        }
+        if (
+          initSearchResult[i].changeReason !== x.changeReason &&
+          !fieldList.includes('changeReason')
+        ) {
+          fieldList.push('changeReason');
+        }
+
+        if (
+          initSearchResult[i].organizationName !== x.organizationName ||
+          initSearchResult[i].parentOrganizationId !== x.parentOrganizationId ||
+          initSearchResult[i].inspectorFlag !== x.inspectorFlag ||
+          initSearchResult[i].salesStaffFlag !== x.salesStaffFlag ||
+          initSearchResult[i].applyingStartDate !== x.applyingStartDate ||
+          initSearchResult[i].applyingEndDate !== x.applyingEndDate ||
+          initSearchResult[i].changeReason !== x.changeReason
+        ) {
+          // 変更行を格納
+          searchResultChange.push({
+            id: x.id,
+            organizationId: x.organizationId,
+            organizationName: x.organizationName,
+            parentOrganizationId: x.parentOrganizationId,
+            organizationClassName: x.organizationClassName,
+            salesStaffFlag: x.salesStaffFlag,
+            inspectorFlag: x.inspectorFlag,
+            applyingStartDate: x.applyingStartDate,
+            applyingEndDate: x.applyingEndDate,
+            changeReason: x.changeReason,
+            changeTimestamp: x.changeTimestamp,
+          });
+        }
+      } else {
+        // 変更行を格納
+        searchResultChange.push({
+          id: x.id,
+          organizationId: x.organizationId,
+          organizationName: x.organizationName,
+          parentOrganizationId: x.parentOrganizationId,
+          organizationClassName: x.organizationClassName,
+          salesStaffFlag: x.salesStaffFlag,
+          inspectorFlag: x.inspectorFlag,
+          applyingStartDate: x.applyingStartDate,
+          applyingEndDate: x.applyingEndDate,
+          changeReason: x.changeReason,
+          changeTimestamp: x.changeTimestamp,
+        });
+      }
+    });
+    searchResultChange.map((x) => {
       // 適用開始日 < 業務日付チェック
-      if (x.applyingStartDate < user.taskDate) {
+      if (new Date(x.applyingStartDate) < new Date(user.taskDate)) {
         errList.push({
           errorCode: 'MSG-FR-ERR-00016',
           errorMessage:
@@ -455,8 +546,8 @@ const ScrCom0025OrganizationTab = () => {
         });
       }
 
-      // 適用開始日と適用終了日チェック
-      if (x.applyingStartDate > x.applyingEndDate) {
+      // 適用開始日 > 適用終了日チェック
+      if (new Date(x.applyingStartDate) > new Date(x.applyingEndDate)) {
         errList.push({
           errorCode: 'MSG-FR-ERR-00017',
           errorMessage:
@@ -467,15 +558,14 @@ const ScrCom0025OrganizationTab = () => {
 
     // SCR-COM-0025-0004: 組織情報入力チェックAPI
     const request = {
-      organizationList: searchResult.map((x) => {
+      organizationMasters: searchResult.map((x) => {
         return {
           organizationId: x.organizationId,
           organizationName: x.organizationName,
-          applyingStartDate: x.applyingStartDate,
           applyingEndDate: x.applyingEndDate,
-          businessDate: user.employeeId,
         };
       }),
+      businessDate: user.employeeId,
     };
     const checkResult = await ScrCom0025OrganizationInfoCheck(request);
     errList.concat(checkResult.errorList);
@@ -491,7 +581,7 @@ const ScrCom0025OrganizationTab = () => {
           screenName: '組織管理',
           tabId: 1,
           tabName: '組織情報',
-          sectionList: convertToChngedSections(dirtyFields),
+          sectionList: convertToChngedSections(fieldList),
         },
       ],
       changeExpectDate: '',
@@ -504,9 +594,9 @@ const ScrCom0025OrganizationTab = () => {
   const scrCom00032PopupHandleConfirm = async () => {
     setIsOpenPopup(false);
 
-    // SCR-COM-0025-0005: SCR-COM-0025-0005: 組織情報登録更新API
+    // SCR-COM-0025-0005: 組織情報登録更新API
     const request = {
-      registUpdateorganizationList: searchResult.map((x) => {
+      organizationList: searchResult.map((x) => {
         return {
           organizationId: x.organizationId,
           organizationName: x.organizationName,
@@ -558,6 +648,7 @@ const ScrCom0025OrganizationTab = () => {
                 columns={searchResultColumns}
                 rows={searchResult}
                 apiRef={apiRef}
+                resolver={validationSchama}
               />
             </Section>
           </FormProvider>
@@ -576,6 +667,7 @@ const ScrCom0025OrganizationTab = () => {
         <ScrCom0035Popup
           allRegistrationDefinitions={allRegistrationDefinitions}
           screenId={'SCR-COM-0025'}
+          tabId={1}
           isOpen={scrCom0035PopupIsOpen}
           setIsOpen={() => setScrCom0035PopupIsOpen(false)}
         />

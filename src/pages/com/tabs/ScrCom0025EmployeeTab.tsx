@@ -184,7 +184,7 @@ const selectValuesInitialValues: SelectValuesModel = {
 const convertToSearchResultRowModel = (
   response: ScrCom0025GetEmployeeListResponse
 ): SearchResultRowModel[] => {
-  return response.searchEmployeeListResult.map((x, i) => {
+  return response.employeeList.map((x, i) => {
     return {
       id: i,
       employeeId: x.employeeId,
@@ -338,6 +338,9 @@ const defaultHeaderRow = {
 const ScrCom0025EmployeeTab = () => {
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
+  const [initSearchResult, setInitSearchResult] = useState<
+    SearchResultRowModel[]
+  >([]);
   const [changeBeforeResult, setChangeBeforeResult] = useState<
     SearchResultRowModel[]
   >([]);
@@ -408,6 +411,10 @@ const ScrCom0025EmployeeTab = () => {
         hrefs: approvalHref,
       });
       setSearchResult(searchResult);
+      // 初期値格納
+      if (initSearchResult.length === 0) {
+        setInitSearchResult(searchResult);
+      }
       setChangeBeforeResult(searchResult);
       setHrefs(hrefs);
 
@@ -805,8 +812,7 @@ const ScrCom0025EmployeeTab = () => {
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
-    const fields = Object.keys(dirtyFields);
+  const convertToChngedSections = (fields: string[]): sectionList[] => {
     const changedSections: sectionList[] = [];
     const columnList: columnList[] = [];
     sectionDef.forEach((d) => {
@@ -829,7 +835,260 @@ const ScrCom0025EmployeeTab = () => {
   const handleConfirm = async () => {
     // 従業員情報入力チェック
     const errList: ErrorList[] = [];
-    searchResult.map((x, y) => {
+    const searchResultChange: SearchResultRowModel[] = [];
+    const fieldList: string[] = [];
+
+    searchResult.map((x, i) => {
+      if (initSearchResult.length > i) {
+        if (
+          x.salesForceId !== initSearchResult[i].salesForceId &&
+          !fieldList.includes('salesForceId')
+        ) {
+          fieldList.push('salesForceId');
+        }
+        if (
+          x.organizationId_1 !== initSearchResult[i].organizationId_1 &&
+          !fieldList.includes('organizationId_1')
+        ) {
+          fieldList.push('organizationId_1');
+        }
+        if (
+          x.postId_1 !== initSearchResult[i].postId_1 &&
+          !fieldList.includes('postId_1')
+        ) {
+          fieldList.push('postId_1');
+        }
+        if (
+          x.applyingStartDate_1 !== initSearchResult[i].applyingStartDate_1 &&
+          !fieldList.includes('applyingStartDate_1')
+        ) {
+          fieldList.push('applyingStartDate_1');
+        }
+        if (
+          x.applyingEndDate_1 !== initSearchResult[i].applyingEndDate_1 &&
+          !fieldList.includes('applyingEndDate_1')
+        ) {
+          fieldList.push('applyingEndDate_1');
+        }
+        if (
+          x.organizationId_2 !== initSearchResult[i].organizationId_2 &&
+          !fieldList.includes('organizationId_2')
+        ) {
+          fieldList.push('organizationId_2');
+        }
+        if (
+          x.postId_2 !== initSearchResult[i].postId_2 &&
+          !fieldList.includes('postId_2')
+        ) {
+          fieldList.push('postId_2');
+        }
+        if (
+          x.applyingStartDate_2 !== initSearchResult[i].applyingStartDate_2 &&
+          !fieldList.includes('applyingStartDate_2')
+        ) {
+          fieldList.push('applyingStartDate_2');
+        }
+        if (
+          x.applyingEndDate_2 !== initSearchResult[i].applyingEndDate_2 &&
+          !fieldList.includes('applyingEndDate_2')
+        ) {
+          fieldList.push('applyingEndDate_2');
+        }
+        if (
+          x.organizationId_3 !== initSearchResult[i].organizationId_3 &&
+          !fieldList.includes('organizationId_3')
+        ) {
+          fieldList.push('organizationId_3');
+        }
+        if (
+          x.postId_3 !== initSearchResult[i].postId_3 &&
+          !fieldList.includes('postId_3')
+        ) {
+          fieldList.push('postId_3');
+        }
+        if (
+          x.applyingStartDate_3 !== initSearchResult[i].applyingStartDate_3 &&
+          !fieldList.includes('applyingStartDate_3')
+        ) {
+          fieldList.push('applyingStartDate_3');
+        }
+        if (
+          x.applyingEndDate_3 !== initSearchResult[i].applyingEndDate_3 &&
+          !fieldList.includes('applyingEndDate_3')
+        ) {
+          fieldList.push('applyingEndDate_3');
+        }
+        if (
+          x.organizationId_4 !== initSearchResult[i].organizationId_4 &&
+          !fieldList.includes('organizationId_4')
+        ) {
+          fieldList.push('organizationId_4');
+        }
+        if (
+          x.postId_4 !== initSearchResult[i].postId_4 &&
+          !fieldList.includes('postId_4')
+        ) {
+          fieldList.push('postId_4');
+        }
+        if (
+          x.applyingStartDate_4 !== initSearchResult[i].applyingStartDate_4 &&
+          !fieldList.includes('applyingStartDate_4')
+        ) {
+          fieldList.push('applyingStartDate_4');
+        }
+        if (
+          x.applyingEndDate_4 !== initSearchResult[i].applyingEndDate_4 &&
+          !fieldList.includes('applyingEndDate_4')
+        ) {
+          fieldList.push('applyingEndDate_4');
+        }
+        if (
+          x.changeReason !== initSearchResult[i].changeReason &&
+          !fieldList.includes('changeReason')
+        ) {
+          fieldList.push('changeReason');
+        }
+
+        // 変更行を格納
+        if (
+          x.salesForceId !== initSearchResult[i].salesForceId ||
+          x.organizationId_1 !== initSearchResult[i].organizationId_1 ||
+          x.postId_1 !== initSearchResult[i].postId_1 ||
+          x.applyingStartDate_1 !== initSearchResult[i].applyingStartDate_1 ||
+          x.applyingEndDate_1 !== initSearchResult[i].applyingEndDate_1 ||
+          x.organizationId_2 !== initSearchResult[i].organizationId_2 ||
+          x.postId_2 !== initSearchResult[i].postId_2 ||
+          x.applyingStartDate_2 !== initSearchResult[i].applyingStartDate_2 ||
+          x.applyingEndDate_2 !== initSearchResult[i].applyingEndDate_2 ||
+          x.organizationId_3 !== initSearchResult[i].organizationId_3 ||
+          x.postId_3 !== initSearchResult[i].postId_3 ||
+          x.applyingStartDate_3 !== initSearchResult[i].applyingStartDate_3 ||
+          x.applyingEndDate_3 !== initSearchResult[i].applyingEndDate_3 ||
+          x.organizationId_4 !== initSearchResult[i].organizationId_4 ||
+          x.postId_4 !== initSearchResult[i].postId_4 ||
+          x.applyingStartDate_4 !== initSearchResult[i].applyingStartDate_4 ||
+          x.applyingEndDate_4 !== initSearchResult[i].applyingEndDate_4 ||
+          x.changeReason !== initSearchResult[i].changeReason
+        ) {
+          searchResultChange.push({
+            id: i,
+            employeeId: x.employeeId,
+            employeeName: x.employeeName,
+            employeeMailAddress: x.employeeMailAddress,
+            belong: x.belong,
+            salesForceId: x.salesForceId,
+            changeReason: x.changeReason,
+            beforeTimestamp: x.beforeTimestamp,
+            organizationId_1: x.organizationId_1,
+            organizationName_1: x.organizationName_1,
+            postId_1: x.postId_1,
+            postName_1: x.postName_1,
+            screenPermissionId_1:
+              x.screenPermissionId_1 + x.screenPermissionId_2 !== ''
+                ? ',' + x.screenPermissionId_2
+                : '',
+            screenPermissionName: x.screenPermissionName,
+            masterPermissionId_1: x.masterPermissionId_1,
+            masterPermissionName: x.masterPermissionName,
+            approvalPermissionId_1: x.approvalPermissionId_1,
+            approvalPermissionName: x.approvalPermissionName,
+            applyingStartDate_1: x.applyingStartDate_1,
+            applyingEndDate_1: x.applyingEndDate_1,
+            beforeTimestamp_1: x.beforeTimestamp_1,
+            organizationId_2: x.organizationId_2,
+            organizationName_2: x.organizationName_2,
+            postId_2: x.postId_2,
+            postName_2: x.postName_2,
+            screenPermissionId_2: x.screenPermissionId_2,
+            masterPermissionId_2: x.masterPermissionId_2,
+            approvalPermissionId_2: x.approvalPermissionId_2,
+            applyingStartDate_2: x.applyingStartDate_2,
+            applyingEndDate_2: x.applyingEndDate_2,
+            beforeTimestamp_2: x.beforeTimestamp_2,
+            organizationId_3: x.organizationId_3,
+            organizationName_3: x.organizationName_3,
+            postId_3: x.postId_3,
+            postName_3: x.postName_3,
+            screenPermissionId_3: x.screenPermissionId_3,
+            masterPermissionId_3: x.masterPermissionId_3,
+            approvalPermissionId_3: x.approvalPermissionId_3,
+            applyingStartDate_3: x.applyingStartDate_3,
+            applyingEndDate_3: x.applyingEndDate_3,
+            beforeTimestamp_3: x.beforeTimestamp_3,
+            organizationId_4: x.organizationId_4,
+            organizationName_4: x.organizationName_4,
+            postId_4: x.postId_4,
+            postName_4: x.postName_4,
+            screenPermissionId_4: x.screenPermissionId_4,
+            masterPermissionId_4: x.masterPermissionId_4,
+            approvalPermissionId_4: x.approvalPermissionId_4,
+            applyingStartDate_4: x.applyingStartDate_4,
+            applyingEndDate_4: x.applyingEndDate_4,
+            beforeTimestamp_4: x.beforeTimestamp_4,
+          });
+        }
+      } else {
+        // 変更行を格納
+        searchResultChange.push({
+          id: i,
+          employeeId: x.employeeId,
+          employeeName: x.employeeName,
+          employeeMailAddress: x.employeeMailAddress,
+          belong: x.belong,
+          salesForceId: x.salesForceId,
+          changeReason: x.changeReason,
+          beforeTimestamp: x.beforeTimestamp,
+          organizationId_1: x.organizationId_1,
+          organizationName_1: x.organizationName_1,
+          postId_1: x.postId_1,
+          postName_1: x.postName_1,
+          screenPermissionId_1:
+            x.screenPermissionId_1 + x.screenPermissionId_2 !== ''
+              ? ',' + x.screenPermissionId_2
+              : '',
+          screenPermissionName: x.screenPermissionName,
+          masterPermissionId_1: x.masterPermissionId_1,
+          masterPermissionName: x.masterPermissionName,
+          approvalPermissionId_1: x.approvalPermissionId_1,
+          approvalPermissionName: x.approvalPermissionName,
+          applyingStartDate_1: x.applyingStartDate_1,
+          applyingEndDate_1: x.applyingEndDate_1,
+          beforeTimestamp_1: x.beforeTimestamp_1,
+          organizationId_2: x.organizationId_2,
+          organizationName_2: x.organizationName_2,
+          postId_2: x.postId_2,
+          postName_2: x.postName_2,
+          screenPermissionId_2: x.screenPermissionId_2,
+          masterPermissionId_2: x.masterPermissionId_2,
+          approvalPermissionId_2: x.approvalPermissionId_2,
+          applyingStartDate_2: x.applyingStartDate_2,
+          applyingEndDate_2: x.applyingEndDate_2,
+          beforeTimestamp_2: x.beforeTimestamp_2,
+          organizationId_3: x.organizationId_3,
+          organizationName_3: x.organizationName_3,
+          postId_3: x.postId_3,
+          postName_3: x.postName_3,
+          screenPermissionId_3: x.screenPermissionId_3,
+          masterPermissionId_3: x.masterPermissionId_3,
+          approvalPermissionId_3: x.approvalPermissionId_3,
+          applyingStartDate_3: x.applyingStartDate_3,
+          applyingEndDate_3: x.applyingEndDate_3,
+          beforeTimestamp_3: x.beforeTimestamp_3,
+          organizationId_4: x.organizationId_4,
+          organizationName_4: x.organizationName_4,
+          postId_4: x.postId_4,
+          postName_4: x.postName_4,
+          screenPermissionId_4: x.screenPermissionId_4,
+          masterPermissionId_4: x.masterPermissionId_4,
+          approvalPermissionId_4: x.approvalPermissionId_4,
+          applyingStartDate_4: x.applyingStartDate_4,
+          applyingEndDate_4: x.applyingEndDate_4,
+          beforeTimestamp_4: x.beforeTimestamp_4,
+        });
+      }
+    });
+
+    searchResultChange.map((x, y) => {
       // 適用開始日 < 業務日付チェック
       if (
         x.applyingStartDate_1 < user.taskDate ||
@@ -938,7 +1197,7 @@ const ScrCom0025EmployeeTab = () => {
           screenName: '組織管理',
           tabId: 3,
           tabName: '従業員情報',
-          sectionList: convertToChngedSections(searchResult),
+          sectionList: convertToChngedSections(fieldList),
         },
       ],
       changeExpectDate: '',
@@ -953,7 +1212,7 @@ const ScrCom0025EmployeeTab = () => {
 
     // SCR-COM-0025-0010: 従業員情報登録更新API
     const request = {
-      registUpdateEmployeeList: searchResult.map((x) => {
+      employeeList: searchResult.map((x) => {
         return {
           employeeId: x.employeeId,
           salesForceId: x.salesForceId,

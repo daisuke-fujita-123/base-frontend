@@ -156,7 +156,7 @@ const allRegistrationDefinitions: ScrCom0035PopupAllRegistrationDefinitionModel[
 const convertToSearchResultRowModel = (
   response: ScrCom0025GetPositionListResponse
 ): SearchResultRowModel[] => {
-  return response.searchPositionListResult.map((x) => {
+  return response.positionList.map((x) => {
     return {
       id: x.id,
       postId: x.postId,
@@ -261,6 +261,9 @@ const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
 const ScrCom0025PostTab = () => {
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
+  const [initSearchResult, setInitSearchResult] = useState<
+    SearchResultRowModel[]
+  >([]);
   const apiRef = useGridApiRef();
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
@@ -368,6 +371,10 @@ const ScrCom0025PostTab = () => {
       const response = await getPositionList(null);
       const searchResult = convertToSearchResultRowModel(response);
       setSearchResult(searchResult);
+      // 初期値格納
+      if (initSearchResult.length === 0) {
+        setInitSearchResult(searchResult);
+      }
 
       // API-COM-9999-0003: 組織ID情報取得API
       const organizationidRequest: ScrCom9999GetOrganizationidListboxRequest = {
@@ -411,7 +418,7 @@ const ScrCom0025PostTab = () => {
       });
     };
     initialize();
-  }, [user.taskDate]);
+  }, [user.taskDate, initSearchResult]);
 
   /**
    * 追加アイコンクリック時のイベントハンドラ
@@ -510,8 +517,7 @@ const ScrCom0025PostTab = () => {
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
-    const fields = Object.keys(dirtyFields);
+  const convertToChngedSections = (fields: string[]): sectionList[] => {
     const changedSections: sectionList[] = [];
     const columnList: columnList[] = [];
     sectionDef.forEach((d) => {
@@ -534,7 +540,114 @@ const ScrCom0025PostTab = () => {
   const handleConfirm = async () => {
     // 役職情報入力チェック
     const errList: ErrorList[] = [];
-    searchResult.map((x) => {
+    const searchResultChange: SearchResultRowModel[] = [];
+    const fieldList: string[] = [];
+
+    searchResult.map((x, i) => {
+      if (initSearchResult.length > i) {
+        if (
+          x.postName !== initSearchResult[i].postName &&
+          !fieldList.includes('postName')
+        ) {
+          fieldList.push('postName');
+        }
+        if (
+          x.organizationname !== initSearchResult[i].organizationname &&
+          !fieldList.includes('organizationname')
+        ) {
+          fieldList.push('organizationname');
+        }
+        if (
+          x.screenPermissionName !== initSearchResult[i].screenPermissionName &&
+          !fieldList.includes('screenPermissionName')
+        ) {
+          fieldList.push('screenPermissionName');
+        }
+        if (
+          x.masterPermissionName !== initSearchResult[i].masterPermissionName &&
+          !fieldList.includes('masterPermissionName')
+        ) {
+          fieldList.push('masterPermissionName');
+        }
+        if (
+          x.approvalPermissionName !==
+            initSearchResult[i].approvalPermissionName &&
+          !fieldList.includes('approvalPermissionName')
+        ) {
+          fieldList.push('approvalPermissionName');
+        }
+        if (
+          x.applyingStartDate !== initSearchResult[i].applyingStartDate &&
+          !fieldList.includes('applyingStartDate')
+        ) {
+          fieldList.push('applyingStartDate');
+        }
+        if (
+          x.applyingEndDate !== initSearchResult[i].applyingEndDate &&
+          !fieldList.includes('applyingEndDate')
+        ) {
+          fieldList.push('applyingEndDate');
+        }
+        if (
+          x.changeReason !== initSearchResult[i].changeReason &&
+          !fieldList.includes('changeReason')
+        ) {
+          fieldList.push('changeReason');
+        }
+
+        if (
+          x.screenPermissionName !== initSearchResult[i].screenPermissionName ||
+          x.organizationname !== initSearchResult[i].organizationname ||
+          x.screenPermissionName !== initSearchResult[i].screenPermissionName ||
+          x.masterPermissionName !== initSearchResult[i].masterPermissionName ||
+          x.approvalPermissionName !==
+            initSearchResult[i].approvalPermissionName ||
+          x.applyingStartDate !== initSearchResult[i].applyingStartDate ||
+          x.applyingEndDate !== initSearchResult[i].applyingEndDate ||
+          x.changeReason !== initSearchResult[i].changeReason
+        ) {
+          // 変更行を格納
+          searchResultChange.push({
+            id: x.id,
+            postId: x.postId,
+            postName: x.postName,
+            organizationId: x.organizationId,
+            organizationname: x.organizationname,
+            screenPermissionId: x.screenPermissionId,
+            screenPermissionName: x.screenPermissionName,
+            masterPermissionId: x.masterPermissionId,
+            masterPermissionName: x.masterPermissionName,
+            approvalPermissionId: x.approvalPermissionId,
+            approvalPermissionName: x.approvalPermissionName,
+            applyingStartDate: x.applyingStartDate,
+            applyingEndDate: x.applyingEndDate,
+            changeReason: x.changeReason,
+            changeTimestamp: x.changeTimestamp,
+          });
+        }
+      } else {
+        // 変更行を格納
+        searchResultChange.push({
+          id: x.id,
+          postId: x.postId,
+          postName: x.postName,
+          organizationId: x.organizationId,
+          organizationname: x.organizationname,
+          screenPermissionId: x.screenPermissionId,
+          screenPermissionName: x.screenPermissionName,
+          masterPermissionId: x.masterPermissionId,
+          masterPermissionName: x.masterPermissionName,
+          approvalPermissionId: x.approvalPermissionId,
+          approvalPermissionName: x.approvalPermissionName,
+          applyingStartDate: x.applyingStartDate,
+          applyingEndDate: x.applyingEndDate,
+          changeReason: x.changeReason,
+          changeTimestamp: x.changeTimestamp,
+        });
+      }
+    });
+
+    searchResultChange.map((x) => {
       // 適用開始日 < 業務日付チェック
       if (x.applyingStartDate < user.taskDate) {
         errList.push({
@@ -582,7 +695,7 @@ const ScrCom0025PostTab = () => {
           screenName: '組織管理',
           tabId: 2,
           tabName: '役職情報',
-          sectionList: convertToChngedSections(dirtyFields),
+          sectionList: convertToChngedSections(fieldList),
         },
       ],
       changeExpectDate: '',
@@ -598,7 +711,7 @@ const ScrCom0025PostTab = () => {
 
     // SCR-COM-0025-0008: 役職情報登録更新API
     const request = {
-      registUpdatePostList: searchResult.map((x) => {
+      postList: searchResult.map((x) => {
         return {
           postId: x.postId,
           postName: x.postName,
@@ -666,6 +779,7 @@ const ScrCom0025PostTab = () => {
         <ScrCom0035Popup
           allRegistrationDefinitions={allRegistrationDefinitions}
           screenId={'SCR-COM-0025'}
+          tabId={2}
           isOpen={scrCom0035PopupIsOpen}
           setIsOpen={() => setScrCom0035PopupIsOpen(false)}
         />

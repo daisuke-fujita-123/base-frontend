@@ -5,7 +5,7 @@ import { comApiClient } from 'providers/ApiClient';
 // API-COM-0025-0001：組織情報一覧取得API レスポンス
 export interface ScrCom0025GetOrganizationListResponse {
   // リスト
-  searchResult: SearchResult[];
+  organizationList: SearchResult[];
 }
 
 // 組織情報一覧取得API レスポンス（リスト行）
@@ -48,7 +48,7 @@ export const getOrganizationList = async (
 // API-COM-0025-0002：役職情報一覧取得API レスポンス
 export interface ScrCom0025GetPositionListResponse {
   // リスト
-  searchPositionListResult: SearchPositionListResult[];
+  positionList: SearchPositionListResult[];
 }
 
 // 役職情報一覧取得API レスポンス（リスト行）
@@ -99,7 +99,7 @@ export const getPositionList = async (
 // API-COM-0025-0003：従業員情報一覧取得API レスポンス
 export interface ScrCom0025GetEmployeeListResponse {
   // リスト
-  searchEmployeeListResult: SearchEmployeeListResult[];
+  employeeList: SearchEmployeeListResult[];
 }
 
 // 従業員情報一覧取得API レスポンス（リスト行）
@@ -240,7 +240,9 @@ export const getEmployeeList = async (
 /** SCR-COM-0025-0004: 組織情報入力チェックAPI リクエスト */
 export interface ScrCom0025CheckOrganizationRequest {
   // リスト
-  organizationList: OrganizationList[];
+  organizationMasters: OrganizationList[];
+  /** 業務日付 */
+  businessDate: string;
 }
 
 export interface OrganizationList {
@@ -248,12 +250,8 @@ export interface OrganizationList {
   organizationId: string;
   /** 部署名称 */
   organizationName: string;
-  /** 適用開始日 */
-  applyingStartDate: string;
   /** 適用終了日 */
   applyingEndDate: string;
-  /** TODO:業務日付 */
-  businessDate: string;
 }
 
 /** SCR-COM-0025-0004: 組織情報入力チェックAPI レスポンス */
@@ -279,9 +277,9 @@ export const ScrCom0025OrganizationInfoCheck = async (
 };
 
 /** SCR-COM-0025-0005: 組織情報登録更新API リクエスト */
-export interface ScrCom0025RegistUpdateOrganizationRequest {
+export interface ScrCom0025RegistOrganizationRequest {
   // リスト
-  registUpdateorganizationList: RegistUpdateOrganizationList[];
+  organizationList: RegistUpdateOrganizationList[];
 }
 
 interface RegistUpdateOrganizationList {
@@ -311,7 +309,7 @@ interface RegistUpdateOrganizationList {
 
 /** SCR-COM-0025-0005: 組織情報登録更新API */
 export const ScrCom0025RegistUpdateOrganization = async (
-  request: ScrCom0025RegistUpdateOrganizationRequest
+  request: ScrCom0025RegistOrganizationRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-0025/merge-organization',
@@ -320,7 +318,6 @@ export const ScrCom0025RegistUpdateOrganization = async (
   return response.data;
 };
 
-// TODO: cellType（プルダウン）対応後に組織情報タブへ実装
 // API-COM-0025-0006：組織情報取得（部署階層）API リクエスト
 export interface ScrCom0025GetOrganizationHierarchyRequest {
   // 組織ID
@@ -366,7 +363,7 @@ interface CheckPostList {
   applyingStartDate: string;
   // 適用終了日
   applyingEndDate: string;
-  /** TODO:業務日付 */
+  /** 業務日付 */
   businessDate: string;
 }
 
@@ -393,9 +390,9 @@ export const ScrCom0025PostInfoCheck = async (
 };
 
 /** SCR-COM-0025-0008: 役職情報登録更新API リクエスト */
-export interface ScrCom0025RegistUpdatePostRequest {
+export interface ScrCom0025RegistPostRequest {
   // リスト
-  registUpdatePostList: RegistUpdatePostList[];
+  postList: RegistUpdatePostList[];
 }
 
 /** SCR-COM-0025-0008: 役職情報登録更新API リクエスト(リスト行) */
@@ -428,7 +425,7 @@ interface RegistUpdatePostList {
 
 /** SCR-COM-0025-0008: 役職情報登録更新API */
 export const ScrCom0025RegistUpdatePost = async (
-  request: ScrCom0025RegistUpdatePostRequest
+  request: ScrCom0025RegistPostRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-0025/merge-post',
@@ -471,9 +468,9 @@ export const ScrCom0025EmployeeInfoCheck = async (
 };
 
 /** SCR-COM-0025-0010: 従業員情報登録更新API リクエスト */
-export interface ScrCom0025RegistUpdateEmployeeRequest {
+export interface ScrCom0025RegistEmployeeRequest {
   // リスト
-  registUpdateEmployeeList: RegistUpdateEmployeeList[];
+  employeeList: RegistUpdateEmployeeList[];
 }
 
 interface RegistUpdateEmployeeList {
@@ -533,7 +530,7 @@ interface RegistUpdateEmployeeList {
 
 /** SCR-COM-0025-0010: 従業員情報登録更新API */
 export const ScrCom0025RegistUpdateEmployee = async (
-  request: ScrCom0025RegistUpdateEmployeeRequest
+  request: ScrCom0025RegistEmployeeRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-0025/merge-employee',
@@ -542,7 +539,6 @@ export const ScrCom0025RegistUpdateEmployee = async (
   return response.data;
 };
 
-// TODO: cellType（プルダウン）対応後に従業員情報タブへ実装
 // API-COM-0025-0011：従業員情報取得API リクエスト
 export interface ScrCom0025GetEmployeeRequest {
   // 従業員ID
