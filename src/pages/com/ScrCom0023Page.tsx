@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 
-import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
@@ -122,8 +121,6 @@ const ScrCom0023Page = () => {
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
 
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
-
   // router
   const navigate = useNavigate();
 
@@ -131,10 +128,8 @@ const ScrCom0023Page = () => {
   const { user } = useContext(AuthContext);
 
   // ユーザーの編集権限
-  const userEditFlag =
-    user.editPossibleScreenIdList === undefined
-      ? ''
-      : user.editPossibleScreenIdList.includes(SCR_COM_0023);
+  const readonly: boolean =
+    user.editPossibleScreenIdList.includes(SCR_COM_0023);
 
   // CSV
   const apiRef = useGridApiRef();
@@ -168,26 +163,17 @@ const ScrCom0023Page = () => {
             ? '土'
             : '',
         // true => "対象" false => "対象外"
-        omatomePlaceFlag: x.omatomePlaceFlag === true ? '対象' : '対象外',
+        omatomePlaceFlag: x.omatomePlaceFlag ? '対象' : '対象外',
         corporationId: x.corporationId,
         corporationName: x.corporationName,
         contractId: x.contractId,
         placeGroup: x.placeGroup,
         destinationPlace: x.destinationPlace,
         // true => "可" false => "不可"
-        useFlag: x.useFlag === true ? '可' : '不可',
+        useFlag: x.useFlag ? '可' : '不可',
       };
     });
   };
-
-  // セクション幅修正
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期画面表示時にライブ会場一覧検索処理を実行
@@ -203,7 +189,7 @@ const ScrCom0023Page = () => {
 
       // hrefsを設定
       const hrefs: GridHrefsModel[] = [{ field: 'placeCd', hrefs: [] }];
-      searchResult.map((x) => {
+      searchResult.forEach((x) => {
         hrefs[0].hrefs.push({
           id: x.placeCd,
           href: '/com/places/' + x.placeCd,
@@ -238,7 +224,7 @@ const ScrCom0023Page = () => {
   const handleGetCellClassName = (
     params: GridCellParams<any, any, any, GridTreeNode>
   ) => {
-    if (params.row.useFlag === '不可') return 'use-flag-false';
+    if (params.row.useFlag === '不可') return 'not-available';
     return '';
   };
 
@@ -249,31 +235,29 @@ const ScrCom0023Page = () => {
         <MainLayout main>
           {/* ライブ会場一覧 */}
           <Section
+            fitInside
             name='ライブ会場一覧'
-            width={maxSectionWidth}
             decoration={
-              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+              <>
                 <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
-                {/* 編集権限なしの場合 非活性 */}
                 <AddButton
                   onClick={handleIconAddClick}
-                  disable={!userEditFlag ? true : false}
+                  disable={!readonly ? true : false}
                 >
                   追加
                 </AddButton>
-              </MarginBox>
+              </>
             }
           >
             <DataGrid
-              apiRef={apiRef}
               columns={searchResultColumns}
               rows={searchResult}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
-              // 利用フラグがfalseの場合は該当レコードグレーアウト
+              // 利用フラグがfalseの場合は該当レコードグレーアウト(利用不可を意味)
               getCellClassName={handleGetCellClassName}
               sx={{
-                '& .use-flag-false': {
+                '& .not-available': {
                   backgroundColor: '#dddddd',
                 },
               }}
