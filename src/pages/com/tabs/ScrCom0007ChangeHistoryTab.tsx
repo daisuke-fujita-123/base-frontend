@@ -109,7 +109,7 @@ const convertToSearchResultRowModel = (
         x.applicationEmployeeId + ' ' + x.applicationEmployeeName,
       applicantDateTime: format(
         new Date(x.applicationDateTime),
-        'yyyy/MM/dd HH:MM:SS'
+        'yyyy/MM/dd hh:mm:ss'
       ),
       registUpdateMemo: x.registrationChangeMemo,
       registUpdateMemoExistence: x.registrationChangeMemoExistence,
