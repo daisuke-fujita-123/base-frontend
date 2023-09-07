@@ -5,9 +5,12 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
+import { RowStack } from 'layouts/Stack';
+
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
+
 import { PostalTextField, PriceTextField, TextField } from './TextField';
 
 export default {
@@ -46,10 +49,14 @@ export default {
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface InputSample {
   sampleName: string;
+  samplePrice: number;
+  samplePostal: string | number;
 }
 
 const schema = yup.object({
   sampleName: yup.string().required('入力してください'),
+  samplePrice: yup.string().required('入力してください'),
+  samplePostal: yup.string().required('入力してください'),
 });
 // TDOO クラッシュ原因の特定
 // const Template: Story<TextFieldProps<InputSample>> = (args) => {
@@ -86,6 +93,8 @@ export const Example = () => {
     reValidateMode: 'onBlur',
     defaultValues: {
       sampleName: 'デフォルト値',
+      samplePrice: 0,
+      samplePostal: '',
     },
     resolver: yupResolver(schema),
     context: isReadOnly,
@@ -94,6 +103,21 @@ export const Example = () => {
   return (
     <FormProvider {...methods}>
       <ThemeProvider theme={theme}>
+        <RowStack>
+          <TextField
+            label='サンプルラベル'
+            required={true}
+            name='sampleName'
+            disabled={false}
+            fullWidth={true}
+          />
+          <TextField
+            label='サンプルラベル'
+            name='sampleName'
+            disabled={false}
+            fullWidth={true}
+          />
+        </RowStack>
         <TextField
           label='サンプルラベル'
           required={true}
@@ -121,7 +145,7 @@ export const Example = () => {
         <PriceTextField
           label='サンプルラベル。'
           required={true}
-          name='sampleName'
+          name='samplePrice'
           disabled={false}
           fullWidth={true}
           variant='outlined'
@@ -129,13 +153,21 @@ export const Example = () => {
         <PostalTextField
           label='サンプルラベル。'
           required={true}
-          name='sampleName'
+          name='samplePostal'
           disabled={false}
           fullWidth={true}
           variant='outlined'
           onBlur={() => {
             console.log('onBlur');
           }}
+        />
+        <TextField
+          label='サンプルラベル'
+          required={true}
+          name='sampleName'
+          fullWidth={true}
+          variant='outlined'
+          unit='単位'
         />
       </ThemeProvider>
     </FormProvider>

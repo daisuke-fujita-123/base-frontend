@@ -12,6 +12,8 @@ import DataGridCellType from 'pages/_exp/DatagridCellType';
 import DatagridColumnGroups from 'pages/_exp/DatagridColumnGroups';
 import Experiments from 'pages/_exp/Experiments';
 import Layouts from 'pages/_exp/Layouts';
+import Logout from 'pages/_exp/Logout';
+import Scroll from 'pages/_exp/Scroll';
 import WatchForm from 'pages/_exp/WatchForm';
 import ScrCom0001Page from 'pages/com/ScrCom0001Page';
 import ScrCom0002Page from 'pages/com/ScrCom0002Page';
@@ -72,7 +74,7 @@ import ScrTra0038Page from 'pages/tra/ScrTra0038Page';
 import GlobalLayout from 'layouts/GlobalLayout';
 
 /**
- * _routes
+ * 画面URI定義
  */
 const _ROUTES = [
   {
@@ -296,14 +298,14 @@ const _ROUTES = [
     // SCR-TRA-0001 取引管理マスタ一覧
     id: 'SCR-TRA-0001',
     name: '取引管理マスタ一覧',
-    path: '/tra/deal-masters',
+    path: '/tra/masters',
     element: <ScrTra0001Page />,
   },
   {
     // SCR-TRA-0003 取引管理マスタメンテナンス
     id: 'SCR-TRA-0003',
     name: '取引管理マスタメンテナンス',
-    path: '-',
+    path: '/tra/masters/:masterId',
     element: <ScrTra0003Page />,
   },
   {
@@ -311,7 +313,6 @@ const _ROUTES = [
     id: 'SCR-TRA-0005',
     name: '会員売上伝票一覧',
     path: '/tra/member-salses-slips',
-    // eslint-disable-next-line react/jsx-no-undef
     element: <ScrTra0005Page />,
   },
   {
@@ -552,12 +553,36 @@ const _ROUTES = [
     path: '/_exp/watch-form',
     element: <WatchForm />,
   },
+  {
+    // exp Scroll
+    id: 'Scroll',
+    name: 'Scroll',
+    path: '/_exp/Scroll',
+    element: <Scroll />,
+  },
+  {
+    // exp Logout
+    id: 'Logout',
+    name: 'Logout',
+    path: '/_exp/logout',
+    element: <Logout />,
+  },
 ];
 
 /**
- * routes
+ * 画面URI定義
  */
 export const ROUTES = [
+  {
+    path: '/_exp/logout',
+    element: <Logout />,
+    children: [],
+  },
+  {
+    path: '/com/login',
+    element: <ScrCom0001Page />,
+    children: [],
+  },
   {
     path: '/',
     element: <GlobalLayout />,

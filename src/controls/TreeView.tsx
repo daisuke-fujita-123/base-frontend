@@ -3,9 +3,9 @@ import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import { theme } from 'controls/theme';
 
 import {
-  ScrCom0002GetFavorite,
-  ScrCom0002GetFavoriteRequest,
-  ScrCom0002GetFavoriteResponse,
+  ScrCom0002GetMenuDetail,
+  ScrCom0002GetMenuDetailRequest,
+  ScrCom0002GetMenuDetailResponse,
   ScrCom0002UpdateFavorite,
   ScrCom0002UpdateFavoriteRequest,
 } from 'apis/com/ScrCom0002Api';
@@ -32,6 +32,7 @@ import {
   styled,
 } from '@mui/material';
 import { getRoute, Rootes } from 'definitions/routes';
+import { Wappen } from './Label';
 import { AccordionContentText, AccordionSubTitle } from './Typography';
 
 const MenuIcon = (icon: string) => {
@@ -129,7 +130,6 @@ const StyledAccordionSummary = styled(AccordionSummary)({
   },
   '& .MuiAccordionSummary-content.Mui-expanded': {
     margin: theme.spacing(3),
-    height: 20,
   },
   '& .Mui-expanded': {
     margin: 0,
@@ -154,6 +154,7 @@ const StyledAccordionDetails = styled(AccordionDetails)({
   margin: 0,
   padding: 0,
   marginLeft: theme.spacing(9),
+  marginTop: -7,
 });
 
 const StyledExpandMoreIcon = styled('image')({
@@ -161,13 +162,15 @@ const StyledExpandMoreIcon = styled('image')({
 });
 
 const StyledIconButton = styled(IconButton)({
+  gap: 5,
   position: 'absolute',
-  top: theme.spacing(2.8),
+  top: 12,
   left: theme.spacing(23),
   margin: 0,
   marginLeft: theme.spacing(2),
   padding: 0,
   color: theme.palette.accordion.color,
+  fontSize: 13,
 });
 
 const StarIconButton = styled(IconButton)({
@@ -176,7 +179,6 @@ const StarIconButton = styled(IconButton)({
 
 const StyledIcon = styled('image')({
   marginRight: theme.spacing(1),
-  marginTop: theme.spacing(0.6),
   height: 16,
 });
 
@@ -187,11 +189,12 @@ const TreeView = (props: TreeViewProps) => {
   const { user } = useContext(AuthContext);
   const { open } = props;
 
-  // お気に入り登録情報検索
-  // TODO:お気に入り情報取得APIがないため、別のAPIを利用する必要あり
-  // テスト用
-  const [bookmarkList, setBookmarkList] =
-    useState<ScrCom0002GetFavoriteResponse | null>(null);
+  // メニュー詳細情報検索
+  const [menuDetailList, setMenuDetailList] =
+    useState<ScrCom0002GetMenuDetailResponse | null>(null);
+  const [bookmarkList, setBookmarkList] = useState<
+    ScrCom0002GetMenuDetailResponse['list'] | null
+  >(null);
   const [isRegister, setIsRegister] = useState<boolean>(false);
   const [menuItems, setMenuItems] = useState<menuItemModel[] | null>(null);
 
@@ -202,16 +205,21 @@ const TreeView = (props: TreeViewProps) => {
   }, []);
 
   const initialize = async () => {
-    const response = await ScrCom0002GetFavorite(getRequest);
-    setBookmarkList(response);
+    const response = await ScrCom0002GetMenuDetail(getRequest);
+    setMenuDetailList(response);
   };
+
+  // お気に入りリスト更新
+  useEffect(() => {
+    if (menuDetailList) setBookmarkList(menuDetailList.list);
+  }, [menuDetailList]);
 
   // メニューリスト更新
   useEffect(() => {
     const newItems = menuDef.map((item) => {
       // お気に入りのリンクを更新
       if (item.title === 'お気に入り' && bookmarkList) {
-        item.children = bookmarkList.list.map((obj) => obj.screenName);
+        item.children = bookmarkList.map((obj) => obj.screenId);
       }
 
       const routes: Rootes[] = item.children
@@ -229,9 +237,8 @@ const TreeView = (props: TreeViewProps) => {
     setMenuItems(newItems);
   }, [bookmarkList]);
 
-  const getRequest: ScrCom0002GetFavoriteRequest = {
-    businessDate: user.taskDate,
-    userId: user.employeeId,
+  const getRequest: ScrCom0002GetMenuDetailRequest = {
+    employeeId: user.employeeId,
   };
 
   // 完了ボタン押下処理
@@ -239,19 +246,14 @@ const TreeView = (props: TreeViewProps) => {
     event.stopPropagation();
 
     // 更新APIに渡す値を設定
-    const updateList: ScrCom0002GetFavoriteResponse = bookmarkList
-      ? { ...bookmarkList }
-      : { list: [] };
+    if (!bookmarkList) return;
+    const updateList: ScrCom0002GetMenuDetailResponse['list'] = bookmarkList;
 
     // APIに渡すリクエストを作成
-    const reqList: ScrCom0002UpdateFavoriteRequest['list'] =
-      updateList.list.map((val) => {
-        return { screenId: val.screenName };
-      });
     const updateRequest: ScrCom0002UpdateFavoriteRequest = {
       businessDate: user.taskDate,
       employeeId: user.employeeId,
-      list: reqList,
+      list: updateList,
     };
     const response = await ScrCom0002UpdateFavorite(updateRequest);
     setIsRegister(!isRegister);
@@ -267,7 +269,6 @@ const TreeView = (props: TreeViewProps) => {
 
   // 閉じているアコーディオンを格納
   const [closed, setClosed] = useState<string[]>(['default']);
-  console.log('closed', closed);
   const handleChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       event.stopPropagation();
@@ -303,28 +304,28 @@ const TreeView = (props: TreeViewProps) => {
     path: string
   ) => {
     event.stopPropagation();
-    const isExistent =
-      bookmarkList?.list.findIndex((i) => i.screenName === id) !== -1;
 
-    const newArray = (): ScrCom0002GetFavoriteResponse['list'] => {
+    const newArray = (): ScrCom0002GetMenuDetailResponse['list'] => {
       if (bookmarkList) {
+        const isExistent =
+          bookmarkList.findIndex((i) => i.screenId === id) !== -1;
         if (isExistent) {
-          return bookmarkList.list.filter((val) => val.screenName !== id);
+          return bookmarkList.filter((val) => val.screenId !== id);
         } else {
-          return bookmarkList.list.concat({ screenName: id, link: path });
+          return bookmarkList.concat({ screenId: id, screenName: path });
         }
       } else {
-        return [{ screenName: id, link: path }];
+        return [{ screenId: id, screenName: path }];
       }
     };
-
-    setBookmarkList({ list: newArray() });
+    setBookmarkList(newArray());
   };
 
   // router
   const navigate = useNavigate();
 
   const handleMenuItemClick = (href: string) => {
+    if (isRegister) return;
     navigate(href);
   };
 
@@ -372,8 +373,8 @@ const TreeView = (props: TreeViewProps) => {
                   }}
                 >
                   {isRegister &&
-                    (bookmarkList?.list.findIndex(
-                      (screen) => screen.screenName === route.id
+                    (bookmarkList?.findIndex(
+                      (screen) => screen.screenId === route.id
                     ) !== -1 ? (
                       <StarIconButton
                         onClick={(e) =>
@@ -392,6 +393,9 @@ const TreeView = (props: TreeViewProps) => {
                       </StarIconButton>
                     ))}
                   {route.name}
+                  {route.name === 'ワークリスト' && (
+                    <Wappen text={String(menuDetailList?.taskNumber)} />
+                  )}
                 </AccordionContentText>
               ))}
             </StyledAccordionDetails>

@@ -1,49 +1,101 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Controller,
+  FieldErrors,
+  FieldValues,
+  Path,
+  useFormContext,
+} from 'react-hook-form';
+
+import { Stack } from 'layouts/Stack';
+
+import { SelectValue } from 'controls/Select';
+import { Typography } from 'controls/Typography';
 
 import {
-  Input,
+  Box,
   MenuItem,
-  Paper,
   Select,
+  SxProps,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
+  Theme,
 } from '@mui/material';
+
 import { getWeeksInMonth } from 'date-fns';
+
+export interface CalenderMultiTypeModel {
+  type: string;
+  selectValues?: SelectValue[];
+}
 
 export interface CalenderItemDef {
   name: string;
   field: string;
-  type: 'input' | 'select' | any[];
-  selectValues?: any[];
+  type: 'input' | 'select' | CalenderMultiTypeModel[];
+  selectValues?: SelectValue[];
 }
 
-export interface CalenderProps {
+export interface CalenderItemModel {
+  date: Date;
+  [key: string]: string | number | Date;
+}
+
+/**
+ * バリデーションデータモデル
+ */
+export interface InvalidModel {
+  field: string;
+  date: number;
+  type: string;
+  message: string;
+}
+
+export interface CalenderProps<T extends FieldValues> {
+  name: Path<T>;
   yearmonth: Date;
   itemDef: CalenderItemDef[];
-  dataset: any[];
-  onItemValueChange?: (
-    value: string | number,
+  getCellBackground?: (
     date: Date,
     field: string,
-    index: number | undefined
-  ) => void;
+    value?: string | number
+  ) => string | undefined;
+  getCellDisabled?: (
+    date: Date,
+    field: string,
+    index?: number,
+    value?: string | number
+  ) => boolean;
 }
 
-const dayofweeks = [' ', '日', '月', '火', '水', '木', '金', '土'];
+const dayOfWeeks = ['日', '月', '火', '水', '木', '金', '土'];
 
-export const Calender = (props: CalenderProps) => {
-  const { yearmonth, itemDef, dataset, onItemValueChange } = props;
+export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
+  const { name, yearmonth, itemDef, getCellBackground, getCellDisabled } =
+    props;
+
+  // state
+  const [errors, setErrors] = useState<FieldErrors<FieldValues>>({});
+
+  // form
+  const { formState, control, register, getValues } = useFormContext();
+
+  useEffect(() => {
+    console.log(formState.errors);
+    setErrors(formState.errors);
+  }, [formState]);
 
   const weeksInMonth = getWeeksInMonth(yearmonth);
-
-  const cloned = [...dataset];
+  const values = getValues();
+  const cloned = [...values[name]];
 
   // 一週間単位のデータに変換する
-  const dataPerWeeks = [...Array(weeksInMonth)].map((_, i) => {
+  const dataPerWeeks = [...Array(weeksInMonth)].map(() => {
     // 何曜日はじまりか
     const headDayOfWeek = cloned[0].date.getDay();
     // 先頭を空データで埋める
@@ -66,104 +118,175 @@ export const Calender = (props: CalenderProps) => {
     return dataPerWeek;
   });
 
-  const handleitemValueChange = (
-    event: any,
-    date: Date,
-    field: string,
-    index: number | undefined
-  ) => {
-    onItemValueChange &&
-      onItemValueChange(event.target.value, date, field, index);
+  const ref = useRef<HTMLTableCellElement>();
+  const [tableWidth, setTableWidth] = useState<number>();
+  useEffect(() => {
+    if (ref.current) {
+      const clientHeight = ref.current?.clientWidth;
+      setTableWidth(clientHeight);
+    }
+  }, [ref]);
+  console.log('tableWidth', tableWidth);
+
+  const tableCellSx: SxProps<Theme> = {
+    width: `${100 / 8}%`,
+    minWidth: `${100 / 8}%`,
+    paddingX: 1,
+    paddingY: 2,
   };
 
   return (
     <>
       {dataPerWeeks.map((dataPerWeek, i) => (
-        <TableContainer key={i} component={Paper}>
+        <TableContainer key={i} component={Box}>
           <Table>
             <TableHead>
+              {/* 曜日 */}
               <TableRow>
-                <TableCell></TableCell>
-                <TableCell>日</TableCell>
-                <TableCell>月</TableCell>
-                <TableCell>火</TableCell>
-                <TableCell>水</TableCell>
-                <TableCell>木</TableCell>
-                <TableCell>金</TableCell>
-                <TableCell>土</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell>day</TableCell>
-                {dataPerWeek.map((data, i) => (
-                  <TableCell key={i}>
-                    {'date' in data && data.date.getDate()}
+                <TableCell sx={tableCellSx}></TableCell>
+                {dayOfWeeks.map((data, i) => (
+                  <TableCell key={i} sx={tableCellSx}>
+                    {data}
                   </TableCell>
                 ))}
               </TableRow>
+              {/* 日付 */}
+              <TableRow>
+                <TableCell sx={tableCellSx}>day</TableCell>
+                {dataPerWeek.map((data, i) => (
+                  <TableCell
+                    key={i}
+                    sx={{
+                      ...tableCellSx,
+                      background:
+                        data.date &&
+                        getCellBackground &&
+                        getCellBackground(
+                          data.date,
+                          'date',
+                          data.date.getDate()
+                        ),
+                    }}
+                  >
+                    {data.date && data.date.getDate()}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {/* データ */}
               {itemDef.map((def) => (
                 <TableRow key={def.name}>
-                  <TableCell>{def.name}</TableCell>
-                  {dataPerWeek.map((data: any, i: number) => (
-                    <TableCell key={i}>
-                      {'date' in data && def.type === 'input' && (
-                        <Input
-                          value={data[def.field]}
+                  <TableCell sx={tableCellSx}>{def.name}</TableCell>
+                  {dataPerWeek.map((data, i) => (
+                    <TableCell
+                      key={i}
+                      sx={{
+                        ...tableCellSx,
+                        background:
+                          data.date &&
+                          getCellBackground &&
+                          getCellBackground(
+                            data.date,
+                            def.field,
+                            data.date.getDate()
+                          ),
+                      }}
+                    >
+                      {data.date && def.type === 'input' && (
+                        <TextField
                           size='small'
-                          onChange={(event) =>
-                            handleitemValueChange(
-                              event,
-                              data.date,
-                              def.field,
-                              undefined
-                            )
+                          fullWidth
+                          helperText={
+                            (errors[name] as any)?.[data.date.getDate() - 1]?.[
+                              def.field
+                            ]?.message
+                          }
+                          {...register(
+                            `${name}.${data.date.getDate() - 1}.${def.field}`
+                          )}
+                          disabled={
+                            data.date &&
+                            getCellDisabled &&
+                            getCellDisabled(data.date, def.field)
                           }
                         />
                       )}
-                      {'date' in data && def.type === 'select' && (
-                        <Select
-                          value={data[def.field]}
-                          size='small'
-                          onChange={(event) =>
-                            handleitemValueChange(
-                              event,
-                              data.date,
-                              def.field,
-                              undefined
-                            )
-                          }
-                        >
-                          {def.selectValues?.map((x: any, i: number) => (
-                            <MenuItem key={i} value={x.value}>
-                              {x.displayValue}
-                            </MenuItem>
-                          ))}
-                        </Select>
+                      {data.date && def.type === 'select' && (
+                        <Controller
+                          name={`${name}.${data.date.getDate() - 1}.${
+                            def.field
+                          }`}
+                          control={control}
+                          render={({ field }) => (
+                            <>
+                              <Select
+                                {...field}
+                                size='small'
+                                fullWidth
+                                disabled={
+                                  data.date &&
+                                  getCellDisabled &&
+                                  getCellDisabled(data.date, def.field)
+                                }
+                              >
+                                {def.selectValues?.map((x, i) => (
+                                  <MenuItem key={i} value={x.value}>
+                                    {x.displayValue}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                              <Typography>
+                                {
+                                  (errors[name] as any)?.[
+                                    data.date.getDate() - 1
+                                  ]?.[def.field]?.message
+                                }
+                              </Typography>
+                            </>
+                          )}
+                        />
                       )}
-                      {'date' in data &&
-                        Array.isArray(def.type) &&
-                        def.type.map((x: any, i: number) => (
-                          <Select
-                            key={i}
-                            value={data[def.field][i]}
-                            size='small'
-                            onChange={(event) =>
-                              handleitemValueChange(
-                                event,
-                                data.date,
-                                def.field,
-                                i
-                              )
-                            }
-                          >
-                            {x.selectValues?.map((x: any, i: number) => (
-                              <MenuItem key={i} value={x.value}>
-                                {x.displayValue}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        ))}
+                      {data.date && Array.isArray(def.type) && (
+                        <Stack direction='column'>
+                          {def.type.map((x, i) => (
+                            <Controller
+                              key={i}
+                              name={`${name}.${data.date.getDate() - 1}.${
+                                def.field
+                              }.${i}`}
+                              control={control}
+                              render={({ field }) => (
+                                <>
+                                  <Select
+                                    {...field}
+                                    size='small'
+                                    fullWidth
+                                    disabled={
+                                      data.date &&
+                                      getCellDisabled &&
+                                      getCellDisabled(data.date, def.field, i)
+                                    }
+                                  >
+                                    {x.selectValues?.map((x, i) => (
+                                      <MenuItem key={i} value={x.value}>
+                                        {x.displayValue}
+                                      </MenuItem>
+                                    ))}
+                                  </Select>
+                                  <Typography>
+                                    {
+                                      (errors[name] as any)?.[
+                                        data.date.getDate() - 1
+                                      ]?.[def.field]?.[i]?.message
+                                    }
+                                  </Typography>
+                                </>
+                              )}
+                            />
+                          ))}
+                        </Stack>
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

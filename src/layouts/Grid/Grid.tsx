@@ -9,11 +9,11 @@ interface GridProps {
   container?: boolean;
   item?: boolean;
   flexDirection?: 'column' | 'row';
-  xs?: boolean | 'auto' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  sm?: boolean | 'auto' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  md?: boolean | 'auto' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  lg?: boolean | 'auto' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-  xl?: boolean | 'auto' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+  xs?: boolean | 'auto' | number;
+  sm?: boolean | 'auto' | number;
+  md?: boolean | 'auto' | number;
+  lg?: boolean | 'auto' | number;
+  xl?: boolean | 'auto' | number;
   spacing?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
   columns?: ResponsiveStyleValue<number>;
   width?: number;

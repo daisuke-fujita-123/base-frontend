@@ -4,7 +4,7 @@
 export const CELL_TYPE_DATASET = [
   {
     id: 0,
-    input: 'input 1',
+    input: 'インプット 1',
     select: '1',
     radio: '1',
     checkbox: true,
@@ -12,7 +12,7 @@ export const CELL_TYPE_DATASET = [
   },
   {
     id: 1,
-    input: 'input 2',
+    input: 'インプット 2',
     select: '1',
     radio: '1',
     checkbox: false,
@@ -20,7 +20,7 @@ export const CELL_TYPE_DATASET = [
   },
   {
     id: 2,
-    input: 'input 3',
+    input: 'インプット 3',
     select: '2',
     radio: '2',
     checkbox: false,
@@ -28,7 +28,7 @@ export const CELL_TYPE_DATASET = [
   },
   {
     id: 3,
-    input: 'input 4',
+    input: 'インプット 4',
     select: '3',
     radio: '3',
     checkbox: true,

@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
 import {
   ContentsBox,
   ContentsOutsideBox,
   ErrorBox,
-  RightBox,
+  MarginBox,
   SearchTextBox,
   WarningBox,
 } from 'layouts/Box';
@@ -12,7 +12,7 @@ import {
 import { theme } from 'controls/theme';
 import { SubTitle } from 'controls/Typography';
 
-import { Stack, styled } from '@mui/material';
+import { Box, Stack, styled } from '@mui/material';
 import { default as AccordionMui } from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import MuiAccordionSummary from '@mui/material/AccordionSummary';
@@ -30,50 +30,58 @@ interface SectionProps {
   name?: string;
   children: React.ReactNode;
   decoration?: React.ReactNode | React.ReactNode[];
-  open?: boolean;
   isSearch?: boolean;
   isTransparent?: boolean;
   serchLabels?: React.ReactNode | React.ReactNode[];
   isWarning?: boolean;
   isError?: boolean;
   openable?: boolean;
+  width?: number;
+  fitInside?: boolean;
+  small?: boolean;
+}
+export interface SectionClose {
+  closeSection: () => void;
 }
 
 const StyledAccordion = styled(AccordionMui)({
   backgroundColor: 'transparent',
-  width: 'calc( 100% + 2px )',
+  // width: 'calc( 100% + 2px )',
   margin: 0,
 });
-
-export const Section = (props: SectionProps) => {
+// eslint-disable-next-line react/display-name
+export const Section = forwardRef((props: SectionProps, ref) => {
   const {
     name,
     children,
     decoration,
-    open = true,
     isSearch = false,
     isTransparent = false,
     serchLabels,
     openable = true,
+    width,
+    fitInside = false,
+    small,
   } = props;
 
-  const [expanded, setExpanded] = useState<boolean>(open);
+  const [expanded, setExpanded] = useState<boolean>(true);
 
   const onClick = () => {
     setExpanded(!expanded);
   };
 
-  useEffect(() => {
-    if (!open) setExpanded(false);
-  }, [open]);
+  useImperativeHandle(ref, () => ({
+    closeSection: () => setExpanded(false),
+  }));
 
   if (!name) {
     return <ContentsBox>{children}</ContentsBox>;
   }
 
   const flexColSx = { display: 'flex', flexDirection: 'column' };
+
   return (
-    <>
+    <Box width={width} display={fitInside ? 'inline-table' : undefined}>
       <SubTitle onClick={onClick} openable={openable}>
         {name}
       </SubTitle>
@@ -84,28 +92,42 @@ export const Section = (props: SectionProps) => {
               <SearchTextBox>{serchLabels}</SearchTextBox>
             </AccordionSummary>
           )}
-          {expanded && <RightBox>{decoration}</RightBox>}
-          <AccordionDetails sx={{ m: theme.spacing(4) }}>
+          {expanded && decoration && (
+            <Box
+              sx={{
+                width: '80vw',
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                {decoration}
+              </MarginBox>
+            </Box>
+          )}
+          <AccordionDetails
+            sx={{
+              marginX: theme.spacing(4),
+              marginY: small ? theme.spacing(2) : theme.spacing(4),
+            }}
+          >
             <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
           </AccordionDetails>
         </StyledAccordion>
       </ContentsBox>
-    </>
+    </Box>
   );
-};
+});
 
 export const PopSection = (props: SectionProps) => {
-  const { name, children, open = true, isWarning, isError } = props;
+  const { name, children, isWarning, isError } = props;
 
-  const [expanded, setExpanded] = useState<boolean>(open);
+  const [expanded, setExpanded] = useState<boolean>(true);
 
   const onClick = () => {
     setExpanded(!expanded);
   };
-
-  useEffect(() => {
-    if (!open) setExpanded(false);
-  }, [open]);
 
   if (!name) {
     return <ContentsBox>{children}</ContentsBox>;

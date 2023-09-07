@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 
@@ -8,9 +8,10 @@ import yup from 'utils/yup';
 import { CenterBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
 import { MainLayout } from 'layouts/MainLayout';
-import { Section } from 'layouts/Section';
+import { Section, SectionClose } from 'layouts/Section';
+import { ColStack } from 'layouts/Stack';
 
-import { Button, SearchButton } from 'controls/Button';
+import { Button, PrimaryButton, SearchButton } from 'controls/Button';
 import { Checkbox } from 'controls/Checkbox';
 import { DataGrid, GridColDef, GridTooltipsModel } from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
@@ -26,8 +27,11 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { _expApiClient } from 'providers/ApiClient';
 import { AppContext } from 'providers/AppContextProvider';
+import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
+
+import saveAs from 'file-saver';
 
 /**
  * 検索条件データモデル
@@ -61,6 +65,7 @@ interface SearchConditionModel {
   radio2: number;
   select1?: string;
   select2?: number;
+  select3?: string[];
   check1: boolean;
   check2: boolean;
   file?: File;
@@ -108,6 +113,7 @@ const searchConditionInitialValues: SearchConditionModel = {
   radio2: 1,
   select1: '1',
   select2: 1,
+  select3: [],
   check1: false,
   check2: false,
   file: undefined,
@@ -122,7 +128,7 @@ const searchConditionSchema = {
   city: yup.string().label('市町村区'),
   street: yup.string().label('番地'),
 
-  string1: yup.string().required().label('ストリング1'),
+  string1: yup.string().required().half().label('ストリング1'),
   string2: yup.string().max(5).label('ストリング2'),
   string3: yup.string().number().label('ストリング3'),
   string4: yup.string().numberWithComma().label('ストリング4'),
@@ -166,12 +172,12 @@ const searchResultColDef: GridColDef[] = [
     field: 'firstname',
     headerName: 'First Name',
     tooltip: true,
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'lastname',
     headerName: 'Last Name',
-    size: 'm',
+    size: 'l',
   },
   {
     field: 'input',
@@ -268,6 +274,7 @@ const convertToSelectValues = (response: any[]): SelectValue[] => {
 const Experiments = () => {
   // context
   const { showDialog, saveState, loadState } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
   // router
   const navigate = useNavigate();
@@ -286,46 +293,58 @@ const Experiments = () => {
     context: false,
     resolver: yupResolver(yup.object(searchConditionSchema)),
   });
+  const { getValues, setValue, reset, watch, trigger } = methods;
 
   // ref
   const apiRef = useGridApiRef();
 
+  const fetch = async () => {
+    try {
+      const countries = await _expApiClient.get('/_exp/countries');
+      const states = await _expApiClient.get('/_exp/states');
+      const cities = await _expApiClient.get('/_exp/cities');
+      const streets = await _expApiClient.get('/_exp/streets');
+      const data = await _expApiClient.get('/_exp/data');
+      setSelectValues({
+        countries: convertToSelectValues(countries.data),
+        states: convertToSelectValues(states.data),
+        cities: convertToSelectValues(cities.data),
+        streets: convertToSelectValues(streets.data),
+      });
+      reset({
+        ...getValues(),
+        ...data.data,
+        radio1: '2',
+        radio2: 2,
+        select1: '2',
+        select2: 2,
+        check1: true,
+        check2: true,
+      });
+      setValue('check1', true);
+      console.log('initialized');
+    } catch (error) {
+      console.debug(error);
+    }
+  };
+
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const countries = await _expApiClient.get('/_exp/countries');
-        const states = await _expApiClient.get('/_exp/states');
-        const cities = await _expApiClient.get('/_exp/cities');
-        const streets = await _expApiClient.get('/_exp/streets');
-        const data = await _expApiClient.get('/_exp/data');
-        setSelectValues({
-          countries: convertToSelectValues(countries.data),
-          states: convertToSelectValues(states.data),
-          cities: convertToSelectValues(cities.data),
-          streets: convertToSelectValues(streets.data),
-        });
-        methods.reset({
-          ...methods.getValues(),
-          ...data.data,
-          radio1: '2',
-          radio2: 2,
-          select1: '2',
-          select2: 2,
-          check1: true,
-          check2: true,
-        });
-      } catch (error) {
-        console.debug(error);
-      }
-    };
     fetch();
-  }, [methods]);
+  }, []);
+
+  useEffect(() => {
+    const subscription = watch((value, { name, type }) => {
+      if (name === undefined) {
+        console.log('changed by reset()');
+      } else {
+        console.log('changed by setValue(): name = ' + name);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Sectionの開閉処理
-  const [open, setopen] = useState<boolean>(true);
-  useEffect(() => {
-    if (!open) setopen(true);
-  }, [open]);
+  const sectionRef = useRef<SectionClose>();
 
   const handleSeachClick = async () => {
     try {
@@ -347,13 +366,14 @@ const Experiments = () => {
     } catch (error) {
       console.error(error);
     }
-    setopen(false);
+    if (sectionRef.current && sectionRef.current.closeSection)
+      sectionRef.current.closeSection();
   };
 
   const handleUpdateClick = async () => {
     // apiRef.current.updateRows([{ id: 1 }, { id: 9999 }]);
-    await methods.trigger();
-    console.log(methods.getValues());
+    await trigger();
+    console.log(getValues());
     console.log(datalist);
     if (methods.formState.isValid) {
       console.log('input is valied');
@@ -362,13 +382,29 @@ const Experiments = () => {
     }
   };
 
+  const handlePreviewPdfClick = async () => {
+    const response = await _expApiClient.get('/_exp/hello.pdf', {
+      responseType: 'blob',
+    });
+    const fileUrl = window.URL.createObjectURL(response.data);
+    window.open(fileUrl);
+    window.URL.revokeObjectURL(fileUrl);
+  };
+
   const handleDownloadPdfClick = async () => {
     const response = await _expApiClient.get('/_exp/hello.pdf', {
       responseType: 'blob',
     });
-    const downloadUrl = window.URL.createObjectURL(response.data);
-    window.open(downloadUrl, '__blank');
-    window.URL.revokeObjectURL(downloadUrl);
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    saveAs(blob, 'hello.pdf');
+  };
+
+  const handleDownloadCsvClick = async () => {
+    const response = await _expApiClient.get('/_exp/hello.csv', {
+      responseType: 'blob',
+    });
+    const blob = new Blob([response.data], { type: 'text/csv' });
+    saveAs(blob, 'hello.csv');
   };
 
   const handleRowValueChange = (row: any) => {
@@ -387,7 +423,7 @@ const Experiments = () => {
     <MainLayout>
       <MainLayout main>
         <FormProvider {...methods}>
-          <Section name='検索条件' isSearch open={open}>
+          <Section name='検索条件' isSearch ref={sectionRef}>
             <Typography>search condition</Typography>
             <Grid container>
               <Grid item xs={2}>
@@ -476,6 +512,15 @@ const Experiments = () => {
                     { value: 2, displayValue: '2' },
                   ]}
                 />
+                <Select
+                  name='select3'
+                  label='select3'
+                  selectValues={[
+                    { value: '1', displayValue: '1' },
+                    { value: '2', displayValue: '2' },
+                  ]}
+                  multiple
+                />
                 <Checkbox name='check1' label='check1' />
                 <Checkbox name='check2' label='check2' />
                 <FileSelect name='file' label='ファイル' />
@@ -529,9 +574,17 @@ const Experiments = () => {
           />
         </Section>
         <Section name='その他'>
-          <Button onClick={handleDownloadPdfClick} variant='text'>
-            Download PDF
-          </Button>
+          <ColStack>
+            <PrimaryButton onClick={handlePreviewPdfClick}>
+              Preview PDF
+            </PrimaryButton>
+            <PrimaryButton onClick={handleDownloadPdfClick}>
+              Download PDF
+            </PrimaryButton>
+            <PrimaryButton onClick={handleDownloadCsvClick}>
+              Download CSV
+            </PrimaryButton>
+          </ColStack>
         </Section>
       </MainLayout>
     </MainLayout>

@@ -168,6 +168,7 @@ const GridPagination = () => {
  */
 interface GridToolbarProps {
   pagination?: boolean;
+  validationMessages?: string[];
   showHeaderRow?: boolean;
   headerColumns?: any[];
   headerRow?: GridValidRowModel;
@@ -181,6 +182,7 @@ interface GridToolbarProps {
 export const GridToolbar = (props: GridToolbarProps) => {
   const {
     pagination = false,
+    validationMessages,
     showHeaderRow = false,
     headerColumns = [],
     headerRow = undefined,
@@ -189,22 +191,26 @@ export const GridToolbar = (props: GridToolbarProps) => {
   } = props;
 
   const displayRow =
-    headerRow !== undefined
-      ? { ...headerRow, internalId: -1 }
-      : { internalId: -1 };
+    headerRow !== undefined ? { ...headerRow, id: -1 } : { id: -1 };
+
+  const displayColumns = headerCheckboxSelection
+    ? [{ field: '__empty__', headerName: '', width: 50 }, ...headerColumns]
+    : headerColumns;
 
   return (
     <>
       {pagination && <GridPagination />}
+      {validationMessages?.map((x, i) => (
+        <div key={i}>{x}</div>
+      ))}
       {showHeaderRow && (
         <StyledDataGrid
-          columns={headerColumns}
+          columns={displayColumns}
           rows={[displayRow]}
           columnHeaderHeight={0}
           showCellVerticalBorder
           rowHeight={30}
-          getRowId={(row) => row.internalId}
-          checkboxSelection={headerCheckboxSelection}
+          // getRowId={(row) => row.internalId}
           hideFooter
           apiRef={headerApiRef}
         />

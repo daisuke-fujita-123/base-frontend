@@ -1,4 +1,6 @@
 import React, {
+  ChangeEventHandler,
+  FocusEventHandler,
   forwardRef,
   memo,
   useCallback,
@@ -6,15 +8,88 @@ import React, {
   useState,
 } from 'react';
 
+import {
+  convertFromDateToDisplay,
+  isInvalidDate,
+} from 'controls/DatePicker/DatePickerHelper';
+import { StyledTextFiled } from 'controls/TextField';
+import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
 import { AppContext } from 'providers/AppContextProvider';
 
+import Calendar from 'icons/button_calendar.png';
+
+import { Box, IconButton, Stack, styled } from '@mui/material';
 import { useGridApiContext } from '@mui/x-data-grid';
-import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers-pro';
+import {
+  BaseSingleInputFieldProps,
+  DatePicker,
+  DateValidationError,
+  FieldSection,
+  LocalizationProvider,
+  UseDateFieldProps,
+} from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
+
 import { ja } from 'date-fns/locale';
-import dayjs from 'dayjs';
+
+/**
+ * DatePickerFieldPropsコンポーネントのProps
+ */
+interface DatePickerFieldProps
+  extends UseDateFieldProps<Date>,
+    BaseSingleInputFieldProps<
+      Date | null,
+      Date,
+      FieldSection,
+      DateValidationError
+    > {
+  displayValue?: string;
+  onValueChange?: (value: string) => void;
+}
+
+/**
+ * DatePickerFieldPropsコンポーネント
+ */
+const DatePickerField = (props: DatePickerFieldProps) => {
+  const {
+    displayValue,
+    disabled,
+    readOnly,
+    InputProps: { ref: containerRef, startAdornment, endAdornment } = {},
+    onValueChange,
+  } = props;
+
+  const handleOnChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    const newValue = event.target.value;
+    onValueChange && onValueChange(newValue);
+  };
+
+  const handleOnBlur: FocusEventHandler<
+    HTMLInputElement | HTMLTextAreaElement
+  > = (event) => {
+    const newValue = event.target.value;
+  };
+
+  return (
+    <Box ref={containerRef}>
+      {startAdornment}
+      <StyledTextFiled
+        value={displayValue}
+        sx={{ width: 188, height: 16 }}
+        disabled={disabled}
+        onChange={handleOnChange}
+        onBlur={handleOnBlur}
+        InputProps={{
+          endAdornment: endAdornment,
+          readOnly: readOnly,
+        }}
+        fullWidth
+      />
+    </Box>
+  );
+};
 
 /**
  * GridInputCellコンポーネントのProps
@@ -23,6 +98,8 @@ interface GridInputCellProps {
   id: string | number;
   value: string;
   field: string | any[];
+  controlled: boolean;
+  width: number;
   helperText?: string;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
@@ -38,6 +115,8 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
     id,
     value,
     field,
+    controlled,
+    width,
     helperText,
     disabled = false,
     onRowValueChange,
@@ -45,6 +124,8 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
+
+  const [text, setText] = useState(value);
 
   const handleValueChange = useCallback(
     (event: any) => {
@@ -55,10 +136,9 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
       } else {
         row[field] = newValue;
       }
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      controlled && setText(newValue);
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
@@ -66,8 +146,8 @@ export const GridInputCell = memo((props: GridInputCellProps) => {
   return (
     <>
       <input
-        style={{ width: '60px' }}
-        defaultValue={value}
+        style={{ width }}
+        value={controlled ? text : value}
         type='text'
         onChange={handleValueChange}
         disabled={disabled}
@@ -85,8 +165,11 @@ interface GridSelectCellProps {
   value: string | number;
   field: string | any[];
   selectValues: any[];
+  controlled: boolean;
+  width: number;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
+  onCellBlur?: (row: any) => void;
 }
 
 /**
@@ -100,8 +183,11 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
     value,
     field,
     selectValues,
+    controlled,
+    width,
     disabled = false,
     onRowValueChange,
+    onCellBlur,
   } = props;
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
@@ -120,20 +206,24 @@ export const GridSelectCell = memo((props: GridSelectCellProps) => {
       } else {
         row[field] = newSelection;
       }
-      setSelection(newSelection);
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      controlled && setSelection(newSelection);
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
 
+  const handleOnBlur: FocusEventHandler<HTMLSelectElement> = () => {
+    const row = apiRef.current.getRow(id);
+    onCellBlur && onCellBlur(row);
+  };
+
   return (
     <select
-      style={{ width: '100px' }}
-      value={selection}
+      style={{ width }}
+      value={controlled ? selection : value}
       onChange={handleValueChange}
+      onBlur={handleOnBlur}
       disabled={disabled}
     >
       {selectValues.map((x, i) => (
@@ -153,6 +243,8 @@ interface GridRadioCellProps {
   value: string | number;
   radioValues: any[];
   field: string;
+  controlled: boolean;
+  width: number;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
 }
@@ -168,6 +260,8 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
     value,
     radioValues,
     field,
+    controlled,
+    width,
     disabled = false,
     onRowValueChange,
   } = props;
@@ -184,30 +278,34 @@ export const GridRadioCell = memo((props: GridRadioCellProps) => {
         typeof selection === 'number' ? Number(value) : value;
       const row = apiRef.current.getRow(id);
       row[field] = newSelection;
-      setSelection(newSelection);
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      controlled && setSelection(newSelection);
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
 
   return (
     <>
-      {radioValues.map((x, i) => (
-        <div key={i}>
-          <input
-            type='radio'
-            style={{ width: '60px' }}
-            value={x.value}
-            checked={x.value === selection}
-            onChange={handleValueChange}
-            disabled={disabled}
-          />
-          <label>{x.displayValue}</label>
-        </div>
-      ))}
+      <Stack
+        style={{ width, height: 16 }}
+        direction='row'
+        justifyContent='space-evenly'
+        // divider={<Divider orientation='vertical' flexItem />}
+      >
+        {radioValues.map((x, i) => (
+          <Stack key={i} direction='row'>
+            <input
+              value={x.value}
+              type='radio'
+              checked={x.value === (controlled ? selection : value)}
+              onChange={handleValueChange}
+              disabled={disabled}
+            />
+            <label>{x.displayValue}</label>
+          </Stack>
+        ))}
+      </Stack>
     </>
   );
 });
@@ -250,10 +348,8 @@ export const GridCustomizableRadiioCell = memo(
         const row = apiRef.current.getRow(id);
         row[field].selection = index;
         setSelection(index);
-        setNeedsConfirmNavigate(true);
-        if (onRowValueChange !== undefined) {
-          onRowValueChange(row);
-        }
+        setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+        onRowValueChange && onRowValueChange(row);
       },
       [apiRef, field, id]
     );
@@ -263,10 +359,8 @@ export const GridCustomizableRadiioCell = memo(
         const newValue = event.target.value;
         const row = apiRef.current.getRow(id);
         row[field].values[index] = newValue;
-        setNeedsConfirmNavigate(true);
-        if (onRowValueChange !== undefined) {
-          onRowValueChange(row);
-        }
+        setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+        onRowValueChange && onRowValueChange(row);
       },
       [apiRef, field, id]
     );
@@ -279,10 +373,8 @@ export const GridCustomizableRadiioCell = memo(
         ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         const row = apiRef.current.getRow(id);
         row[field].values[index][fromto] = formattedValue;
-        setNeedsConfirmNavigate(true);
-        if (onRowValueChange !== undefined) {
-          onRowValueChange(row);
-        }
+        setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+        onRowValueChange && onRowValueChange(row);
       },
       [apiRef, field, id]
     );
@@ -340,6 +432,7 @@ interface GridCheckboxCellProps {
   id: string | number;
   value: boolean | undefined;
   field: string;
+  controlled: boolean;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
 }
@@ -350,7 +443,14 @@ interface GridCheckboxCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
-  const { id, value, field, disabled = false, onRowValueChange } = props;
+  const {
+    id,
+    value,
+    field,
+    controlled,
+    disabled = false,
+    onRowValueChange,
+  } = props;
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
@@ -362,11 +462,9 @@ export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
       const row = apiRef.current.getRow(id);
       const newSelection = !row[field];
       row[field] = newSelection;
-      setSelection(newSelection);
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
+      controlled && setSelection(newSelection);
+      setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+      onRowValueChange && onRowValueChange(row);
     },
     [apiRef, field, id]
   );
@@ -375,7 +473,7 @@ export const GridCheckboxCell = memo((props: GridCheckboxCellProps) => {
     <input
       type='checkbox'
       style={{ width: '60px' }}
-      checked={selection}
+      checked={controlled ? selection : value}
       onChange={handleValueChange}
       disabled={disabled}
     />
@@ -389,6 +487,7 @@ interface GridDatepickerCellProps {
   id: string | number;
   value: string;
   field: string;
+  controlled: boolean;
   disabled?: boolean;
   onRowValueChange?: (row: any) => void;
 }
@@ -399,28 +498,42 @@ interface GridDatepickerCellProps {
  */
 // eslint-disable-next-line react/display-name
 export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
-  const { id, value, field, disabled = false, onRowValueChange } = props;
+  const {
+    id,
+    value,
+    field,
+    controlled,
+    disabled = false,
+    onRowValueChange,
+  } = props;
 
   const { setNeedsConfirmNavigate } = useContext(AppContext);
   const apiRef = useGridApiContext();
 
-  const handleValueChange = useCallback(
-    (value: any) => {
-      const date = new Date(String(value));
-      const formattedValue = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const [date, setDate] = useState(value);
+  const [displayValue, setDisplayValue] = useState(value);
 
-      // const newValue = event.target.value;
-      const row = apiRef.current.getRow(id);
-      row[field] = formattedValue;
-      setNeedsConfirmNavigate(true);
-      if (onRowValueChange !== undefined) {
-        onRowValueChange(row);
-      }
-    },
-    [apiRef, field, id]
-  );
+  const handleOnAccept = (value: Date | null) => {
+    if (value === null) return;
+    if (isInvalidDate(value)) return;
+    const displayValue = convertFromDateToDisplay(value);
+
+    if (displayValue === undefined) return;
+    const row = apiRef.current.getRow(id);
+    row[field] = displayValue;
+    setDisplayValue(displayValue);
+    setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+    onRowValueChange && onRowValueChange(row);
+  };
+
+  const handleValueChange = (value: string) => {
+    const row = apiRef.current.getRow(id);
+    row[field] = value;
+    setDisplayValue(value);
+    controlled && setDate(value);
+    setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+    onRowValueChange && onRowValueChange(row);
+  };
 
   return (
     <LocalizationProvider
@@ -429,10 +542,174 @@ export const GridDatepickerCell = memo((props: GridDatepickerCellProps) => {
       adapterLocale={ja}
     >
       <DatePicker
-        value={new Date(value)}
-        onChange={handleValueChange}
+        value={new Date(controlled ? date : value)}
+        onAccept={handleOnAccept}
+        slots={{
+          field: DatePickerField,
+          openPickerIcon: CalenderIcon,
+        }}
+        slotProps={{
+          field: {
+            displayValue: controlled ? displayValue : value,
+            onValueChange: handleValueChange,
+          } as any,
+          layout: {
+            sx: {
+              '& .MuiPickersCalendarHeader-labelContainer': {
+                fontWeight: 'bold',
+              },
+              '& .MuiButtonBase-root.MuiPickersDay-root': {
+                '&.Mui-selected': {
+                  border: '3px solid #f37246',
+                  backgroundColor: '#fde8d4',
+                  color: '#000000',
+                },
+              },
+            },
+          },
+        }}
+        format='yyyy/mm/dd'
         disabled={disabled}
       />
+    </LocalizationProvider>
+  );
+});
+
+const StyledButton = styled(IconButton)({
+  ...theme.palette.calender,
+  borderRadius: 0,
+  width: 18,
+  height: 18,
+  marginRight: theme.spacing(-2),
+});
+
+const CalenderIcon = () => {
+  return (
+    <StyledButton>
+      <img src={Calendar}></img>
+    </StyledButton>
+  );
+};
+
+/**
+ * GridDatepickerCellPropsコンポーネントのProps
+ */
+interface GridFromtoCellProps {
+  id: string | number;
+  value: string[];
+  field: string;
+  width: number;
+  disabled?: boolean;
+  onRowValueChange?: (row: any) => void;
+}
+
+/**
+ * GridCheckboxCellコンポーネント
+ * プルダウン用のセル
+ */
+// eslint-disable-next-line react/display-name
+export const GridFromtoCell = memo((props: GridFromtoCellProps) => {
+  const { id, value, field, width, disabled = false, onRowValueChange } = props;
+
+  const { setNeedsConfirmNavigate } = useContext(AppContext);
+  const apiRef = useGridApiContext();
+  const [displayValue, setDisplayValue] = useState(value);
+
+  const handleOnAccept = (value: Date | null, index: number) => {
+    if (value === null) return;
+    if (isInvalidDate(value)) return;
+    const displayValue = convertFromDateToDisplay(value);
+
+    if (displayValue === undefined) return;
+    const row = apiRef.current.getRow(id);
+    row[field][index] = displayValue;
+    setDisplayValue([...row[field]]);
+    setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+    onRowValueChange && onRowValueChange(row);
+  };
+
+  const handleValueChange = (value: string, index: number) => {
+    const row = apiRef.current.getRow(id);
+    row[field][index] = value;
+    setDisplayValue([...row[field]]);
+    setNeedsConfirmNavigate && setNeedsConfirmNavigate(true);
+    onRowValueChange && onRowValueChange(row);
+  };
+
+  return (
+    <LocalizationProvider
+      // dateAdapter={AdapterDayjs}
+      dateAdapter={AdapterDateFns}
+      adapterLocale={ja}
+    >
+      <Stack
+        style={{ width, height: 16 }}
+        direction='row'
+        justifyContent='space-evenly'
+        // divider={<Divider orientation='vertical' flexItem />}
+      >
+        <DatePicker
+          value={new Date(value[0])}
+          onAccept={(value) => handleOnAccept(value, 0)}
+          slots={{
+            field: DatePickerField,
+            openPickerIcon: CalenderIcon,
+          }}
+          slotProps={{
+            field: {
+              displayValue: displayValue[0],
+              onValueChange: (value: string) => handleValueChange(value, 0),
+            } as any,
+            layout: {
+              sx: {
+                '& .MuiPickersCalendarHeader-labelContainer': {
+                  fontWeight: 'bold',
+                },
+                '& .MuiButtonBase-root.MuiPickersDay-root': {
+                  '&.Mui-selected': {
+                    border: '3px solid #f37246',
+                    backgroundColor: '#fde8d4',
+                    color: '#000000',
+                  },
+                },
+              },
+            },
+          }}
+          format='yyyy/mm/dd'
+          disabled={disabled}
+        />
+        <Typography>~</Typography>
+        <DatePicker
+          value={new Date(value[1])}
+          onAccept={(value) => handleOnAccept(value, 1)}
+          slots={{
+            field: DatePickerField,
+            openPickerIcon: CalenderIcon,
+          }}
+          slotProps={{
+            field: {
+              displayValue: displayValue[1],
+              onValueChange: (value: string) => handleValueChange(value, 1),
+            } as any,
+            layout: {
+              sx: {
+                '& .MuiPickersCalendarHeader-labelContainer': {
+                  fontWeight: 'bold',
+                },
+                '& .MuiButtonBase-root.MuiPickersDay-root': {
+                  '&.Mui-selected': {
+                    border: '3px solid #f37246',
+                    backgroundColor: '#fde8d4',
+                    color: '#000000',
+                  },
+                },
+              },
+            },
+          }}
+          format='yyyy/mm/dd'
+          disabled={disabled}
+        />
+      </Stack>
     </LocalizationProvider>
   );
 });

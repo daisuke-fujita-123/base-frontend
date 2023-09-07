@@ -1,12 +1,20 @@
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
-import { Button } from 'controls/Button';
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import yup from 'utils/yup';
+import { ObjectSchema } from 'yup';
 
+import { Button, PrimaryButton } from 'controls/Button';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
+import { theme } from 'controls/theme';
+
+import { ThemeProvider } from '@mui/material';
 import { GridRowsProp } from '@mui/x-data-grid';
 import {
+  GridCellParams,
   GridRenderCellParams,
+  GridRowSelectionModel,
+  GridTreeNode,
   GridTreeNodeWithRender,
   useGridApiRef,
 } from '@mui/x-data-grid-pro';
@@ -107,12 +115,20 @@ export const Example = () => {
       size: 'm',
     },
     {
-      field: 'input',
+      field: 'input1',
       cellType: 'input',
+      headerName: 'Input 1',
+      required: true,
+    },
+    {
+      field: 'input2',
+      cellType: 'input',
+      headerName: 'Input 2',
     },
     {
       field: 'select',
       cellType: 'select',
+      headerName: 'Select',
       selectValues: [
         { value: '1', displayValue: 'one' },
         { value: '2', displayValue: 'two' },
@@ -122,6 +138,7 @@ export const Example = () => {
     {
       field: 'radio',
       cellType: 'radio',
+      headerName: 'Radio',
       radioValues: [
         { value: '1', displayValue: 'one' },
         { value: '2', displayValue: 'two' },
@@ -132,55 +149,153 @@ export const Example = () => {
     {
       field: 'checkbox',
       cellType: 'checkbox',
+      headerName: 'Checkbox',
     },
     {
       field: 'datepicker',
       cellType: 'datepicker',
+      headerName: 'DatePicker',
       size: 'l',
+    },
+
+    {
+      field: 'fromto',
+      cellType: 'fromto',
+      headerName: 'FromTo',
+      width: 500,
     },
   ];
 
   const rows: GridRowsProp = [
     {
-      id: '0001',
+      id: 0,
       corporationId: '0001',
       corporationName: '法人1',
       corporationGroupName: '法人グループ1',
       representativeName: '代表者1',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0002',
+      id: 1,
       corporationId: '0002',
       corporationName: '法人2',
       corporationGroupName: '法人グループ2',
       representativeName: '代表者2',
+      input1: undefined,
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0003',
+      id: 2,
       corporationId: '0003',
       corporationName: '法人3',
       corporationGroupName: '法人グループ3',
       representativeName: '代表者3',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: undefined,
+      radio: '1',
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0004',
+      id: 3,
       corporationId: '0004',
       corporationName: '法人4',
       corporationGroupName: '法人グループ4',
       representativeName: '代表者4',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: undefined,
+      checkbox: true,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
     {
-      id: '0005',
+      id: 4,
       corporationId: '0005',
       corporationName: '法人5',
       corporationGroupName: '法人グループ5',
       representativeName: '代表者5',
+      input1: 'Input 1',
+      input2: 'Input 2',
+      select: '1',
+      radio: '1',
+      checkbox: undefined,
+      datepicker: '2020/01/01',
+      fromto: ['2020/01/02', '2020/01/03'],
     },
   ];
 
+  const validationSchema: ObjectSchema<any> = yup.object({
+    input1: yup.string().required().max(10).label('Input 1'),
+    input2: yup.string().required().max(10).label('Input 2'),
+  });
+
+  const apiRef = useGridApiRef();
+
+  const handleGetCellReadonly = (params: any) => {
+    return params.field === 'input2' && params.id % 2 === 0;
+  };
+
+  const handleGetSelectValues = (params: any) => {
+    return params.id % 2 === 0
+      ? [
+          { value: '1', displayValue: 'one' },
+          { value: '2', displayValue: 'two' },
+          { value: '3', displayValue: 'three' },
+        ]
+      : [
+          { value: '4', displayValue: 'four' },
+          { value: '5', displayValue: 'five' },
+          { value: '6', displayValue: 'six' },
+        ];
+  };
+
+  const handleGetCellClassName = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ) => {
+    if (params.field === 'corporationId' && params.value > 2)
+      return 'nebiki-nemashi-ari';
+    return '';
+  };
+
+  const handleOnClick = () => {
+    exportCsv('datagrid.csv', apiRef);
+  };
+
   return (
     <>
-      <DataGrid columns={columns} rows={rows} disabled />
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          resolver={validationSchema}
+          checkboxSelection
+          getCellReadonly={handleGetCellReadonly}
+          getSelectValues={handleGetSelectValues}
+          getCellClassName={handleGetCellClassName}
+          sx={{
+            '& .nebiki-nemashi-ari': {
+              backgroundColor: '#b9e7da',
+            },
+          }}
+          apiRef={apiRef}
+        />
+        <PrimaryButton onClick={handleOnClick}>CSV出力</PrimaryButton>
+      </ThemeProvider>
     </>
   );
 };
@@ -230,12 +345,14 @@ export const HeaderRow = () => {
 
   return (
     <>
-      <DataGrid
-        columns={columns}
-        rows={rows}
-        showHeaderRow
-        headerRow={headerRow}
-      />
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          showHeaderRow
+          headerRow={headerRow}
+        />
+      </ThemeProvider>
     </>
   );
 };
@@ -249,6 +366,7 @@ export const UpdatableHeaderRow = () => {
       field: 'button',
       headerName: '',
       cellType: 'button',
+      width: 200,
       renderCell: (
         params: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>
       ) => {
@@ -260,7 +378,7 @@ export const UpdatableHeaderRow = () => {
     {
       field: 'soshikiIdOrMeisyo',
       headerName: '組織ID／名称',
-      cellType: 'select',
+      cellType: 'input',
       selectValues: [
         { value: 0, displayValue: '' },
         { value: 1, displayValue: 'XXXXX' },
@@ -322,46 +440,68 @@ export const UpdatableHeaderRow = () => {
     },
   ];
 
-  const headerRow = {
+  const defaultHeaderRow = {
     soshikiIdOrMeisyo: 0,
     yakushokuIdOrMeisyo: 0,
     teiyoKaishiBi: '',
     teiyoShuryoBi: '',
   };
 
+  const defaultSelectionModel: GridRowSelectionModel = [];
+
+  const [rows, setRows] = useState(defaultRows);
+  const [headerRow, setHeaderRow] = useState(defaultHeaderRow);
+  const [selection, setSelection] = useState(defaultSelectionModel);
+
   const handleIkkatsuHaneiClick = () => {
     const headerRow = headerApiRef.current.getRow(-1);
-    // const rowIds = apiRef.current.getAllRowIds();
-    // rowIds.forEach((x) => {
-    //   const row = apiRef.current.getRow(x);
-    //   console.log(row);
-    //   row.soshikiIdOrMeisyo = '1';
-    //   row.yakushokuIdOrMeisyo = '1';
-    // });
     const newRows = rows.map((x) => {
-      return {
-        ...x,
-        soshikiIdOrMeisyo: headerRow.soshikiIdOrMeisyo,
-        yakushokuIdOrMeisyo: headerRow.yakushokuIdOrMeisyo,
-        teiyoKaishiBi: headerRow.teiyoKaishiBi,
-        teiyoShuryoBi: headerRow.teiyoShuryoBi,
-      };
+      if (selection.includes(x.id)) {
+        return {
+          ...x,
+          soshikiIdOrMeisyo: headerRow.soshikiIdOrMeisyo,
+          yakushokuIdOrMeisyo: headerRow.yakushokuIdOrMeisyo,
+          teiyoKaishiBi: headerRow.teiyoKaishiBi,
+          teiyoShuryoBi: headerRow.teiyoShuryoBi,
+        };
+      } else {
+        return x;
+      }
     });
     setRows(newRows);
   };
 
-  const [rows, setRows] = useState(defaultRows);
+  const handleOnRowValueChange = (row: any) => {
+    if (row.id === -1) {
+      setHeaderRow(row);
+    } else {
+      const newRows = rows.map((x) => (x.id === row.id ? row : x));
+      setRows(newRows);
+    }
+  };
+
+  const handleOnRowSelectionModelChange = (
+    rowSelectionModel: GridRowSelectionModel
+  ) => {
+    setSelection(rowSelectionModel);
+  };
 
   return (
     <>
-      <DataGrid
-        columns={columns}
-        rows={rows}
-        showHeaderRow
-        headerRow={headerRow}
-        apiRef={apiRef}
-        headerApiRef={headerApiRef}
-      />
+      <ThemeProvider theme={theme}>
+        <DataGrid
+          columns={columns}
+          rows={rows}
+          checkboxSelection
+          showHeaderRow
+          headerRow={headerRow}
+          onRowValueChange={handleOnRowValueChange}
+          onRowSelectionModelChange={handleOnRowSelectionModelChange}
+          controlled={false}
+          apiRef={apiRef}
+          headerApiRef={headerApiRef}
+        />
+      </ThemeProvider>
     </>
   );
 };

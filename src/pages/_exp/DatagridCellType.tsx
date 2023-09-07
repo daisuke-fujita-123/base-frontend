@@ -34,19 +34,24 @@ interface CellTypeRowModel {
 const cellTypeColumns: GridColDef[] = [
   {
     field: 'input',
+    headerName: 'インプット',
     cellType: 'input',
+    width: 200,
   },
   {
     field: 'select',
+    headerName: 'セレクト',
     cellType: 'select',
     selectValues: [
       { value: '1', displayValue: 'one' },
       { value: '2', displayValue: 'two' },
       { value: '3', displayValue: 'three' },
     ],
+    width: 200,
   },
   {
     field: 'radio',
+    headerName: 'ラジオ',
     cellType: 'radio',
     radioValues: [
       { value: '1', displayValue: 'one' },
@@ -57,10 +62,12 @@ const cellTypeColumns: GridColDef[] = [
   },
   {
     field: 'checkbox',
+    headerName: 'チェックボックス',
     cellType: 'checkbox',
   },
   {
     field: 'datepicker',
+    headerName: 'デートピッカー',
     cellType: 'datepicker',
     size: 'l',
   },
@@ -368,7 +375,7 @@ const DataGridCellType = () => {
   };
 
   const handleExportCsvClick = () => {
-    exportCsv(cellTypeRows, 'filename.csv');
+    exportCsv('filename.csv', apiRef);
   };
 
   const handleInfoButtonClick = (field: string, id: number) => {

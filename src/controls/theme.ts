@@ -90,9 +90,11 @@ export const theme = createTheme({
   typography: {
     fontFamily: ['メイリオ', 'Meiryo'].join(','),
     fontSize: 13,
+    fontWeightBold: 700,
+    fontWeightRegular: 400,
     body1: {
       fontSize: 13,
-      lineHeight: 1.5,
+      lineHeight: 1,
     },
   },
   spacing: 5,
@@ -102,6 +104,12 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 10,
+          '&.Mui-disabled': {
+            background: '#aaa',
+            border: '#aaa',
+            color: '#ffffff',
+            boxShadow: 'none',
+          },
         },
         sizeLarge: {
           minWidth: 150,
@@ -133,8 +141,8 @@ export const theme = createTheme({
           borderRadius: 0,
           height: 30,
           padding: 0,
-          borderColor: '#bbbbbbb',
-          minWidth: 225,
+          borderColor: '#bbbbbb',
+          minWidth: 180,
           maxWidth: 1550,
           background: '#ffffff',
         },
@@ -144,7 +152,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 0,
-          borderColor: '#bbbbbbb',
+          borderColor: '#bbbbbb',
         },
         input: {
           padding: '0 0 0 8px',
@@ -208,6 +216,7 @@ export const theme = createTheme({
     MuiPaginationItem: {
       styleOverrides: {
         root: {
+          fontSize: 14,
           '&.Mui-selected': { backgroundColor: '#00ddc4', color: '#ffffff' },
         },
       },
@@ -220,6 +229,22 @@ export const theme = createTheme({
           margin: 10,
           '&.Mui-checked': { color: '#0075ff', borderColor: '#bbbbbb' },
           '&.Mui-disabled': { color: '#aaaaaa' },
+        },
+      },
+    },
+    // ツールチップの共通レイアウト
+    MuiTooltip: {
+      styleOverrides: {
+        arrow: {
+          color: '#b9e7da',
+          width: 17,
+          height: 10,
+        },
+        tooltip: {
+          borderRadius: 0,
+          padding: 10,
+          backgroundColor: '#b9e7da',
+          color: '#000000',
         },
       },
     },
