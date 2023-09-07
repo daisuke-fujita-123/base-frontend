@@ -308,8 +308,6 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
   const [unApprovedHrefs, setUnApprovedHrefs] = useState<GridHrefsModel[]>([]);
   const [unApprovedTooltips, setunApprovedTooltips] = useState<any[]>([]);
 
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
-
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
 
@@ -318,14 +316,6 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
 
   // CSV
   const apiRef = useGridApiRef();
-
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -343,7 +333,7 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
       const changeHistoryHrefs: GridHrefsModel[] = [
         { field: 'applicationId', hrefs: [] },
       ];
-      changeHistorysearchResult.map((x) => {
+      changeHistorysearchResult.forEach((x) => {
         // コース詳細画面
         if (x.applicationScreen === SCR_COM_0016) {
           changeHistoryHrefs[0].hrefs.push({
@@ -407,7 +397,7 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
       const unApprovedHrefs: GridHrefsModel[] = [
         { field: 'applicationId', hrefs: [] },
       ];
-      unApprovedSearchResult.map((x) => {
+      unApprovedSearchResult.forEach((x) => {
         // コース詳細画面
         if (x.applicationScreen === SCR_COM_0016) {
           changeHistoryHrefs[0].hrefs.push({
@@ -488,8 +478,8 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
         {/* main */}
         <MainLayout main>
           <Section
+            fitInside
             name='変更履歴一覧'
-            width={maxSectionWidth}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
@@ -497,7 +487,6 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
             }
           >
             <DataGrid
-              apiRef={apiRef}
               pagination={true}
               columns={changeHistorySearchResultColumns}
               rows={changeHistorySearchResult}
@@ -507,17 +496,15 @@ const ScrCom0013ChangeHistoryTab = (props: { changeHisoryNumber: string }) => {
             />
           </Section>
           <Section
+            fitInside
             name='未承認一覧'
             decoration={
-              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={unApprovedhandleIconOutputCsvClick}>
-                  CSV出力
-                </AddButton>
-              </MarginBox>
+              <AddButton onClick={unApprovedhandleIconOutputCsvClick}>
+                CSV出力
+              </AddButton>
             }
           >
             <DataGrid
-              apiRef={apiRef}
               pagination={true}
               columns={unApprovedSearchResultColumns}
               rows={unApprovedSearchResult}

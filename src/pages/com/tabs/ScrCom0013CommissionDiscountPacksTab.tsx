@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
 
-import { MarginBox, RightBox } from 'layouts/Box';
+import { RightBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 import { Stack } from 'layouts/Stack';
@@ -514,8 +514,9 @@ const convertToSearchBasicResultRowModel = (
       discountDivision: x.discountDivision,
       discountAmount: x.discountAmount,
       courseId: x.courseId,
-      firstExclusionFlg:
-        x.firstExclusionFlg === true ? 'firstExclusionFlgRadioValue' : '',
+      firstExclusionFlg: x.firstExclusionFlg
+        ? 'firstExclusionFlgRadioValue'
+        : '',
       contractQuantityLowLimit: x.contractQuantityLowLimit,
       contractQuantityHighLimit: x.contractQuantityHighLimit,
       LimitStartDate: x.LimitStartDate,
@@ -523,12 +524,11 @@ const convertToSearchBasicResultRowModel = (
       LimitEndDate: x.LimitEndDate,
       ContractAfterMonth: x.ContractAfterMonth,
       approvalDocumentId: x.approvalDocumentId,
-      utilizationFlg:
-        x.utilizationFlg === true
-          ? 'basicUtilizationFlgFlagYes'
-          : x.utilizationFlg === false
-          ? 'basicUtilizationFlgFlagNo'
-          : '',
+      utilizationFlg: x.utilizationFlg
+        ? 'basicUtilizationFlgFlagYes'
+        : x.utilizationFlg === false
+        ? 'basicUtilizationFlgFlagNo'
+        : '',
       commodityCrameCd: x.commodityCrameCd,
       numberOfMonthsFromContractDateRadio: '',
       fromToRadio: '',
@@ -580,8 +580,9 @@ const convertToSearchOptionResultRowModel = (
       optionDiscountDivision: x.discountDivision,
       optionDiscountAmount: x.discountAmount,
       serviceId: x.serviceId,
-      optionFirstExclusionFlg:
-        x.firstExclusionFlg === true ? 'optionFirstExclusionFlgRadioValue' : '',
+      optionFirstExclusionFlg: x.firstExclusionFlg
+        ? 'optionFirstExclusionFlgRadioValue'
+        : '',
       optionContractQuantityLowLimit: x.contractQuantityLowLimit,
       optionContractQuantityHighLimit: x.contractQuantityHighLimit,
       optionFromToRadio: '',
@@ -591,12 +592,11 @@ const convertToSearchOptionResultRowModel = (
       optionNumberOfMonthsFromContractDateRadio: '',
       optionContractAfterMonth: x.ContractAfterMonth,
       optionApprovalDocumentId: x.approvalDocumentId,
-      optionUtilizationFlg:
-        x.utilizationFlg === true
-          ? 'optionUtilizationFlgYes'
-          : x.utilizationFlg === false
-          ? 'optionUtilizationFlgNo'
-          : '',
+      optionUtilizationFlg: x.utilizationFlg
+        ? 'optionUtilizationFlgYes'
+        : x.utilizationFlg === false
+        ? 'optionUtilizationFlgNo'
+        : '',
       optionCommodityCrameCd: x.commodityCrameCd,
     };
   });
@@ -653,8 +653,8 @@ const convertToSearchCommissionResultRowModel = (
       commissionValidityStartDate:
         x.validityStartDate + ' ～ ' + x.validityEndDate,
       commissionValidityEndDate: '',
-      commissionUtilizationFlg: x.utilizationFlg === true ? '可' : '不可',
-      commissionChangeReserve: x.changeReserve === true ? 'あり' : '',
+      commissionUtilizationFlg: x.utilizationFlg ? '可' : '不可',
+      commissionChangeReserve: x.changeReserve ? 'あり' : '',
     };
   });
 };
@@ -782,8 +782,6 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   // 登録確認ポップアップから渡される登録メモ
   const [registrationChangeMemo, setRegistrationChangeMemo] =
     useState<string>('');
-
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
   // メッセージの取得
   const { getMessage } = useContext(MessageContext);
@@ -981,8 +979,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'radio',
       radioValues: [
-        { value: 'basicAdmissionFee', displayValue: '入会金' },
-        { value: 'basicListPrice', displayValue: '定価' },
+        { value: 'optionAdmissionFee', displayValue: '入会金' },
+        { value: 'optionListPrice', displayValue: '定価' },
       ],
       required: true,
     },
@@ -1138,14 +1136,6 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     },
   ];
 
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
-
   /**
    * 初期表示
    */
@@ -1238,7 +1228,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       const hrefs: GridHrefsModel[] = [
         { field: 'commissionDiscountPackId', hrefs: [] },
       ];
-      searchResult0013Commission.map((x) => {
+      searchResult0013Commission.forEach((x) => {
         hrefs[0].hrefs.push({
           id: x.commissionDiscountPackId,
           href: '/com/commission-discount-packs/' + x.commissionDiscountPackId,
@@ -1288,22 +1278,20 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       discountDivision: response.basicDiscountDivision,
       discountAmount: response.basicDiscountAmount,
       courseId: response.basicCourseId,
-      firstExclusionFlg:
-        response.basicFirstExclusionFlg === true
-          ? 'firstExclusionFlgRadioValue'
-          : '',
+      firstExclusionFlg: response.basicFirstExclusionFlg
+        ? 'firstExclusionFlgRadioValue'
+        : '',
       contractQuantityLowLimit: response.basicContractQuantityLowLimit,
       contractQuantityHighLimit: response.basicContractQuantityHighLimit,
       LimitStartDate: response.basicLimitStartDate,
       dummy: '～',
       LimitEndDate: response.basicLimitEndDate,
       approvalDocumentId: response.basicApprovalDocumentId,
-      utilizationFlg:
-        response.basicUtilizationFlg === true
-          ? 'basicUtilizationFlgFlagYes'
-          : response.basicUtilizationFlg === false
-          ? 'basicUtilizationFlgFlagNo'
-          : '',
+      utilizationFlg: response.basicUtilizationFlg
+        ? 'basicUtilizationFlgFlagYes'
+        : response.basicUtilizationFlg === false
+        ? 'basicUtilizationFlgFlagNo'
+        : '',
       commodityCrameCd: response.basicCommodityCrameCd,
       fromToRadio: '',
       ContractAfterMonth: response.basicContractAfterMonth,
@@ -1396,7 +1384,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // キャンペーン名
       campaignName: '',
       // 会費種別
-      membershipFeeType: '',
+      membershipFeeType: 'basicListPrice',
       // 値引値増金額区分
       discountDivision: '',
       // 値引値増金額
@@ -1420,7 +1408,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // 稟議書ID
       approvalDocumentId: '',
       // 利用フラグ ラジオボタン
-      utilizationFlg: '',
+      utilizationFlg: 'basicUtilizationFlgFlagYes',
       // 商品クレームコード
       commodityCrameCd: '',
       // FromToのラジオボタン
@@ -1450,7 +1438,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // キャンペーン名
       optionCampaignName: '',
       // 会費種別
-      optionMembershipFeeType: '',
+      optionMembershipFeeType: 'optionListPrice',
       // 値引値増金額区分
       optionDiscountDivision: '',
       // 値引値増金額
@@ -1474,7 +1462,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // 稟議書ID
       optionApprovalDocumentId: '',
       // 利用フラグラジオボタン
-      optionUtilizationFlg: '',
+      optionUtilizationFlg: 'optionUtilizationFlgYes',
       // 商品クレームコード
       optionCommodityCrameCd: '',
       // FromToのラジオボタン
@@ -1768,7 +1756,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   /**
    * 登録内容確認ポップアップの登録承認ボタンクリック時のイベントハンドラ
    */
-  const handleApprovalConfirm = (registrationChangeMemo: string) => {
+  const handleRegistConfirm = (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
 
     // 登録内容確認ポップアップから渡された登録変更メモを設定
@@ -1788,7 +1776,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
   /**
    * 登録内容確認ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handleRegistConfirm = (registrationChangeMemo: string) => {
+  const handleApprovalConfirm = (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
   };
 
@@ -1887,26 +1875,26 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         {/* main */}
         <MainLayout main>
           <Section
+            fitInside
             name='会費セクション'
-            width={maxSectionWidth}
             decoration={
-              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+              <>
                 <AddButton onClick={handleBasicIconOutputCsvClick}>
                   CSV出力
                 </AddButton>
                 {/* 履歴表示の場合 追加ボタン非活性 */}
                 <AddButton
                   onClick={handleBasicIconAddClick}
-                  disable={props.changeHisoryNumber === '' ? true : false}
+                  // TODO: コメント
+                  // disable={props.changeHisoryNumber === '' ? true : false}
                 >
                   追加
                 </AddButton>
-              </MarginBox>
+              </>
             }
           >
             <Typography variant='h6'>基本値引値増</Typography>
             <DataGrid
-              apiRef={apiRef}
               pagination={true}
               columns={searchBasicResultColumns}
               rows={addedBasicSearchResult}
@@ -2001,21 +1989,21 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
             <br />
             <br />
             <RightBox>
-              <MarginBox mt={2} mb={4} ml={2} mr={2} gap={2}>
+              <>
                 <AddButton onClick={handleOptionIconOutputCsvClick}>
                   CSV出力
                 </AddButton>
                 <AddButton
                   onClick={handleOptionIconAddClick}
-                  disable={props.changeHisoryNumber === '' ? true : false}
+                  // TODO: コメント
+                  // disable={props.changeHisoryNumber === '' ? true : false}
                 >
                   追加
                 </AddButton>
-              </MarginBox>
+              </>
             </RightBox>
             <Typography variant='h6'>オプション値引値増</Typography>
             <DataGrid
-              apiRef={apiRef}
               pagination={true}
               columns={searchOptionResultColumns}
               rows={addedOptionSearchResult}
@@ -2109,25 +2097,25 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
             />
           </Section>
           <Section
+            fitInside
             name='手数料セクション'
-            width={maxSectionWidth}
             decoration={
-              <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+              <>
                 <AddButton onClick={handleIconCommissionOutputCsvClick}>
                   CSV出力
                 </AddButton>
                 {/* 履歴表示 or 編集権限なしの場合 追加ボタン非活性 */}
                 <AddButton
                   onClick={handleCommissionIconAddClick}
-                  disable={props.changeHisoryNumber === '' ? true : false}
+                  // TODO: コメント
+                  // disable={props.changeHisoryNumber === '' ? true : false}
                 >
                   追加
                 </AddButton>
-              </MarginBox>
+              </>
             }
           >
             <DataGrid
-              apiRef={apiRef}
               pagination={true}
               columns={searchCommissionResultColumns}
               rows={commissionSearchResult}
@@ -2156,8 +2144,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         <ScrCom0032Popup
           isOpen={isOpenPopup}
           data={scrCom0032PopupData}
-          handleRegistConfirm={handleRegistConfirm}
           // 本機能ではこちらのみ使用する
+          handleRegistConfirm={handleRegistConfirm}
           handleApprovalConfirm={handleApprovalConfirm}
           handleCancel={handlePopupCancel}
         />

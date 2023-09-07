@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import yup from 'utils/yup';
 import { ObjectSchema } from 'yup';
@@ -16,29 +17,29 @@ import { Select, SelectValue } from 'controls/Select';
 import { Typography } from 'controls/Typography';
 
 import {
+  changeExpectDateInfo,
+  displayComodityManagementServiceReserve,
+  displayComodityManagementServiceReserveRequest,
+  displayComodityManagementServiceReserveResponse,
   registrationRequest,
   ScrCom0013chkService,
   ScrCom0013chkServiceRequest,
   ScrCom0013DisplayComoditymanagementService,
   ScrCom0013DisplayComoditymanagementServiceRequest,
   ScrCom0013DisplayComoditymanagementServiceResponse,
+  ScrCom0013GetServiceChangeDate,
+  ScrCom0013GetServiceChangeDateRequest,
   ScrCom0013MergeService,
   ScrCom0013MergeServiceRequest,
 } from 'apis/com/ScrCom0013Api';
 import {
-  ChangeExpectDateInfo,
-  ScrCom9999GetChangeDate,
-  ScrCom9999GetChangeDateRequest,
   ScrCom9999GetCodeManagementMaster,
   ScrCom9999GetCodeManagementMasterRequest,
-  ScrCom9999GetHistoryInfo,
-  ScrCom9999GetHistoryInfoRequest,
   SearchGetCodeManagementMasterListbox,
 } from 'apis/com/ScrCom9999Api';
 
 import { useForm } from 'hooks/useForm';
 
-import { comApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
@@ -73,12 +74,6 @@ interface displayComoditymanagement {
   changeBfrTimestamp: string;
   // 変更予約
   changeReserve: string;
-  // 変更履歴番号
-  changeHistoryNumber: string;
-  // 変更履歴番号+変更予定日
-  memberChangeHistories: any[];
-  // 変更予定日
-  changeExpectedDate: string;
 }
 
 /**
@@ -190,8 +185,6 @@ const ScrCom0013ServiceTab = (props: {
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
-  // サービス情報取得APIにて取得した サービスID
-  const [serviceId, setServiceId] = useState<any>();
   // 反映予定日チェック用
   const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
   const [changeHistoryDateCheckisOpen, setChangeHistoryDateCheckisOpen] =
@@ -207,11 +200,16 @@ const ScrCom0013ServiceTab = (props: {
   // user情報(businessDateも併せて取得)
   const { user } = useContext(AuthContext);
 
+  // クエリパラメータの変更履歴番号
+  const [searchParams] = useSearchParams();
+  // 変更履歴番号
+  const changeHistoryNumber = searchParams.get('change-history-number');
+  // クエリストリングのサービスID
+  const { serviceIdParam } = useParams();
+
   // ユーザーの編集権限
-  const userEditFlag =
-    user.editPossibleScreenIdList === undefined
-      ? ''
-      : user.editPossibleScreenIdList.includes(SCR_COM_0013);
+  const readonly: boolean =
+    user.editPossibleScreenIdList.includes(SCR_COM_0013);
 
   // CSV
   const apiRef = useGridApiRef();
@@ -228,14 +226,12 @@ const ScrCom0013ServiceTab = (props: {
   const [scrCom0033PopupData, setScrCom0033PopupData] =
     useState<ScrCom0033PopupModel>(scrCom0033PopupInitialValues);
 
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
-
   /**
    * 商品管理 画面 初期データ
    */
   const initialValues: displayComoditymanagement = {
     // サービスID
-    serviceId: serviceId,
+    serviceId: serviceIdParam === undefined ? '' : serviceIdParam,
     // サービス名
     serviceName: '',
     // 担当部門区分
@@ -252,12 +248,6 @@ const ScrCom0013ServiceTab = (props: {
     changeBfrTimestamp: '',
     // 変更予約
     changeReserve: '',
-    // 変更履歴番号
-    changeHistoryNumber: '',
-    // 変更履歴番号+変更予定日
-    memberChangeHistories: [],
-    // 変更予定日
-    changeExpectedDate: '',
   };
 
   // form
@@ -362,18 +352,10 @@ const ScrCom0013ServiceTab = (props: {
         multiContractPossibleFlg: x.multiContractPossibleFlg,
         utilizationFlg: x.multiContractPossibleFlg,
         changeBfrTimestamp: x.changeBfrTimestamp,
-        changeReserve: x.changeReserve === true ? 'あり' : '',
+        changeReserve: x.changeReserve ? 'あり' : '',
       };
     });
   };
-
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -408,7 +390,7 @@ const ScrCom0013ServiceTab = (props: {
       });
       setServiceInfo(tempInfoList);
 
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API(担当部門)
+      // API-COM-9999-0010: コード管理マスタリストボックス情報取得API(担当部門)
       const responsibleCategoryRequest: ScrCom9999GetCodeManagementMasterRequest =
         {
           codeId: CDE_COM_0013,
@@ -416,7 +398,7 @@ const ScrCom0013ServiceTab = (props: {
       const responsibleCategoryResponse =
         await ScrCom9999GetCodeManagementMaster(responsibleCategoryRequest);
 
-      // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API(対象サービス)
+      // API-COM-9999-0010: コード管理マスタリストボックス情報取得API(対象サービス)
       const targetServiceDivisionRequest: ScrCom9999GetCodeManagementMasterRequest =
         {
           codeId: CDE_COM_0013,
@@ -424,15 +406,15 @@ const ScrCom0013ServiceTab = (props: {
       const targetServiceDivisionResponse =
         await ScrCom9999GetCodeManagementMaster(targetServiceDivisionRequest);
 
-      // API-COM-9999-0026: 変更予定日取得API
-      const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
-        businessDate: user.taskDate,
-        screenId: SCR_COM_0013,
-        tabId: 2,
-        masterId: '',
-      };
-      const getChangeDateResponse = await ScrCom9999GetChangeDate(
-        getChangeDateRequest
+      // API-COM-0013-0006：サービス変更予定日取得API
+      const getServiceChangeDateRequest: ScrCom0013GetServiceChangeDateRequest =
+        {
+          businessDate: user.taskDate,
+          screenId: SCR_COM_0013,
+          tabId: 2,
+        };
+      const getServiceChangeDateResponse = await ScrCom0013GetServiceChangeDate(
+        getServiceChangeDateRequest
       );
 
       // 画面にデータを設定
@@ -448,24 +430,30 @@ const ScrCom0013ServiceTab = (props: {
         // 変更予約
         changeReservationInfoSelectValues:
           convertToChangeExpectDateSelectValueModel(
-            getChangeDateResponse.changeExpectDateInfo
+            getServiceChangeDateResponse.changeExpectDateInfo
           ),
       });
     };
 
     // 履歴表示
     const historyInitialize = async (changeHisoryNumber: string) => {
-      /** API-COM-9999-0025: 変更履歴情報取得API */
-      const request = {
-        changeHistoryNumber: changeHisoryNumber,
-      };
-      const response = (
-        await comApiClient.post('/com/scr-com-9999/get-history-info', request)
-      ).data;
-      const serviceBasic = convertToHistoryInfoModel(response);
+      // API-COM-0013-0011: 商品管理表API(サービス変更予約情報表示)
+      const displayComodityManagementServiceReserveRequest: displayComodityManagementServiceReserveRequest =
+        {
+          screenId: SCR_COM_0013,
+          tabId: 2,
+          changeReserveDate: user.taskDate,
+        };
+      const displayComodityManagementServiceReserveResponse =
+        await displayComodityManagementServiceReserve(
+          displayComodityManagementServiceReserveRequest
+        );
+      const serviceHistoryInfo = convertToHistoryInfoModel(
+        displayComodityManagementServiceReserveResponse
+      );
+
       // 画面にデータを設定
-      reset(serviceBasic);
-      props.setGoodsBaseValue(response);
+      reset(serviceHistoryInfo);
     };
 
     // 変更履歴番号を受け取っていたら履歴表示
@@ -478,22 +466,23 @@ const ScrCom0013ServiceTab = (props: {
   }, []);
 
   /**
-   * 変更履歴情報取得APIから基本情報データモデルへの変換
+   * // API-COM-0013-0011: 商品管理表API(サービス変更予約情報表示)から基本情報データモデルへの変換
    */
   const convertToHistoryInfoModel = (
-    response: registrationRequest
-  ): SearchResultRowModel => {
+    response: displayComodityManagementServiceReserveResponse
+  ): displayComoditymanagement => {
     return {
-      id: response.serviceId,
-      serviceId: response.serviceId,
-      serviceName: response.serviceName,
-      responsibleCategory: response.responsibleCategory,
-      targetServiceDivision: response.targetServiceDivision,
-      cooperationInfoServiceFlg: response.cooperationInfoServiceFlg,
-      multiContractPossibleFlg: response.multiContractPossibleFlg,
-      utilizationFlg: response.serviceUtilizationFlg,
-      changeBfrTimestamp: response.changeBfrTimestamp,
-      changeReserve: response.serviceChangeReserve,
+      serviceId: response.serviceInfo[0].serviceId,
+      serviceName: response.serviceInfo[0].serviceName,
+      responsibleCategory: response.serviceInfo[0].responsibleCategory,
+      targetServiceDivision: response.serviceInfo[0].targetServiceDivision,
+      cooperationInfoServiceFlg:
+        response.serviceInfo[0].cooperationInfoServiceFlg,
+      multiContractPossibleFlg:
+        response.serviceInfo[0].multiContractPossibleFlg,
+      utilizationFlg: response.serviceInfo[0].utilizationFlg,
+      changeBfrTimestamp: response.serviceInfo[0].changeBfrTimestamp,
+      changeReserve: response.serviceInfo[0].changeReserve,
     };
   };
 
@@ -512,14 +501,14 @@ const ScrCom0013ServiceTab = (props: {
   };
 
   /**
-   *  API-COM-9999-0026: 変更予定日取得API レスポンスから SelectValueモデルへの変換
+   *  API-COM-0013-0006：サービス変更予定日取得API レスポンスから SelectValueモデルへの変換
    */
   const convertToChangeExpectDateSelectValueModel = (
-    changeExpectDateInfo: ChangeExpectDateInfo[]
+    changeExpectDateInfo: changeExpectDateInfo[]
   ): SelectValue[] => {
     return changeExpectDateInfo.map((x) => {
       return {
-        value: String(x.changeHistoryNumber),
+        value: String(x.changeExpectDate),
         displayValue: x.changeExpectDate,
       };
     });
@@ -573,18 +562,25 @@ const ScrCom0013ServiceTab = (props: {
    * 表示切替ボタンクリック時のイベントハンドラ
    */
   const handleSwichDisplay = async () => {
-    // SCR-COM-9999-0025: 変更履歴情報取得API
-    const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
-      changeHistoryNumber: props.changeHisoryNumber,
-    };
-    const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
-      getHistoryInfoRequest
+    // API-COM-0013-0011: 商品管理表API(サービス変更予約情報表示)
+    const displayComodityManagementServiceReserveRequest: displayComodityManagementServiceReserveRequest =
+      {
+        screenId: SCR_COM_0013,
+        tabId: 2,
+        changeReserveDate: user.taskDate,
+      };
+    const displayComodityManagementServiceReserveResponse =
+      await displayComodityManagementServiceReserve(
+        displayComodityManagementServiceReserveRequest
+      );
+    const serviceHistoryInfo = convertToHistoryInfoModel(
+      displayComodityManagementServiceReserveResponse
     );
 
     setIsChangeHistoryBtn(true);
 
     // 画面にデータを設定
-    setServiceId(getHistoryInfoResponse.changeHistoryInfo.get('serviceId'));
+    reset(serviceHistoryInfo);
   };
 
   /**
@@ -621,7 +617,7 @@ const ScrCom0013ServiceTab = (props: {
   /**
    * 登録内容確認ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handleRegistConfirm = (registrationChangeMemo: string) => {
+  const handleApprovalConfirm = (registrationChangeMemo: string) => {
     setIsOpenScrCom0032Popup(false);
   };
 
@@ -629,7 +625,7 @@ const ScrCom0013ServiceTab = (props: {
    * 登録内容確認ポップアップの登録承認ボタンクリック時のイベントハンドラ
    * @param registrationChangeMemo 登録変更メモ(登録内容確認ポップアップからの受取)
    */
-  const handleApprovalConfirm = (registrationChangeMemo: string) => {
+  const handleRegistConfirm = (registrationChangeMemo: string) => {
     setIsOpenScrCom0032Popup(false);
 
     setIsOpenScrCom0033Popup(true);
@@ -680,10 +676,11 @@ const ScrCom0013ServiceTab = (props: {
     setIsOpenScrCom0032Popup(false);
     setIsChangeHistoryBtn(false);
 
-    // SCR-COM-0013-0008: サービス情報登録更新API
+    // API-COM-0013-0008: サービス情報登録更新API
     const mergeServiceRequest: ScrCom0013MergeServiceRequest = {
       /** 変更履歴番号 */
-      changeHistoryNumber: getValues('changeHistoryNumber'),
+      changeHistoryNumber:
+        changeHistoryNumber === null ? '' : changeHistoryNumber,
       /** サービス情報 */
       serviceInfo: searchResult,
       /** 申請従業員 */
@@ -703,7 +700,7 @@ const ScrCom0013ServiceTab = (props: {
       /** 申請コメント */
       applicationComment: applicationComment,
       /** 変更予定日 */
-      changeExpectDate: getValues('changeHistoryNumber'),
+      changeExpectDate: user.taskDate,
     };
     ScrCom0013MergeService(mergeServiceRequest);
   };
@@ -714,8 +711,8 @@ const ScrCom0013ServiceTab = (props: {
         {/* main */}
         <MainLayout main>
           <Section
+            fitInside
             name='サービステーブル一覧'
-            width={maxSectionWidth}
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
@@ -730,7 +727,6 @@ const ScrCom0013ServiceTab = (props: {
             }
           >
             <DataGrid
-              apiRef={apiRef}
               pagination={true}
               columns={searchResultColumns}
               rows={searchResult}
@@ -738,34 +734,32 @@ const ScrCom0013ServiceTab = (props: {
               // 編集権限がない状態での表示、または履歴表示の場合の入力欄は非活性
               getCellDisabled={(params) => {
                 if (
-                  (params.field === 'serviceName' && !userEditFlag) ||
+                  (params.field === 'serviceName' && !readonly) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'responsibleCategory' && !userEditFlag) ||
+                  (params.field === 'responsibleCategory' && !readonly) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'targetServiceDivision' && !userEditFlag) ||
+                  (params.field === 'targetServiceDivision' && !readonly) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'cooperationInfoServiceFlg' &&
-                    !userEditFlag) ||
+                  (params.field === 'cooperationInfoServiceFlg' && !readonly) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'multiContractPossibleFlg' &&
-                    !userEditFlag) ||
+                  (params.field === 'multiContractPossibleFlg' && !readonly) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
                 if (
-                  (params.field === 'changeReserve' && !userEditFlag) ||
+                  (params.field === 'changeReserve' && !readonly) ||
                   props.changeHisoryNumber === ''
                 )
                   return true;
@@ -827,8 +821,8 @@ const ScrCom0013ServiceTab = (props: {
         <ScrCom0032Popup
           isOpen={isOpenScrCom0032Popup}
           data={scrCom0032PopupData}
-          handleRegistConfirm={handleRegistConfirm}
           // 本機能ではこちらのみを使用
+          handleRegistConfirm={handleRegistConfirm}
           handleApprovalConfirm={handleApprovalConfirm}
           handleCancel={handlePopupCancel}
         />
@@ -846,8 +840,8 @@ const ScrCom0013ServiceTab = (props: {
 
       {/* 反映予定日整合性チェック */}
       <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
+        changeExpectedDate={user.taskDate}
+        changeHistoryNumber={changeHistoryNumber}
         isChangeHistoryBtn={isChangeHistoryBtn}
         changeHistory={selectValues.changeReservationInfoSelectValues}
         isOpen={changeHistoryDateCheckisOpen}

@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
-import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
@@ -102,8 +101,8 @@ const convertToSearchResultRowModel = (
       courceId: x.courceId,
       courceName: x.courceName,
       cooperationTargetService: x.cooperationTargetService,
-      utilizationFlg: x.utilizationFlg === true ? '可' : '不可',
-      reservationExistence: x.reservationExistence === true ? 'あり' : '',
+      utilizationFlg: x.utilizationFlg ? '可' : '不可',
+      reservationExistence: x.reservationExistence ? 'あり' : '',
       reflectionSchedule: x.reflectionSchedule,
     };
   });
@@ -130,8 +129,6 @@ const ScrCom0013CourceTab = (props: {
   // CSV
   const apiRef = useGridApiRef();
 
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
-
   // form
   const methods = useForm<SearchResultRowModel>({});
   const {
@@ -141,14 +138,6 @@ const ScrCom0013CourceTab = (props: {
     reset,
     watch,
   } = methods;
-
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -175,7 +164,7 @@ const ScrCom0013CourceTab = (props: {
 
       // hrefsを設定
       const hrefs: GridHrefsModel[] = [{ field: 'courceId', hrefs: [] }];
-      searchResult.map((x) => {
+      searchResult.forEach((x) => {
         hrefs[0].hrefs.push({
           id: x.courceId,
           href: '/com/course/' + x.courceId,
@@ -256,10 +245,10 @@ const ScrCom0013CourceTab = (props: {
         <MainLayout main>
           <FormProvider {...methods}>
             <Section
+              fitInside
               name='コース一覧'
-              width={maxSectionWidth}
               decoration={
-                <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                <>
                   <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
                   {/* 履歴表示の場合 追加ボタン非活性 */}
                   <AddButton
@@ -268,11 +257,10 @@ const ScrCom0013CourceTab = (props: {
                   >
                     追加
                   </AddButton>
-                </MarginBox>
+                </>
               }
             >
               <DataGrid
-                apiRef={apiRef}
                 pagination={true}
                 columns={searchResultColumns}
                 rows={searchResult}

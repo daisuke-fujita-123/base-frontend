@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
-import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
@@ -103,8 +102,8 @@ const convertToSearchResultRowModel = (
       commissionName: x.commissionName,
       commissionType: x.commissionType,
       calculationDocType: x.calculationDocType,
-      utilizationFlg: x.utilizationFlg === true ? '可' : '不可',
-      changeReserve: x.changeReserve === true ? 'あり' : '',
+      utilizationFlg: x.utilizationFlg ? '可' : '不可',
+      changeReserve: x.changeReserve ? 'あり' : '',
     };
   });
 };
@@ -120,8 +119,6 @@ const ScrCom0013CommissionTab = (props: {
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
-
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
   // router
   const navigate = useNavigate();
@@ -141,14 +138,6 @@ const ScrCom0013CommissionTab = (props: {
     reset,
     watch,
   } = methods;
-
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -175,7 +164,7 @@ const ScrCom0013CommissionTab = (props: {
 
       // hrefsを設定
       const hrefs: GridHrefsModel[] = [{ field: 'commissionId', hrefs: [] }];
-      searchResult.map((x) => {
+      searchResult.forEach((x) => {
         hrefs[0].hrefs.push({
           id: x.commissionId,
           href: '/com/commissions/' + x.commissionId,
@@ -253,10 +242,10 @@ const ScrCom0013CommissionTab = (props: {
         <MainLayout main>
           <FormProvider {...methods}>
             <Section
+              fitInside
               name='手数料テーブル一覧'
-              width={maxSectionWidth}
               decoration={
-                <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+                <>
                   <AddButton onClick={handleExportCsvClick}>CSV出力</AddButton>
                   {/* 履歴表示の場合 追加ボタン非活性 */}
                   <AddButton
@@ -265,11 +254,10 @@ const ScrCom0013CommissionTab = (props: {
                   >
                     追加
                   </AddButton>
-                </MarginBox>
+                </>
               }
             >
               <DataGrid
-                apiRef={apiRef}
                 pagination={true}
                 columns={searchResultColumns}
                 rows={searchResult}

@@ -4,7 +4,7 @@ import { SelectValue } from 'controls/Select';
 
 import { comApiClient } from 'providers/ApiClient';
 
-// SCR-COM-0013-0001：商品管理表示API(コース情報表示） リクエスト
+// API-COM-0013-0001：商品管理表示API(コース情報表示） リクエスト
 export interface ScrCom0013DisplayComoditymanagementCourseRequest {
   /** 画面ID */
   screenId: string;
@@ -14,7 +14,7 @@ export interface ScrCom0013DisplayComoditymanagementCourseRequest {
   businessDate: string;
 }
 
-// SCR-COM-0013-0001：商品管理表示API(コース情報表示） レスポンス
+// API-COM-0013-0001：商品管理表示API(コース情報表示） レスポンス
 export interface ScrCom0013DisplayComoditymanagementCourseResponse {
   /** 件数 */
   count: number;
@@ -22,7 +22,7 @@ export interface ScrCom0013DisplayComoditymanagementCourseResponse {
   courseList: courceInfo[];
 }
 
-// SCR-COM-0013-0001：商品管理表示API(コース情報表示） レスポンス リスト行
+// API-COM-0013-0001：商品管理表示API(コース情報表示） レスポンス リスト行
 export interface courceInfo {
   /** コースID */
   courceId: string;
@@ -38,7 +38,7 @@ export interface courceInfo {
   reflectionSchedule: string;
 }
 
-// SCR-COM-0013-0002：商品管理表示API(サービス情報表示） リクエスト
+// API-COM-0013-0002：商品管理表示API(サービス情報表示） リクエスト
 export interface ScrCom0013DisplayComoditymanagementServiceRequest {
   /** 画面ID */
   screenId: string;
@@ -48,7 +48,7 @@ export interface ScrCom0013DisplayComoditymanagementServiceRequest {
   businessDate: string;
 }
 
-// SCR-COM-0013-0002：商品管理表示API(サービス情報表示） レスポンス
+// API-COM-0013-0002：商品管理表示API(サービス情報表示） レスポンス
 export interface ScrCom0013DisplayComoditymanagementServiceResponse {
   /** 件数 */
   count: number;
@@ -56,7 +56,7 @@ export interface ScrCom0013DisplayComoditymanagementServiceResponse {
   serviceList: ServiceInfo[];
 }
 
-// SCR-COM-0013-0002：商品管理表示API(コース情報表示） レスポンス リスト行
+// API-COM-0013-0002：商品管理表示API(コース情報表示） レスポンス リスト行
 export interface ServiceInfo {
   /** サービスID */
   serviceId: string;
@@ -78,7 +78,7 @@ export interface ServiceInfo {
   changeReserve: boolean;
 }
 
-// SCR-COM-0013-0003：商品管理表示API(手数料情報表示） リクエスト
+// API-COM-0013-0003：商品管理表示API(手数料情報表示） リクエスト
 export interface ScrCom0013DisplayComoditymanagementCommissionRequest {
   /** 画面ID */
   screenId: string;
@@ -88,7 +88,7 @@ export interface ScrCom0013DisplayComoditymanagementCommissionRequest {
   businessDate: string;
 }
 
-// SCR-COM-0013-0003：商品管理表示API(手数料情報表示） レスポンス
+// API-COM-0013-0003：商品管理表示API(手数料情報表示） レスポンス
 export interface ScrCom0013DisplayComoditymanagementCommissionResponse {
   /** 件数 */
   count: number;
@@ -96,7 +96,7 @@ export interface ScrCom0013DisplayComoditymanagementCommissionResponse {
   commissionList: CommissionInfo[];
 }
 
-// SCR-COM-0013-0003：商品管理表示API(手数料情報表示） レスポンス(リスト行)
+// API-COM-0013-0003：商品管理表示API(手数料情報表示） レスポンス(リスト行)
 export interface CommissionInfo {
   // 手数料ID
   commissionId: string;
@@ -112,7 +112,7 @@ export interface CommissionInfo {
   changeReserve: boolean;
 }
 
-// SCR-COM-0013-0004：商品管理表示API(手数料情報表示） リクエスト
+// API-COM-0013-0004：商品管理表示API(手数料情報表示） リクエスト
 export interface ScrCom0013DisplayComoditymanagementDiscountRequest {
   /** 画面ID */
   screenId: string;
@@ -122,7 +122,7 @@ export interface ScrCom0013DisplayComoditymanagementDiscountRequest {
   businessDate: string;
 }
 
-// SCR-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス
+// API-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス
 export interface ScrCom0013DisplayComoditymanagementDiscountResponse {
   /** 件数(基本値引値増) */
   basicCount: number;
@@ -138,7 +138,7 @@ export interface ScrCom0013DisplayComoditymanagementDiscountResponse {
   commissionDiscountList: CommissionDiscountInfo[];
 }
 
-// SCR-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス 基本リスト行
+// API-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス 基本リスト行
 export interface BasicDiscountInfo {
   campaignCd: string;
   campaignName: string;
@@ -157,7 +157,7 @@ export interface BasicDiscountInfo {
   commodityCrameCd: string;
 }
 
-// SCR-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス オプションリスト行
+// API-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス オプションリスト行
 export interface OptionDiscountInfo {
   campaignCd: string;
   campaignName: string;
@@ -176,7 +176,7 @@ export interface OptionDiscountInfo {
   commodityCrameCd: string;
 }
 
-// SCR-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス 手数料リスト行
+// API-COM-0013-0004：商品管理表示API(手数料情報表示） レスポンス 手数料リスト行
 export interface CommissionDiscountInfo {
   commissionDiscountPackId: string;
   packName: string;
@@ -188,7 +188,7 @@ export interface CommissionDiscountInfo {
   changeReserve: boolean;
 }
 
-// SCR-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス
+// API-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス
 export interface ScrCom0013DisplayComoditymanagementHistoryResponse {
   /** 件数（変更履歴一覧） */
   approveCount: number;
@@ -200,7 +200,7 @@ export interface ScrCom0013DisplayComoditymanagementHistoryResponse {
   chgHistoryNotApproveList: chgHistoryNotApproveInfo[];
 }
 
-// SCR-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス 承認済リスト行
+// API-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス 承認済リスト行
 export interface chgHistoryApproveInfo {
   // 申請ID
   applicationId: number;
@@ -234,7 +234,7 @@ export interface chgHistoryApproveInfo {
   lastApproveComment: string;
 }
 
-// SCR-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス 未承認リスト行
+// API-COM-0013-0005：商品管理表示API(変更履歴情報表示） レスポンス 未承認リスト行
 export interface chgHistoryNotApproveInfo {
   // 申請ID
   applicationId: number;
@@ -278,35 +278,35 @@ export interface chgHistoryNotApproveInfo {
   forthApproverName: string;
 }
 
-// SCR-COM-0013-0006：サービス変更予定日取得API リクエスト
+// API-COM-0013-0006：サービス変更予定日取得API リクエスト
 export interface ScrCom0013GetServiceChangeDateRequest {
   /** 画面ID */
   screenId: string;
   /** タブID */
-  tabId: string;
+  tabId: number;
   /** 業務日付 */
   businessDate: string;
 }
 
-// SCR-COM-0013-0006：サービス変更予定日取得API レスポンス
+// API-COM-0013-0006：サービス変更予定日取得API レスポンス
 export interface ScrCom0013GetServiceChangeDateResponse {
   /** 変更予定日情報 */
   changeExpectDateInfo: changeExpectDateInfo[];
 }
 
-// SCR-COM-0013-0006：サービス変更予定日取得API レスポンス リスト行
+// API-COM-0013-0006：サービス変更予定日取得API レスポンス リスト行
 export interface changeExpectDateInfo {
   /** 変更予定日 */
   changeExpectDate: string;
 }
 
-// SCR-COM-0013-0007: サービス情報入力チェックAPI リクエスト
+// API-COM-0013-0007: サービス情報入力チェックAPI リクエスト
 export interface ScrCom0013chkServiceRequest {
   /** サービス情報リスト */
   serviceList: serviceInfo[];
 }
 
-// SCR-COM-0013-0007: サービス情報入力チェックAPI リクエスト リスト行
+// API-COM-0013-0007: サービス情報入力チェックAPI リクエスト リスト行
 export interface serviceInfo {
   /** サービスID */
   serviceId: string;
@@ -314,7 +314,7 @@ export interface serviceInfo {
   serviceName: string;
 }
 
-// SCR-COM-0013-0007: サービス情報入力チェックAPI レスポンス
+// API-COM-0013-0007: サービス情報入力チェックAPI レスポンス
 export interface ScrCom0013chkServiceResponse {
   /** エラー内容リスト */
   errorList: errorList[];
@@ -322,7 +322,7 @@ export interface ScrCom0013chkServiceResponse {
   warnList: warnList[];
 }
 
-// SCR-COM-0013-0007: サービス情報入力チェックAPI レスポンス リスト行
+// API-COM-0013-0007: サービス情報入力チェックAPI レスポンス リスト行
 export interface errorList {
   /** エラーコード */
   errorCode: string;
@@ -330,7 +330,7 @@ export interface errorList {
   errorMessage: string;
 }
 
-// SCR-COM-0013-0007: サービス情報入力チェックAPI レスポンス リスト行
+// API-COM-0013-0007: サービス情報入力チェックAPI レスポンス リスト行
 export interface warnList {
   /** ワーニングコード */
   warnCode: string;
@@ -338,7 +338,7 @@ export interface warnList {
   warnMessage: string;
 }
 
-// SCR-COM-0013-0008: サービス情報登録API リクエスト
+// API-COM-0013-0008: サービス情報登録API リクエスト
 export interface ScrCom0013MergeServiceRequest {
   /** 変更履歴番号 */
   changeHistoryNumber: string;
@@ -364,7 +364,7 @@ export interface ScrCom0013MergeServiceRequest {
   changeExpectDate: string;
 }
 
-// SCR-COM-0013-0008: サービス情報登録API リクエスト リスト行
+// API-COM-0013-0008: サービス情報登録API リクエスト リスト行
 export interface serviceInfoList {
   /** サービスID */
   serviceId: string;
@@ -382,7 +382,7 @@ export interface serviceInfoList {
   utilizationFlg: boolean;
 }
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト
+// API-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト
 export interface ScrCom0013chkDiscountRequest {
   /** 値引値増情報リスト */
   discountInfoList: discountInfoList[];
@@ -394,7 +394,7 @@ export interface ScrCom0013chkDiscountRequest {
   deleteTargetedList: deleteTargetedList[];
 }
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
+// API-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
 export interface discountInfoList {
   // キャンペーンコード
   campaignCd: string;
@@ -406,25 +406,25 @@ export interface discountInfoList {
   periodTo: string;
 }
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
+// API-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
 export interface registTargetedList {
   // キャンペーンコード
   campaignCd: string;
 }
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
+// API-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
 export interface updateTargetedList {
   // キャンペーンコード
   campaignCd: string;
 }
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
+// API-COM-0013-0009: 値引値増情報入力チェックAPI リクエスト リスト行
 export interface deleteTargetedList {
   // キャンペーンコード
   campaignCd: string;
 }
 
-// SCR-COM-0013-0010: 値引値増情報登録更新API リクエスト
+// API-COM-0013-0010: 値引値増情報登録更新API リクエスト
 export interface ScrCom0013MergeDiscountRequest {
   /** 基本値引値増情報 */
   baseDiscountList: BasicDiscountInfo[];
@@ -454,7 +454,7 @@ export interface ScrCom0013MergeDiscountRequest {
   applicationComment: string;
 }
 
-// SCR-COM-0013-0010: 値引値増情報登録更新API リクエスト リスト行
+// API-COM-0013-0010: 値引値増情報登録更新API リクエスト リスト行
 export interface basicInfo {
   /** キャンペーンコード */
   campaignCd: string;
@@ -492,7 +492,7 @@ export interface basicInfo {
   utilizationFlg: boolean;
 }
 
-// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) リクエスト
+// API-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) リクエスト
 export interface displayComodityManagementServiceReserveRequest {
   /** 画面ID */
   screenId: string;
@@ -502,15 +502,15 @@ export interface displayComodityManagementServiceReserveRequest {
   changeReserveDate: string;
 }
 
-// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) レスポンス
+// API-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) レスポンス
 export interface displayComodityManagementServiceReserveResponse {
   /** 件数 */
   count: number;
-  /** ワーニング内容リスト */
+  /** サービス変更予約情報 */
   serviceInfo: serviceInfo[];
 }
 
-// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) レスポンス リスト行
+// API-COM-0013-0011: 商品管理表API(サービス変更予約情報表示) レスポンス リスト行
 export interface serviceInfo {
   /** サービスID */
   serviceId: string;
@@ -532,7 +532,7 @@ export interface serviceInfo {
   changeReserve: string;
 }
 
-// SCR-COM-0013-0001：商品管理表示API(コース情報表示）
+// API-COM-0013-0001：商品管理表示API(コース情報表示）
 export const ScrCom0013DisplayComoditymanagementCourse = async (
   request: ScrCom0013DisplayComoditymanagementCourseRequest
 ): Promise<ScrCom0013DisplayComoditymanagementCourseResponse> => {
@@ -543,7 +543,7 @@ export const ScrCom0013DisplayComoditymanagementCourse = async (
   return response.data;
 };
 
-// SCR-COM-0013-0002：商品管理表示API(サービス情報表示）
+// API-COM-0013-0002：商品管理表示API(サービス情報表示）
 export const ScrCom0013DisplayComoditymanagementService = async (
   request: ScrCom0013DisplayComoditymanagementServiceRequest
 ): Promise<ScrCom0013DisplayComoditymanagementServiceResponse> => {
@@ -554,7 +554,7 @@ export const ScrCom0013DisplayComoditymanagementService = async (
   return response.data;
 };
 
-// SCR-COM-0013-0003：商品管理表示API(手数料情報表示）
+// API-COM-0013-0003：商品管理表示API(手数料情報表示）
 export const ScrCom0013DisplayComoditymanagementCommission = async (
   request: ScrCom0013DisplayComoditymanagementCommissionRequest
 ): Promise<ScrCom0013DisplayComoditymanagementCommissionResponse> => {
@@ -565,7 +565,7 @@ export const ScrCom0013DisplayComoditymanagementCommission = async (
   return response.data;
 };
 
-// SCR-COM-0013-0004：商品管理表示API(手数料情報表示）
+// API-COM-0013-0004：商品管理表示API(手数料情報表示）
 export const ScrCom0013DisplayComoditymanagementDiscount = async (
   request: ScrCom0013DisplayComoditymanagementDiscountRequest
 ): Promise<ScrCom0013DisplayComoditymanagementDiscountResponse> => {
@@ -576,7 +576,7 @@ export const ScrCom0013DisplayComoditymanagementDiscount = async (
   return response.data;
 };
 
-// SCR-COM-0013-0005：商品管理表示API(変更履歴情報表示）
+// API-COM-0013-0005：商品管理表示API(変更履歴情報表示）
 export const ScrCom0013DisplayComoditymanagementHistory =
   async (): Promise<ScrCom0013DisplayComoditymanagementHistoryResponse> => {
     const response = await comApiClient.post(
@@ -585,7 +585,7 @@ export const ScrCom0013DisplayComoditymanagementHistory =
     return response.data;
   };
 
-// SCR-COM-0013-0006：サービス変更予定日取得API
+// API-COM-0013-0006：サービス変更予定日取得API
 export const ScrCom0013GetServiceChangeDate = async (
   request: ScrCom0013GetServiceChangeDateRequest
 ): Promise<ScrCom0013GetServiceChangeDateResponse> => {
@@ -596,7 +596,7 @@ export const ScrCom0013GetServiceChangeDate = async (
   return response.data;
 };
 
-// SCR-COM-0013-0007: サービス情報入力チェックAPI
+// API-COM-0013-0007: サービス情報入力チェックAPI
 export const ScrCom0013chkService = async (
   request: ScrCom0013chkServiceRequest
 ): Promise<ScrCom0032PopupModel> => {
@@ -607,7 +607,7 @@ export const ScrCom0013chkService = async (
   return response.data;
 };
 
-// SCR-COM-0013-0008: サービス情報登録API
+// API-COM-0013-0008: サービス情報登録API
 export const ScrCom0013MergeService = async (
   request: ScrCom0013MergeServiceRequest
 ): Promise<void> => {
@@ -618,7 +618,7 @@ export const ScrCom0013MergeService = async (
   return response.data;
 };
 
-// SCR-COM-0013-0009: 値引値増情報入力チェックAPI
+// API-COM-0013-0009: 値引値増情報入力チェックAPI
 export const ScrCom0013chkDiscount = async (
   request: ScrCom0013chkDiscountRequest
 ): Promise<ScrCom0032PopupModel> => {
@@ -629,14 +629,14 @@ export const ScrCom0013chkDiscount = async (
   return response.data;
 };
 
-// SCR-COM-0013-0010: 値引値増情報登録更新API
+// API-COM-0013-0010: 値引値増情報登録更新API
 export const ScrCom0013MergeDiscount = async (
   request: ScrCom0013MergeDiscountRequest
 ): Promise<void> => {
   await comApiClient.post('/api/com/scr-com-0013/merge-discount', request);
 };
 
-// SCR-COM-0013-0011: 商品管理表API(サービス変更予約情報表示)
+// API-COM-0013-0011: 商品管理表API(サービス変更予約情報表示)
 export const displayComodityManagementServiceReserve = async (
   request: displayComodityManagementServiceReserveRequest
 ): Promise<displayComodityManagementServiceReserveResponse> => {
