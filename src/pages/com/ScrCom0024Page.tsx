@@ -514,14 +514,6 @@ const ScrCom0024Page = () => {
       // 利用フラグ
       const convertToUseValue: string =
         placeBasic.useFlag === true ? 'yes' : 'no';
-      // ホンダグループ
-      const convertToHondaGroupValue: string =
-        placeBasic.hondaGroupFlag === true ? 'hondaTarget' : 'hondaUnTarget';
-      // 書類発送指示
-      const convertToDocumentShippingInstructionValue: string =
-        placeBasic.documentShippingInstructionFlag === true
-          ? 'sendingDocumentsTarget'
-          : 'sendingDocumentsUnTarget';
       // 指示対象
       const convertToReferent: string =
         placeBasic.documentShippingPlaceDirectDeliveryFlag === true
@@ -530,41 +522,17 @@ const ScrCom0024Page = () => {
       // 出金設定
       const convertToPaymentAllValue: string =
         placeBasic.paymentAllFlag === true ? 'bulk' : 'eachTime';
-      // 支払通知
-      const convertToPaymentNoticeValue: string =
-        placeBasic.paymentNoticeFlag === true
-          ? 'paymentNoticeTarget'
-          : 'paymentNoticeUnTarget';
 
       // 画面にデータを設定
-      // 会場基本情報セクション
-      // 会場コード
-      setValue('placeCd', placeBasic.placeCd);
-      // 会場名
-      setValue('placeName', placeBasic.placeName);
+      reset(placeBasic);
       // おまとめ会場(ラジオボタン)
       setValue('omatomePlaceValue', convertToOmatomePlaceValue);
-      // 計算表示会場名
-      setValue(
-        'statementDisplayPlaceName',
-        placeBasic.statementDisplayPlaceName
-      );
       // 利用フラグ(ラジオボタン)
       setValue('useValue', convertToUseValue);
-      // 提供開始日
-      setValue('partnerStartDate', placeBasic.partnerStartDate);
-      // 開催曜日(リストボックス)
-      setValue('sessionWeekKind', placeBasic.placeCd);
-      // 契約ID
-      setValue('contractId', placeBasic.contractId);
-      // 法人ID
-      setValue('corporationId', placeBasic.corporationId);
-      // 法人名
-      setValue('corporationName', placeBasic.corporationName);
-      // 事業拠点電話番号
-      setValue('telephoneNumber', placeBasic.telephoneNumber);
-      // 請求先ID
-      setValue('billingId', placeBasic.billingId);
+      // 書類発送会場直送フラグ(ラジオボタン)
+      setValue('referentValue', convertToReferent);
+      // 出金一括フラグ(ラジオボタン)
+      setValue('paymentAllValue', convertToPaymentAllValue);
       // 会場グループ(リストボックス)
       setValue('placeGroupCode', placeBasic.placeCd);
       // 支払先会場名(リストボックス)
@@ -573,77 +541,18 @@ const ScrCom0024Page = () => {
       setValue('posPutTogetherPlaceCode', placeBasic.placeCd);
       // ライブ会場グループコード(リストボックス)
       setValue('livePlaceGroupCode', placeBasic.placeCd);
-      // ホンダグループフラグ
-      setValue('hondaGroupValue', convertToHondaGroupValue);
-      // 保証金
-      setValue('guaranteeDeposit', placeBasic.guaranteeDeposit);
-      // 会場契約ID
-      setValue('contractId', placeBasic.contractId);
-      // 書類発送指示セクション
-      // 書類発送指示(ラジオボタン)
-      setValue(
-        'documentShippingInstructionValue',
-        convertToDocumentShippingInstructionValue
-      );
-      // 書類発送会場直送フラグ(ラジオボタン)
-      setValue('referentValue', convertToReferent);
-      // 書類発送担当者
-      setValue('documentShippingStaff', placeBasic.documentShippingStaff);
-      // 書類発送メールアドレス
-      setValue(
-        'documentShippingMailAddress',
-        placeBasic.documentShippingMailAddress
-      );
-      // 書類発送FAX番号
-      setValue(
-        'documentShippingFaxNumber',
-        placeBasic.documentShippingFaxNumber
-      );
-      // 出金設定セクション
-      // 出金期日
-      setValue('paymentDueDate', placeBasic.paymentDueDate);
-      // 出金一括フラグ(ラジオボタン)
-      setValue('paymentAllValue', convertToPaymentAllValue);
-      // 振込口座情報セクション
-      // 銀行名
-      setValue('bankName', placeBasic.bankName);
-      // 支店名
-      setValue('branchName', placeBasic.branchName);
-      // 種別
-      setValue('accountKind', placeBasic.accountKind);
-      // 口座名義
-      setValue('accountNumber', placeBasic.accountNumber);
-      // 口座名義 カナ
-      setValue('accountNameKana', placeBasic.accountNameKana);
       // バーチャル口座付与ルール(リストボックス)
       setValue('virtualAccountGiveRuleCode', placeBasic.placeCd);
-      // 支払通知送付先指定セクション
-      // 支払通知フラグ(ラジオボタン)
-      setValue('paymentNoticeValue', convertToPaymentNoticeValue);
-      // 支払通知担当者
-      setValue('paymentNoticeStaff', placeBasic.paymentNoticeStaff);
-      // 支払通知メールアドレス
-      setValue('paymentNoticeMailAddress', placeBasic.paymentNoticeMailAddress);
-      // 支払通知FAX番号
-      setValue('paymentNoticeFaxNumber', placeBasic.paymentNoticeMailAddress);
-      // 入金元口座情報セクション
+      // おまとめ会場連絡不可対象(リストボックス)
+       setValue('omatomePlaceContactImpossibleTargetedKind', placeBasic.placeCd);
       // 銀行名(リストボックス)
       setValue('receiptSourceBankName', placeBasic.placeCd);
       // 支店名(リストボックス)
       setValue('receiptSourceBranchName', placeBasic.placeCd);
-      // 入金元口座名義カナ
-      setValue(
-        'receiptSourceAccountNameKana',
-        placeBasic.receiptSourceAccountNameKana
-      );
-      // 会場連絡（会員管理）セクション
-      // 会場会員管理担当メールアドレス
-      setValue(
-        'placeMemberManagementStaffMailAddress',
-        placeBasic.placeMemberManagementStaffMailAddress
-      );
-      // おまとめ会場連絡不可対象(リストボックス)
-      setValue('omatomePlaceContactImpossibleTargetedKind', placeBasic.placeCd);
+      // 開催曜日
+      setValue('sessionWeekKind', placeBasic.placeCd);
+
+
 
       // 判定用データを設定
       setOmatomePlaceFlag(placeBasic.omatomePlaceFlag);
