@@ -1,18 +1,28 @@
 import React from 'react';
 import {
-    FieldPath, FieldPathValue, FieldValues, Path, useFormContext, useWatch
+  FieldPath,
+  FieldPathValue,
+  FieldValues,
+  Path,
+  useFormContext,
+  useWatch,
 } from 'react-hook-form';
 
 import { MarginBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
 
+import { Link as TextLink } from 'controls/Link';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
 import ClearIcon from '@mui/icons-material/Clear';
-
-import { IconButton, InputAdornment, styled, TextField as TextFiledMui } from '@mui/material';
+import {
+  IconButton,
+  InputAdornment,
+  styled,
+  TextField as TextFiledMui,
+} from '@mui/material';
 
 export interface TextFieldProps<T extends FieldValues> {
   label?: string;
@@ -26,6 +36,7 @@ export interface TextFieldProps<T extends FieldValues> {
   readonly?: boolean;
   size?: 's' | 'm' | 'l' | 'xl';
   onBlur?: (name: string) => void;
+  onClick?: () => void;
   unit?: string;
   type?: 'text' | 'password';
 }
@@ -321,6 +332,58 @@ export const PostalTextField = <T extends FieldValues>(
         }}
         ref={registerRet.ref}
         name={registerRet.name}
+      />
+    </InputLayout>
+  );
+};
+
+export const LinkTextField = <T extends FieldValues>(
+  props: TextFieldProps<T>
+) => {
+  const {
+    label,
+    labelPosition = 'above',
+    required = false,
+    name,
+    disabled = false,
+    fullWidth = true,
+    size = 's',
+    onClick,
+  } = props;
+
+  const { formState, control } = useFormContext();
+  const watchValue = useWatch({ name, control });
+  const Link = () => {
+    return (
+      <TextLink href='#' onClick={onClick}>
+        {watchValue}
+      </TextLink>
+    );
+  };
+
+  return (
+    <InputLayout
+      label={label}
+      labelPosition={labelPosition}
+      required={required}
+      size={size}
+    >
+      {/* <Link></Link> */}
+      <StyledTextFiled
+        id={name}
+        disabled={disabled}
+        fullWidth={fullWidth}
+        variant='standard'
+        error={!!formState.errors[name]}
+        helperText={
+          formState.errors[name]?.message
+            ? String(formState.errors[name]?.message)
+            : null
+        }
+        InputProps={{
+          startAdornment: <Link />,
+          readOnly: true,
+        }}
       />
     </InputLayout>
   );

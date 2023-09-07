@@ -23,8 +23,8 @@ import { Textarea } from 'controls/Textarea';
 import { LinkTextField, TextField } from 'controls/TextField';
 
 import {
-  ScrCom9999GetCodeManagementMaster,
-  ScrCom9999GetCodeManagementMasterResponse,
+  ScrCom9999getCodeManagementMasterMultiple,
+  ScrCom9999getCodeManagementMasterMultipleResponse,
 } from 'apis/com/ScrCom9999Api';
 import {
   ScrDoc0005DocumentBasicsInfo,
@@ -344,7 +344,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   >([]);
   // 選択値
   const [codes, setCodes] = useState<
-    ScrCom9999GetCodeManagementMasterResponse['resultList']
+    ScrCom9999getCodeManagementMasterMultipleResponse['resultList']
   >([]);
   const selectValues: SelectValue[] = codes.map((val, index) => {
     if (val.codeId === 'CDE-COM-0073') {
@@ -519,16 +519,16 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
     setEquipmentInfoList(equipmentInfoList);
 
     // 選択肢の作成
-    const selectRes = await ScrCom9999GetCodeManagementMaster({
+    const selectRes = await ScrCom9999getCodeManagementMasterMultiple({
       codeIdList: [
-        'CDE-COM-0073',
-        'CDE-COM-0082',
-        'CDE-COM-0083',
-        'CDE-COM-0084',
-        'CDE-COM-0085',
-        'CDE-COM-0074',
-        'CDE-COM-0124',
-        'CDE-COM-0024',
+        { codeId: 'CDE-COM-0073' },
+        { codeId: 'CDE-COM-0082' },
+        { codeId: 'CDE-COM-0083' },
+        { codeId: 'CDE-COM-0084' },
+        { codeId: 'CDE-COM-0085' },
+        { codeId: 'CDE-COM-0074' },
+        { codeId: 'CDE-COM-0124' },
+        { codeId: 'CDE-COM-0024' },
       ],
     });
     setCodes(selectRes.resultList);

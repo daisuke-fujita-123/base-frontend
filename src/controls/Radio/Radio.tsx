@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 
 interface RadioValue {
-  value: string | number;
+  value: string | number | boolean;
   displayValue: string;
   backgroundColor?: string;
 }
