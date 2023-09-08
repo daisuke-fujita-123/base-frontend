@@ -72,33 +72,16 @@ import ScrCom0033Popup, {
 const basicColumnGroups: GridColumnGroupingModel = [
   {
     groupId: '期間',
-    children: [
-      { field: 'fromToRadio' },
-      { field: 'LimitStartDate' },
-      { field: 'dummy' },
-      { field: 'LimitEndDate' },
-      { field: 'numberOfMonthsFromContractDateRadio' },
-      { field: 'ContractAfterMonth' },
-    ],
-    headerName: '期間',
-    description: '',
-    headerAlign: 'center',
+    children: [{ field: 'period' }],
   },
 ];
+/**
+ * データグリッドヘッダー2列目（[期間]）設定
+ */
 const optionColumnGroups: GridColumnGroupingModel = [
   {
     groupId: '期間',
-    children: [
-      { field: 'optionFromToRadio' },
-      { field: 'optionLimitStartDate' },
-      { field: 'dummy' },
-      { field: 'optionLimitEndDate' },
-      { field: 'optionNumberOfMonthsFromContractDateRadio' },
-      { field: 'optionContractAfterMonth' },
-    ],
-    headerName: '期間',
-    description: '',
-    headerAlign: 'center',
+    children: [{ field: 'optionPeriod' }],
   },
 ];
 
@@ -114,29 +97,32 @@ interface formModel {
   // 会費種別
   membershipFeeType: string;
   // 値引値増金額区分
-  discountDivision: string;
+  discountAmountKind: string;
   // 値引値増金額
   discountAmount: number;
   // コースID
   courseId: string;
   // １本目除外フラグ
   firstExclusionFlg: string;
-  // 契約数量下限
-  contractQuantityLowLimit: number;
-  // 契約数量上限
-  contractQuantityHighLimit: number;
-  // 期限開始日
-  LimitStartDate: string;
-  // 期限終了日
-  LimitEndDate: string;
-  // 契約後月数
-  ContractAfterMonth: number;
+  // 契約本数下限
+  contractCountMin: number;
+  // 契約本数上限
+  contractCountMax: number;
   // 稟議書ID
   approvalDocumentId: string;
   // 利用フラグ
   utilizationFlg: string;
   // 商品クレームコード
   commodityCrameCd: string;
+  // 金額
+  kingaku: any[];
+  // 契約本数
+  contractCount: number[];
+  // 期間
+  period: {
+    selection: number;
+    values: any[];
+  };
   /** オプション値引値増 */
   // キャンペーンコード
   optionCampaignCd: string;
@@ -144,30 +130,31 @@ interface formModel {
   optionCampaignName: string;
   // 会費種別
   optionMembershipFeeType: string;
-  // 値引値増金額区分
-  optionDiscountDivision: string;
   // 値引値増金額
   optionDiscountAmount: number;
   // サービスID
   serviceId: string;
   // １本目除外フラグ
   optionFirstExclusionFlg: string;
-  // 契約数量下限
-  optionContractQuantityLowLimit: number;
-  // 契約数量上限
-  optionContractQuantityHighLimit: number;
-  // 期限開始日
-  optionLimitStartDate: string;
-  // 期限終了日
-  optionLimitEndDate: string;
-  // 契約後月数
-  optionContractAfterMonth: number;
+  // 契約本数下限
+  optionContractCountMin: number;
+  // 契約本数上限
+  optionContractCountMax: number;
   // 稟議書ID
   optionApprovalDocumentId: string;
   // 利用フラグ
   optionUtilizationFlg: string;
   // 商品クレームコード
   optionCommodityCrameCd: string;
+  // 金額
+  optionKingaku: any[];
+  // 契約本数
+  optionContractCount: number[];
+  // 期間
+  optionPeriod: {
+    selection: number;
+    values: any[];
+  };
   /** 手数料値引値増 */
   // 値引値増パックID
   commissionDiscountPackId: string;
@@ -189,65 +176,72 @@ interface formModel {
  * form 初期データ
  */
 const formModelInitialValues: formModel = {
+  /** 基本値引値増 */
+  // キャンペーンコード
   campaignCd: '',
   // キャンペーン名
   campaignName: '',
   // 会費種別
   membershipFeeType: '',
   // 値引値増金額区分
-  discountDivision: '',
+  discountAmountKind: '',
   // 値引値増金額
   discountAmount: 0,
   // コースID
   courseId: '',
   // １本目除外フラグ
   firstExclusionFlg: '',
-  // 契約数量下限
-  contractQuantityLowLimit: 0,
-  // 契約数量上限
-  contractQuantityHighLimit: 0,
-  // 期限開始日
-  LimitStartDate: '',
-  // 期限終了日
-  LimitEndDate: '',
-  // 契約後月数
-  ContractAfterMonth: 0,
+  // 契約本数下限
+  contractCountMin: 0,
+  // 契約本数上限
+  contractCountMax: 0,
   // 稟議書ID
   approvalDocumentId: '',
   // 利用フラグ
   utilizationFlg: '',
   // 商品クレームコード
   commodityCrameCd: '',
+  // 金額
+  kingaku: [],
+  // 契約本数
+  contractCount: [],
+  // 期間
+  period: {
+    selection: 0,
+    values: [],
+  },
+  /** オプション値引値増 */
   // キャンペーンコード
   optionCampaignCd: '',
   // キャンペーン名
   optionCampaignName: '',
   // 会費種別
   optionMembershipFeeType: '',
-  // 値引値増金額区分
-  optionDiscountDivision: '',
   // 値引値増金額
   optionDiscountAmount: 0,
   // サービスID
   serviceId: '',
   // １本目除外フラグ
   optionFirstExclusionFlg: '',
-  // 契約数量下限
-  optionContractQuantityLowLimit: 0,
-  // 契約数量上限
-  optionContractQuantityHighLimit: 0,
-  // 期限開始日
-  optionLimitStartDate: '',
-  // 期限終了日
-  optionLimitEndDate: '',
-  // 契約後月数
-  optionContractAfterMonth: 0,
+  // 契約本数下限
+  optionContractCountMin: 0,
+  // 契約本数上限
+  optionContractCountMax: 0,
   // 稟議書ID
   optionApprovalDocumentId: '',
   // 利用フラグ
   optionUtilizationFlg: '',
   // 商品クレームコード
   optionCommodityCrameCd: '',
+  // 金額
+  optionKingaku: [],
+  // 契約本数
+  optionContractCount: [],
+  // 期間
+  optionPeriod: {
+    selection: 0,
+    values: [],
+  },
   /** 手数料値引値増 */
   // 値引値増パックID
   commissionDiscountPackId: '',
@@ -277,36 +271,29 @@ interface searchBasicResultRowModel {
   campaignName: string;
   // 会費種別
   membershipFeeType: string;
-  // 値引値増金額区分
-  discountDivision: string;
-  // 値引値増金額
-  discountAmount: number;
   // コースID
   courseId: string;
   // １本目除外フラグ
   firstExclusionFlg: string;
-  // 契約数量下限
-  contractQuantityLowLimit: number;
-  // 契約数量上限
-  contractQuantityHighLimit: number;
-  // 期限開始日
-  LimitStartDate: string;
-  // FROMとTOの間の「～」
-  dummy: string;
-  // 期限終了日
-  LimitEndDate: string;
+  // 契約本数下限
+  contractCountMin: number;
+  // 契約本数上限
+  contractCountMax: number;
   // 稟議書ID
   approvalDocumentId: string;
   // 利用フラグラジオボタン
   utilizationFlg: string;
   // 商品クレームコード
   commodityCrameCd: string;
-  // FromToの手前のラジオボタン
-  fromToRadio: string;
-  // 契約日からの月数
-  ContractAfterMonth: number;
-  // 契約日からの月数の手前のラジオボタン
-  numberOfMonthsFromContractDateRadio: string;
+  // 金額
+  kingaku: any[];
+  // 契約本数
+  contractCount: number[];
+  // 期間
+  period: {
+    selection: number;
+    values: any[];
+  };
 }
 
 /**
@@ -321,36 +308,29 @@ interface searchOptionResultRowModel {
   optionCampaignName: string;
   // 会費種別
   optionMembershipFeeType: string;
-  // 値引値増金額区分
-  optionDiscountDivision: string;
-  // 値引値増金額
-  optionDiscountAmount: number;
   // サービスID
   serviceId: string;
   // １本目除外フラグ
   optionFirstExclusionFlg: string;
-  // 契約数量下限
-  optionContractQuantityHighLimit: number;
-  // 契約数量上限
-  optionContractQuantityLowLimit: number;
-  // FromToの手前のラジオボタン
-  optionFromToRadio: string;
-  // 期限開始日
-  optionLimitStartDate: string;
-  // FROMとTOの間の「～」
-  dummy: string;
-  // 期限終了日
-  optionLimitEndDate: string;
-  // 契約日からの月数の手前のラジオボタン
-  optionNumberOfMonthsFromContractDateRadio: string;
-  // 契約日からの月数
-  optionContractAfterMonth: number;
+  // 契約本数下限
+  optionContractCountMin: number;
+  // 契約本数上限
+  optionContractCountMax: number;
   // 稟議書ID
   optionApprovalDocumentId: string;
   // 利用フラグ
   optionUtilizationFlg: string;
   // 商品クレームコード
   optionCommodityCrameCd: string;
+  // 金額
+  optionKingaku: any[];
+  // 契約本数
+  optionContractCount: number[];
+  // 期間
+  optionPeriod: {
+    selection: number;
+    values: any[];
+  };
 }
 
 /**
@@ -505,24 +485,18 @@ const validationSchema = {
 const convertToSearchBasicResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementDiscountResponse
 ): searchBasicResultRowModel[] => {
-  return response.basicDiscountList.map((x) => {
+  return response.basicDiscountList.map((x, i) => {
     return {
       id: x.campaignCd,
       campaignCd: x.campaignCd,
       campaignName: x.campaignName,
       membershipFeeType: x.membershipFeeType,
-      discountDivision: x.discountDivision,
-      discountAmount: x.discountAmount,
       courseId: x.courseId,
       firstExclusionFlg: x.firstExclusionFlg
         ? 'firstExclusionFlgRadioValue'
         : '',
-      contractQuantityLowLimit: x.contractQuantityLowLimit,
-      contractQuantityHighLimit: x.contractQuantityHighLimit,
-      LimitStartDate: x.LimitStartDate,
-      dummy: '～',
-      LimitEndDate: x.LimitEndDate,
-      ContractAfterMonth: x.ContractAfterMonth,
+      contractCountMin: x.contractQuantityLowLimit,
+      contractCountMax: x.contractQuantityHighLimit,
       approvalDocumentId: x.approvalDocumentId,
       utilizationFlg: x.utilizationFlg
         ? 'basicUtilizationFlgFlagYes'
@@ -530,8 +504,12 @@ const convertToSearchBasicResultRowModel = (
         ? 'basicUtilizationFlgFlagNo'
         : '',
       commodityCrameCd: x.commodityCrameCd,
-      numberOfMonthsFromContractDateRadio: '',
-      fromToRadio: '',
+      kingaku: [x.discountDivision, x.discountAmount],
+      contractCount: [x.contractQuantityLowLimit, x.contractQuantityHighLimit],
+      period: {
+        selection: i,
+        values: [[x.LimitStartDate, x.LimitEndDate], x.ContractAfterMonth],
+      },
     };
   });
 };
@@ -547,16 +525,16 @@ const convertToBasicResponseModel = (
       campaignCd: x.campaignCd,
       campaignName: x.campaignName,
       membershipFeeType: x.membershipFeeType,
-      discountDivision: x.discountDivision,
-      discountAmount: x.discountAmount,
-      courseId: x.courseId,
+      discountDivision: x.kingaku[0],
+      discountAmount: x.kingaku[1],
+      courseId: '',
       firstExclusionFlg:
         x.firstExclusionFlg === 'firstExclusionFlgRadioValue' ? true : false,
-      contractQuantityLowLimit: x.contractQuantityLowLimit,
-      contractQuantityHighLimit: x.contractQuantityHighLimit,
-      LimitStartDate: x.LimitStartDate,
-      LimitEndDate: x.LimitEndDate,
-      ContractAfterMonth: x.ContractAfterMonth,
+      contractQuantityLowLimit: x.contractCountMin,
+      contractQuantityHighLimit: x.contractCountMax,
+      LimitStartDate: x.period.values[0][0],
+      LimitEndDate: x.period.values[0][1],
+      ContractAfterMonth: x.period.values[1],
       approvalDocumentId: x.approvalDocumentId,
       utilizationFlg:
         x.utilizationFlg === 'basicUtilizationFlgFlagYes' ? true : false,
@@ -571,26 +549,18 @@ const convertToBasicResponseModel = (
 const convertToSearchOptionResultRowModel = (
   response: ScrCom0013DisplayComoditymanagementDiscountResponse
 ): searchOptionResultRowModel[] => {
-  return response.optionDiscountList.map((x) => {
+  return response.optionDiscountList.map((x, i) => {
     return {
       id: x.campaignCd,
       optionCampaignCd: x.campaignCd,
       optionCampaignName: x.campaignName,
       optionMembershipFeeType: x.membershipFeeType,
-      optionDiscountDivision: x.discountDivision,
-      optionDiscountAmount: x.discountAmount,
-      serviceId: x.serviceId,
+      serviceId: '',
       optionFirstExclusionFlg: x.firstExclusionFlg
         ? 'optionFirstExclusionFlgRadioValue'
         : '',
-      optionContractQuantityLowLimit: x.contractQuantityLowLimit,
-      optionContractQuantityHighLimit: x.contractQuantityHighLimit,
-      optionFromToRadio: '',
-      optionLimitStartDate: x.LimitStartDate,
-      dummy: '～',
-      optionLimitEndDate: x.LimitEndDate,
-      optionNumberOfMonthsFromContractDateRadio: '',
-      optionContractAfterMonth: x.ContractAfterMonth,
+      optionContractCountMin: x.contractQuantityLowLimit,
+      optionContractCountMax: x.contractQuantityHighLimit,
       optionApprovalDocumentId: x.approvalDocumentId,
       optionUtilizationFlg: x.utilizationFlg
         ? 'optionUtilizationFlgYes'
@@ -598,6 +568,16 @@ const convertToSearchOptionResultRowModel = (
         ? 'optionUtilizationFlgNo'
         : '',
       optionCommodityCrameCd: x.commodityCrameCd,
+      // 金額
+      optionKingaku: [x.discountDivision, x.discountAmount],
+      optionContractCount: [
+        x.contractQuantityLowLimit,
+        x.contractQuantityHighLimit,
+      ],
+      optionPeriod: {
+        selection: i,
+        values: [[x.LimitStartDate, x.LimitEndDate], x.ContractAfterMonth],
+      },
     };
   });
 };
@@ -613,19 +593,18 @@ const convertToOptionResponseModel = (
       campaignCd: x.optionCampaignCd,
       campaignName: x.optionCampaignName,
       membershipFeeType: x.optionMembershipFeeType,
-      discountDivision: x.optionDiscountDivision,
-      discountAmount: x.optionDiscountAmount,
+      discountDivision: x.optionKingaku[0],
+      discountAmount: x.optionKingaku[1],
       serviceId: x.serviceId,
       firstExclusionFlg:
         x.optionFirstExclusionFlg === 'optionFirstExclusionFlgRadioValue'
           ? true
           : false,
-      contractQuantityLowLimit: x.optionContractQuantityLowLimit,
-      contractQuantityHighLimit: x.optionContractQuantityHighLimit,
-      LimitStartDate: x.optionLimitStartDate,
-      dummy: '～',
-      LimitEndDate: x.optionLimitEndDate,
-      ContractAfterMonth: x.optionContractAfterMonth,
+      contractQuantityLowLimit: x.optionContractCountMin,
+      contractQuantityHighLimit: x.optionContractCountMax,
+      LimitStartDate: x.optionPeriod.values[0][0],
+      LimitEndDate: x.optionPeriod.values[0][1],
+      ContractAfterMonth: x.optionPeriod.values[1],
       approvalDocumentId: x.optionApprovalDocumentId,
       utilizationFlg:
         x.optionUtilizationFlg === 'optionUtilizationFlgYes' ? true : false,
@@ -841,25 +820,25 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'radio',
       radioValues: [
-        { value: 'basicAdmissionFee', displayValue: '入会金' },
-        { value: 'basicListPrice', displayValue: '定価' },
+        { value: '1', displayValue: '入会金' },
+        { value: '2', displayValue: '定価' },
       ],
       required: true,
     },
     {
-      field: 'discountDivision',
-      headerName: '金額区分',
-      cellType: 'select',
-      selectValues: selectValues.priceSelectValues,
-      size: 'l',
-      required: true,
-    },
-    {
-      field: 'discountAmount',
+      field: 'kingaku',
       headerName: '金額',
-      cellType: [{ type: 'input', helperText: '円' }],
+      cellType: [
+        {
+          type: 'select',
+          selectValues: selectValues.priceSelectValues,
+        },
+        {
+          type: 'input',
+          helperText: '円',
+        },
+      ],
       size: 'l',
-      required: true,
     },
     {
       field: 'courseId',
@@ -871,64 +850,25 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
     {
       field: 'firstExclusionFlg',
       headerName: '1本目除外',
-      size: 'l',
-      cellType: 'radio',
-      radioValues: [{ value: 'firstExclusionFlgRadioValue' }],
-    },
-    {
-      field: 'contractQuantityHighLimit',
-      headerName: '契約本数(以上)',
-      cellType: [{ type: 'input', helperText: '以上' }],
-      size: 'l',
-    },
-    {
-      field: 'contractQuantityLowLimit',
-      headerName: '契約本数(以下)',
-      cellType: [{ type: 'input', helperText: '以下' }],
-      size: 'l',
-    },
-    {
-      field: 'fromToRadio',
-      // ラジオボタンのみのセルの為ソート不可とする
-      sortable: false,
-      headerName: '',
-      size: 's',
-      cellType: 'radio',
-      radioValues: [{ value: 'fromToRadioValue' }],
-    },
-    {
-      field: 'LimitStartDate',
-      headerName: 'FROM',
-      size: 'l',
-      cellType: 'datepicker',
-    },
-    {
-      field: 'dummy',
-      // [～]のみのセルの為ソート不可とする
-      sortable: false,
-      headerName: '',
+      cellType: 'checkbox',
       size: 's',
     },
     {
-      field: 'LimitEndDate',
-      headerName: 'TO',
+      field: 'contractCount',
+      headerName: '契約本数',
+      cellType: [
+        { type: 'input', helperText: '以上' },
+        { type: 'input', helperText: '以下' },
+      ],
       size: 'l',
-      cellType: 'datepicker',
     },
     {
-      field: 'numberOfMonthsFromContractDateRadio',
-      // ラジオボタンのみのセルの為ソート不可とする
-      sortable: false,
-      headerName: '',
-      size: 's',
+      field: 'period',
+      headerName: 'FROM TO 契約日からの月数',
       cellType: 'radio',
-      radioValues: [{ value: 'numberOfMonthsFromContractDateRadioValue' }],
-    },
-    {
-      field: 'ContractAfterMonth',
-      headerName: '契約日からの月数',
-      cellType: [{ type: 'input', helperText: 'ヶ月' }],
-      size: 'l',
+      radioInputTypes: ['fromto', 'input'],
+      cellHelperText: 'カ月',
+      width: 700,
     },
     {
       field: 'approvalDocumentId',
@@ -979,95 +919,55 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       size: 'l',
       cellType: 'radio',
       radioValues: [
-        { value: 'optionAdmissionFee', displayValue: '入会金' },
-        { value: 'optionListPrice', displayValue: '定価' },
+        { value: '1', displayValue: '入会金' },
+        { value: '2', displayValue: '定価' },
       ],
       required: true,
     },
     {
-      field: 'optionDiscountDivision',
-      headerName: '金額区分',
-      cellType: 'select',
-      selectValues: selectValues.priceSelectValues,
-      size: 'l',
-      required: true,
-    },
-    {
-      field: 'optionDiscountAmount',
+      field: 'optionKingaku',
       headerName: '金額',
-      cellType: [{ type: 'input', helperText: '円' }],
+      cellType: [
+        {
+          type: 'select',
+          selectValues: selectValues.priceSelectValues,
+        },
+        {
+          type: 'input',
+          helperText: '円',
+        },
+      ],
       size: 'l',
-      required: true,
     },
     {
       field: 'serviceId',
-      headerName: 'サービス名',
-      size: 'l',
+      headerName: 'サービスID',
       cellType: 'select',
       selectValues: selectValues.serviceNameSelectValues,
-      required: true,
+      size: 'l',
     },
     {
       field: 'optionFirstExclusionFlg',
       headerName: '1本目除外',
-      size: 'l',
-      cellType: 'radio',
-      radioValues: [{ value: 'optionFirstExclusionFlgRadioValue' }],
-    },
-    {
-      field: 'optionContractQuantityHighLimit',
-      headerName: '契約本数(以上)',
-      cellType: [{ type: 'input', helperText: '以上' }],
-      size: 'l',
-    },
-    {
-      field: 'optionContractQuantityLowLimit',
-      headerName: '契約本数(以下)',
-      cellType: [{ type: 'input', helperText: '以下' }],
-      size: 'l',
-    },
-    {
-      field: 'optionFromToRadio',
-      // ラジオボタンのみのセルの為ソート不可とする
-      sortable: false,
-      headerName: '',
-      size: 's',
-      cellType: 'radio',
-      radioValues: [{ value: 'FromToRadioValue' }],
-    },
-    {
-      field: 'optionLimitStartDate',
-      headerName: 'FROM',
-      size: 'l',
-      cellType: 'datepicker',
-    },
-    {
-      field: 'dummy',
-      // [～]のみのセルの為ソート不可とする
-      sortable: false,
-      headerName: '',
+      cellType: 'checkbox',
       size: 's',
     },
     {
-      field: 'optionLimitEndDate',
-      headerName: 'TO',
+      field: 'optionContractCount',
+      headerName: '契約本数',
+      cellType: [
+        { type: 'input', helperText: '以上' },
+        { type: 'input', helperText: '以下' },
+      ],
       size: 'l',
-      cellType: 'datepicker',
     },
     {
-      field: 'optionNumberOfMonthsFromContractDateRadio',
-      // ラジオボタンのみのセルの為ソート不可とする
-      sortable: false,
-      headerName: '',
-      size: 's',
+      field: 'optionPeriod',
+      headerName: 'FROM TO 契約日からの月数',
       cellType: 'radio',
-      radioValues: [{ value: 'numberOfMonthsFromContractDateRadioValue' }],
-    },
-    {
-      field: 'optionContractAfterMonth',
-      headerName: '契約日からの月数',
-      cellType: [{ type: 'input', helperText: 'ヶ月' }],
-      size: 'l',
+      radioInputTypes: ['fromto', 'input'],
+      cellHelperText: 'カ月',
+      width: 700,
     },
     {
       field: 'optionApprovalDocumentId',
@@ -1209,15 +1109,15 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       const searchResult0013Basic =
         convertToSearchBasicResultRowModel(response0013);
 
-      setBasicSearchResult(searchResult0013Basic);
-      setAddedBasicSearchResult(searchResult0013Basic);
+      setBasicSearchResult([...searchResult0013Basic]);
+      setAddedBasicSearchResult([...searchResult0013Basic]);
 
       // オプション値引
       const searchResult0013Option =
         convertToSearchOptionResultRowModel(response0013);
 
-      setOptionSearchResult(searchResult0013Option);
-      setAddedOptionSearchResult(searchResult0013Option);
+      setOptionSearchResult([...searchResult0013Option]);
+      setAddedOptionSearchResult([...searchResult0013Option]);
 
       // 手数料値引
       const searchResult0013Commission =
@@ -1275,17 +1175,12 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       campaignCd: response.basicCampaignCd,
       campaignName: response.basicCampaignName,
       membershipFeeType: response.basicMembershipFeeType,
-      discountDivision: response.basicDiscountDivision,
-      discountAmount: response.basicDiscountAmount,
       courseId: response.basicCourseId,
       firstExclusionFlg: response.basicFirstExclusionFlg
         ? 'firstExclusionFlgRadioValue'
         : '',
-      contractQuantityLowLimit: response.basicContractQuantityLowLimit,
-      contractQuantityHighLimit: response.basicContractQuantityHighLimit,
-      LimitStartDate: response.basicLimitStartDate,
-      dummy: '～',
-      LimitEndDate: response.basicLimitEndDate,
+      contractCountMin: response.basicContractQuantityLowLimit,
+      contractCountMax: response.basicContractQuantityHighLimit,
       approvalDocumentId: response.basicApprovalDocumentId,
       utilizationFlg: response.basicUtilizationFlg
         ? 'basicUtilizationFlgFlagYes'
@@ -1293,70 +1188,20 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
         ? 'basicUtilizationFlgFlagNo'
         : '',
       commodityCrameCd: response.basicCommodityCrameCd,
-      fromToRadio: '',
-      ContractAfterMonth: response.basicContractAfterMonth,
-      numberOfMonthsFromContractDateRadio:
-        response.basicNumberOfMonthsFromContractDateRadio,
+      kingaku: [response.basicDiscountDivision, response.basicDiscountAmount],
+      contractCount: [
+        response.basicContractQuantityLowLimit,
+        response.basicContractQuantityHighLimit,
+      ],
+      period: {
+        selection: 0,
+        values: [
+          [response.basicLimitStartDate, response.basicLimitEndDate],
+          response.basicContractAfterMonth,
+        ],
+      },
     };
   };
-
-  // /**
-  //  * 変更履歴情報取得APIからオプション値引値増データモデルへの変換
-  //  */
-  // const convertToHistoryOptionInfoModel = (
-  //   response: registrationRequest
-  // ): searchOptionResultRowModel => {
-  //   return {
-  //     id: response.optionCampaignCd,
-  //     optionCampaignCd: response.optionCampaignCd,
-  //     optionCampaignName: response.optionCampaignName,
-  //     optionMembershipFeeType: response.optionMembershipFeeType,
-  //     optionDiscountDivision: response.optionDiscountDivision,
-  //     optionDiscountAmount: response.optionDiscountAmount,
-  //     serviceId: response.optionServiceId,
-  //     optionFirstExclusionFlg:
-  //       response.optionFirstExclusionFlg === true
-  //         ? 'optionFirstExclusionFlgRadioValue'
-  //         : '',
-  //     optionContractQuantityHighLimit: response.optionContractQuantityHighLimit,
-  //     optionContractQuantityLowLimit: response.optionContractQuantityLowLimit,
-  //     optionFromToRadio: '',
-  //     optionLimitStartDate: response.optionLimitStartDate,
-  //     dummy: '～',
-  //     optionLimitEndDate: response.optionLimitEndDate,
-  //     optionNumberOfMonthsFromContractDateRadio: '',
-  //     optionContractAfterMonth: response.optionContractAfterMonth,
-  //     optionApprovalDocumentId: response.optionApprovalDocumentId,
-  //     optionUtilizationFlg:
-  //       response.optionUtilizationFlg === true
-  //         ? 'optionUtilizationFlgYes'
-  //         : response.optionUtilizationFlg === false
-  //         ? 'optionUtilizationFlgNo'
-  //         : '',
-  //     optionCommodityCrameCd: response.optionCommodityCrameCd,
-  //   };
-  // };
-
-  // /**
-  //  * 変更履歴情報取得APIから手数料データモデルへの変換
-  //  */
-  // const convertToHistoryInfoModel = (
-  //   response: registrationRequest
-  // ): searchCommissionResultRowModel => {
-  //   return {
-  //     id: response.commissionDiscountPackId,
-  //     commissionDiscountPackId: response.commissionDiscountPackId,
-  //     commissionPackName: response.packName,
-  //     commissionMemberServiceType: response.memberServiceType,
-  //     commissionCalcurationDocType: response.calcurationDocType,
-  //     commissionValidityStartDate: response.validityStartDate,
-  //     commissionValidityEndDate: response.validityEndDate,
-  //     commissionUtilizationFlg:
-  //       response.optionUtilizationFlg === true ? '可' : '',
-  //     commissionChangeReserve:
-  //       response.commissionDiscountPacksCommissionChangeReserve,
-  //   };
-  // };
 
   /**
    * リンククリック時のイベントハンドラ
@@ -1383,38 +1228,28 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       campaignCd: '',
       // キャンペーン名
       campaignName: '',
-      // 会費種別
-      membershipFeeType: 'basicListPrice',
-      // 値引値増金額区分
-      discountDivision: '',
-      // 値引値増金額
-      discountAmount: 0,
+      // 会費種別(定価)
+      membershipFeeType: '2',
       // コースID
       courseId: '',
       // １本目除外フラグ
       firstExclusionFlg: '',
-      // 契約数量下限
-      contractQuantityLowLimit: 0,
-      // 契約数量上限
-      contractQuantityHighLimit: 0,
-      // 期限開始日
-      LimitStartDate: '',
-      // 「～」
-      dummy: '～',
-      // 期限終了日
-      LimitEndDate: '',
-      // 契約日からの月数
-      ContractAfterMonth: 0,
+      // 契約本数
+      contractCountMin: 0,
+      contractCountMax: 0,
+      // FROM TO 契約日からの月数
+      period: {
+        selection: 0,
+        values: [['', ''], ''],
+      },
       // 稟議書ID
       approvalDocumentId: '',
       // 利用フラグ ラジオボタン
       utilizationFlg: 'basicUtilizationFlgFlagYes',
       // 商品クレームコード
       commodityCrameCd: '',
-      // FromToのラジオボタン
-      fromToRadio: '',
-      // 契約日からの月数ラジオボタン
-      numberOfMonthsFromContractDateRadio: '',
+      kingaku: [],
+      contractCount: [],
     });
     setBasicCount(newBasicCount);
     setAddedBasicSearchResult(copyContractRow);
@@ -1437,38 +1272,31 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       optionCampaignCd: '',
       // キャンペーン名
       optionCampaignName: '',
-      // 会費種別
-      optionMembershipFeeType: 'optionListPrice',
-      // 値引値増金額区分
-      optionDiscountDivision: '',
-      // 値引値増金額
-      optionDiscountAmount: 0,
+      // 会費種別(定価)
+      optionMembershipFeeType: '2',
       // サービスID
       serviceId: '',
       // １本目除外フラグ
       optionFirstExclusionFlg: '',
-      // 契約数量下限
-      optionContractQuantityLowLimit: 0,
-      // 契約数量上限
-      optionContractQuantityHighLimit: 0,
-      // 期限開始日
-      optionLimitStartDate: '',
-      // 「～」
-      dummy: '～',
-      // 期限終了日
-      optionLimitEndDate: '',
-      // 契約日からの月数
-      optionContractAfterMonth: 0,
+      // 契約本数下限
+      optionContractCountMin: 0,
+      // 契約本数上限
+      optionContractCountMax: 0,
+      // FROM TO 契約日からの月数
+      optionPeriod: {
+        selection: 0,
+        values: [['', ''], ''],
+      },
       // 稟議書ID
       optionApprovalDocumentId: '',
       // 利用フラグラジオボタン
       optionUtilizationFlg: 'optionUtilizationFlgYes',
       // 商品クレームコード
       optionCommodityCrameCd: '',
-      // FromToのラジオボタン
-      optionFromToRadio: '',
-      // 契約日からの月数ラジオボタン
-      optionNumberOfMonthsFromContractDateRadio: '',
+      // 金額
+      optionKingaku: [],
+      // 契約本数
+      optionContractCount: [],
     });
     setOptionCount(newOptionCount);
     setAddedOptionSearchResult(copyContractRow);
@@ -1514,8 +1342,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // 契約本数(以上) < 契約本数(以下)であることを確認
       // 契約本数(以上) > 1であることを確認
       if (
-        !(e.contractQuantityHighLimit < e.contractQuantityLowLimit) ||
-        !(e.contractQuantityHighLimit > 1)
+        !(e.contractCountMax < e.contractCountMin) ||
+        !(e.contractCountMax > 1)
       ) {
         errorList.push({
           errorCode: 'ERR-0089',
@@ -1529,10 +1357,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // 契約本数(以上) < 契約本数(以下)であることを確認
       // 契約本数(以上) > 1であることを確認
       if (
-        !(
-          e.optionContractQuantityHighLimit < e.optionContractQuantityLowLimit
-        ) ||
-        !(e.optionContractQuantityHighLimit > 1)
+        !(e.optionContractCountMax < e.optionContractCountMin) ||
+        !(e.optionContractCountMax > 1)
       ) {
         errorList.push({
           errorCode: 'ERR-0089',
@@ -1548,8 +1374,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       tempList.push({
         campaignCd: e.campaignCd,
         campaignName: e.campaignName,
-        periodFrom: e.LimitStartDate,
-        periodTo: e.LimitEndDate,
+        periodFrom: e.period.values[0][0],
+        periodTo: e.period.values[0][1],
       });
     });
 
@@ -1558,8 +1384,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       tempList.push({
         campaignCd: e.optionCampaignCd,
         campaignName: e.optionCampaignName,
-        periodFrom: e.optionLimitStartDate,
-        periodTo: e.optionLimitEndDate,
+        periodFrom: e.optionPeriod.values[0][0],
+        periodTo: e.optionPeriod.values[0][1],
       });
     });
     // チェックAPI用の検索結果リストに格納
@@ -1606,26 +1432,20 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               initialValue.campaignName !== value.campaignName ||
               // 会費種別
               initialValue.membershipFeeType !== value.membershipFeeType ||
-              // 値引値増金額区分
-              initialValue.discountDivision !== value.discountDivision ||
-              // 値引値増金額
-              initialValue.discountAmount !== value.discountAmount ||
               // セット対象コース
               initialValue.courseId !== value.courseId ||
               // １本目除外フラグ
               initialValue.firstExclusionFlg !== value.firstExclusionFlg ||
               // 契約数量下限
-              initialValue.contractQuantityLowLimit !==
-                value.contractQuantityLowLimit ||
+              initialValue.contractCountMin !== value.contractCountMin ||
               // 契約数量上限
-              initialValue.contractQuantityHighLimit !==
-                value.contractQuantityHighLimit ||
+              initialValue.contractCountMax !== value.contractCountMax ||
               // 期限開始日
-              initialValue.LimitStartDate !== value.LimitStartDate ||
+              initialValue.period.values[0][0] !== value.period.values[0][0] ||
               // 期限終了日
-              initialValue.LimitEndDate !== value.LimitEndDate ||
+              initialValue.period.values[0][1] !== value.period.values[0][1] ||
               // 契約後月数
-              initialValue.ContractAfterMonth !== value.ContractAfterMonth ||
+              initialValue.period.values[1] !== value.period.values[0][1] ||
               // 稟議書ID
               initialValue.approvalDocumentId !== value.approvalDocumentId ||
               // 利用フラグ
@@ -1665,31 +1485,26 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               // 会費種別
               initialValue.optionMembershipFeeType !==
                 value.optionMembershipFeeType ||
-              // 値引値増金額区分
-              initialValue.optionDiscountDivision !==
-                value.optionDiscountDivision ||
-              // 値引値増金額
-              initialValue.optionDiscountAmount !==
-                value.optionDiscountAmount ||
               // サービスID
               initialValue.serviceId !== value.serviceId ||
               // １本目除外フラグ
               initialValue.optionFirstExclusionFlg !==
                 value.optionFirstExclusionFlg ||
               // 契約数量下限
-              initialValue.optionContractQuantityLowLimit !==
-                value.optionContractQuantityLowLimit ||
+              initialValue.optionContractCountMin !==
+                value.optionContractCountMin ||
               // 契約数量上限
-              initialValue.optionContractQuantityHighLimit !==
-                value.optionContractQuantityHighLimit ||
+              initialValue.optionContractCountMax !==
+                value.optionContractCountMax ||
               // 期限開始日
-              initialValue.optionLimitStartDate !==
-                value.optionLimitStartDate ||
+              initialValue.optionPeriod.values[0][0] !==
+                value.optionPeriod.values[0][0] ||
               // 期限終了日
-              initialValue.optionLimitEndDate !== value.optionLimitEndDate ||
+              initialValue.optionPeriod.values[0][1] !==
+                value.optionPeriod.values[0][1] ||
               // 契約後月数
-              initialValue.optionContractAfterMonth !==
-                value.optionContractAfterMonth ||
+              initialValue.optionPeriod.values[1] !==
+                value.optionPeriod.values[0][1] ||
               // 稟議書ID
               initialValue.optionApprovalDocumentId !==
                 value.optionApprovalDocumentId ||
@@ -1885,8 +1700,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
                 {/* 履歴表示の場合 追加ボタン非活性 */}
                 <AddButton
                   onClick={handleBasicIconAddClick}
-                  // TODO: コメント
-                  // disable={props.changeHisoryNumber === '' ? true : false}
+                  disable={props.changeHisoryNumber === '' ? true : false}
                 >
                   追加
                 </AddButton>
@@ -1995,8 +1809,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
                 </AddButton>
                 <AddButton
                   onClick={handleOptionIconAddClick}
-                  // TODO: コメント
-                  // disable={props.changeHisoryNumber === '' ? true : false}
+                  disable={props.changeHisoryNumber === '' ? true : false}
                 >
                   追加
                 </AddButton>
@@ -2007,8 +1820,8 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
               pagination={true}
               columns={searchOptionResultColumns}
               rows={addedOptionSearchResult}
-              // DataGridのヘッダーを2列定義する設定
               onCellBlur={optionHandleOnCellBlur}
+              // DataGridのヘッダーを2列定義する設定
               columnGroupingModel={optionColumnGroups}
               // 編集権限なし/履歴表示の場合にcampaignCd以外の入力部分全てのカラムを非活性にする
               getCellDisabled={(params) => {
@@ -2107,8 +1920,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
                 {/* 履歴表示 or 編集権限なしの場合 追加ボタン非活性 */}
                 <AddButton
                   onClick={handleCommissionIconAddClick}
-                  // TODO: コメント
-                  // disable={props.changeHisoryNumber === '' ? true : false}
+                  disable={props.changeHisoryNumber === '' ? true : false}
                 >
                   追加
                 </AddButton>
