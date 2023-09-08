@@ -481,7 +481,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
               <Popup bottom>
                 <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
                 {/* 承認要否で確定ボタンのラベルを変更する。 承認要*/}
-                {approvalFlag ? (
+                {!approvalFlag ? (
                   <ConfirmButton
                     onClick={handleRegistConfirm}
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
