@@ -517,7 +517,22 @@ const ScrCom0025OrganizationTab = () => {
             changeTimestamp: x.changeTimestamp,
           });
         }
+
+        if (
+          initSearchResult[i].applyingStartDate !== x.applyingStartDate ||
+          initSearchResult[i].applyingEndDate !== x.applyingEndDate
+        ) {
+          // 適用開始日 > 適用終了日チェック
+          if (new Date(x.applyingStartDate) > new Date(x.applyingEndDate)) {
+            errList.push({
+              errorCode: 'MSG-FR-ERR-00017',
+              errorMessage:
+                '組織ID「' + x.organizationId + '」の期間に誤りがあります。',
+            });
+          }
+        }
       } else {
+        // 新規追加行の処理
         // 変更行を格納
         searchResultChange.push({
           id: x.id,
@@ -532,8 +547,20 @@ const ScrCom0025OrganizationTab = () => {
           changeReason: x.changeReason,
           changeTimestamp: x.changeTimestamp,
         });
+
+        // 適用開始日 > 適用終了日チェック
+        if (new Date(x.applyingStartDate) > new Date(x.applyingEndDate)) {
+          console.log('1231');
+          errList.push({
+            errorCode: 'MSG-FR-ERR-00017',
+            errorMessage:
+              '組織ID「' + x.organizationId + '」の期間に誤りがあります。',
+          });
+        }
       }
     });
+
+    // 変更行のみチェック
     searchResultChange.map((x) => {
       // 適用開始日 < 業務日付チェック
       if (new Date(x.applyingStartDate) < new Date(user.taskDate)) {
@@ -543,15 +570,6 @@ const ScrCom0025OrganizationTab = () => {
             '組織ID「' +
             x.organizationId +
             '」の適用開始日が正しくありません。',
-        });
-      }
-
-      // 適用開始日 > 適用終了日チェック
-      if (new Date(x.applyingStartDate) > new Date(x.applyingEndDate)) {
-        errList.push({
-          errorCode: 'MSG-FR-ERR-00017',
-          errorMessage:
-            '組織ID「' + x.organizationId + '」の期間に誤りがあります。',
         });
       }
     });

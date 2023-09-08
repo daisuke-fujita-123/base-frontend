@@ -1027,6 +1027,31 @@ const ScrCom0025EmployeeTab = () => {
             beforeTimestamp_4: x.beforeTimestamp_4,
           });
         }
+
+        if (
+          x.applyingStartDate_1 !== initSearchResult[i].applyingStartDate_1 ||
+          x.applyingEndDate_1 !== initSearchResult[i].applyingEndDate_1 ||
+          x.applyingStartDate_2 !== initSearchResult[i].applyingStartDate_2 ||
+          x.applyingEndDate_2 !== initSearchResult[i].applyingEndDate_2 ||
+          x.applyingStartDate_3 !== initSearchResult[i].applyingStartDate_3 ||
+          x.applyingEndDate_3 !== initSearchResult[i].applyingEndDate_3 ||
+          x.applyingStartDate_4 !== initSearchResult[i].applyingStartDate_4 ||
+          x.applyingEndDate_4 !== initSearchResult[i].applyingEndDate_4
+        ) {
+          // 適用開始日と適用終了日チェック
+          if (
+            x.applyingStartDate_1 > x.applyingEndDate_1 ||
+            x.applyingStartDate_2 > x.applyingEndDate_2 ||
+            x.applyingStartDate_3 > x.applyingEndDate_3 ||
+            x.applyingStartDate_4 > x.applyingEndDate_4
+          ) {
+            errList.push({
+              errorCode: 'MSG-FR-ERR-00025',
+              errorMessage:
+                '従業員ID「' + x.employeeId + '」の期間に誤りがあります。',
+            });
+          }
+        }
       } else {
         // 変更行を格納
         searchResultChange.push({
@@ -1086,6 +1111,20 @@ const ScrCom0025EmployeeTab = () => {
           beforeTimestamp_4: x.beforeTimestamp_4,
         });
       }
+
+      // 適用開始日と適用終了日チェック
+      if (
+        x.applyingStartDate_1 > x.applyingEndDate_1 ||
+        x.applyingStartDate_2 > x.applyingEndDate_2 ||
+        x.applyingStartDate_3 > x.applyingEndDate_3 ||
+        x.applyingStartDate_4 > x.applyingEndDate_4
+      ) {
+        errList.push({
+          errorCode: 'MSG-FR-ERR-00025',
+          errorMessage:
+            '従業員ID「' + x.employeeId + '」の期間に誤りがあります。',
+        });
+      }
     });
 
     searchResultChange.map((x, y) => {
@@ -1100,19 +1139,6 @@ const ScrCom0025EmployeeTab = () => {
           errorCode: 'MSG-FR-ERR-00024',
           errorMessage:
             '従業員ID「' + x.employeeId + '」の適用開始日が正しくありません。',
-        });
-      }
-      // 適用開始日と適用終了日チェック
-      if (
-        x.applyingStartDate_1 > x.applyingEndDate_1 ||
-        x.applyingStartDate_2 > x.applyingEndDate_2 ||
-        x.applyingStartDate_3 > x.applyingEndDate_3 ||
-        x.applyingStartDate_4 > x.applyingEndDate_4
-      ) {
-        errList.push({
-          errorCode: 'MSG-FR-ERR-00025',
-          errorMessage:
-            '従業員ID「' + x.employeeId + '」の期間に誤りがあります。',
         });
       }
 

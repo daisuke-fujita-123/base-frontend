@@ -625,6 +625,20 @@ const ScrCom0025PostTab = () => {
             changeTimestamp: x.changeTimestamp,
           });
         }
+
+        if (
+          x.applyingStartDate !== initSearchResult[i].applyingStartDate ||
+          x.applyingEndDate !== initSearchResult[i].applyingEndDate
+        ) {
+          // 適用開始日と適用終了日チェック
+          if (x.applyingStartDate > x.applyingEndDate) {
+            errList.push({
+              errorCode: 'MSG-FR-ERR-00021',
+              errorMessage:
+                '役職ID「' + x.postId + '」の期間に誤りがあります。',
+            });
+          }
+        }
       } else {
         // 変更行を格納
         searchResultChange.push({
@@ -644,9 +658,18 @@ const ScrCom0025PostTab = () => {
           changeReason: x.changeReason,
           changeTimestamp: x.changeTimestamp,
         });
+
+        // 適用開始日と適用終了日チェック
+        if (x.applyingStartDate > x.applyingEndDate) {
+          errList.push({
+            errorCode: 'MSG-FR-ERR-00021',
+            errorMessage: '役職ID「' + x.postId + '」の期間に誤りがあります。',
+          });
+        }
       }
     });
 
+    // 変更行のみチェック
     searchResultChange.map((x) => {
       // 適用開始日 < 業務日付チェック
       if (x.applyingStartDate < user.taskDate) {
@@ -654,14 +677,6 @@ const ScrCom0025PostTab = () => {
           errorCode: 'MSG-FR-ERR-00020',
           errorMessage:
             '役職ID「' + x.postId + '」の適用開始日が正しくありません。',
-        });
-      }
-
-      // 適用開始日と適用終了日チェック
-      if (x.applyingStartDate > x.applyingEndDate) {
-        errList.push({
-          errorCode: 'MSG-FR-ERR-00021',
-          errorMessage: '役職ID「' + x.postId + '」の期間に誤りがあります。',
         });
       }
     });
