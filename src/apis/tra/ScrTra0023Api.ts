@@ -202,3 +202,20 @@ export const ScrTra0023registrationpayment = async (
     request
   );
 };
+
+/** 債務番号リスト */
+export interface ScrTra0023OutputJournalReportRequest {
+  // 債務番号
+  debtNumber: string[];
+}
+
+/** 帳票出力用API /api/tra/scr-tra-0023/check-payment */
+export const ScrTra0023OutputJournalReport = async (
+  request: ScrTra0023OutputJournalReportRequest
+) => {
+  await traApiClient.post(
+    '/api/tra/scr-tra-0023/output-journal-report',
+    request
+  );
+};
+

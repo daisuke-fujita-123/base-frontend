@@ -34,8 +34,6 @@ import { SerchLabelText } from 'controls/Typography';
 
 import { ScrCom9999getCodeManagementMasterMultiple } from 'apis/com/ScrCom9999Api';
 import {
-  ScrMem9999OutputReport,
-  ScrMem9999OutputReportRequest,
   ScrMem9999SearchconditionRefine,
   ScrMem9999SearchconditionRefineRequest,
 } from 'apis/mem/ScrMem9999Api';
@@ -46,6 +44,7 @@ import {
   ScrTra0023GetPayment,
   ScrTra0023GetPaymentRequest,
   ScrTra0023GetPaymentResponse,
+  ScrTra0023OutputJournalReport,
   ScrTra0023registrationpayment,
   ScrTra0023registrationPaymentRequest,
   WarnList,
@@ -703,7 +702,7 @@ const ScrTra0023Page = () => {
     useState<boolean>(false);
 
   // チェックボックス行ごとの活性非活性処理用
-  const [checkBoxDispModel, setcheckBoxDispModel] = useState<any[]>([]);
+  //const [checkBoxDispModel, setcheckBoxDispModel] = useState<any[]>([]);
   // チェックボックス選択行
   const [rowSelectionModel, setRowSelectionModel] = useState<any[]>([]);
   const [selectId, setSelectId] = useState<string>();
@@ -726,8 +725,7 @@ const ScrTra0023Page = () => {
         codeIdList: [
           { codeId: 'CDE-COM-0062' },
           { codeId: 'CDE-COM-0118' },
-          { codeId: 'CDE-COM-1005' },
-          { codeId: 'CDE-COM-3010' },
+          { codeId: 'CDE-COM-0133' },
         ],
       };
 
@@ -762,7 +760,7 @@ const ScrTra0023Page = () => {
 
       // 承認ステータス
       getCodeManagementMasterMultipleResponse.resultList.map((x) => {
-        if (x.codeId === 'CDE-COM-1005') {
+        if (x.codeId === 'CDE-COM-0133') {
           x.codeValueList.map((f) => {
             selectValues.approvalStatusSelectValues.push({
               value: f.codeValue,
@@ -969,15 +967,20 @@ const ScrTra0023Page = () => {
    */
   const handleSearchClick = async () => {
     //TODO:saveStateフォームに反映されないので保留
-    //saveState(getValues());
 
     //単項目チェック日付FROM～TO
-    if (getValues('accountingDateFrom') > getValues('accountingDateTo')) {
-      //TODO:日付のFROM～TOバリデーション暫定処理
-      alert('期間が正しくありません。');
-      return;
+    //saveState(getValues());
+    if (
+      getValues('accountingDateFrom') != '' &&
+      getValues('accountingDateTo') != ''
+    ) {
+      if (getValues('accountingDateFrom') > getValues('accountingDateTo')) {
+        //TODO:日付のFROM～TOバリデーション暫定処理
+        setTitle('期間が正しくありません。');
+        setHandleDialog(true);
+        return;
+      }
     }
-
     //単項目入力チェックでOKまたワークリスト、元帳からの遷移の場合はOK
     await trigger();
     if (
@@ -1161,39 +1164,6 @@ const ScrTra0023Page = () => {
         };
     }
   };
-  /**
-   * 帳票出力アイコンクリック時のイベントハンドラ
-   */
-  const handleIconOutputReportClick = () => {
-    setScrCom0011PopupIsOpen(true);
-  };
-
-  /**
-   * 帳票選択ポップアップ出力クリック時のイベントハンドラ
-   */
-  const handleReportConfirm = async (
-    reportId: string,
-    reportName: string,
-    reportComment: string
-  ) => {
-    // 帳票作成パラメーター情報作成
-    const outputReportRequest: ScrMem9999OutputReportRequest = {
-      screenId: 'SCR-TRA-0023',
-      reportId: reportId,
-      reportName: reportName,
-      outputReportEmployeeId: user.employeeId,
-      outputReportEmployeeName: user.employeeName,
-      comment: reportComment,
-      createReportParameterInfo: convertFromCreateReportParameterInfo(
-        reportId,
-        getValues()
-      ),
-    };
-    // 帳票出力API 呼び出し
-    const outputReportResponse = await ScrMem9999OutputReport(
-      outputReportRequest
-    );
-  };
 
   //テーブル定義1
   const tableColumns: TableColDef[] = [
@@ -1211,6 +1181,39 @@ const ScrTra0023Page = () => {
     { field: 'ownCompanyDeal', headerName: '自社取引', width: 150 },
     { field: 'amortization', headerName: '償却', width: 150 },
   ];
+
+  /**
+   * 帳票出力アイコンクリック時のイベントハンドラ（ダイアログオープン）
+   */
+  const handleIconOutputReportClick = () => {
+    setScrCom0011PopupIsOpen(true);
+  };
+
+  /**
+   * 帳票選択ポップアップ、出力ボタンクリック時のイベントハンドラ
+   */
+  const handleReportConfirm = async () => {
+    //Response用配列定義
+    const request: string[] = [];
+    //明細入力件数チェック
+    const detailsCount = Object.keys(rowSelectionModel).length;
+    //選択行が0件の場合は、検索行すべてが出力対象
+    //検索結果行の債務番号のリストをrequestパラメータにセット
+    if (detailsCount === 0) {
+      searchResult.forEach((selectedRows) =>
+        request.push(selectedRows.debtNumber)
+      );
+    } else {
+      //チェックボックス選択行の債務番号のリストをrequestパラメータにセット
+      rowSelectionModel.forEach((selectedRows) =>
+        request.push(selectedRows.debtNumber)
+      );
+    }
+    //帳票選択ポップアップクローズ
+    setScrCom0011PopupIsOpen(false);
+    await ScrTra0023OutputJournalReport({ debtNumber: request });
+  };
+
   /**
    * Sectionを閉じた際のラベル作成
    */
@@ -1334,7 +1337,6 @@ const ScrTra0023Page = () => {
       })
     );
     //チェックボックス0件の場合は、ダイアログでエラーメッセージを表示
-    // TODO : メッセージIDを再確認
     if (0 == detailsCount) {
       const messege = Format(getMessage('MSG-FR-ERR-00046'), []);
       // ダイアログを表示
@@ -1350,8 +1352,7 @@ const ScrTra0023Page = () => {
 
       //出金伝票詳細入力チェック
       const response = await ScrTra0023CheckPayment(request);
-      //TODO:出金一覧検索APIレスポンスからエラーモデルへの変換
-
+      //出金一覧検索APIレスポンスからワーニングリストモデルへの変換
       const convertToWarningResult = (response: WarnList[]): warningList[] => {
         return response.map((x) => {
           return {
@@ -1567,7 +1568,6 @@ const ScrTra0023Page = () => {
                   const selectedRows = searchResult.filter((dataGridRow) =>
                     selectedRowId.has(dataGridRow.id)
                   );
-                  //setSelectionModel(selectedRows);
                   setRowSelectionModel(selectedRows);
                 }}
               />
