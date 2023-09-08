@@ -608,7 +608,7 @@ const ScrTra0023Page = () => {
   const sectionRef = useRef<SectionClose>();
   let userEditPermission = false;
   //ユーザーの画面編集権限確認
-  if (-1 != user.editPossibleScreenIdList.indexOf('SCR-TRA-0023')) {
+  if (-1 !== user.editPossibleScreenIdList.indexOf('SCR-TRA-0023')) {
     userEditPermission = true;
   }
 
@@ -701,11 +701,10 @@ const ScrTra0023Page = () => {
   const [billingIdSelectValuesDisableFlg, setbillingIdSelectValuesDisableFlg] =
     useState<boolean>(false);
 
-  // チェックボックス行ごとの活性非活性処理用
-  //const [checkBoxDispModel, setcheckBoxDispModel] = useState<any[]>([]);
   // チェックボックス選択行
-  const [rowSelectionModel, setRowSelectionModel] = useState<any[]>([]);
-  const [selectId, setSelectId] = useState<string>();
+  const [rowSelectionModel, setRowSelectionModel] = useState<
+    SearchResultRowModel[]
+  >([]);
 
   // router
   const navigate = useNavigate();
@@ -824,7 +823,7 @@ const ScrTra0023Page = () => {
         billingIdSelectValues: selectValues.billingIdSelectValues,
       });
 
-      if (LedgerList == dispType) {
+      if (LedgerList === dispType) {
         // 元帳一覧からの遷移
         //実行パラメータ取得
         // 会計処理日(From)
@@ -863,7 +862,7 @@ const ScrTra0023Page = () => {
 
         //検索イベント発生
         handleSearchClick();
-      } else if (workList == dispType) {
+      } else if (workList === dispType) {
         // ワークリストからの遷移
         //実行パラメータ取得
         const sessionStorageChangeHistoryNumber = sessionStorage.getItem(
@@ -896,7 +895,7 @@ const ScrTra0023Page = () => {
         setCsvOutputButtonDisableFlg(true);
         setReportOutputButtonDisableFlg(true);
         setSearchButtonDisableFlg(true);
-      } else if (details == dispType) {
+      } else if (details === dispType) {
         // 出金詳細からの遷移
         // 検索条件復元
         //reset(loadState());TODO:フォームに反映されないので保留
@@ -971,8 +970,8 @@ const ScrTra0023Page = () => {
     //単項目チェック日付FROM～TO
     //saveState(getValues());
     if (
-      getValues('accountingDateFrom') != '' &&
-      getValues('accountingDateTo') != ''
+      getValues('accountingDateFrom') !== '' &&
+      getValues('accountingDateTo') !== ''
     ) {
       if (getValues('accountingDateFrom') > getValues('accountingDateTo')) {
         //TODO:日付のFROM～TOバリデーション暫定処理
@@ -985,8 +984,8 @@ const ScrTra0023Page = () => {
     await trigger();
     if (
       methods.formState.isValid ||
-      LedgerList == dispType ||
-      workList == dispType
+      LedgerList === dispType ||
+      workList === dispType
     ) {
       const request = convertFromSearchConditionModel(getValues());
       const response = await ScrTra0023GetPayment(request);
@@ -1029,13 +1028,13 @@ const ScrTra0023Page = () => {
       setTableValues(tableRows);
 
       //ワークフローの時は債務番号のリンクを無効にする。
-      if (workList != dispType) {
+      if (workList !== dispType) {
         setHrefs(hrefs);
       }
 
       // 検索結果が1件以上存在する場合は各種ボタンを有効化する
       if (1 <= Number(tableResult.count)) {
-        if (LedgerList != dispType && workList != dispType) {
+        if (LedgerList !== dispType && workList !== dispType) {
           // CSV出力ボタン活性化
           setCsvOutputButtonDisableFlg(false);
           // 帳票出力ボタン活性化
@@ -1043,7 +1042,7 @@ const ScrTra0023Page = () => {
           // チェックボックス活性
           setGridCheckboxDisableflg(false);
           // 確定ボタン活性
-          if (userEditPermission == true) {
+          if (userEditPermission === true) {
             setConfirmButtonDisableFlg(false);
           }
         } else {
@@ -1106,6 +1105,7 @@ const ScrTra0023Page = () => {
       }
     } else {
       //バリデーションエラーありの場合は検索ボタンの動作は無効とする
+      return;
     }
   };
 
@@ -1138,31 +1138,6 @@ const ScrTra0023Page = () => {
       minutes +
       '.csv';
     exportCsv(fileName, apiRef);
-  };
-
-  /**
-   * 検索条件モデルから帳票出力APIリクエストへの変換
-   */
-  const convertFromCreateReportParameterInfo = (
-    reportId: string,
-    searchCondition: SearchConditionModel
-  ) => {
-    switch (reportId) {
-      case 'REP-TRA-0023':
-        // 出金一覧
-        return {
-          // TODO:出力する項目をここで設定
-          accountingDateFrom: searchCondition.accountingDateFrom,
-          accountingDateTo: searchCondition.accountingDateTo,
-          claimClassification: searchCondition.claimClassification,
-          paymentKind: searchCondition.paymentKind,
-          approvalStatus: searchCondition.approvalStatus,
-          debtNumber: searchCondition.debtNumber,
-          contractId: searchCondition.contractId,
-          corporationId: searchCondition.corporationId,
-          billingId: searchCondition.billingId,
-        };
-    }
   };
 
   //テーブル定義1
@@ -1337,10 +1312,10 @@ const ScrTra0023Page = () => {
       })
     );
     //チェックボックス0件の場合は、ダイアログでエラーメッセージを表示
-    if (0 == detailsCount) {
+    if (0 === detailsCount) {
       const messege = Format(getMessage('MSG-FR-ERR-00046'), []);
       // ダイアログを表示
-      await setTitle(messege);
+      setTitle(messege);
       setHandleDialog(true);
     } else {
       //セッションストレージにrequest内容保存（出金番号リスト配列）
