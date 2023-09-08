@@ -16,6 +16,8 @@ export interface ScrTra0025GetPaymentDetailsResponse {
   billingId: string;
   // 即支払可否フラグ
   immediatePaymentFlag: string;
+  // 即時出金限度額
+  immediatePaymentLimitAmount: number;
   // 取引区分
   dealKind: string;
   // 会場名
@@ -37,7 +39,7 @@ export interface ScrTra0025GetPaymentDetailsResponse {
   // 出金番号
   paymentNumber: string;
   // 債務一覧リスト
-  paymentDetailsList: paymentDetailsList[];
+  paymentDetailsList: PaymentDetailsList[];
   // 出金元口座ID
   paymentSourceAccountId: string;
   // 出金元口座銀行名
@@ -45,17 +47,17 @@ export interface ScrTra0025GetPaymentDetailsResponse {
   // 出金元口座支店名
   paymentSourcebranchName: string;
   // 承認依頼中フラグ
-  approvalRequestFlag: string;
+  approvalRequestFlag: boolean;
   // 自社IDフラグ
-  ownCompanyFlag: string;
+  ownCompanyFlag: boolean;
   // 変更タイムスタンプ
   changeTimestamp: string;
 }
 
 /** リスト */
-export interface paymentDetailsList {
+export interface PaymentDetailsList {
   // 出金明細番号
-  paymentDetailsNumber: string;
+  paymentDetailsNumber: number;
   // 会計処理日
   accountingDate: string;
   // 出金種別
@@ -65,7 +67,7 @@ export interface paymentDetailsList {
   // 出金元口座ID
   paymentSourceAccountId: string;
   // 出金額
-  paymentAmount: string;
+  paymentAmount: number;
   // 出金メモ
   paymentMemo: string;
   // 出金FBデータ出力済フラグ

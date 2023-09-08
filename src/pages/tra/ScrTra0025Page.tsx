@@ -7,7 +7,7 @@ import { Grid } from 'layouts/Grid';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 
-import { AddButton } from 'controls/Button';
+import { CancelButton, ConfirmButton } from 'controls/Button';
 import { GridHrefsModel } from 'controls/Datagrid';
 import { Table, TableColDef, TableRowModel } from 'controls/Table';
 import { TextField } from 'controls/TextField';
@@ -23,6 +23,10 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AppContext } from 'providers/AppContextProvider';
 
+//数字のカンマ区切り書式
+const numberFormat = (num: number): string => {
+  return num.toLocaleString();
+};
 const accountingDate: string[] = [
   '2023/08/01',
   '2023/08/02',
@@ -86,7 +90,7 @@ const paymentMemo: string[] = [
 
 //テーブル定義
 const debtLists_columns: TableColDef[] = [
-  { field: 'accountingDate', headerName: '出金日', width: 150 },
+  { field: 'accountingDate', headerName: '会計処理日', width: 150 },
   { field: 'paymentKind', headerName: '出金種別', width: 150 },
   { field: 'paymentSourceAccountName', headerName: '出金元口座', width: 300 },
   { field: 'paymentAmount', headerName: '金額', width: 150 },
@@ -178,10 +182,58 @@ const handleIconOutputConfirmClick = () => {
   alert('TODO：確定ボタンが押されました。');
 };
 
-/** 出金一覧リストのデータモデル */
-interface paymentDetailsListModel {
+/**
+ * 出金伝票表示のデータモデル
+ */
+interface PaymentDetailsDispModel {
+  // 法人ID
+  corporationId: string;
+  // 法人名
+  corporationName: string;
+  // 請求先ID
+  billingId: string;
+  // 即支払可否フラグ
+  immediatePaymentFlag: string;
+  // 即時出金限度額
+  immediatePaymentLimitAmount: string;
+  // 取引区分
+  dealKind: string;
+  // 会場名
+  placeName: string;
+  // 開催日
+  sessionDate: string;
+  // オークション回数
+  auctionCount: string;
+  // 出品番号
+  exhibitNumber: string;
+  // 車名
+  carName: string;
+  // 請求種別
+  claimClassification: string;
+  // 債務金額
+  debtAmount: string;
+  // 承認ステータス
+  approvalStatus: string;
+  // 出金番号
+  paymentNumber: string;
+  // 出金元口座ID
+  paymentSourceAccountId: string;
+  // 出金元口座銀行名
+  paymentSourcebankName: string;
+  // 出金元口座支店名
+  paymentSourcebranchName: string;
+  // 承認依頼中フラグ
+  approvalRequestFlag: boolean | null;
+  // 自社IDフラグ
+  ownCompanyFlag: boolean | null;
+  // 変更タイムスタンプ
+  changeTimestamp: string;
+}
+
+/** 債務一覧リストのデータモデル */
+interface PaymentDetailsListModel {
   // 出金明細番号
-  paymentDetailsNumber: string;
+  paymentDetailsNumber: number;
   // 会計処理日
   accountingDate: string;
   // 出金種別
@@ -197,15 +249,60 @@ interface paymentDetailsListModel {
   // 出金FBデータ出力済フラグ
   paymentFbDataOutputFlag: string;
 }
+
+/**
+ * 出金伝票データ取得APIリクエストへの変換
+ */
+const convertGetPaymentDetailsModel = (
+  Param: ScrTra0025GetPaymentDetailsRequest
+): ScrTra0025GetPaymentDetailsRequest => {
+  return {
+    // 債務番号
+    debtNumber: Param.debtNumber,
+  };
+};
+
+/**
+ * 出金一覧検索APIレスポンスから出金伝票表示モデルへの変換
+ */
+const convertToPaymentDetailsDispModel = (
+  model: ScrTra0025GetPaymentDetailsResponse
+): PaymentDetailsDispModel => {
+  return {
+    corporationId: model.corporationId,
+    corporationName: model.corporationName,
+    billingId: model.billingId,
+    immediatePaymentFlag: model.immediatePaymentFlag,
+    immediatePaymentLimitAmount: numberFormat(
+      model.immediatePaymentLimitAmount
+    ),
+    dealKind: model.dealKind,
+    placeName: model.placeName,
+    sessionDate: model.sessionDate,
+    auctionCount: model.auctionCount,
+    exhibitNumber: model.exhibitNumber,
+    carName: model.carName,
+    claimClassification: model.claimClassification,
+    debtAmount: numberFormat(model.debtAmount),
+    approvalStatus: model.approvalStatus,
+    paymentNumber: model.paymentNumber,
+    paymentSourceAccountId: model.paymentSourceAccountId,
+    paymentSourcebankName: model.paymentSourcebankName,
+    paymentSourcebranchName: model.paymentSourcebranchName,
+    approvalRequestFlag: model.approvalRequestFlag,
+    ownCompanyFlag: model.ownCompanyFlag,
+    changeTimestamp: model.changeTimestamp,
+  };
+};
+
 /**
  * 出金伝票検索APIレスポンスから出金明細一覧モデルへの変換
  */
 const convertToPaymentDetailsListModel = (
   response: ScrTra0025GetPaymentDetailsResponse
-): paymentDetailsListModel[] => {
+): PaymentDetailsListModel[] => {
   return response.paymentDetailsList.map((x) => {
     return {
-      id: x.paymentDetailsNumber,
       // 出金明細番号
       paymentDetailsNumber: x.paymentDetailsNumber,
       // 会計処理日
@@ -217,7 +314,7 @@ const convertToPaymentDetailsListModel = (
       // 出金元口座ID
       paymentSourceAccountId: x.paymentSourceAccountId,
       // 出金額
-      paymentAmount: x.paymentAmount,
+      paymentAmount: numberFormat(x.paymentAmount),
       // 出金メモ
       paymentMemo: x.paymentMemo,
       // 出金FBデータ出力済フラグ
@@ -226,24 +323,16 @@ const convertToPaymentDetailsListModel = (
   });
 };
 
-/**
- * 検索条件モデルから入金情詳細APIリクエストへの変換
- */
-const convertGetPaymentDetailsModel = (
-  searchParam: ScrTra0025GetPaymentDetailsRequest
-): ScrTra0025GetPaymentDetailsRequest => {
-  return {
-    // 債務番号
-    debtNumber: searchParam.debtNumber,
-  };
-};
+//TODO:編集権限なしの場合
+//確定ボタン非活性
+//テーブル内非活性
 
 /**
  * SCR-TRA-0025 出金詳細画面
  */
 const ScrTra0025Page = () => {
   <h1>SCR-TRA-0025 出金一覧</h1>;
-
+  //const { getValues, setValue, reset, trigger } = methods;
   // router
   const navigate = useNavigate();
   const location = useLocation();
@@ -251,27 +340,58 @@ const ScrTra0025Page = () => {
   // 初期表示時
   // 出金詳細データ取得API / API-TRA-0025-0001
   const param: ScrTra0025GetPaymentDetailsRequest = {
-    /** 法人ID */
-    debtNumber: '',
+    /** 債務番号 */
+    debtNumber: '1234',
   };
-  // 出金詳細情報セクションの各種値
+
+  // 出金伝票情報セクションの各種値
+  const [paymentDetailsDispValues, setPaymentDetailsDispValues] =
+    useState<PaymentDetailsDispModel>({
+      corporationId: '1111',
+      corporationName: 'yamada',
+      billingId: '',
+      immediatePaymentFlag: '',
+      immediatePaymentLimitAmount: '',
+      dealKind: '',
+      placeName: '',
+      sessionDate: '',
+      auctionCount: '',
+      exhibitNumber: '',
+      carName: '',
+      claimClassification: '',
+      debtAmount: '',
+      approvalStatus: '',
+      paymentNumber: '',
+      paymentSourceAccountId: '',
+      paymentSourcebankName: '',
+      paymentSourcebranchName: '',
+      approvalRequestFlag: null,
+      ownCompanyFlag: null,
+      changeTimestamp: '',
+    });
+
+  // 出金明細一覧セクション
   const [detailsListRowsValues, setpaymentDetailsListRowsValues] = useState<
-    paymentDetailsListModel[]
+    PaymentDetailsListModel[]
   >([]);
 
   // 法人ID
-  const [corporationId, setCorporationId] = useState<string>();
   useEffect(() => {
     const initialize = async () => {
       const request = convertGetPaymentDetailsModel(param);
       const response = await ScrTra0025GetPaymentDetails(request);
 
-      // 出金詳細伝票情報セクション:会社ID
-      setCorporationId(response.corporationId);
+      //出金伝票表示クション
+      const paymentDetailsDispValues =
+        convertToPaymentDetailsDispModel(response);
+      setPaymentDetailsDispValues(paymentDetailsDispValues);
+
       // 出金明細一覧セクション
       const paymentDetailsListRowsValues =
         convertToPaymentDetailsListModel(response);
       setpaymentDetailsListRowsValues(paymentDetailsListRowsValues);
+
+      //setValue('corporationId', '111');
     };
     initialize();
   }, []);
@@ -318,75 +438,90 @@ const ScrTra0025Page = () => {
           <Grid container width={1690}>
             <FormProvider {...methods}>
               <Grid item xs={2}>
-                <TextField label='法人ID' name='corporationId' />
-                <TextField label='取引区分' name='dealKind' />
-                <TextField label='請求種別' name='claimClassification' />
+                <TextField
+                  label='法人ID'
+                  name='corporationId'
+                  value={paymentDetailsDispValues.corporationId}
+                  readonly
+                />
+                <TextField label='取引区分' name='dealKind' readonly />
+                <TextField size='s' label='車名' name='carName' readonly />
               </Grid>
               <Grid item xs={2}>
-                <TextField label='法人名' name='corporationName' />
-                <TextField label='会場名' name='placeName' />
-                <TextField label='債務番号' name='debtNumber' />
+                <TextField label='法人名' name='corporationName' readonly />
+                <TextField label='会場名' name='placeName' readonly />
+                <TextField
+                  label='請求種別'
+                  name='claimClassification'
+                  readonly
+                />
               </Grid>
               <Grid item xs={2}>
-                <TextField label='請求先ID' name='billingId' />
-                <TextField label='開催日' name='sessionDate' />
-                <TextField label='債務金額' name='debtAmount' />
+                <TextField label='請求先ID' name='billingId' readonly />
+                <TextField label='開催日' name='sessionDate' readonly />
+                <TextField label='債務番号' name='debtNumber' readonly />
               </Grid>
               <Grid item xs={2}>
-                <TextField label='即支払可否' name='immediatePaymentFlag' />
-                <TextField label='開催回数' name='sessionCount' />
-                <TextField label='承認ステータス' name='approvalStatus' />
+                <TextField
+                  label='即支払可否'
+                  name='immediatePaymentFlag'
+                  readonly
+                />
+                <TextField label='開催回数' name='sessionCount' readonly />
+                <TextField label='債務金額' name='debtAmount' readonly />
               </Grid>
               <Grid item xs={2}>
                 <TextField
                   label='即時出金限度額'
                   name='immediatePaymentLimitAmount'
+                  readonly
                 />
-                <TextField label='出品番号' name='exhibitNumber' />
-                <TextField size='s' label='車名' name='carName' />
+                <TextField label='出品番号' name='exhibitNumber' readonly />
+                <TextField
+                  label='承認ステータス'
+                  name='approvalStatus'
+                  readonly
+                />
               </Grid>
             </FormProvider>
           </Grid>
         </Section>
         {/* 合計金額セクション */}
-        <Section name='出金伝票情報'>
+        <Section name='合計金額'>
           <Grid container width={1690}>
             <FormProvider {...methods}>
               <Grid item xs={2}>
-                <TextField size='s' label='銀行振込' name='corporationId' />
+                <TextField
+                  size='s'
+                  label='銀行振込'
+                  name='corporationId'
+                  readonly
+                />
+
+                <TextField label='自社取引' name='ownTransactions' readonly />
               </Grid>
               <Grid item xs={2}>
-                <TextField label='相殺金額' name='OffsetAmount' />
+                <TextField label='相殺金額' name='OffsetAmount' readonly />
+                <TextField
+                  label='出金止相殺'
+                  name='withdrawStopOffset'
+                  readonly
+                />
               </Grid>
               <Grid item xs={2}>
-                <TextField label='出金保留' name='withdrawPending' />
+                <TextField label='出金保留' name='withdrawPending' readonly />
+                <TextField label='償却' name='OffsetAmount' readonly />
               </Grid>
               <Grid item xs={2}>
-                <TextField label='手振出金' name='billwithdraw' />
+                <TextField label='手振出金' name='billwithdraw' readonly />
               </Grid>
               <Grid item xs={2}>
-                <TextField label='現金手渡' name='cashdelivery' />
-              </Grid>
-              <Grid item xs={2}>
-                <TextField label='出金止相殺' name='withdrawStopOffset' />
-              </Grid>
-              <Grid item xs={2}>
-                <TextField label='自社取引' name='ownTransactions' />
+                <TextField label='現金手渡' name='cashdelivery' readonly />
               </Grid>
             </FormProvider>
           </Grid>
         </Section>
-        <Section
-          name='債務一覧'
-          decoration={
-            <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-              <AddButton onClick={handleIconOutputCancelClick}>
-                キャンセル
-              </AddButton>
-              <AddButton onClick={handleIconOutputConfirmClick}>確定</AddButton>
-            </MarginBox>
-          }
-        >
+        <Section name='債務一覧'>
           <Grid container width={1690}>
             {/* 銀行振込～テーブル */}
             <Grid container width={1200}>
@@ -398,6 +533,24 @@ const ScrTra0025Page = () => {
             </Grid>
           </Grid>
         </Section>
+      </MainLayout>
+      {/* bottom */}
+
+      <MainLayout bottom>
+        <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
+          <CancelButton
+            onClick={handleIconOutputCancelClick}
+            //disable={cancelButtonDisableFlg}
+          >
+            キャンセル
+          </CancelButton>
+          <ConfirmButton
+            onClick={handleIconOutputConfirmClick}
+            //disable={confirmButtonDisableFlg}
+          >
+            確定
+          </ConfirmButton>
+        </MarginBox>
       </MainLayout>
     </MainLayout>
   );
