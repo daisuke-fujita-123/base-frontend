@@ -8,6 +8,8 @@ export interface ScrDoc0005DocumentBasicsInfoRequest {
 
 /** 書類基本情報取得APIレスポンス */
 export interface ScrDoc0005DocumentBasicsInfoResponse {
+  /** 書類基本番号 */
+  documentBasicsNumber: number;
   /** オークション種類 */
   auctionKindName: string;
   /** オークション種類区分 */
@@ -196,31 +198,50 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
 
 /** 書類基本情報登録APIリクエスト */
 export interface ScrDoc0005RegistrationDocumentBasicsInfoRequest {
-  /** 書類基本番号 */
-  documentBasicsNumber: number;
-  /** オークション結果トラン変更前タイムスタンプ */
-  auctionResultTranChangeBeforeTimestamp: Date;
-  /** 書類基本トラン変更前タイムスタンプ */
-  documentBasicsTranChangeBeforeTimestamp: Date;
-  /** 落札店契約ID */
-  bidShopContractId: string;
-  /** 車台番号・フレームNo */
-  carbodyNumberFrameNo: string;
-  /** おまとめ車両パターン区分 */
-  omatomeCarPatternKind: string;
-  /** 会場書類発送日 */
-  placeDocumentShippingDate: string;
-  /** 書類受付情報リスト */
-  documentReceptionList: DocumentReceptionList;
-  /** 備品受付情報リスト */
-  equipmentReceptionList: EquipmentReceptionList;
-  /** おまとめ書類発送先区分 */
-  omatomeDocumentShippingDestinationKind: string;
-  /** 不備対応情報リスト */
-  incompleteSupportList: IncompleteSupportList;
-  /** 書類メモ */
-  documentMemo: string;
+  /** 基本情報 */
+  basicsInfo: ScrDoc0005DocumentBasicsInfoResponse &
+    RegistrationDocumentBasicsAdditionalInfoRequest;
+  /** 詳細情報 */
+  documentDetailsInfo?: ScrDoc0005DocumentDetailsInfoResponse;
 }
+interface RegistrationDocumentBasicsAdditionalInfoRequest {
+  /** 申請従業員ID */
+  applicationEmployeeId: string;
+  /** 登録変更メモ */
+  registrationChangeMemo: string;
+  /** 画面ID */
+  screenId: string;
+  /** タブID */
+  tabId: string;
+}
+
+/** 書類基本情報登録APIリクエスト */
+// export interface ScrDoc0005RegistrationDocumentBasicsInfoRequest {
+//   /** 書類基本番号 */
+//   documentBasicsNumber: number;
+//   /** オークション結果トラン変更前タイムスタンプ */
+//   auctionResultTranChangeBeforeTimestamp: Date;
+//   /** 書類基本トラン変更前タイムスタンプ */
+//   documentBasicsTranChangeBeforeTimestamp: Date;
+//   /** 落札店契約ID */
+//   bidShopContractId: string;
+//   /** 車台番号・フレームNo */
+//   carbodyNumberFrameNo: string;
+//   /** おまとめ車両パターン区分 */
+//   omatomeCarPatternKind: string;
+//   /** 会場書類発送日 */
+//   placeDocumentShippingDate: string;
+//   /** 書類受付情報リスト */
+//   documentReceptionList: DocumentReceptionList;
+//   /** 備品受付情報リスト */
+//   equipmentReceptionList: EquipmentReceptionList;
+//   /** おまとめ書類発送先区分 */
+//   omatomeDocumentShippingDestinationKind: string;
+//   /** 不備対応情報リスト */
+//   incompleteSupportList: IncompleteSupportList;
+//   /** 書類メモ */
+//   documentMemo: string;
+// }
 
 /** 書類受付情報リスト */
 interface DocumentReceptionList {
@@ -499,7 +520,7 @@ export interface ScrDoc0005ChangeHistoryInfoRequest {
 /** 変更履歴情報取得APIレスポンス */
 export interface ScrDoc0005ChangeHistoryInfoResponse {
   /** 変更履歴リスト */
-  changeHistoryInfo: ChangeHistoryInfo[];
+  changeHistoryList: ChangeHistoryInfo[];
   /** 未承認リスト */
   unapprovedList: UnapprovedList[];
 }
@@ -611,29 +632,12 @@ export interface ScrDoc0005RegistrationChangeHistoryCrossSectionInfoRequest {
 export interface ScrDoc0005CheckDocumentDetailsInfoRequest {
   /** 書類基本番号 */
   documentBasicsNumber: number;
-  /** オークション種類区分 */
-  auctionKind: string;
-  /** 車検元号区分 */
-  carInspectionEraNameKind: string;
-  /** 車検年 */
-  carInspectionYear: string;
-  /** 陸事コード */
-  landCode: string;
-  /** 登録番号1 */
-  registrationNumber1: number;
-  /** 登録番号2 */
-  registrationNumber2: string;
-  /** 登録番号3 */
-  registrationNumber3: number;
 }
 
 /** 書類詳細情報入力チェックレスポンス */
 export interface ScrDoc0005CheckDocumentDetailsInfoResponse {
   /** エラー内容リスト */
   errorList: ErrorList[];
-
-  /** ワーニング内容リスト */
-  warnList: WarnList[];
 }
 
 /** エラー内容リスト */
@@ -654,72 +658,102 @@ interface WarnList {
 
 /** 書類詳細情報登録リクエスト */
 export interface ScrDoc0005RegistrationDocumentDetailsInfoRequest {
-  /** 変更履歴番号 */
-  changeHistoryNumber: number;
-  /** 書類基本番号 */
-  documentBasicsNumber: number;
-  /** 変更前タイムスタンプ */
-  changeBfrTimestamp: Date;
-  /** 車種区分 */
-  cartypeKind: string;
-  /** 車検有無フラグ */
-  carInspectionExistenceFlag: boolean;
-  /** 車検元号区分 */
-  carInspectionEraNameKind: string;
-  /** 車検年 */
-  carInspectionYear: number;
-  /** 旧陸事コード */
-  oldLandCode: string;
-  /** 旧登録番号1 */
-  oldRegistrationNumber1: string;
-  /** 旧登録番号2 */
-  oldRegistrationNumber2: string;
-  /** 旧登録番号3 */
-  oldRegistrationNumber3: string;
-  /** 年額自動車税 */
-  annualCarTax: number;
-  /** 預かり自税総額 */
-  depositCarTaxTotalAmount: number;
-  /** リサイクル料 */
-  recyclePriceDeposit: number;
-  /** 二輪預り金 */
-  bikeDeposit: number;
-  /** 書類先出しフラグ */
-  documentAdvanceFlag: boolean;
-  /** 備品先出フラグ */
-  equipmentAdvanceFlag: boolean;
-  /** 入金のみ打ちフラグ */
-  receiptBeatExistenceFlag: boolean;
-  /** 直送打ちフラグ */
-  directDeliveryBeatExistenceFlag: boolean;
-  /** 名変督促FAX停止フラグ */
-  docChangeDemandFaxStopExistenceFlag: boolean;
-  /** 詳細情報取得課金フラグ */
-  detailsInformationAcquisitionChargesExistenceFlag: boolean;
-  /** デフォルト伝票種類区分 */
-  defaultSlipKind: string;
-  /** 配送金額 */
-  shippingAmount: number;
-  /** ペナルティ情報リスト */
-  penaltyInfoList: PenaltyInfoList;
-  /** 書類送付期限日 */
-  documentSendingDueDate: string;
-  /** 名変期限日 */
-  docChangeDueDate: string;
-  /** おまとめ書類発送止めフラグ */
-  omatomeDocumentShippingStopFlag: boolean;
-  /** おまとめ備品発送止めフラグ */
-  omatomeEquipmentShippingStopFlag: boolean;
-  /** 変更後タイムスタンプ */
-  changeAftTimestamp: Date;
-  /** 変更履歴管理トラン情報リスト */
-  changeHistoryManagementTranInfoList: ChangeHistoryManagementTranInfoList;
-  /** 書類基本更新項目情報トラン情報リスト */
-  documentBasicsUpdateColumnInformationTranInfoList: DocumentBasicsUpdateColumnInformationTranInfoList;
-  /** 申請トラン情報リスト */
-  applicationTranInfoList: ApplicationTranInfoList;
-  /** 承認設定者トラン情報リスト */
-  settingApproverTranInfoList: SettingApproverTranInfoList;
+  /** 基本情報 */
+  basicsInfo?: ScrDoc0005DocumentBasicsInfoResponse;
+  /** 詳細情報 */
+  documentDetailsInfo: ScrDoc0005DocumentDetailsInfoResponse &
+    RegistrationDocumentDetailsAdditionalInfoRequest;
+}
+
+// export interface ScrDoc0005RegistrationDocumentDetailsInfoRequest {
+//   /** 変更履歴番号 */
+//   changeHistoryNumber: number;
+//   /** 書類基本番号 */
+//   documentBasicsNumber: number;
+//   /** 変更前タイムスタンプ */
+//   changeBfrTimestamp: Date;
+//   /** 車種区分 */
+//   cartypeKind: string;
+//   /** 車検有無フラグ */
+//   carInspectionExistenceFlag: boolean;
+//   /** 車検元号区分 */
+//   carInspectionEraNameKind: string;
+//   /** 車検年 */
+//   carInspectionYear: number;
+//   /** 旧陸事コード */
+//   oldLandCode: string;
+//   /** 旧登録番号1 */
+//   oldRegistrationNumber1: string;
+//   /** 旧登録番号2 */
+//   oldRegistrationNumber2: string;
+//   /** 旧登録番号3 */
+//   oldRegistrationNumber3: string;
+//   /** 年額自動車税 */
+//   annualCarTax: number;
+//   /** 預かり自税総額 */
+//   depositCarTaxTotalAmount: number;
+//   /** リサイクル料 */
+//   recyclePriceDeposit: number;
+//   /** 二輪預り金 */
+//   bikeDeposit: number;
+//   /** 書類先出しフラグ */
+//   documentAdvanceFlag: boolean;
+//   /** 備品先出フラグ */
+//   equipmentAdvanceFlag: boolean;
+//   /** 入金のみ打ちフラグ */
+//   receiptBeatExistenceFlag: boolean;
+//   /** 直送打ちフラグ */
+//   directDeliveryBeatExistenceFlag: boolean;
+//   /** 名変督促FAX停止フラグ */
+//   docChangeDemandFaxStopExistenceFlag: boolean;
+//   /** 詳細情報取得課金フラグ */
+//   detailsInformationAcquisitionChargesExistenceFlag: boolean;
+//   /** デフォルト伝票種類区分 */
+//   defaultSlipKind: string;
+//   /** 配送金額 */
+//   shippingAmount: number;
+//   /** ペナルティ情報リスト */
+//   penaltyInfoList: PenaltyInfoList;
+//   /** 書類送付期限日 */
+//   documentSendingDueDate: string;
+//   /** 名変期限日 */
+//   docChangeDueDate: string;
+//   /** おまとめ書類発送止めフラグ */
+//   omatomeDocumentShippingStopFlag: boolean;
+//   /** おまとめ備品発送止めフラグ */
+//   omatomeEquipmentShippingStopFlag: boolean;
+//   /** 変更後タイムスタンプ */
+//   changeAftTimestamp: Date;
+//   /** 変更履歴管理トラン情報リスト */
+//   changeHistoryManagementTranInfoList: ChangeHistoryManagementTranInfoList;
+//   /** 書類基本更新項目情報トラン情報リスト */
+//   documentBasicsUpdateColumnInformationTranInfoList: DocumentBasicsUpdateColumnInformationTranInfoList;
+//   /** 申請トラン情報リスト */
+//   applicationTranInfoList: ApplicationTranInfoList;
+//   /** 承認設定者トラン情報リスト */
+//   settingApproverTranInfoList: SettingApproverTranInfoList;
+// }
+interface RegistrationDocumentDetailsAdditionalInfoRequest {
+  /** 登録変更メモ */
+  registrationChangeMemo: string;
+  /** 第一承認者ID */
+  firstApproverId: string;
+  /** 第一承認者メールアドレス */
+  firstApproverMailAddress: string;
+  /** 第ニ承認者ID */
+  secondApproverId: string;
+  /** 第三承認者ID */
+  thirdApproverId: string;
+  /** 第四承認者ID */
+  fourthApproverId: string;
+  /** 申請コメント */
+  applicationComment: string;
+  /** 申請従業員ID */
+  applicationEmployeeId: string;
+  /** 画面ID */
+  screenId: string;
+  /** タブID */
+  tabId: string;
 }
 
 /** ペナルティ情報リスト */

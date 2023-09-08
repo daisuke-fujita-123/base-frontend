@@ -148,20 +148,22 @@ const ScrDoc0005Page = () => {
           />
         </Tabs>
         {/* TODO:Popup差し替え */}
-        <Popup open={isDoc0007PopOpen}>
-          <Popup main>
-            <StackSection titles={[{ name: '個別通知' }]}>
-              <Stack>
-                <div>・会計処理日はオープン期間内を設定してください</div>
-                <div>・会計処理日はオープン期間内を設定してください</div>
-              </Stack>
-            </StackSection>
+        {isDoc0007PopOpen && (
+          <Popup open={isDoc0007PopOpen}>
+            <Popup main>
+              <StackSection titles={[{ name: '個別通知' }]}>
+                <Stack>
+                  <div>・会計処理日はオープン期間内を設定してください</div>
+                  <div>・会計処理日はオープン期間内を設定してください</div>
+                </Stack>
+              </StackSection>
+            </Popup>
+            <Popup bottom>
+              <CancelButton onClick={mailClick}>キャンセル</CancelButton>
+              <ConfirmButton onClick={mailClick}>確定</ConfirmButton>
+            </Popup>
           </Popup>
-          <Popup bottom>
-            <CancelButton onClick={mailClick}>キャンセル</CancelButton>
-            <ConfirmButton onClick={mailClick}>確定</ConfirmButton>
-          </Popup>
-        </Popup>
+        )}
       </ThemeProvider>
     </>
   );

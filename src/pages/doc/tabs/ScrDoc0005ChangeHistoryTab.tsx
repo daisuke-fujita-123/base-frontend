@@ -1,30 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { FormProvider } from 'react-hook-form';
 
-import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
 
+import { RightBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
+import { Stack } from 'layouts/Stack';
 
-import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { OutputButton } from 'controls/Button';
+import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 
 import {
   ScrDoc0005ChangeHistoryInfo,
   ScrDoc0005ChangeHistoryInfoResponse,
 } from 'apis/doc/ScrDoc0005Api';
 
-import { useForm } from 'hooks/useForm';
-
 import { useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * SCR-DOC-0005 書類情報詳細画面変更履歴情報タブ
  */
-const initialVal: ScrDoc0005ChangeHistoryInfoResponse = {
-  changeHistoryInfo: [],
-  unapprovedList: [],
-};
 
 // 変更履歴リスト
 const showChangeHistoryList: GridColDef[] = [
@@ -213,19 +208,18 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
 
   // 初期表示
   useEffect(() => {
+    const initialize = async () => {
+      const response = await ScrDoc0005ChangeHistoryInfo({
+        documentBasicsNumber: Number(documentBasicsNumber),
+      });
+      const changeHistoryInfo = convertToChangeHistoryInfoListModel(response);
+      setChangeHistoryList(changeHistoryInfo);
+      const unapprovedList = convertToUnapprovedInfoListModel(response);
+      setUnapprovedList(unapprovedList);
+    };
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const initialize = async () => {
-    const response = await ScrDoc0005ChangeHistoryInfo({
-      documentBasicsNumber: Number(documentBasicsNumber),
-    });
-    const changeHistoryInfo = convertToChangeHistoryInfoListModel(response);
-    setChangeHistoryList(changeHistoryInfo);
-    const unapprovedList = convertToUnapprovedInfoListModel(response);
-    setUnapprovedList(unapprovedList);
-  };
 
   /**
    * 変更履歴情報取得APIレスポンスから変更履歴リストモデルへの変換
@@ -233,14 +227,13 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
   const convertToChangeHistoryInfoListModel = (
     response: ScrDoc0005ChangeHistoryInfoResponse
   ): ChangeHistoryListModel[] => {
-    return response.changeHistoryInfo.map((x) => {
+    return response.changeHistoryList.map((x) => {
       return {
         id: String(x.changeHistoryNumber),
         tabNameAllRegistrationName: x.tabName + x.allRegistrationName,
         changeApplicationEmployeeIdName:
           x.changeApplicationEmployeeId + x.changeApplicationEmployeeName,
         approvalEmployeeIdName: x.approvalEmployeeId + x.approvalEmployeeName,
-
         ...x,
       };
     });
@@ -271,14 +264,12 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
     });
   };
 
-  const methods = useForm<ScrDoc0005ChangeHistoryInfoResponse>({
-    defaultValues: initialVal,
-    context: allReadOnly,
-    resolver: yupResolver(yup.object()),
-  });
-
   // ref
   const apiRef = useGridApiRef();
+
+  const handleExportCsvClick = () => {
+    exportCsv('filename.csv', apiRef);
+  };
   const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
   useEffect(() => {
@@ -288,25 +279,34 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
       ) + 40
     );
   }, [apiRef, apiRef.current.rootElementRef]);
-
   return (
     <MainLayout>
       <MainLayout main>
-        <FormProvider {...methods}>
-          <Section name='変更履歴一覧'>
+        <Section name='変更履歴一覧'>
+          <Stack>
+            <RightBox>
+              <OutputButton
+                onClick={handleExportCsvClick}
+                disable={allReadOnly}
+              >
+                CSV出力
+              </OutputButton>
+            </RightBox>
             <DataGrid
               columns={showChangeHistoryList}
               rows={changeHistoryList}
+              getRowId={(row) => row.id + row.tabNameAllRegistrationName}
             />
-          </Section>
-          <Section name='未承認一覧' width={maxSectionWidth}>
-            <DataGrid
-              columns={showUnapprovedList}
-              rows={unapprovedList}
-              apiRef={apiRef}
-            />
-          </Section>
-        </FormProvider>
+          </Stack>
+        </Section>
+        <Section name='未承認一覧' width={maxSectionWidth}>
+          <DataGrid
+            columns={showUnapprovedList}
+            rows={unapprovedList}
+            apiRef={apiRef}
+            getRowId={(row) => row.id + row.tabNameAllRegistrationName}
+          />
+        </Section>
       </MainLayout>
     </MainLayout>
   );

@@ -4,24 +4,43 @@ import { FormProvider } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
 
+import ScrCom0032Popup, {
+  columnList,
+  ScrCom0032PopupModel,
+  sectionList,
+} from 'pages/com/popups/ScrCom0032Popup';
+import ScrCom0033Popup, {
+  ScrCom0033PopupModel,
+} from 'pages/com/popups/ScrCom0033Popup';
+
 import { Grid } from 'layouts/Grid';
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
 import { ColStack, RowStack, Stack } from 'layouts/Stack';
 
+import { CancelButton, ConfirmButton } from 'controls/Button';
 import { Checkbox } from 'controls/Checkbox';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
 import { CaptionLabel } from 'controls/Label';
 import { Radio } from 'controls/Radio';
-import { Select } from 'controls/Select';
+import { Select, SelectValue } from 'controls/Select';
 import { TextField } from 'controls/TextField';
 
+import { ScrCom9999GetCodeManagementMaster } from 'apis/com/ScrCom9999Api';
 import {
+  ScrDoc0005CheckDocumentDetailsInfo,
   ScrDoc0005DocumentDetailsInfo,
   ScrDoc0005DocumentDetailsInfoResponse,
+  ScrDoc0005RegistrationDocumentDetailsInfo,
+  ScrDoc0005RegistrationDocumentDetailsInfoRequest,
 } from 'apis/doc/ScrDoc0005Api';
+import {
+  ScrDoc9999GetLandCodeListbox,
+  ScrDoc9999GetLandCodeListboxResponse,
+} from 'apis/doc/ScrDoc9999Api';
 
 import { useForm } from 'hooks/useForm';
+import { useNavigate } from 'hooks/useNavigate';
 
 interface ScrDoc0005DocumentDetails
   extends ScrDoc0005DocumentDetailsInfoResponse {
@@ -147,63 +166,293 @@ interface ScrDoc0005DetailTabProps {
 }
 const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
   const { documentBasicsNumber, allReadOnly } = props;
-
+  // 陸事コード
+  const [landcodes, setLandCodes] = useState<SelectValue[]>([]);
   // 書類・備品情報（書類）リスト
   const [penaltyList, setPenaltyList] = useState<PenaltyListModel[]>([]);
+  // 元号
+  const [eraNameSelectValues, setEraNameSelectValues] = useState<SelectValue[]>(
+    []
+  );
+  // 四輪車区分
+  const [fourWheelerSelectValues, setFourWheelerSelectValues] = useState<
+    SelectValue[]
+  >([]);
+  // 伝票種類
+  const [slipTypeSelectValues, setSlipTypeSelectValues] = useState<
+    SelectValue[]
+  >([]);
 
+  // 登録内容確認ポップアップ
+  const [scrCom00032PopupIsOpen, setScrCom00032PopupIsOpen] =
+    useState<boolean>(false);
+
+  const scrCom0032PopupInitialValues: ScrCom0032PopupModel = {
+    errorList: [],
+    warningList: [],
+    registrationChangeList: [
+      {
+        screenId: '',
+        screenName: '',
+        tabId: 0,
+        tabName: '',
+        sectionList: [
+          {
+            sectionName: '',
+            columnList: [
+              {
+                columnName: '',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    changeExpectDate: '',
+  };
+  const [scrCom0032PopupData, setScrCom0032PopupData] =
+    useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
+
+  // 登録内容申請ポップアップ
+  const [scrCom00033PopupIsOpen, setScrCom00033PopupIsOpen] =
+    useState<boolean>(false);
+  /**
+   * 登録内容申請ポップアップ初期データ
+   */
+  const scrCom0033PopupInitialValues: ScrCom0033PopupModel = {
+    screenId: '',
+    tabId: 0,
+    applicationMoney: 0,
+  };
+  const [scrCom0033PopupData, setScrCom0033PopupData] =
+    useState<ScrCom0033PopupModel>(scrCom0033PopupInitialValues);
   // 初期表示
-  const [prevValues, setPrevValues] =
-    useState<ScrDoc0005DocumentDetails>(initialVal);
+  const methods = useForm<ScrDoc0005DocumentDetails>({
+    defaultValues: initialVal,
+    context: allReadOnly,
+    resolver: yupResolver(yup.object()),
+  });
+  const {
+    getValues,
+    reset,
+    trigger,
+    formState: { dirtyFields },
+  } = methods;
+
   useEffect(() => {
+    const initialize = async () => {
+      const response = await ScrDoc0005DocumentDetailsInfo({
+        documentBasicsNumber: Number(documentBasicsNumber),
+      });
+
+      const addObj = {
+        omatomeDocumentShippingStop:
+          response.omatomeDocumentShippingStopFlag === true ? 'する' : 'しない',
+        omatomeEquipmentShippingStop:
+          response.omatomeEquipmentShippingStopFlag === true
+            ? 'する'
+            : 'しない',
+      };
+      reset(Object.assign(addObj, response));
+      setPenaltyList([
+        {
+          id: response.documentPenaltyKind,
+          penaltyExclusionFlag: response.documentPenaltyExclusionFlag,
+          penaltyKind: response.documentPenaltyKind,
+          penaltyPrice: response.documentPenaltyPrice,
+          delayDays: response.documentDelayDays,
+          dueDate: response.documentSendingDueDate,
+        },
+        {
+          id: response.earlyDocChangePenaltyKind,
+          penaltyExclusionFlag: response.earlyDocChangePenaltyExclusionFlag,
+          penaltyKind: response.earlyDocChangePenaltyKind,
+          penaltyPrice: response.earlyDocChangePenaltyPrice,
+          delayDays: response.earlyDocChangeDelayDays,
+          dueDate: '',
+        },
+        {
+          id: response.docChangePenaltyKind,
+          penaltyExclusionFlag: response.docChangePenaltyExclusionFlag,
+          penaltyKind: response.docChangePenaltyKind,
+          penaltyPrice: response.docChangePenaltyPrice,
+          delayDays: response.docChangeDelayDays,
+          dueDate: response.docChangeDueDate,
+        },
+      ]);
+      // 元号
+      const eraNameRes = await ScrCom9999GetCodeManagementMaster({
+        codeId: 'CDE-COM-0074',
+      });
+      const eraNameSelectValues: SelectValue[] =
+        eraNameRes.searchGetCodeManagementMasterListbox.map((val) => {
+          return {
+            value: val.codeValue,
+            displayValue: val.codeName,
+          };
+        });
+      setEraNameSelectValues(eraNameSelectValues);
+
+      // 四輪車区分
+      const fourWheelerRes = await ScrCom9999GetCodeManagementMaster({
+        codeId: 'CDE-COM-0074',
+      });
+      const fourWheelerSelectValues: SelectValue[] =
+        fourWheelerRes.searchGetCodeManagementMasterListbox.map((val) => {
+          return {
+            value: val.codeValue,
+            displayValue: val.codeName,
+          };
+        });
+      setFourWheelerSelectValues(fourWheelerSelectValues);
+
+      // 伝票種類
+      const slipTypeRes = await ScrCom9999GetCodeManagementMaster({
+        codeId: 'CDE-COM-0024',
+      });
+      const slipTypeSelectValues: SelectValue[] =
+        slipTypeRes.searchGetCodeManagementMasterListbox.map((val) => {
+          return {
+            value: val.codeValue,
+            displayValue: val.codeName,
+          };
+        });
+      setSlipTypeSelectValues(slipTypeSelectValues);
+
+      // 陸事コード取得
+      const landSelect: ScrDoc9999GetLandCodeListboxResponse =
+        await ScrDoc9999GetLandCodeListbox();
+      const landSelectValues: SelectValue[] = landSelect.landCodeList.map(
+        (val) => {
+          return {
+            value: val.landCode,
+            displayValue: val.landCodeName,
+          };
+        }
+      );
+      setLandCodes(landSelectValues);
+    };
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const initialize = async () => {
-    const response = await ScrDoc0005DocumentDetailsInfo({
-      documentBasicsNumber: Number(documentBasicsNumber),
-    });
-    const addObj = {
-      omatomeDocumentShippingStop:
-        response.omatomeDocumentShippingStopFlag === true ? 'する' : 'しない',
-      omatomeEquipmentShippingStop:
-        response.omatomeEquipmentShippingStopFlag === true ? 'する' : 'しない',
-    };
-    setPrevValues(Object.assign(addObj, response));
-    setPenaltyList([
-      {
-        id: response.documentPenaltyKind,
-        penaltyExclusionFlag: response.documentPenaltyExclusionFlag,
-        penaltyKind: response.documentPenaltyKind,
-        penaltyPrice: response.documentPenaltyPrice,
-        delayDays: response.documentDelayDays,
-        dueDate: response.documentSendingDueDate,
-      },
-      {
-        id: response.earlyDocChangePenaltyKind,
-        penaltyExclusionFlag: response.earlyDocChangePenaltyExclusionFlag,
-        penaltyKind: response.earlyDocChangePenaltyKind,
-        penaltyPrice: response.earlyDocChangePenaltyPrice,
-        delayDays: response.earlyDocChangeDelayDays,
-        dueDate: '',
-      },
-      {
-        id: response.docChangePenaltyKind,
-        penaltyExclusionFlag: response.docChangePenaltyExclusionFlag,
-        penaltyKind: response.docChangePenaltyKind,
-        penaltyPrice: response.docChangePenaltyPrice,
-        delayDays: response.docChangeDelayDays,
-        dueDate: response.docChangeDueDate,
-      },
-    ]);
+  /**
+   * キャンセルボタンクリック時のイベントハンドラ
+   */
+  const navigate = useNavigate();
+  const handleCancel = () => {
+    navigate('/doc/documents/');
   };
 
-  const methods = useForm<ScrDoc0005DocumentDetails>({
-    defaultValues: prevValues,
-    context: allReadOnly,
-    resolver: yupResolver(yup.object()),
-  });
+  /**
+   * 確定ボタンクリック時のイベントハンドラ
+   */
+  const onClickConfirm = async () => {
+    trigger();
+    const res = await ScrDoc0005CheckDocumentDetailsInfo({
+      documentBasicsNumber: documentBasicsNumber,
+    });
 
+    // 登録内容確認ポップアップに渡すデータをセット
+    setScrCom0032PopupData({
+      errorList: res.errorList,
+      warningList: [],
+      registrationChangeList: [
+        {
+          screenId: 'SCR-DOC-0005',
+          screenName: '書類情報詳細',
+          tabId: 2,
+          tabName: '詳細情報',
+          sectionList: convertToSectionList(dirtyFields),
+        },
+      ],
+      // 日付の確認
+      changeExpectDate: null,
+    });
+
+    // 登録内容確認ポップアップを開く
+    setScrCom00032PopupIsOpen(true);
+  };
+  /**
+   * セクション構造定義 TODO fieldsとnameの修正
+   */
+  const sectionDef = [
+    {
+      section: '書類情報詳細',
+      fields: [''],
+      name: [''],
+    },
+  ];
+
+  /**
+   * 変更した項目から登録・変更内容データへの変換
+   */
+  const convertToSectionList = (dirtyFields: object): sectionList[] => {
+    const fields = Object.keys(dirtyFields);
+    const sectionList: sectionList[] = [];
+    const columnList: columnList[] = [];
+    sectionDef.forEach((d) => {
+      fields.forEach((f) => {
+        if (d.fields.includes(f)) {
+          columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
+        }
+      });
+      sectionList.push({
+        sectionName: d.section,
+        columnList: columnList,
+      });
+    });
+    return sectionList;
+  };
+
+  /**
+   * ポップアップの確定ボタンクリック時のイベントハンドラ
+   */
+  const [registrationChangeMemo, setRegistrationChangeMemo] =
+    useState<string>('');
+  const scrCom00032PopupHandleConfirm = (registrationChangeMemo: string) => {
+    setScrCom00032PopupIsOpen(false);
+    setRegistrationChangeMemo(registrationChangeMemo);
+
+    // 登録内容申請ポップアップを呼出
+    setScrCom00033PopupIsOpen(true);
+    setScrCom0033PopupData({
+      screenId: 'SCR-DOC-0005',
+      tabId: 2,
+      applicationMoney: 0,
+    });
+  };
+
+  /**
+   * 登録内容申請ポップアップの確定ボタンクリック時のイベントハンドラ
+   */
+  const scrCom00033PopupHandleConfirm = async (
+    employeeId1: string,
+    employeeMailAddress1: string,
+    employeeId2?: string,
+    employeeId3?: string,
+    employeeId4?: string,
+    applicationComment?: string
+  ) => {
+    setScrCom00033PopupIsOpen(false);
+    const values = {
+      registrationChangeMemo: registrationChangeMemo,
+      firstApproverId: employeeId1,
+      firstApproverMailAddress: employeeMailAddress1,
+      secondApproverId: employeeId2 ? employeeId2 : '',
+      thirdApproverId: employeeId3 ? employeeId3 : '',
+      fourthApproverId: employeeId4 ? employeeId4 : '',
+      applicationComment: applicationComment ? applicationComment : '',
+      applicationEmployeeId: '',
+      screenId: 'SCR-DOC-0005',
+      tabId: '2',
+    };
+
+    const req: ScrDoc0005RegistrationDocumentDetailsInfoRequest = {
+      documentDetailsInfo: Object.assign(getValues(), values),
+    };
+    const res = await ScrDoc0005RegistrationDocumentDetailsInfo(req);
+  };
   return (
     <MainLayout>
       <MainLayout main>
@@ -248,7 +497,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                       <Select
                         label='車検日（元号）'
                         name='carInspectionEraNameKind'
-                        selectValues={[]}
+                        selectValues={eraNameSelectValues}
                         disabled={allReadOnly}
                       />
                       <Select
@@ -261,40 +510,51 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                     <TextField
                       label='年額自動車税'
                       name='annualCarTax'
-                      readonly
+                      readonly={
+                        allReadOnly || getValues('auctionKindName') !== '四輪'
+                      }
                     />
                   </ColStack>
                   <ColStack spacing={2.4}>
                     <Select
                       label='陸事コード'
                       name='oldLandCode'
-                      selectValues={[]}
-                      disabled={allReadOnly}
+                      selectValues={landcodes}
+                      disabled={
+                        allReadOnly ||
+                        getValues('auctionKindName') === 'おまとめ'
+                      }
                     />
                     <TextField
                       label='預り自税総額'
                       name='depositCarTaxTotalAmount'
-                      readonly
+                      readonly={
+                        allReadOnly || getValues('auctionKindName') !== '四輪'
+                      }
                     />
                   </ColStack>
                   <ColStack spacing={2.4}>
                     <TextField
                       label='登録番号1'
                       name='registrationNumber1'
-                      readonly
+                      disabled={allReadOnly}
                     />
                     <TextField
                       label='リサイクル料'
                       name='recyclePriceDeposit'
-                      readonly
+                      readonly={
+                        allReadOnly || getValues('auctionKindName') !== '四輪'
+                      }
                     />
                   </ColStack>
                   <ColStack spacing={2.4}>
                     <Select
                       label='四輪車種区分'
                       name='cartypeKind'
-                      selectValues={[]}
-                      disabled={allReadOnly}
+                      selectValues={fourWheelerSelectValues}
+                      disabled={
+                        allReadOnly || getValues('auctionKindName') !== '四輪'
+                      }
                     />
                     <TextField
                       label='預かり金（二輪）'
@@ -313,12 +573,18 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                 <Checkbox
                   label='書類先出し'
                   name='documentAdvanceFlag'
+                  disabled={
+                    allReadOnly || getValues('auctionKindName') !== '四輪'
+                  }
                 ></Checkbox>
               </ColStack>
               <ColStack spacing={2.4}>
                 <Checkbox
                   label='備品先出し'
                   name='equipmentAdvanceFlag'
+                  disabled={
+                    allReadOnly || getValues('auctionKindName') !== '四輪'
+                  }
                 ></Checkbox>
               </ColStack>
             </RowStack>
@@ -330,24 +596,40 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                 <Checkbox
                   label='入金のみ打ち'
                   name='receiptBeatExistenceFlag'
+                  disabled={
+                    allReadOnly || !getValues('receiptBeatExistenceFlag')
+                  }
                 ></Checkbox>
               </ColStack>
               <ColStack spacing={2.4}>
                 <Checkbox
                   label='直送打ち'
                   name='directDeliveryBeatExistenceFlag'
+                  disabled={
+                    allReadOnly || !getValues('directDeliveryBeatExistenceFlag')
+                  }
                 ></Checkbox>
               </ColStack>
               <ColStack spacing={2.4}>
                 <Checkbox
                   label='名変督促FAX停止'
                   name='docChangeDemandFaxStopExistenceFlag'
+                  disabled={
+                    allReadOnly ||
+                    !getValues('docChangeDemandFaxStopExistenceFlag')
+                  }
                 ></Checkbox>
               </ColStack>
               <ColStack spacing={2.4}>
                 <Checkbox
                   label='詳細情報取得課金'
                   name='detailsInformationAcquisitionChargesExistenceFlag'
+                  disabled={
+                    allReadOnly ||
+                    !getValues(
+                      'detailsInformationAcquisitionChargesExistenceFlag'
+                    )
+                  }
                 ></Checkbox>
               </ColStack>
             </RowStack>
@@ -358,7 +640,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                 <Select
                   label='伝票種類'
                   name='defaultSlipKind'
-                  selectValues={[]}
+                  selectValues={slipTypeSelectValues}
                   disabled={allReadOnly}
                 ></Select>
               </ColStack>
@@ -372,7 +654,12 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
             </RowStack>
           </Section>
           <Section name='ペナルティ情報' isDocDetail>
-            <DataGrid columns={showPenaltyList} rows={penaltyList} />
+            <DataGrid
+              columns={showPenaltyList}
+              rows={penaltyList}
+              getRowId={(row) => row.id + row.penaltyKind}
+              disabled={allReadOnly}
+            />
           </Section>
           <Section name='出品店・落札店詳細情報' isDocDetail>
             <Stack spacing={2.4}>
@@ -495,7 +782,6 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                   label='書類発送止め'
                   name='omatomeDocumentShippingStopFlag'
                   required
-                  column={true}
                   radioValues={[
                     { value: false, displayValue: 'する' },
                     { value: true, displayValue: 'しない' },
@@ -508,7 +794,6 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                   label='備品発送止め'
                   name='omatomeEquipmentShippingStopFlag'
                   required
-                  column={true}
                   radioValues={[
                     { value: false, displayValue: 'する' },
                     { value: true, displayValue: 'しない' },
@@ -520,6 +805,41 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
           </Section>
         </FormProvider>
       </MainLayout>
+      {/* bottom */}
+      <MainLayout bottom>
+        <Stack direction='row' alignItems='center'>
+          <CancelButton onClick={handleCancel} disable={allReadOnly}>
+            キャンセル
+          </CancelButton>
+          <ConfirmButton onClick={onClickConfirm} disable={allReadOnly}>
+            確定
+          </ConfirmButton>
+        </Stack>
+      </MainLayout>
+      {/* 登録内容確認ポップアップ */}
+      {scrCom00032PopupIsOpen && (
+        <ScrCom0032Popup
+          isOpen={scrCom00032PopupIsOpen}
+          data={scrCom0032PopupData}
+          handleCancel={() => {
+            setScrCom00032PopupIsOpen(false);
+          }}
+          handleRegistConfirm={scrCom00032PopupHandleConfirm}
+          handleApprovalConfirm={scrCom00032PopupHandleConfirm}
+        />
+      )}
+
+      {/* 登録内容申請ポップアップ */}
+      {scrCom00033PopupIsOpen && (
+        <ScrCom0033Popup
+          isOpen={scrCom00033PopupIsOpen}
+          data={scrCom0033PopupData}
+          handleCancel={() => {
+            setScrCom00033PopupIsOpen(false);
+          }}
+          handleConfirm={scrCom00033PopupHandleConfirm}
+        />
+      )}
     </MainLayout>
   );
 };
