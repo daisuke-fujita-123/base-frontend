@@ -7,6 +7,14 @@ import ScrCom0033PopupTester from 'pages/_dev/ScrCom0033PopupTester';
 import ScrCom0035PopupTester from 'pages/_dev/ScrCom0035PopupTester';
 import ScrCom0036PopupTester from 'pages/_dev/ScrCom0036PopupTester';
 import ScrCom0038PopupTester from 'pages/_dev/ScrCom0038PopupTester';
+import DatagridCellJoin from 'pages/_exp/DatagridCellJoin';
+import DataGridCellType from 'pages/_exp/DatagridCellType';
+import DatagridColumnGroups from 'pages/_exp/DatagridColumnGroups';
+import Experiments from 'pages/_exp/Experiments';
+import Layouts from 'pages/_exp/Layouts';
+import Logout from 'pages/_exp/Logout';
+import Scroll from 'pages/_exp/Scroll';
+import WatchForm from 'pages/_exp/WatchForm';
 import ScrCom0001Page from 'pages/com/ScrCom0001Page';
 import ScrCom0002Page from 'pages/com/ScrCom0002Page';
 import ScrCom0003Page from 'pages/com/ScrCom0003Page';
@@ -66,7 +74,7 @@ import ScrTra0038Page from 'pages/tra/ScrTra0038Page';
 import GlobalLayout from 'layouts/GlobalLayout';
 
 /**
- * _routes
+ * 画面URI定義
  */
 const _ROUTES = [
   {
@@ -290,14 +298,14 @@ const _ROUTES = [
     // SCR-TRA-0001 取引管理マスタ一覧
     id: 'SCR-TRA-0001',
     name: '取引管理マスタ一覧',
-    path: '/tra/deel-masters',
+    path: '/tra/masters',
     element: <ScrTra0001Page />,
   },
   {
     // SCR-TRA-0003 取引管理マスタメンテナンス
     id: 'SCR-TRA-0003',
     name: '取引管理マスタメンテナンス',
-    path: '-',
+    path: '/tra/masters/:masterId',
     element: <ScrTra0003Page />,
   },
   {
@@ -305,7 +313,6 @@ const _ROUTES = [
     id: 'SCR-TRA-0005',
     name: '会員売上伝票一覧',
     path: '/tra/member-salses-slips',
-    // eslint-disable-next-line react/jsx-no-undef
     element: <ScrTra0005Page />,
   },
   {
@@ -504,12 +511,78 @@ const _ROUTES = [
     path: '/_dev/tester/scr-com-0038',
     element: <ScrCom0038PopupTester />,
   },
+  {
+    // exp Experiments
+    id: 'Experiments',
+    name: 'Experiments',
+    path: '/_exp/experiments',
+    element: <Experiments />,
+  },
+  {
+    // exp DataGridCellJoin
+    id: 'DataGridCellJoin',
+    name: 'DataGridCellJoin',
+    path: '/_exp/datagrid-cell-join',
+    element: <DatagridCellJoin />,
+  },
+  {
+    // exp DataGridCellType
+    id: 'DataGridCellType',
+    name: 'DataGridCellType',
+    path: '/_exp/datagrid-cell-type',
+    element: <DataGridCellType />,
+  },
+  {
+    // exp DatagridColumnGroups
+    id: 'DatagridColumnGroups',
+    name: 'DatagridColumnGroups',
+    path: '/_exp/datagrid-column-groups',
+    element: <DatagridColumnGroups />,
+  },
+  {
+    // exp Layouts
+    id: 'Layouts',
+    name: 'Layouts',
+    path: '/_exp/Layouts',
+    element: <Layouts />,
+  },
+  {
+    // exp WatchForm
+    id: 'WatchForm',
+    name: 'WatchForm',
+    path: '/_exp/watch-form',
+    element: <WatchForm />,
+  },
+  {
+    // exp Scroll
+    id: 'Scroll',
+    name: 'Scroll',
+    path: '/_exp/Scroll',
+    element: <Scroll />,
+  },
+  {
+    // exp Logout
+    id: 'Logout',
+    name: 'Logout',
+    path: '/_exp/logout',
+    element: <Logout />,
+  },
 ];
 
 /**
- * routes
+ * 画面URI定義
  */
 export const ROUTES = [
+  {
+    path: '/_exp/logout',
+    element: <Logout />,
+    children: [],
+  },
+  {
+    path: '/com/login',
+    element: <ScrCom0001Page />,
+    children: [],
+  },
   {
     path: '/',
     element: <GlobalLayout />,

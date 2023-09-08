@@ -8,7 +8,7 @@ import ScrCom0032Popup, {
   registrationChangeList,
   ScrCom0032PopupModel,
   sectionList,
-} from 'pages/com/popups/ScrCom0032';
+} from 'pages/com/popups/ScrCom0032Popup';
 
 // レイアウト
 import { MainLayout } from 'layouts/MainLayout';
@@ -474,7 +474,7 @@ const ScrMem0003BranchNumberTab = () => {
     if (registrationChangeList[0].sectionList[0].columnList.length === 0) {
       errorMsgList.push({
         errorCode: 'MSG-FR-ERR-00053',
-        errorMessages: [getMessage('MSG-FR-ERR-00053')],
+        errorMessage: getMessage('MSG-FR-ERR-00053'),
       });
     } else {
       // 拠点枝番紐付け情報入力チェックAPI
@@ -486,7 +486,7 @@ const ScrMem0003BranchNumberTab = () => {
       const errorMsgListRes: errorList[] = response.errorList.map((o) => {
         return {
           errorCode: o.errorCode,
-          errorMessages: [o.errorMessage],
+          errorMessage: o.errorMessage,
         };
       });
       errorMsgListRes.forEach((v) => {
@@ -537,6 +537,13 @@ const ScrMem0003BranchNumberTab = () => {
    */
   const handlePopupCancel = () => {
     setIsOpenPopup(false);
+  };
+
+  /**
+   * 承認申請ボタン押下イベントハンドラ
+   */
+  const handleApprovalConfirm = () => {
+    return;
   };
 
   return (
@@ -625,11 +632,13 @@ const ScrMem0003BranchNumberTab = () => {
       <ScrCom0032Popup
         isOpen={isOpenPopup}
         data={scrCom0032PopupData}
-        handleConfirm={handlePopupConfirm}
         handleCancel={handlePopupCancel}
+        handleRegistConfirm={handlePopupConfirm}
+        handleApprovalConfirm={handleApprovalConfirm}
       />
     </>
   );
 };
 
 export default ScrMem0003BranchNumberTab;
+

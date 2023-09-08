@@ -53,6 +53,8 @@ export default {
 // react-hook-formを使う場合は、template内で呼び出してから使う。
 interface SampleInput {
   sampleName: string | number;
+  sampleName1: string[] | number[];
+  sampleName2: string[] | number[];
 }
 // TDOO クラッシュ原因の特定
 // const Template: Story<SelectProps<SampleInput>> = (args) => {
@@ -88,6 +90,8 @@ export const Example = () => {
     reValidateMode: 'onBlur',
     defaultValues: {
       sampleName: 0,
+      sampleName1: [0],
+      sampleName2: ['2'],
     },
     context: isReadOnly,
   });
@@ -96,6 +100,33 @@ export const Example = () => {
     { displayValue: '二輪', value: 0 },
     { displayValue: '三輪', value: 1 },
     { displayValue: '四輪', value: 2 },
+  ];
+
+  const sampleAutoComplete: SelectValue[] = [
+    { value: '2', displayValue: 'ｶｰｵｸ!＆ﾕｰｻﾞｰ代行出品' },
+    { value: '3', displayValue: '福祉･ﾊﾞｽﾄﾗ' },
+    { value: '4', displayValue: 'ヤナセ' },
+    { value: '5', displayValue: 'ﾔﾅｾﾛｰﾌﾟﾗ' },
+    { value: '6', displayValue: 'トラックレンタ・リース' },
+    { value: '9', displayValue: 'ﾊﾞｽﾄﾗﾌﾚｯｼｭ' },
+    { value: 'A', displayValue: 'スズキディーラー' },
+    { value: 'B', displayValue: '即売り' },
+    { value: 'C', displayValue: 'ヤナセ即売り' },
+    { value: 'D', displayValue: 'ﾌﾚｯｼｭ' },
+    { value: 'E', displayValue: 'ＶＵＣセレクト' },
+    { value: 'G', displayValue: 'ｵｰｸﾈｯﾄｻﾀﾃﾞｰ' },
+    { value: 'H', displayValue: 'ブランド売り切り' },
+    { value: 'I', displayValue: '月)BMWﾃﾞｨｰﾗ特選' },
+    { value: 'J', displayValue: 'お楽しみ売切り' },
+    { value: 'K', displayValue: 'Audi/VW' },
+    { value: 'M', displayValue: 'ｽﾎﾟｯﾄｲﾍﾞﾝﾄ' },
+    { value: 'N', displayValue: 'さきどりﾚﾝﾀﾘｰｽ' },
+    { value: 'O', displayValue: '月MAX30' },
+    { value: 'Q', displayValue: 'スペシャルメンバーズ' },
+    { value: 'R', displayValue: '月)BMWﾃﾞｨｰﾗﾌﾚｯｼｭ' },
+    { value: 'S', displayValue: 'シュテルン' },
+    { value: 'X', displayValue: '土曜ﾚﾝﾀﾘｰｽ' },
+    { value: 'Y', displayValue: 'レンタ・リース' },
   ];
 
   return (
@@ -108,6 +139,21 @@ export const Example = () => {
           disabled={false}
           blankOption={true}
           required={false}
+        />
+        <Select
+          label='サンプルセレクト(Multiple)'
+          selectValues={sampleSelect}
+          name='sampleName1'
+          disabled={false}
+          blankOption={true}
+          required={false}
+          multiple={true}
+        />
+        <Select
+          label='Autocomplete'
+          selectValues={sampleAutoComplete}
+          name='sampleName2'
+          multiple={true}
         />
       </ThemeProvider>
     </FormProvider>

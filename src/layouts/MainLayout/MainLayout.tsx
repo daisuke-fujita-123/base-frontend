@@ -52,31 +52,25 @@ export const MainLayout = (props: MainLayoutProps) => {
   const flexRowSx = { display: 'flex', flexDirection: 'row' };
 
   return (
-    <Box sx={{ ...flexColSx, flexGrow: 1, overflow: 'auto', marginTop: 8 }}>
-      <Box sx={{ ...flexRowSx, flexGrow: 1, overflow: 'auto' }}>
+    <Box sx={{ ...flexColSx, flexGrow: 1, marginTop: 1 }}>
+      <Box sx={{ ...flexRowSx, flexGrow: 1 }}>
         {/* main */}
+        {/* メニュー開閉部があるため、左側にパディングを入れる */}
         <Box
           sx={{
             ...flexColSx,
+            width: rightElement ? '1325px' : '1590px',
+            minWidth: rightElement ? '1325px' : '1590px',
             flexGrow: 1,
+            m: 2,
+            // overflowX: rightElement ? 'auto' : 'hidden',
           }}
         >
-          {/* メニュー開閉部があるため、左側にパディングを入れる */}
-          <Box
-            sx={{
-              ...flexColSx,
-              width: rightElement ? '1355px' : '1620px',
-              minWidth: rightElement ? '1355px' : '1620px',
-              flexGrow: 1,
-              p: 3,
-            }}
-          >
-            {mainElement}
-          </Box>
+          {mainElement}
         </Box>
         {/* right */}
         {rightElement && (
-          <Box sx={{ ...flexColSx, width: '265px', marginTop: 5 }}>
+          <Box sx={{ ...flexColSx, width: '255px', marginTop: 5 }}>
             {rightElement}
           </Box>
         )}

@@ -1,6 +1,8 @@
 import React, { ReactNode, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { Grid } from 'layouts/Grid';
+
 import { theme } from 'controls/theme';
 
 import { Box, styled } from '@mui/material';
@@ -50,17 +52,21 @@ interface TabLayoutProps {
   children: ReactNode[];
   tabDef: TabDef[];
   defaultValue: string;
+  buttons?: ReactNode;
 }
 // フッターは、タブ内の前ページに聞かせる場合は、ハンドリング方法を考える必要あり。
 
 const StyledTab = styled(Tab)({
   ...theme.palette.tab,
+  padding: 0,
   fontWeight: 'bold',
   borderRadius: '10px 10px 0 0',
-  fontSize: theme.spacing(4),
-  height: 40,
-  minHeight: 40,
-  width: 136,
+  fontSize: 13,
+  height: 25,
+  minHeight: 25,
+  width: 116,
+  minWidth: 106,
+  whiteSpace: 'nowrap',
   border: `1px solid  ${theme.palette.tab?.border}`,
   marginRight: theme.spacing(1),
   '&:hover': {
@@ -71,23 +77,22 @@ const StyledTab = styled(Tab)({
   },
   '&:not(.Mui-selected)': {
     ...theme.palette.tabNoSelect,
-    marginTop: theme.spacing(1),
-    height: 35,
-    minHeight: 35,
+    top: 2,
+    height: 23,
+    minHeight: 23,
   },
 });
 
 const StyledBox = styled(Box)({
   borderBottom: `2px solid  ${theme.palette.tab?.border}`,
-  marginLeft: theme.spacing(3),
-  marginBottom: theme.spacing(-8),
+  marginLeft: 10,
 });
 
 /**
  * Tabsコンポーネント
  */
 export const Tabs = (props: TabLayoutProps) => {
-  const { children, tabDef: tabValues } = props;
+  const { children, tabDef: tabValues, buttons } = props;
 
   // router
   const location = useLocation();
@@ -108,28 +113,35 @@ export const Tabs = (props: TabLayoutProps) => {
 
   return (
     <>
-      <StyledBox>
-        <TabsMui
-          value={value}
-          onChange={onChange}
-          sx={{ height: 40, minHeight: 40 }}
-          TabIndicatorProps={{
-            hidden: true,
-          }}
-        >
-          {tabValues.map((value: TabDef, index: number) => (
-            <StyledTab
-              disabled={value.disabled}
-              key={index}
-              label={value.title}
-            />
-          ))}
-        </TabsMui>
-      </StyledBox>
+      <Grid container spacing={4}>
+        <Grid item xs={buttons ? 8.5 : 12}>
+          <StyledBox>
+            <TabsMui
+              value={value}
+              onChange={onChange}
+              sx={{ minHeight: 23 }}
+              TabIndicatorProps={{
+                hidden: true,
+              }}
+            >
+              {tabValues.map((value: TabDef, index: number) => (
+                <StyledTab
+                  disabled={value.disabled}
+                  key={index}
+                  label={value.title}
+                />
+              ))}
+            </TabsMui>
+          </StyledBox>
+        </Grid>
+        <Grid item xs={buttons ? 3.5 : 'auto'}>
+          {buttons}
+        </Grid>
+      </Grid>
       {children.map((child: ReactNode, index: number) => (
-        <TabPanel key={index} value={value} index={index}>
+        <div key={index} hidden={value !== index}>
           {child}
-        </TabPanel>
+        </div>
       ))}
     </>
   );

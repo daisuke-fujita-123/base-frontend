@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  FieldValues,
-  Path,
-  useController,
-  useFormContext,
-} from 'react-hook-form';
+import { FieldValues, Path, useController, useFormContext } from 'react-hook-form';
 
 import { MarginBox } from 'layouts/Box';
 import { InputLayout } from 'layouts/InputLayout';
@@ -12,12 +7,7 @@ import { InputLayout } from 'layouts/InputLayout';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import {
-  Checkbox as MuiCheckbox,
-  FormControl,
-  FormControlLabel,
-  styled,
-} from '@mui/material';
+import { Checkbox as MuiCheckbox, FormControl, FormControlLabel, styled } from '@mui/material';
 
 export interface CheckBoxProps<T extends FieldValues> {
   name: Path<T>;
@@ -26,6 +16,7 @@ export interface CheckBoxProps<T extends FieldValues> {
   size?: 's' | 'm' | 'l' | 'xl';
   required?: boolean;
   disabled?: boolean;
+  backgroundColor?: string;
 }
 
 const StyledFormControl = styled(FormControl)({
@@ -57,6 +48,7 @@ export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
     size = 's',
     required = false,
     disabled = false,
+    backgroundColor,
   } = props;
 
   // form
@@ -73,11 +65,12 @@ export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
           required={required}
           disabled={disabled || isReadOnly}
           {...field}
+          style={{ whiteSpace: 'nowrap', background: backgroundColor }}
         />
       </StyledFormControl>
       {helperText && (
         <MarginBox justifyContent='flex-start' ml={3.6}>
-          <Typography>{helperText}</Typography>
+          <Typography color='inherit'>{helperText}</Typography>
         </MarginBox>
       )}
     </InputLayout>

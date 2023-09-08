@@ -83,7 +83,7 @@ export const Example = () => {
   });
 
   const radioSample = [
-    { value: 0, displayValue: '男' },
+    { value: 0, displayValue: '男', backgroundColor: '#6fb9ff' },
     { value: 1, displayValue: '女' },
   ];
 
