@@ -622,7 +622,7 @@ const ScrTra0023Page = () => {
     context: false,
   });
 
-  const { getValues, setValue, reset, trigger, formState } = methods;
+  const { getValues, setValue, reset, trigger } = methods;
 
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
@@ -958,8 +958,6 @@ const ScrTra0023Page = () => {
         setGridCheckboxDisableflg(false);
         // 検索ボタン活性化
         setSearchButtonDisableFlg(false);
-
-        formState;
       }
     };
     initialize();
