@@ -621,7 +621,8 @@ const ScrTra0023Page = () => {
     resolver: yupResolver(yup.object(searchConditionSchema)),
     context: false,
   });
-  const { getValues, setValue, reset, trigger } = methods;
+
+  const { getValues, setValue, reset, trigger, formState } = methods;
 
   // state
   const [searchResult, setSearchResult] = useState<SearchResultRowModel[]>([]);
@@ -734,9 +735,10 @@ const ScrTra0023Page = () => {
         );
 
       // 請求種別
-      getCodeManagementMasterMultipleResponse.resultList.map((x) => {
+
+      getCodeManagementMasterMultipleResponse.resultList.forEach((x) => {
         if (x.codeId === 'CDE-COM-0062') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.claimClassificationSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -746,9 +748,9 @@ const ScrTra0023Page = () => {
       });
 
       // 出金種別
-      getCodeManagementMasterMultipleResponse.resultList.map((x) => {
+      getCodeManagementMasterMultipleResponse.resultList.forEach((x) => {
         if (x.codeId === 'CDE-COM-0118') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.paymentKindSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -758,9 +760,9 @@ const ScrTra0023Page = () => {
       });
 
       // 承認ステータス
-      getCodeManagementMasterMultipleResponse.resultList.map((x) => {
+      getCodeManagementMasterMultipleResponse.resultList.forEach((x) => {
         if (x.codeId === 'CDE-COM-0133') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.approvalStatusSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -778,12 +780,12 @@ const ScrTra0023Page = () => {
         // 請求先ID
         billingId: '',
       };
-      const searchconditionRefine = ScrMem9999SearchconditionRefine(
+      const searchconditionRefine = await ScrMem9999SearchconditionRefine(
         codeMasterRequestMem0023
       );
 
       // 契約ID
-      (await searchconditionRefine).contractId.map((x) => {
+      searchconditionRefine.contractId.forEach((x) => {
         selectValues.contractIdSelectValues.push({
           value: x,
           displayValue: x,
@@ -791,7 +793,7 @@ const ScrTra0023Page = () => {
       });
 
       //法人リスト
-      (await searchconditionRefine).corporationList.map((x) => {
+      searchconditionRefine.corporationList.forEach((x) => {
         selectValues.corporationIdSelectValues.push({
           value: x.corporationId,
           displayValue: x.corporationName,
@@ -799,7 +801,7 @@ const ScrTra0023Page = () => {
       });
 
       //請求先ID
-      (await searchconditionRefine).billingId.map((x) => {
+      await searchconditionRefine.billingId.forEach((x) => {
         selectValues.billingIdSelectValues.push({
           value: x,
           displayValue: x,
@@ -956,6 +958,8 @@ const ScrTra0023Page = () => {
         setGridCheckboxDisableflg(false);
         // 検索ボタン活性化
         setSearchButtonDisableFlg(false);
+
+        formState;
       }
     };
     initialize();
@@ -1202,7 +1206,7 @@ const ScrTra0023Page = () => {
           return nameVal === x.value;
         }
       );
-      filter.map((x) => {
+      filter.forEach((x) => {
         nameVal = x.displayValue;
       });
     }
@@ -1212,7 +1216,7 @@ const ScrTra0023Page = () => {
       const filter = selectValues.paymentKindSelectValues.filter((x) => {
         return nameVal === x.value;
       });
-      filter.map((x) => {
+      filter.forEach((x) => {
         nameVal = x.displayValue;
       });
     }
@@ -1222,7 +1226,7 @@ const ScrTra0023Page = () => {
       const nameValues: string[] = [];
       selectValues.approvalStatusSelectValues.filter((x) => {
         if (typeof nameVal !== 'string') {
-          nameVal.map((f) => {
+          nameVal.forEach((f) => {
             if (x.value === f) {
               nameValues.push(x.displayValue);
             }
