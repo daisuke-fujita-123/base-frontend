@@ -38,7 +38,7 @@ interface SectionProps {
   openable?: boolean;
   width?: number;
   fitInside?: boolean;
-  small?: boolean;
+  isDocDetail?: boolean;
 }
 export interface SectionClose {
   closeSection: () => void;
@@ -61,7 +61,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
     openable = true,
     width,
     fitInside = false,
-    small,
+    isDocDetail,
   } = props;
 
   const [expanded, setExpanded] = useState<boolean>(true);
@@ -82,15 +82,21 @@ export const Section = forwardRef((props: SectionProps, ref) => {
 
   return (
     <Box width={width} display={fitInside ? 'inline-table' : undefined}>
-      <SubTitle onClick={onClick} openable={openable}>
+      <SubTitle onClick={onClick} openable={openable} isDocDetail={isDocDetail}>
         {name}
       </SubTitle>
-      <ContentsBox transparent={isTransparent} disable={isSearch}>
+      <ContentsBox
+        transparent={isTransparent}
+        disable={isSearch}
+        isDocDetail={isDocDetail}
+      >
         <StyledAccordion expanded={expanded}>
-          {!expanded && (
+          {!isDocDetail && !expanded ? (
             <AccordionSummary>
               <SearchTextBox>{serchLabels}</SearchTextBox>
             </AccordionSummary>
+          ) : (
+            <></>
           )}
           {expanded && decoration && (
             <Box
@@ -109,7 +115,7 @@ export const Section = forwardRef((props: SectionProps, ref) => {
           <AccordionDetails
             sx={{
               marginX: theme.spacing(4),
-              marginY: small ? theme.spacing(2) : theme.spacing(4),
+              marginY: isDocDetail ? theme.spacing(2) : theme.spacing(4),
             }}
           >
             <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>

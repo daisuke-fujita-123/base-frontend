@@ -232,6 +232,15 @@ export const theme = createTheme({
         },
       },
     },
+    // ラジオの共通レイアウト
+    MuiRadio: {
+      styleOverrides: {
+        root: {
+          '&.Mui-checked': { color: '#0075ff', borderColor: '#bbbbbb' },
+          '&.Mui-disabled': { color: '#aaaaaa' },
+        },
+      },
+    },
     // ツールチップの共通レイアウト
     MuiTooltip: {
       styleOverrides: {
@@ -245,6 +254,13 @@ export const theme = createTheme({
           padding: 10,
           backgroundColor: '#b9e7da',
           color: '#000000',
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: '#073c91',
         },
       },
     },
