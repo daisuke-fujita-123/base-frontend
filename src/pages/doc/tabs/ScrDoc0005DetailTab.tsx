@@ -226,11 +226,35 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
   };
   const [scrCom0033PopupData, setScrCom0033PopupData] =
     useState<ScrCom0033PopupModel>(scrCom0033PopupInitialValues);
+
+  /**
+   * バリデーションスキーマ
+   */
+  const detailsBasicSchama = {
+    carInspectionEraNameKind: yup.string().label('車検日（元号）'),
+    carInspectionYear: yup.string().label('車検日（年）'),
+    oldRegistrationNumber1: yup.string().label('登録番号1').max(3),
+    oldRegistrationNumber2: yup.string().label('登録番号2').max(1),
+    oldRegistrationNumber3: yup.string().label('登録番号3').max(4),
+    annualCarTax: yup.string().label('年額自動車税').max(7),
+    depositCarTaxTotalAmount: yup.string().label('預かり自税総額').max(7),
+    recyclePriceDeposit: yup.string().label('リサイクル料').max(7),
+    shippingAmount: yup.string().label('配送金額').max(7),
+    documentSendingDueDate: yup.string().label('書類送付期限日').max(10).date(),
+    omatomeDocumentShippingStopFlag: yup
+      .string()
+      .label('書類発送止め')
+      .required(),
+    omatomeEquipmentShippingStopFlag: yup
+      .string()
+      .label('備品発送止め')
+      .required(),
+  };
   // 初期表示
   const methods = useForm<ScrDoc0005DocumentDetails>({
     defaultValues: initialVal,
     context: allReadOnly,
-    resolver: yupResolver(yup.object()),
+    resolver: yupResolver(yup.object(detailsBasicSchama)),
   });
   const {
     getValues,
@@ -341,7 +365,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
    */
   const navigate = useNavigate();
   const handleCancel = () => {
-    navigate('/doc/documents/');
+    navigate(-1);
   };
 
   /**
@@ -352,7 +376,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
     const res = await ScrDoc0005CheckDocumentDetailsInfo({
       documentBasicsNumber: documentBasicsNumber,
     });
-
+    console.log('入力', res);
     // 登録内容確認ポップアップに渡すデータをセット
     setScrCom0032PopupData({
       errorList: res.errorList,
@@ -379,8 +403,55 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
   const sectionDef = [
     {
       section: '書類情報詳細',
-      fields: [''],
-      name: [''],
+      fields: [
+        'carInspectionEraNameKind',
+        'carInspectionYear',
+        'oldLandCode',
+        'oldRegistrationNumber1',
+        'oldRegistrationNumber2',
+        'oldRegistrationNumber3',
+        'cartypeKind',
+        'annualCarTax',
+        'depositCarTaxTotalAmount',
+        'recyclePriceDeposit',
+        'documentAdvanceFlag',
+        'equipmentAdvanceFlag',
+        'receiptBeatExistenceFlag',
+        'directDeliveryBeatExistenceFlag',
+        'docChangeDemandFaxStopExistenceFlag',
+        'detailsInformationAcquisitionChargesExistenceFlag',
+        'defaultSlipKind',
+        'shippingAmount',
+        'documentPenaltyExclusionFlag',
+        'documentSendingDueDate',
+        'docChangePenaltyExclusionFlag',
+        'omatomeDocumentShippingStopFlag',
+        'omatomeEquipmentShippingStopFlag',
+      ],
+      name: [
+        '車検日（元号）',
+        '車検日（年）',
+        '陸事コード',
+        '登録番号1',
+        '登録番号2',
+        '登録番号3',
+        '四輪車種区分',
+        '年額自動車税',
+        '預かり自税総額',
+        'リサイクル料',
+        '書類先出し',
+        '備品先出し',
+        '入金のみ打ち',
+        '直接打ち',
+        '名変督促FAX停止',
+        '詳細情報取得課金',
+        '伝票種類',
+        '配送金額',
+        '除外設定',
+        '変更期限日',
+        '書類発送止め',
+        '備品発送止め',
+      ],
     },
   ];
 
@@ -454,367 +525,384 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
     const res = await ScrDoc0005RegistrationDocumentDetailsInfo(req);
   };
   return (
-    <MainLayout>
-      <MainLayout main>
-        <FormProvider {...methods}>
-          <Grid container spacing={3}>
-            <Grid item xs={4}>
-              <Section name='オークション基本情報' isDocDetail>
-                <RowStack spacing={7}>
-                  <ColStack spacing={2.4}>
-                    <TextField
-                      label='オークション種類'
-                      name='auctionKindName'
-                      readonly
-                    />
-                    <TextField
-                      label='オークション回数'
-                      name='auctionCount'
-                      readonly
-                    />
-                    <TextField label='出品番号' name='exhibitNumber' readonly />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <TextField
-                      label='会場（おまとめ）'
-                      name='placeName'
-                      readonly
-                    />
-                    <TextField
-                      label='オークション開催日'
-                      name='auctionSessionDate'
-                      readonly
-                    />
-                  </ColStack>
-                </RowStack>
-              </Section>
-            </Grid>
-            <Grid item xs={8}>
-              <Section name='基本情報編集' isDocDetail>
-                <RowStack spacing={7}>
-                  <ColStack spacing={2.4}>
-                    <Stack width={225}>
-                      <Select
-                        label='車検日（元号）'
-                        name='carInspectionEraNameKind'
-                        selectValues={eraNameSelectValues}
-                        disabled={allReadOnly}
+    <>
+      <MainLayout>
+        <MainLayout main>
+          <FormProvider {...methods}>
+            <Grid container spacing={3}>
+              <Grid item xs={4}>
+                <Section name='オークション基本情報' isDocDetail>
+                  <RowStack spacing={7}>
+                    <ColStack spacing={2.4}>
+                      <TextField
+                        label='オークション種類'
+                        name='auctionKindName'
+                        readonly
                       />
-                      <Select
-                        label='車検日（年）'
-                        name='carInspectionYear'
-                        selectValues={[]}
-                        disabled={allReadOnly}
+                      <TextField
+                        label='オークション回数'
+                        name='auctionCount'
+                        readonly
                       />
-                    </Stack>
-                    <TextField
-                      label='年額自動車税'
-                      name='annualCarTax'
-                      readonly={
-                        allReadOnly || getValues('auctionKindName') !== '四輪'
-                      }
-                    />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <Select
-                      label='陸事コード'
-                      name='oldLandCode'
-                      selectValues={landcodes}
-                      disabled={
-                        allReadOnly ||
-                        getValues('auctionKindName') === 'おまとめ'
-                      }
-                    />
-                    <TextField
-                      label='預り自税総額'
-                      name='depositCarTaxTotalAmount'
-                      readonly={
-                        allReadOnly || getValues('auctionKindName') !== '四輪'
-                      }
-                    />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <TextField
-                      label='登録番号1'
-                      name='registrationNumber1'
-                      disabled={allReadOnly}
-                    />
-                    <TextField
-                      label='リサイクル料'
-                      name='recyclePriceDeposit'
-                      readonly={
-                        allReadOnly || getValues('auctionKindName') !== '四輪'
-                      }
-                    />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <Select
-                      label='四輪車種区分'
-                      name='cartypeKind'
-                      selectValues={fourWheelerSelectValues}
-                      disabled={
-                        allReadOnly || getValues('auctionKindName') !== '四輪'
-                      }
-                    />
-                    <TextField
-                      label='預かり金（二輪）'
-                      name='bikeDeposit'
-                      readonly
-                    />
-                  </ColStack>
-                </RowStack>
-              </Section>
+                      <TextField
+                        label='出品番号'
+                        name='exhibitNumber'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack spacing={2.4}>
+                      <TextField
+                        label='会場（おまとめ）'
+                        name='placeName'
+                        readonly
+                      />
+                      <TextField
+                        label='オークション開催日'
+                        name='auctionSessionDate'
+                        readonly
+                      />
+                    </ColStack>
+                  </RowStack>
+                </Section>
+              </Grid>
+              <Grid item xs={8}>
+                <Section name='基本情報編集' isDocDetail>
+                  <RowStack spacing={7}>
+                    <ColStack spacing={2.4}>
+                      <Stack width={225}>
+                        <Select
+                          label='車検日（元号）'
+                          name='carInspectionEraNameKind'
+                          selectValues={eraNameSelectValues}
+                          disabled={allReadOnly}
+                        />
+                        <Select
+                          label='車検日（年）'
+                          name='carInspectionYear'
+                          selectValues={[]}
+                          disabled={allReadOnly}
+                        />
+                      </Stack>
+                      <TextField
+                        label='年額自動車税'
+                        name='annualCarTax'
+                        readonly={
+                          allReadOnly || getValues('auctionKindName') !== '四輪'
+                        }
+                      />
+                    </ColStack>
+                    <ColStack spacing={2.4}>
+                      <Select
+                        label='陸事コード'
+                        name='oldLandCode'
+                        selectValues={landcodes}
+                        disabled={
+                          allReadOnly ||
+                          getValues('auctionKindName') === 'おまとめ'
+                        }
+                      />
+                      <TextField
+                        label='預り自税総額'
+                        name='depositCarTaxTotalAmount'
+                        readonly={
+                          allReadOnly || getValues('auctionKindName') !== '四輪'
+                        }
+                      />
+                    </ColStack>
+                    <ColStack spacing={2.4}>
+                      <TextField
+                        label='登録番号1'
+                        name='oldRegistrationNumber1'
+                        readonly={allReadOnly}
+                      />
+                      <TextField
+                        label='登録番号2'
+                        name='oldRegistrationNumber2'
+                        readonly={allReadOnly}
+                      />
+                      <TextField
+                        label='登録番号3'
+                        name='oldRegistrationNumber3'
+                        readonly={allReadOnly}
+                      />
+                      <TextField
+                        label='リサイクル料'
+                        name='recyclePriceDeposit'
+                        readonly={
+                          allReadOnly || getValues('auctionKindName') !== '四輪'
+                        }
+                      />
+                    </ColStack>
+                    <ColStack spacing={2.4}>
+                      <Select
+                        label='四輪車種区分'
+                        name='cartypeKind'
+                        selectValues={fourWheelerSelectValues}
+                        disabled={
+                          allReadOnly || getValues('auctionKindName') !== '四輪'
+                        }
+                      />
+                      <TextField
+                        label='預かり金（二輪）'
+                        name='bikeDeposit'
+                        readonly
+                      />
+                    </ColStack>
+                  </RowStack>
+                </Section>
+              </Grid>
             </Grid>
-          </Grid>
-          <Section name='先出し情報' isDocDetail>
-            <CaptionLabel text='先出し情報' />
-            <RowStack spacing={7}>
-              <ColStack spacing={2.4}>
-                <Checkbox
-                  label='書類先出し'
-                  name='documentAdvanceFlag'
-                  disabled={
-                    allReadOnly || getValues('auctionKindName') !== '四輪'
-                  }
-                ></Checkbox>
-              </ColStack>
-              <ColStack spacing={2.4}>
-                <Checkbox
-                  label='備品先出し'
-                  name='equipmentAdvanceFlag'
-                  disabled={
-                    allReadOnly || getValues('auctionKindName') !== '四輪'
-                  }
-                ></Checkbox>
-              </ColStack>
-            </RowStack>
-          </Section>
-          <Section name='有無フラグ情報' isDocDetail>
-            <CaptionLabel text='有無フラグ' />
-            <RowStack spacing={7}>
-              <ColStack spacing={2.4}>
-                <Checkbox
-                  label='入金のみ打ち'
-                  name='receiptBeatExistenceFlag'
-                  disabled={
-                    allReadOnly || !getValues('receiptBeatExistenceFlag')
-                  }
-                ></Checkbox>
-              </ColStack>
-              <ColStack spacing={2.4}>
-                <Checkbox
-                  label='直送打ち'
-                  name='directDeliveryBeatExistenceFlag'
-                  disabled={
-                    allReadOnly || !getValues('directDeliveryBeatExistenceFlag')
-                  }
-                ></Checkbox>
-              </ColStack>
-              <ColStack spacing={2.4}>
-                <Checkbox
-                  label='名変督促FAX停止'
-                  name='docChangeDemandFaxStopExistenceFlag'
-                  disabled={
-                    allReadOnly ||
-                    !getValues('docChangeDemandFaxStopExistenceFlag')
-                  }
-                ></Checkbox>
-              </ColStack>
-              <ColStack spacing={2.4}>
-                <Checkbox
-                  label='詳細情報取得課金'
-                  name='detailsInformationAcquisitionChargesExistenceFlag'
-                  disabled={
-                    allReadOnly ||
-                    !getValues(
-                      'detailsInformationAcquisitionChargesExistenceFlag'
-                    )
-                  }
-                ></Checkbox>
-              </ColStack>
-            </RowStack>
-          </Section>
-          <Section name='発送伝票情報' isDocDetail>
-            <RowStack spacing={7}>
-              <ColStack spacing={2.4}>
-                <Select
-                  label='伝票種類'
-                  name='defaultSlipKind'
-                  selectValues={slipTypeSelectValues}
-                  disabled={allReadOnly}
-                ></Select>
-              </ColStack>
-              <ColStack spacing={2.4}>
-                <TextField
-                  label='配送金額'
-                  name='shippingAmount'
-                  readonly={allReadOnly}
-                ></TextField>
-              </ColStack>
-            </RowStack>
-          </Section>
-          <Section name='ペナルティ情報' isDocDetail>
-            <DataGrid
-              columns={showPenaltyList}
-              rows={penaltyList}
-              getRowId={(row) => row.id + row.penaltyKind}
-              disabled={allReadOnly}
-            />
-          </Section>
-          <Section name='出品店・落札店詳細情報' isDocDetail>
-            <Stack spacing={2.4}>
-              <Stack spacing={1}>
-                <CaptionLabel text='出品店情報' />
-                <RowStack>
-                  <ColStack>
-                    <TextField
-                      label='契約ID'
-                      name='exhibitShopContractId'
-                      readonly
-                    />
-                    <TextField
-                      label='郵便番号'
-                      name='exhibitShopBusinessBaseZipCode'
-                      readonly
-                    />
-                    <TextField
-                      label='書類伝票種類'
-                      name='exhibitShopSlipKind'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='事業所店名'
-                      name='exhibitShopBusinessBaseName'
-                      readonly
-                    />
-                    <TextField
-                      label='住所'
-                      name='exhibitShopAddress'
-                      readonly
-                      size='m'
-                    />
-                    <TextField
-                      label='書類発送住所'
-                      name='exhibitShopDocumentShippingAddress'
-                      readonly
-                      size='m'
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='電話番号'
-                      name='exhibitShopBusinessBasePhoneNumber'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='FAX番号'
-                      name='exhibitShopAssignmentDocumentDestinationFaxNumber'
-                      readonly
-                    />
-                  </ColStack>
-                </RowStack>
+            <Section name='先出し情報' isDocDetail>
+              <CaptionLabel text='先出し情報' />
+              <RowStack spacing={7}>
+                <ColStack spacing={2.4}>
+                  <Checkbox
+                    label='書類先出し'
+                    name='documentAdvanceFlag'
+                    disabled={
+                      allReadOnly || getValues('auctionKindName') !== '四輪'
+                    }
+                  ></Checkbox>
+                </ColStack>
+                <ColStack spacing={2.4}>
+                  <Checkbox
+                    label='備品先出し'
+                    name='equipmentAdvanceFlag'
+                    disabled={
+                      allReadOnly || getValues('auctionKindName') !== '四輪'
+                    }
+                  ></Checkbox>
+                </ColStack>
+              </RowStack>
+            </Section>
+            <Section name='有無フラグ情報' isDocDetail>
+              <CaptionLabel text='有無フラグ' />
+              <RowStack spacing={7}>
+                <ColStack spacing={2.4}>
+                  <Checkbox
+                    label='入金のみ打ち'
+                    name='receiptBeatExistenceFlag'
+                    disabled={
+                      allReadOnly || !getValues('receiptBeatExistenceFlag')
+                    }
+                  ></Checkbox>
+                </ColStack>
+                <ColStack spacing={2.4}>
+                  <Checkbox
+                    label='直送打ち'
+                    name='directDeliveryBeatExistenceFlag'
+                    disabled={
+                      allReadOnly ||
+                      !getValues('directDeliveryBeatExistenceFlag')
+                    }
+                  ></Checkbox>
+                </ColStack>
+                <ColStack spacing={2.4}>
+                  <Checkbox
+                    label='名変督促FAX停止'
+                    name='docChangeDemandFaxStopExistenceFlag'
+                    disabled={
+                      allReadOnly ||
+                      !getValues('docChangeDemandFaxStopExistenceFlag')
+                    }
+                  ></Checkbox>
+                </ColStack>
+                <ColStack spacing={2.4}>
+                  <Checkbox
+                    label='詳細情報取得課金'
+                    name='detailsInformationAcquisitionChargesExistenceFlag'
+                    disabled={
+                      allReadOnly ||
+                      !getValues(
+                        'detailsInformationAcquisitionChargesExistenceFlag'
+                      )
+                    }
+                  ></Checkbox>
+                </ColStack>
+              </RowStack>
+            </Section>
+            <Section name='発送伝票情報' isDocDetail>
+              <RowStack spacing={7}>
+                <ColStack spacing={2.4}>
+                  <Select
+                    label='伝票種類'
+                    name='defaultSlipKind'
+                    selectValues={slipTypeSelectValues}
+                    disabled={allReadOnly}
+                  ></Select>
+                </ColStack>
+                <ColStack spacing={2.4}>
+                  <TextField
+                    label='配送金額'
+                    name='shippingAmount'
+                    readonly={allReadOnly}
+                  ></TextField>
+                </ColStack>
+              </RowStack>
+            </Section>
+            <Section name='ペナルティ情報' isDocDetail>
+              <DataGrid
+                columns={showPenaltyList}
+                rows={penaltyList}
+                getRowId={(row) => row.id + row.penaltyKind}
+                disabled={allReadOnly}
+              />
+            </Section>
+            <Section name='出品店・落札店詳細情報' isDocDetail>
+              <Stack spacing={2.4}>
+                <Stack spacing={1}>
+                  <CaptionLabel text='出品店情報' />
+                  <RowStack>
+                    <ColStack>
+                      <TextField
+                        label='契約ID'
+                        name='exhibitShopContractId'
+                        readonly
+                      />
+                      <TextField
+                        label='郵便番号'
+                        name='exhibitShopBusinessBaseZipCode'
+                        readonly
+                      />
+                      <TextField
+                        label='書類伝票種類'
+                        name='exhibitShopSlipKind'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='事業所店名'
+                        name='exhibitShopBusinessBaseName'
+                        readonly
+                      />
+                      <TextField
+                        label='住所'
+                        name='exhibitShopAddress'
+                        readonly
+                        size='m'
+                      />
+                      <TextField
+                        label='書類発送住所'
+                        name='exhibitShopDocumentShippingAddress'
+                        readonly
+                        size='m'
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='電話番号'
+                        name='exhibitShopBusinessBasePhoneNumber'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='FAX番号'
+                        name='exhibitShopAssignmentDocumentDestinationFaxNumber'
+                        readonly
+                      />
+                    </ColStack>
+                  </RowStack>
+                </Stack>
+                <Stack spacing={1}>
+                  <CaptionLabel text='落札店情報' />
+                  <RowStack>
+                    <ColStack>
+                      <TextField
+                        label='契約ID'
+                        name='bidShopContractId'
+                        readonly
+                      />
+                      <TextField
+                        label='郵便番号'
+                        name='bidShopBusinessBaseZipCode'
+                        readonly
+                      />
+                      <TextField
+                        label='書類伝票種類'
+                        name='bidShopSlipKind'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='事業所店名'
+                        name='exhibitShopBusinessBaseName'
+                        readonly
+                      />
+                      <TextField
+                        label='住所'
+                        name='bidShopAddress'
+                        readonly
+                        size='m'
+                      />
+                      <TextField
+                        label='書類発送住所'
+                        name='bidShopDocumentShippingAddress'
+                        readonly
+                        size='m'
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='電話番号'
+                        name='bidShopBusinessBasePhoneNumber'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='FAX番号'
+                        name='bidShopAssignmentDocumentDestinationFaxNumber'
+                        readonly
+                      />
+                    </ColStack>
+                  </RowStack>
+                </Stack>
               </Stack>
-              <Stack spacing={1}>
-                <CaptionLabel text='落札店情報' />
-                <RowStack>
-                  <ColStack>
-                    <TextField
-                      label='契約ID'
-                      name='bidShopContractId'
-                      readonly
-                    />
-                    <TextField
-                      label='郵便番号'
-                      name='bidShopBusinessBaseZipCode'
-                      readonly
-                    />
-                    <TextField
-                      label='書類伝票種類'
-                      name='bidShopSlipKind'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='事業所店名'
-                      name='exhibitShopBusinessBaseName'
-                      readonly
-                    />
-                    <TextField
-                      label='住所'
-                      name='bidShopAddress'
-                      readonly
-                      size='m'
-                    />
-                    <TextField
-                      label='書類発送住所'
-                      name='bidShopDocumentShippingAddress'
-                      readonly
-                      size='m'
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='電話番号'
-                      name='bidShopBusinessBasePhoneNumber'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='FAX番号'
-                      name='bidShopAssignmentDocumentDestinationFaxNumber'
-                      readonly
-                    />
-                  </ColStack>
-                </RowStack>
-              </Stack>
-            </Stack>
-          </Section>
-          <Section name='発送止め情報（おまとめ）' isDocDetail>
-            <RowStack>
-              <ColStack>
-                <Radio
-                  label='書類発送止め'
-                  name='omatomeDocumentShippingStopFlag'
-                  required
-                  radioValues={[
-                    { value: false, displayValue: 'する' },
-                    { value: true, displayValue: 'しない' },
-                  ]}
-                  disabled={allReadOnly}
-                />
-              </ColStack>
-              <ColStack>
-                <Radio
-                  label='備品発送止め'
-                  name='omatomeEquipmentShippingStopFlag'
-                  required
-                  radioValues={[
-                    { value: false, displayValue: 'する' },
-                    { value: true, displayValue: 'しない' },
-                  ]}
-                  disabled={allReadOnly}
-                />
-              </ColStack>
-            </RowStack>
-          </Section>
-        </FormProvider>
-      </MainLayout>
-      {/* bottom */}
-      <MainLayout bottom>
-        <Stack direction='row' alignItems='center'>
-          <CancelButton onClick={handleCancel} disable={allReadOnly}>
-            キャンセル
-          </CancelButton>
-          <ConfirmButton onClick={onClickConfirm} disable={allReadOnly}>
-            確定
-          </ConfirmButton>
-        </Stack>
+            </Section>
+            <Section name='発送止め情報（おまとめ）' isDocDetail>
+              <RowStack>
+                <ColStack>
+                  <Radio
+                    label='書類発送止め'
+                    name='omatomeDocumentShippingStopFlag'
+                    required
+                    radioValues={[
+                      { value: false, displayValue: 'する' },
+                      { value: true, displayValue: 'しない' },
+                    ]}
+                    disabled={allReadOnly}
+                  />
+                </ColStack>
+                <ColStack>
+                  <Radio
+                    label='備品発送止め'
+                    name='omatomeEquipmentShippingStopFlag'
+                    required
+                    radioValues={[
+                      { value: false, displayValue: 'する' },
+                      { value: true, displayValue: 'しない' },
+                    ]}
+                    disabled={allReadOnly}
+                  />
+                </ColStack>
+              </RowStack>
+            </Section>
+          </FormProvider>
+        </MainLayout>
+        {/* bottom */}
+        <MainLayout bottom>
+          <Stack direction='row' alignItems='center'>
+            <CancelButton onClick={handleCancel} disable={allReadOnly}>
+              キャンセル
+            </CancelButton>
+            <ConfirmButton onClick={onClickConfirm} disable={allReadOnly}>
+              確定
+            </ConfirmButton>
+          </Stack>
+        </MainLayout>
       </MainLayout>
       {/* 登録内容確認ポップアップ */}
       {scrCom00032PopupIsOpen && (
@@ -840,7 +928,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
           handleConfirm={scrCom00033PopupHandleConfirm}
         />
       )}
-    </MainLayout>
+    </>
   );
 };
 

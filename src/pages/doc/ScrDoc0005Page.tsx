@@ -54,9 +54,9 @@ const ScrDoc0005Page = () => {
   const { user } = useContext(AuthContext);
   // TODO hashを実際のハッシュ値に変更する
   const tabDefs: TabDef[] = [
-    { title: '基本情報', hash: '#basic' },
-    { title: '詳細情報', hash: '#detail' },
-    { title: '変更履歴', hash: '#change-hisotry' },
+    { title: '基本情報', hash: '1' },
+    { title: '詳細情報', hash: '2' },
+    { title: '変更履歴', hash: '3' },
   ];
   // 書類基本番号取得
   const documentBasicsNumber = location.pathname.substring(

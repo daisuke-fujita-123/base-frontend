@@ -38,10 +38,6 @@ import {
   ScrDoc0005RegistrationDocumentBasicsInfo,
   ScrDoc0005RegistrationDocumentBasicsInfoRequest,
 } from 'apis/doc/ScrDoc0005Api';
-import {
-  ScrDoc9999GetLandCodeListbox,
-  ScrDoc9999GetLandCodeListboxResponse,
-} from 'apis/doc/ScrDoc9999Api';
 
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
@@ -343,7 +339,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
     isReadOnly,
     isNotEditable,
   } = props;
-
+  const { user } = useContext(AuthContext);
   /**
    * 変数関連
    */
@@ -367,8 +363,6 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   const [equipmentInfoList, setEquipmentInfoList] = useState<
     EquipmentInfoListModel[]
   >([]);
-  // 陸事コード
-  const [landcodes, setLandCodes] = useState<SelectValue[]>([]);
   // おまとめ車両パターン
   const [omatomeSelectValues, setOmatomeSelectValues] = useState<SelectValue[]>(
     []
@@ -403,11 +397,31 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
 
-  // コンポーネントを読み取り専用に変更するフラグ
+  /**
+   * バリデーションスキーマ
+   */
+  const documentBasicSchama = {
+    carbodyNumberFrameNo: yup
+      .string()
+      .label('車台番号・フレームNo')
+      .max(20)
+      .half(),
+    placeDocumentShippingDate: yup
+      .string()
+      .label('会場書類発送日')
+      .max(10)
+      .date(),
+    validityDueDate: yup.string().label('有効期限日').max(10).date(),
+    incompleteSupportDate: yup.string().label('日付').max(10).date(),
+    incompleteSupportStaffName: yup.string().label('対応担当者').max(30),
+    docChangeDueDate: yup.string().label('名変期限日').max(10).date(),
+    documentMemo: yup.string().label('メモ').max(1000),
+  };
+
   const methods = useForm<ScrDoc0005DocumentBasics>({
     defaultValues: initialVal,
     context: allReadOnly,
-    resolver: yupResolver(yup.object()),
+    resolver: yupResolver(yup.object(documentBasicSchama)),
   });
   const {
     getValues,
@@ -457,6 +471,20 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
           response.registrationNumber2 +
           ' ' +
           response.registrationNumber3,
+        arrivesStatus: response.documentExistenceFlag
+          ? response.arrivesStatus
+          : '',
+        documentArrivesCompletionDate: response.documentExistenceFlag
+          ? response.documentArrivesCompletionDate
+          : '',
+        documentSendingDueDate: response.documentExistenceFlag
+          ? response.documentSendingDueDate
+          : '',
+        documentReportDueDate: response.documentExistenceFlag
+          ? response.documentReportDueDate
+          : '',
+        omatomeDocumentShippingDestinationKind:
+          response.documentShippingInstructionFlag ? '1' : '2',
       };
       // 基本情報タブ情報
       reset(Object.assign(addObj, response));
@@ -488,19 +516,6 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
           };
         });
       setOmatomeSelectValues(omatomeSelectValues);
-
-      // 陸事コード取得
-      const landSelect: ScrDoc9999GetLandCodeListboxResponse =
-        await ScrDoc9999GetLandCodeListbox();
-      const landSelectValues: SelectValue[] = landSelect.landCodeList.map(
-        (val) => {
-          return {
-            value: val.landCode,
-            displayValue: val.landCodeName,
-          };
-        }
-      );
-      setLandCodes(landSelectValues);
 
       // 不備対応ステータス
       const incompleteSupportRes = await ScrCom9999GetCodeManagementMaster({
@@ -534,8 +549,6 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
           }))
         )
         .flat();
-      console.log('557', incompleteSupportSelectValues);
-      console.log(selectSelectValues);
       showIncompleteSupportList.map((val) => {
         if (val.field === 'incompleteSupportStatus') {
           val.selectValues?.push(incompleteSupportSelectValues);
@@ -543,6 +556,14 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
           val.selectValues?.push(selectSelectValues);
         }
       });
+
+      // 読み取り専用かどうかを設定
+      isReadOnly(getValues('cancelFlag'));
+      mailAvailable(
+        getValues('cancelFlag') || getValues('auctionKindName') === 'おまとめ'
+      );
+      printAvailable(getValues('cancelFlag'));
+      outputAvailable(getValues('cancelFlag'));
     };
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -607,26 +628,19 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   const apiRef = useGridApiRef();
 
   const handleExportCsvClick = () => {
-    exportCsv('filename.csv', apiRef);
-  };
-
-  useEffect(() => {
-    isReadOnly(getValues('cancelFlag'));
-  }, [getValues, isReadOnly]);
-
-  useEffect(() => {
-    mailAvailable(
-      getValues('cancelFlag') || getValues('auctionKindName') === 'おまとめ'
+    const date = new Date();
+    const year = date.getFullYear().toString().padStart(4, '0');
+    const month = date.getMonth().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    exportCsv(
+      `書類情報詳細_${user.employeeId}_${
+        year + month + day + hours + minutes
+      }.csv`,
+      apiRef
     );
-  }, [getValues, mailAvailable]);
-
-  useEffect(() => {
-    printAvailable(getValues('cancelFlag'));
-  }, [getValues, printAvailable]);
-
-  useEffect(() => {
-    outputAvailable(getValues('cancelFlag'));
-  }, [getValues, outputAvailable]);
+  };
 
   // 書類受付情報セクションの表示切替
   useEffect(() => {
@@ -720,7 +734,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
    * キャンセルボタンクリック時のイベントハンドラ
    */
   const handleCancel = () => {
-    navigate('/doc/documents/');
+    navigate(-1);
   };
 
   /**
@@ -747,7 +761,6 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
       // 日付の確認
       changeExpectDate: null,
     });
-
     // 登録内容確認ポップアップを開く
     setScrCom00032PopupIsOpen(true);
   };
@@ -758,8 +771,28 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   const sectionDef = [
     {
       section: '書類情報詳細',
-      fields: [''],
-      name: [''],
+      fields: [
+        'carbodyNumberFrameNo',
+        'placeDocumentShippingDate',
+        'validityDueDate',
+        'incompleteSupportDate',
+        'incompleteSupportStatus',
+        'incompleteSupportStaffName',
+        'incompleteAttributeKind',
+        'docChangeDueDate',
+        'documentMemo',
+      ],
+      name: [
+        '車台番号・フレームNo',
+        '会場書類発送日',
+        '有効期限日',
+        '日付',
+        '対応ステータス',
+        '対応担当者',
+        '不備属性',
+        '名変期限日',
+        'メモ',
+      ],
     },
   ];
 
@@ -787,7 +820,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const { user } = useContext(AuthContext);
+
   const handlePopupConfirm = async (registrationChangeMemo: string) => {
     setScrCom00032PopupIsOpen(false);
 
@@ -805,604 +838,622 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   };
 
   return (
-    <MainLayout>
-      <MainLayout main>
-        <FormProvider {...methods}>
-          <Grid container spacing={3}>
-            <Grid item xs={4}>
-              <Section name='オークション基本情報' isDocDetail>
-                <RowStack spacing={7}>
-                  <ColStack spacing={2.4}>
-                    <TextField
-                      label='オークション種類'
-                      name='auctionKindName'
-                      readonly
-                    />
-                    <TextField
-                      label='オークション回数'
-                      name='auctionCount'
-                      readonly
-                    />
-                    <TextField label='出品番号' name='exhibitNumber' readonly />
-                    <TextField
-                      label='会場（おまとめ）'
-                      name='placeName'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <TextField
-                      label='オークション開催日'
-                      name='auctionSessionDate'
-                      readonly
-                    />
-                    <BlankLayout quantity={2} />
-                    <Checkbox
-                      label='キャンセルフラグ'
-                      name='cancelFlag'
-                    ></Checkbox>
-                  </ColStack>
-                </RowStack>
-              </Section>
-            </Grid>
-            <Grid item xs={8}>
-              <Section name='車両情報' isDocDetail>
-                <RowStack spacing={7}>
-                  <ColStack spacing={2.4}>
-                    <TextField label='車名' name='carName' readonly />
-                    <TextField
-                      label='車検日'
-                      name='carInspectionDate'
-                      readonly
-                    />
-                    <Select
-                      label='おまとめ車両パターン'
-                      name='omatomeCarPatternKind'
-                      selectValues={omatomeSelectValues}
-                      disabled={
-                        allReadOnly ||
-                        getValues('auctionKindName') === 'おまとめ以外'
-                      }
-                    />
-                    <TextField label='色' name='carColor' readonly />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <TextField
-                      label='検付区分'
-                      name='carInspectionKind'
-                      readonly
-                    />
-                    <TextField
-                      label='支払延長対象区分'
-                      name='paymentExtensionTargeted'
-                      readonly
-                    />
-                    <TextField label='年式' name='modelYear' readonly />
-                    <TextField label='排気量' name='exhaust' readonly />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <TextField label='陸事コード' name='landCode' readonly />
-                    <TextField
-                      label='車台番号・フレームNo'
-                      name='carbodyNumberFrameNo'
-                      readonly={
-                        allReadOnly ||
-                        getValues('auctionKindName') === 'おまとめ以外'
-                      }
-                    />
-                    <TextField
-                      label='書類有無フラグ'
-                      name='documentExistence'
-                      readonly
-                    />
-                    <TextField
-                      label='登録番号'
-                      name='registrationNumber'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack spacing={2.4}>
-                    <TextField label='車歴' name='carHistoryKind' readonly />
-                    <TextField
-                      label='先取種別'
-                      name='preemptionKind'
-                      readonly
-                    />
-                    <TextField label='8No区分' name='no8Kind' readonly />
-                    <TextField
-                      label='引取予定日'
-                      name='pickUpExpectDate'
-                      readonly
-                    />
-                  </ColStack>
-                </RowStack>
-              </Section>
-            </Grid>
-          </Grid>
-          <Section name='出品店・落札店情報' isDocDetail>
-            <Stack spacing={2.4}>
-              <Stack spacing={1}>
-                <CaptionLabel text='出品店' />
-                <RowStack>
-                  <ColStack>
-                    <LinkTextField
-                      label='出品店契約ID'
-                      name='exhibitShopContractId'
-                      onClick={() =>
-                        handlenavigate(
-                          `/mem/corporations/${getValues(
-                            'exhibitShopCorporationId'
-                          )}/bussiness-bases/:logisticsBaseId/contracts/${getValues(
-                            'exhibitShopContractId'
-                          )}`
-                        )
-                      }
-                    />
-                    <TextField
-                      label='出品店地区'
-                      name='exhibitShopAssignmentDocumentDestinationPrefectureName'
-                      readonly
-                    />
-                    {getValues('auctionKindName') === '二輪' && (
+    <>
+      <MainLayout>
+        <MainLayout main>
+          <FormProvider {...methods}>
+            <Grid container spacing={3}>
+              <Grid item xs={4}>
+                <Section name='オークション基本情報' isDocDetail>
+                  <RowStack spacing={7}>
+                    <ColStack spacing={2.4}>
                       <TextField
-                        label='出品店登録デポ'
-                        name='exhibitShopBikeRegistrationDepoName'
+                        label='オークション種類'
+                        name='auctionKindName'
                         readonly
                       />
-                    )}
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='出品店名'
-                      name='exhibitShopCorporationName'
-                      readonly
-                      size='m'
-                    />
-                    <TextField
-                      label='出品店電話番号'
-                      name='exhibitShopAssignmentDocumentDestinationPhoneNumber'
-                      readonly
-                    />
-                    {getValues('auctionKindName') === '二輪' && (
                       <TextField
-                        label='出品店デポ区分'
-                        name='exhibitShopBikeDepoKind'
+                        label='オークション回数'
+                        name='auctionCount'
                         readonly
                       />
-                    )}
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='支払延長利用有無'
-                      name='exhibitShopPaymentExtensionTargeted'
-                      readonly
-                    />
-                    <TextField
-                      label='出品店FAX番号'
-                      name='exhibitShopAssignmentDocumentDestinationFaxNumber'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='参加区分'
-                      name='exhibitShopCourseEntryKind'
-                      readonly
-                    />
-                    <TextField
-                      label='出品店クレーム担当'
-                      name='exhibitShopClaimStaffName'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <DatePicker
-                      label='会場書類発送日'
-                      name='placeDocumentShippingDate'
-                      disabled={
-                        allReadOnly ||
-                        getValues('auctionKindName') !== 'おまとめ' ||
-                        getValues('hondaGroupFlag') !== false
-                      }
-                    />
-                    <LinkTextField
-                      label='出品店会員メモ有無'
-                      name='exhibitShopMemberMemo'
-                      onClick={() =>
-                        handlenavigate(
-                          `/mem/corporations/${getValues(
-                            'exhibitShopCorporationId'
-                          )}`
-                        )
-                      }
-                    />
-                  </ColStack>
-                </RowStack>
-              </Stack>
-              <Stack spacing={1}>
-                <CaptionLabel text='落札店' />
-                <RowStack>
-                  <ColStack>
-                    <LinkTextField
-                      label='落札店契約ID'
-                      name='bidShopContractId'
-                      onClick={() =>
-                        handlenavigate(
-                          `/mem/corporations/${getValues(
-                            'bidShopCorporationId'
-                          )}/bussiness-bases/:logisticsBaseId/contracts/${getValues(
-                            'bidShopContractId'
-                          )}`
-                        )
-                      }
-                    />
-                    <TextField
-                      label='落札店地区'
-                      name='bidShopAssignmentDocumentDestinationPrefectureName'
-                      readonly
-                    />
-                    {getValues('auctionKindName') === '二輪' && (
                       <TextField
-                        label='落札店登録デポ'
-                        name='bidShopBikeRegistrationDepoName'
+                        label='出品番号'
+                        name='exhibitNumber'
                         readonly
                       />
-                    )}
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='落札店名'
-                      name='bidShopCorporationName'
-                      readonly
-                      size='m'
-                    />
-                    <TextField
-                      label='落札店電話番号'
-                      name='bidShopAssignmentDocumentDestinationPhoneNumber'
-                      readonly
-                    />
-                    {getValues('auctionKindName') === '二輪' && (
                       <TextField
-                        label='落札店デポ区分'
-                        name='bidShopBikeDepoKind'
-                        readonly
-                      />
-                    )}
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='支払延長利用有無'
-                      name='bidShopPaymentExtensionTargeted'
-                      readonly
-                    />
-                    <TextField
-                      label='落札店FAX番号'
-                      name='bidShopAssignmentDocumentDestinationFaxNumber'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <TextField
-                      label='参加区分'
-                      name='bidShopCourseEntryKind'
-                      readonly
-                    />
-                    <TextField
-                      label='落札店クレーム担当'
-                      name='bidShopClaimStaffName'
-                      readonly
-                    />
-                  </ColStack>
-                  <ColStack>
-                    <BlankLayout quantity={1} />
-                    <LinkTextField
-                      label='落札店会員メモ有無'
-                      name='bidShopMemberMemo'
-                      onClick={() =>
-                        handlenavigate(
-                          `/mem/corporations/${getValues(
-                            'bidShopCorporationId'
-                          )}`
-                        )
-                      }
-                    />
-                  </ColStack>
-                </RowStack>
-              </Stack>
-            </Stack>
-          </Section>
-          <Section name='書類受付情報' isDocDetail>
-            <Stack spacing={1}>
-              <CaptionLabel text='必須書類' />
-              <Grid container spacing={2}>
-                {documentReceptionInfoList.map(
-                  (val, index) =>
-                    val.requiredDocumentFlag && (
-                      <Grid item xs={2} key={index}>
-                        <Checkbox
-                          name={val.documentItemCode}
-                          label={val.documentItemName}
-                          helperText={`書類到着日:${val.documentArrivesDate}`}
-                          disabled={allReadOnly || val.documentExistenceFlag}
-                        />
-                        {val.validityDueDateFlag && (
-                          <DatePicker
-                            name={val.validityDueDate}
-                            label='有効期限'
-                            disabled={allReadOnly || val.documentExistenceFlag}
-                          />
-                        )}
-                      </Grid>
-                    )
-                )}
-              </Grid>
-            </Stack>
-            <TableDivider isBlack />
-            <Stack spacing={1}>
-              <CaptionLabel text='任意書類' />
-              <Grid container spacing={2}>
-                {documentReceptionInfoList.map(
-                  (val, index) =>
-                    !val.requiredDocumentFlag && (
-                      <Grid item xs={2} key={index}>
-                        <Checkbox
-                          name={val.documentItemCode}
-                          label={val.documentItemName}
-                          helperText={`書類到着日:${val.documentArrivesDate}`}
-                          disabled={allReadOnly || val.documentExistenceFlag}
-                        />
-                        {val.validityDueDateFlag && (
-                          <DatePicker
-                            name={val.validityDueDate}
-                            label='有効期限'
-                            disabled={allReadOnly || val.documentExistenceFlag}
-                          />
-                        )}
-                      </Grid>
-                    )
-                )}
-              </Grid>
-            </Stack>
-          </Section>
-          <Section name='備品受付情報' isDocDetail>
-            <Stack spacing={1}>
-              <CaptionLabel text='備品' />
-              <Grid container spacing={2}>
-                {equipmentReceptionInfoList.map((val, index) => (
-                  <Grid item xs={2} key={index}>
-                    <Checkbox
-                      name={val.equipmentItemCode}
-                      label={val.equipmentItemName}
-                      helperText={`書類到着日:${val.equipmentArrivesDate}`}
-                      disabled={allReadOnly || val.equipmentExistenceFlag}
-                    />
-                    {val.othersEquipmentItemNameFlag && (
-                      <TextField
-                        name={val.othersEquipmentItemName}
-                        label='その他'
-                        readonly={allReadOnly || val.equipmentExistenceFlag}
-                      />
-                    )}
-                  </Grid>
-                ))}
-              </Grid>
-            </Stack>
-          </Section>
-          <Grid container spacing={3}>
-            <Grid item xs={6}>
-              <Section name='書類・備品情報（書類）' isDocDetail>
-                <Stack>
-                  <RowStack>
-                    <ColStack>
-                      <TextField label='到着ステータス' name='arrivesStatus' />
-                      <TextField
-                        label='到着完了日'
-                        name='documentArrivesCompletionDate'
+                        label='会場（おまとめ）'
+                        name='placeName'
                         readonly
                       />
                     </ColStack>
-                    <ColStack>
+                    <ColStack spacing={2.4}>
                       <TextField
-                        label='書類送付期限日'
-                        name='documentSendingDueDate'
+                        label='オークション開催日'
+                        name='auctionSessionDate'
                         readonly
                       />
-                      <TextField
-                        label='書類申告期限日'
-                        name='documentReportDueDate'
-                        readonly
-                      />
+                      <BlankLayout quantity={2} />
+                      <Checkbox
+                        label='キャンセルフラグ'
+                        name='cancelFlag'
+                        disabled
+                      ></Checkbox>
                     </ColStack>
-                    <ColStack>
-                      <Radio
-                        label='発送先（おまとめ）'
-                        name='documentShippingInstructionFlag'
-                        required
-                        radioValues={[
-                          { value: false, displayValue: 'オークネット' },
-                          { value: true, displayValue: '会員' },
-                        ]}
+                  </RowStack>
+                </Section>
+              </Grid>
+              <Grid item xs={8}>
+                <Section name='車両情報' isDocDetail>
+                  <RowStack spacing={7}>
+                    <ColStack spacing={2.4}>
+                      <TextField label='車名' name='carName' readonly />
+                      <TextField
+                        label='車検日'
+                        name='carInspectionDate'
+                        readonly
+                      />
+                      <Select
+                        label='おまとめ車両パターン'
+                        name='omatomeCarPatternKind'
+                        selectValues={omatomeSelectValues}
                         disabled={
                           allReadOnly ||
-                          getValues('documentShippingInstructionFlag') !== false
+                          getValues('auctionKindName') === 'おまとめ以外'
+                        }
+                      />
+                      <TextField label='色' name='carColor' readonly />
+                    </ColStack>
+                    <ColStack spacing={2.4}>
+                      <TextField
+                        label='検付区分'
+                        name='carInspectionKind'
+                        readonly
+                      />
+                      <TextField
+                        label='支払延長対象区分'
+                        name='paymentExtensionTargeted'
+                        readonly
+                      />
+                      <TextField label='年式' name='modelYear' readonly />
+                      <TextField label='排気量' name='exhaust' readonly />
+                    </ColStack>
+                    <ColStack spacing={2.4}>
+                      <TextField label='陸事コード' name='landCode' readonly />
+                      <TextField
+                        label='車台番号・フレームNo'
+                        name='carbodyNumberFrameNo'
+                        readonly={
+                          allReadOnly ||
+                          getValues('auctionKindName') === 'おまとめ以外'
                         }
                       />
                       <TextField
-                        label='書類実質期限日'
-                        name='documentSubstanceDueDate'
+                        label='書類有無フラグ'
+                        name='documentExistence'
+                        readonly
+                      />
+                      <TextField
+                        label='登録番号'
+                        name='registrationNumber'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack spacing={2.4}>
+                      <TextField label='車歴' name='carHistoryKind' readonly />
+                      <TextField
+                        label='先取種別'
+                        name='preemptionKind'
+                        readonly
+                      />
+                      <TextField label='8No区分' name='no8Kind' readonly />
+                      <TextField
+                        label='引取予定日'
+                        name='pickUpExpectDate'
                         readonly
                       />
                     </ColStack>
                   </RowStack>
-                  <DataGrid
-                    columns={showDocumentInfoList}
-                    rows={documentInfoList}
-                    getRowId={(row) => row.id + row.documentAdditionCount}
-                  />
+                </Section>
+              </Grid>
+            </Grid>
+            <Section name='出品店・落札店情報' isDocDetail>
+              <Stack spacing={2.4}>
+                <Stack spacing={1}>
+                  <CaptionLabel text='出品店' />
+                  <RowStack>
+                    <ColStack>
+                      <LinkTextField
+                        label='出品店契約ID'
+                        name='exhibitShopContractId'
+                        onClick={() =>
+                          handlenavigate(
+                            `/mem/corporations/${getValues(
+                              'exhibitShopCorporationId'
+                            )}/bussiness-bases/:logisticsBaseId/contracts/${getValues(
+                              'exhibitShopContractId'
+                            )}`
+                          )
+                        }
+                      />
+                      <TextField
+                        label='出品店地区'
+                        name='exhibitShopAssignmentDocumentDestinationPrefectureName'
+                        readonly
+                      />
+                      {getValues('auctionKindName') === '二輪' && (
+                        <TextField
+                          label='出品店登録デポ'
+                          name='exhibitShopBikeRegistrationDepoName'
+                          readonly
+                        />
+                      )}
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='出品店名'
+                        name='exhibitShopCorporationName'
+                        readonly
+                        size='m'
+                      />
+                      <TextField
+                        label='出品店電話番号'
+                        name='exhibitShopAssignmentDocumentDestinationPhoneNumber'
+                        readonly
+                      />
+                      {getValues('auctionKindName') === '二輪' && (
+                        <TextField
+                          label='出品店デポ区分'
+                          name='exhibitShopBikeDepoKind'
+                          readonly
+                        />
+                      )}
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='支払延長利用有無'
+                        name='exhibitShopPaymentExtensionTargeted'
+                        readonly
+                      />
+                      <TextField
+                        label='出品店FAX番号'
+                        name='exhibitShopAssignmentDocumentDestinationFaxNumber'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='参加区分'
+                        name='exhibitShopCourseEntryKind'
+                        readonly
+                      />
+                      <TextField
+                        label='出品店クレーム担当'
+                        name='exhibitShopClaimStaffName'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <DatePicker
+                        label='会場書類発送日'
+                        name='placeDocumentShippingDate'
+                        disabled={
+                          allReadOnly ||
+                          getValues('auctionKindName') !== 'おまとめ' ||
+                          getValues('hondaGroupFlag') !== false
+                        }
+                      />
+                      <LinkTextField
+                        label='出品店会員メモ有無'
+                        name='exhibitShopMemberMemo'
+                        onClick={() =>
+                          handlenavigate(
+                            `/mem/corporations/${getValues(
+                              'exhibitShopCorporationId'
+                            )}`
+                          )
+                        }
+                      />
+                    </ColStack>
+                  </RowStack>
                 </Stack>
-              </Section>
-            </Grid>
-            <Grid item xs={6}>
-              <Section name='不備対応情報' isDocDetail>
-                <Stack>
-                  <RightBox>
-                    <OutputButton
-                      onClick={handleExportCsvClick}
-                      disable={allReadOnly}
-                    >
-                      CSV出力
-                    </OutputButton>
-                  </RightBox>
-                  <DataGrid
-                    columns={showIncompleteSupportList}
-                    rows={incompleteSupportList}
-                    getRowId={(row) => row.id + row.incompleteSupportNo}
-                  />
+                <Stack spacing={1}>
+                  <CaptionLabel text='落札店' />
+                  <RowStack>
+                    <ColStack>
+                      <LinkTextField
+                        label='落札店契約ID'
+                        name='bidShopContractId'
+                        onClick={() =>
+                          handlenavigate(
+                            `/mem/corporations/${getValues(
+                              'bidShopCorporationId'
+                            )}/bussiness-bases/:logisticsBaseId/contracts/${getValues(
+                              'bidShopContractId'
+                            )}`
+                          )
+                        }
+                      />
+                      <TextField
+                        label='落札店地区'
+                        name='bidShopAssignmentDocumentDestinationPrefectureName'
+                        readonly
+                      />
+                      {getValues('auctionKindName') === '二輪' && (
+                        <TextField
+                          label='落札店登録デポ'
+                          name='bidShopBikeRegistrationDepoName'
+                          readonly
+                        />
+                      )}
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='落札店名'
+                        name='bidShopCorporationName'
+                        readonly
+                        size='m'
+                      />
+                      <TextField
+                        label='落札店電話番号'
+                        name='bidShopAssignmentDocumentDestinationPhoneNumber'
+                        readonly
+                      />
+                      {getValues('auctionKindName') === '二輪' && (
+                        <TextField
+                          label='落札店デポ区分'
+                          name='bidShopBikeDepoKind'
+                          readonly
+                        />
+                      )}
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='支払延長利用有無'
+                        name='bidShopPaymentExtensionTargeted'
+                        readonly
+                      />
+                      <TextField
+                        label='落札店FAX番号'
+                        name='bidShopAssignmentDocumentDestinationFaxNumber'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <TextField
+                        label='参加区分'
+                        name='bidShopCourseEntryKind'
+                        readonly
+                      />
+                      <TextField
+                        label='落札店クレーム担当'
+                        name='bidShopClaimStaffName'
+                        readonly
+                      />
+                    </ColStack>
+                    <ColStack>
+                      <BlankLayout quantity={1} />
+                      <LinkTextField
+                        label='落札店会員メモ有無'
+                        name='bidShopMemberMemo'
+                        onClick={() =>
+                          handlenavigate(
+                            `/mem/corporations/${getValues(
+                              'bidShopCorporationId'
+                            )}`
+                          )
+                        }
+                      />
+                    </ColStack>
+                  </RowStack>
                 </Stack>
-              </Section>
-            </Grid>
-          </Grid>
-          <Grid container spacing={3}>
-            <Grid item xs={6}>
-              <Section name='書類・備品情報（備品）' isDocDetail>
-                <DataGrid
-                  columns={showEquipmentInfoList}
-                  rows={equipmentInfoList}
-                  disabled={allReadOnly}
-                  getRowId={(row) => row.id + row.equipmentAdditionCount}
-                />
-              </Section>
-            </Grid>
-            <Grid item xs={4}>
-              <Section name='出品書類情報' isDocDetail>
-                <RowStack>
-                  <ColStack>
-                    <TextField label='保証' name='guarantee' readonly />
-                    <TextField label='記録' name='record' readonly />
-                  </ColStack>
-                  <ColStack>
-                    <TextField label='取説' name='manual' readonly />
-                    <TextField label='手帳' name='notebook' readonly />
-                  </ColStack>
-                </RowStack>
-              </Section>
-            </Grid>
-            <Grid item xs={2}>
-              <Section name='入金情報' isDocDetail>
-                <RowStack>
-                  <ColStack>
-                    <TextField
-                      label='入金ステータス'
-                      name='receiptStatus'
-                      readonly
+              </Stack>
+            </Section>
+            <Section name='書類受付情報' isDocDetail>
+              <Stack spacing={1}>
+                <CaptionLabel text='必須書類' />
+                <Grid container spacing={2}>
+                  {documentReceptionInfoList.map(
+                    (val, index) =>
+                      val.requiredDocumentFlag && (
+                        <Grid item xs={2} key={index}>
+                          <Checkbox
+                            name={val.documentItemCode}
+                            label={val.documentItemName}
+                            helperText={`書類到着日:${val.documentArrivesDate}`}
+                            disabled={allReadOnly || val.documentExistenceFlag}
+                          />
+                          {val.validityDueDateFlag && (
+                            <DatePicker
+                              name={val.validityDueDate}
+                              label='有効期限'
+                              disabled={
+                                allReadOnly || val.documentExistenceFlag
+                              }
+                            />
+                          )}
+                        </Grid>
+                      )
+                  )}
+                </Grid>
+              </Stack>
+              <TableDivider isBlack />
+              <Stack spacing={1}>
+                <CaptionLabel text='任意書類' />
+                <Grid container spacing={2}>
+                  {documentReceptionInfoList.map(
+                    (val, index) =>
+                      !val.requiredDocumentFlag && (
+                        <Grid item xs={2} key={index}>
+                          <Checkbox
+                            name={val.documentItemCode}
+                            label={val.documentItemName}
+                            helperText={`書類到着日:${val.documentArrivesDate}`}
+                            disabled={allReadOnly || val.documentExistenceFlag}
+                          />
+                          {val.validityDueDateFlag && (
+                            <DatePicker
+                              name={val.validityDueDate}
+                              label='有効期限'
+                              disabled={
+                                allReadOnly || val.documentExistenceFlag
+                              }
+                            />
+                          )}
+                        </Grid>
+                      )
+                  )}
+                </Grid>
+              </Stack>
+            </Section>
+            <Section name='備品受付情報' isDocDetail>
+              <Stack spacing={1}>
+                <CaptionLabel text='備品' />
+                <Grid container spacing={2}>
+                  {equipmentReceptionInfoList.map((val, index) => (
+                    <Grid item xs={2} key={index}>
+                      <Stack>
+                        <Checkbox
+                          name={val.equipmentItemCode}
+                          label={val.equipmentItemName}
+                          helperText={`書類到着日:${val.equipmentArrivesDate}`}
+                          disabled={allReadOnly || val.equipmentExistenceFlag}
+                        />
+                        {val.othersEquipmentItemNameFlag && (
+                          <TextField
+                            name={val.othersEquipmentItemName}
+                            label='その他'
+                            readonly={allReadOnly || val.equipmentExistenceFlag}
+                          />
+                        )}
+                      </Stack>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Stack>
+            </Section>
+            <Grid container spacing={3}>
+              <Grid item xs={6}>
+                <Section name='書類・備品情報（書類）' isDocDetail>
+                  <Stack>
+                    <RowStack>
+                      <ColStack>
+                        <TextField
+                          label='到着ステータス'
+                          name='arrivesStatus'
+                          readonly
+                        />
+                        <TextField
+                          label='到着完了日'
+                          name='documentArrivesCompletionDate'
+                          readonly
+                        />
+                      </ColStack>
+                      <ColStack>
+                        <TextField
+                          label='書類送付期限日'
+                          name='documentSendingDueDate'
+                          readonly
+                        />
+                        <TextField
+                          label='書類申告期限日'
+                          name='documentReportDueDate'
+                          readonly
+                        />
+                      </ColStack>
+                      <ColStack>
+                        <Radio
+                          label='発送先（おまとめ）'
+                          name='omatomeDocumentShippingDestinationKind'
+                          required
+                          radioValues={[
+                            { value: '1', displayValue: 'オークネット' },
+                            { value: '2', displayValue: '会員' },
+                          ]}
+                          disabled={
+                            allReadOnly ||
+                            getValues('documentShippingInstructionFlag') !==
+                              false
+                          }
+                        />
+                        <TextField
+                          label='書類実質期限日'
+                          name='documentSubstanceDueDate'
+                          readonly
+                        />
+                      </ColStack>
+                    </RowStack>
+                    <DataGrid
+                      columns={showDocumentInfoList}
+                      rows={documentInfoList}
+                      getRowId={(row) => row.id + row.documentAdditionCount}
                     />
-                    <TextField
-                      label='入金完了日'
-                      name='receiptCompletionDate'
-                      readonly
+                  </Stack>
+                </Section>
+              </Grid>
+              <Grid item xs={6}>
+                <Section name='不備対応情報' isDocDetail>
+                  <Stack>
+                    <RightBox>
+                      <OutputButton
+                        onClick={handleExportCsvClick}
+                        disable={allReadOnly}
+                      >
+                        CSV出力
+                      </OutputButton>
+                    </RightBox>
+                    <DataGrid
+                      columns={showIncompleteSupportList}
+                      rows={incompleteSupportList}
+                      getRowId={(row) => row.id + row.incompleteSupportNo}
                     />
-                  </ColStack>
-                </RowStack>
-              </Section>
+                  </Stack>
+                </Section>
+              </Grid>
             </Grid>
-          </Grid>
-          <Section name='名義変更情報' isDocDetail>
-            <RowStack>
-              <ColStack>
-                <TextField
-                  label='名変期限日'
-                  name='docChangeDueDate'
-                  readonly
-                />
-                <TextField label='旧登録' name='oldRegistration' readonly />
-                <TextField
-                  label='預かり金（二輪）'
-                  name='bikeDeposit'
-                  readonly
-                />
-              </ColStack>
-              <ColStack>
-                <DatePicker label='名変期限日' name='docChangeDueDate' />
-                <Select
-                  label='（新登録）陸事コード'
-                  name='newLandCode'
-                  selectValues={landcodes}
-                />
-                <TextField
-                  label='出品店返金額'
-                  name='exhibitShopCashBackAmount'
-                  readonly
-                />
-              </ColStack>
-              <ColStack>
-                <TextField
-                  label='名義変更日'
-                  name='docChangeDate'
-                  readonly={allReadOnly}
-                />
-                <TextField
-                  label='新登録番号1'
-                  name='newRegistrationNumber'
-                  readonly
-                />
-                <TextField
-                  label='落札店返金額'
-                  name='bidShopCashBackAmount'
-                  readonly
-                />
-              </ColStack>
-              <ColStack>
-                <TextField
-                  label='自税返金日'
-                  name='carTaxCashBackDate'
-                  readonly
-                />
-                <TextField label='年額自動車税' name='annualCarTax' readonly />
-              </ColStack>
-              <ColStack>
-                <TextField
-                  label='二輪預かり金返金日'
-                  name='bikeDepositCashBackDate'
-                  readonly
-                />
-                <TextField
-                  label='預かり自税総額'
-                  name='depositCarTaxTotalAmount'
-                  readonly
-                />
-              </ColStack>
-              <ColStack>
-                <TextField
-                  label='詳細情報取得課金承認日'
-                  name='detailsInformationAcquisitionChargesApprovalDate'
-                  readonly
-                />
-                <TextField
-                  label='リサイクル料預託金'
-                  name='recyclePriceDeposit'
-                />
-              </ColStack>
-            </RowStack>
-          </Section>
-          <Section name='メモ' isDocDetail>
-            <Textarea
-              name='documentMemo'
-              size='m'
-              disabled={isNotEditable}
-            ></Textarea>
-          </Section>
-        </FormProvider>
-      </MainLayout>
-      {/* bottom */}
-      <MainLayout bottom>
-        <Stack direction='row' alignItems='center'>
-          <CancelButton onClick={handleCancel} disable={allReadOnly}>
-            キャンセル
-          </CancelButton>
-          <ConfirmButton onClick={onClickConfirm} disable={allReadOnly}>
-            確定
-          </ConfirmButton>
-        </Stack>
+            <Grid container spacing={3}>
+              <Grid item xs={6}>
+                <Section name='書類・備品情報（備品）' isDocDetail>
+                  <DataGrid
+                    columns={showEquipmentInfoList}
+                    rows={equipmentInfoList}
+                    disabled={allReadOnly}
+                    getRowId={(row) => row.id + row.equipmentAdditionCount}
+                  />
+                </Section>
+              </Grid>
+              <Grid item xs={4}>
+                <Section name='出品書類情報' isDocDetail>
+                  <RowStack>
+                    <ColStack>
+                      <TextField label='保証' name='guarantee' readonly />
+                      <TextField label='記録' name='record' readonly />
+                    </ColStack>
+                    <ColStack>
+                      <TextField label='取説' name='manual' readonly />
+                      <TextField label='手帳' name='notebook' readonly />
+                    </ColStack>
+                  </RowStack>
+                </Section>
+              </Grid>
+              <Grid item xs={2}>
+                <Section name='入金情報' isDocDetail>
+                  <RowStack>
+                    <ColStack>
+                      <TextField
+                        label='入金ステータス'
+                        name='receiptStatus'
+                        readonly
+                      />
+                      <TextField
+                        label='入金完了日'
+                        name='receiptCompletionDate'
+                        readonly
+                      />
+                    </ColStack>
+                  </RowStack>
+                </Section>
+              </Grid>
+            </Grid>
+            <Section name='名義変更情報' isDocDetail>
+              <RowStack>
+                <ColStack>
+                  <TextField
+                    label='名変期限日'
+                    name='docChangeDueDate'
+                    readonly
+                  />
+                  <TextField label='旧登録' name='oldRegistration' readonly />
+                  <TextField
+                    label='預かり金（二輪）'
+                    name='bikeDeposit'
+                    readonly
+                  />
+                </ColStack>
+                <ColStack>
+                  <DatePicker label='名変期限日' name='docChangeDueDate' />
+                  <TextField
+                    label='（新登録）陸事コード'
+                    name='newLandCode'
+                    readonly
+                  />
+                  <TextField
+                    label='出品店返金額'
+                    name='exhibitShopCashBackAmount'
+                    readonly
+                  />
+                </ColStack>
+                <ColStack>
+                  <TextField label='名義変更日' name='docChangeDate' readonly />
+                  <TextField
+                    label='（新登録）登録番号'
+                    name='newRegistrationNumber'
+                    readonly
+                  />
+                  <TextField
+                    label='落札店返金額'
+                    name='bidShopCashBackAmount'
+                    readonly
+                  />
+                </ColStack>
+                <ColStack>
+                  <TextField
+                    label='自税返金日'
+                    name='carTaxCashBackDate'
+                    readonly
+                  />
+                  <TextField
+                    label='年額自動車税'
+                    name='annualCarTax'
+                    readonly
+                  />
+                </ColStack>
+                <ColStack>
+                  <TextField
+                    label='二輪預かり金返金日'
+                    name='bikeDepositCashBackDate'
+                    readonly
+                  />
+                  <TextField
+                    label='預かり自税総額'
+                    name='depositCarTaxTotalAmount'
+                    readonly
+                  />
+                </ColStack>
+                <ColStack>
+                  <TextField
+                    label='詳細情報取得課金承認日'
+                    name='detailsInformationAcquisitionChargesApprovalDate'
+                    readonly
+                  />
+                  <TextField
+                    label='リサイクル料預託金'
+                    name='recyclePriceDeposit'
+                  />
+                </ColStack>
+              </RowStack>
+            </Section>
+            <Section name='メモ' isDocDetail>
+              <Textarea
+                name='documentMemo'
+                size='m'
+                disabled={isNotEditable}
+              ></Textarea>
+            </Section>
+          </FormProvider>
+        </MainLayout>
+        {/* bottom */}
+        <MainLayout bottom>
+          <Stack direction='row' alignItems='center'>
+            <CancelButton onClick={handleCancel} disable={allReadOnly}>
+              キャンセル
+            </CancelButton>
+            <ConfirmButton onClick={onClickConfirm} disable={allReadOnly}>
+              確定
+            </ConfirmButton>
+          </Stack>
+        </MainLayout>
       </MainLayout>
       {/* 登録内容確認ポップアップ */}
       {scrCom00032PopupIsOpen && (
@@ -1416,7 +1467,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
           handleApprovalConfirm={handlePopupConfirm}
         />
       )}
-    </MainLayout>
+    </>
   );
 };
 

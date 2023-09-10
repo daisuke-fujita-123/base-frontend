@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from 'react';
-
-import yup from 'utils/yup';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { RightBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -8,12 +6,22 @@ import { Section } from 'layouts/Section';
 import { Stack } from 'layouts/Stack';
 
 import { OutputButton } from 'controls/Button';
-import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
+import {
+  DataGrid,
+  exportCsv,
+  GridColDef,
+  GridHrefsModel,
+  GridTooltipsModel,
+} from 'controls/Datagrid';
 
 import {
   ScrDoc0005ChangeHistoryInfo,
   ScrDoc0005ChangeHistoryInfoResponse,
 } from 'apis/doc/ScrDoc0005Api';
+
+import { useNavigate } from 'hooks/useNavigate';
+
+import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
 
@@ -69,14 +77,14 @@ const showChangeHistoryList: GridColDef[] = [
     field: 'approverComment',
     headerName: '最終承認者コメント',
     size: 'm',
-    cellType: 'link',
+    tooltip: true,
   },
 ];
 interface ChangeHistoryListModel {
   /** ID */
   id: string;
   /** 変更履歴番号 */
-  changeHistoryNumber: number;
+  changeHistoryNumber: string;
   /** 画面名 */
   screenName: string;
   /** タブ名称/一括登録名称 */
@@ -133,7 +141,7 @@ const showUnapprovedList: GridColDef[] = [
     field: 'registrationChangeMemo',
     headerName: '登録・変更メモ',
     size: 'm',
-    cellType: 'link',
+    tooltip: true,
   },
   {
     field: 'approvalStatus',
@@ -165,7 +173,7 @@ interface UnapprovedListModel {
   /** ID */
   id: string;
   /** 変更履歴番号 */
-  changeHistoryNumber: number;
+  changeHistoryNumber: string;
   /** 画面名 */
   screenName: string;
   /** タブ名称/一括登録名称 */
@@ -196,7 +204,7 @@ interface ScrDoc0005ChangeHistory {
 }
 const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
   const { documentBasicsNumber, allReadOnly } = props;
-
+  const { user } = useContext(AuthContext);
   // 変更履歴リスト
   const [changeHistoryList, setChangeHistoryList] = useState<
     ChangeHistoryListModel[]
@@ -205,6 +213,16 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
   const [unapprovedList, setUnapprovedList] = useState<UnapprovedListModel[]>(
     []
   );
+  // Link
+  const [historyHrefs, setHistoryHrefs] = useState<GridHrefsModel[]>([]);
+  const [unapprovedHrefs, setUnapproved] = useState<GridHrefsModel[]>([]);
+  // Tooltipn
+  const [historyTooltips, setHistoryTooltips] = useState<GridTooltipsModel[]>(
+    []
+  );
+  const [unapprovedTooltips, setUnapprovedTooltips] = useState<
+    GridTooltipsModel[]
+  >([]);
 
   // 初期表示
   useEffect(() => {
@@ -216,6 +234,65 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
       setChangeHistoryList(changeHistoryInfo);
       const unapprovedList = convertToUnapprovedInfoListModel(response);
       setUnapprovedList(unapprovedList);
+
+      // 変更履歴一覧refs設定
+      setHistoryHrefs([
+        {
+          field: 'changeHistoryNumber',
+          hrefs: response.changeHistoryList.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              href: '/doc/documents/' + x.changeHistoryNumber + '#' + x.tabName,
+            };
+          }),
+        },
+      ]);
+      // 変更履歴一覧ツールチップ設定
+      setHistoryTooltips([
+        {
+          field: 'registUpdateMemoExistence',
+          tooltips: response.changeHistoryList.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              text: x.registrationChangeMemo,
+            };
+          }),
+        },
+        {
+          field: 'registUpdateMemoExistence',
+          tooltips: response.changeHistoryList.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              text: x.approverComment,
+            };
+          }),
+        },
+      ]);
+
+      // 未承認一覧refs設定
+      setUnapproved([
+        {
+          field: 'changeHistoryNumber',
+          hrefs: response.unapprovedList.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              href: '/doc/documents/' + x.changeHistoryNumber + '#' + x.tabName,
+            };
+          }),
+        },
+      ]);
+      // 未承認一覧ツールチップ設定
+      setUnapprovedTooltips([
+        {
+          field: 'registrationChangeMemo',
+          tooltips: response.unapprovedList.map((x) => {
+            return {
+              id: x.changeHistoryNumber,
+              text: x.registrationChangeMemo,
+            };
+          }),
+        },
+      ]);
     };
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -230,11 +307,14 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
     return response.changeHistoryList.map((x) => {
       return {
         id: String(x.changeHistoryNumber),
-        tabNameAllRegistrationName: x.tabName + x.allRegistrationName,
+
+        tabNameAllRegistrationName: x.tabName,
         changeApplicationEmployeeIdName:
-          x.changeApplicationEmployeeId + x.changeApplicationEmployeeName,
-        approvalEmployeeIdName: x.approvalEmployeeId + x.approvalEmployeeName,
+          x.changeApplicationEmployeeId + ' ' + x.changeApplicationEmployeeName,
+        approvalEmployeeIdName:
+          x.approvalEmployeeId + ' ' + x.approvalEmployeeName,
         ...x,
+        changeHistoryNumber: String(x.changeHistoryNumber),
       };
     });
   };
@@ -248,18 +328,19 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
     return response.unapprovedList.map((x) => {
       return {
         id: String(x.changeHistoryNumber),
-        tabNameAllRegistrationName: x.tabName + x.allRegistrationName,
+        tabNameAllRegistrationName: x.tabName,
         changeApplicationEmployeeIdName:
-          x.changeApplicationEmployeeId + x.changeApplicationEmployeeName,
+          x.changeApplicationEmployeeId + ' ' + x.changeApplicationEmployeeName,
         firstApprovalEmployeeIdName:
-          x.firstApprovalEmployeeId + x.firstApprovalEmployeeName,
+          x.firstApprovalEmployeeId + ' ' + x.firstApprovalEmployeeName,
         secondApprovalEmployeeIdName:
-          x.secondApprovalEmployeeId + x.secondApprovalEmployeeName,
+          x.secondApprovalEmployeeId + ' ' + x.secondApprovalEmployeeName,
         thirdApprovalEmployeeIdName:
-          x.thirdApprovalEmployeeId + x.thirdApprovalEmployeeName,
+          x.thirdApprovalEmployeeId + ' ' + x.thirdApprovalEmployeeName,
         fourthApprovalEmployeeIdName:
-          x.fourthApprovalEmployeeId + x.fourthApprovalEmployeeName,
+          x.fourthApprovalEmployeeId + ' ' + x.fourthApprovalEmployeeName,
         ...x,
+        changeHistoryNumber: String(x.changeHistoryNumber),
       };
     });
   };
@@ -268,7 +349,18 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
   const apiRef = useGridApiRef();
 
   const handleExportCsvClick = () => {
-    exportCsv('filename.csv', apiRef);
+    const date = new Date();
+    const year = date.getFullYear().toString().padStart(4, '0');
+    const month = date.getMonth().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    exportCsv(
+      `書類情報詳細_${user.employeeId}_${
+        year + month + day + hours + minutes
+      }.csv`,
+      apiRef
+    );
   };
   const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
@@ -279,6 +371,15 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
       ) + 40
     );
   }, [apiRef, apiRef.current.rootElementRef]);
+
+  /**
+   * リンククリック時のイベントハンドラ
+   */
+  // router
+  const navigate = useNavigate();
+  const handleLinkClick = (url: string) => {
+    navigate(url, true);
+  };
   return (
     <MainLayout>
       <MainLayout main>
@@ -296,6 +397,9 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
               columns={showChangeHistoryList}
               rows={changeHistoryList}
               getRowId={(row) => row.id + row.tabNameAllRegistrationName}
+              tooltips={historyTooltips}
+              hrefs={historyHrefs}
+              onLinkClick={handleLinkClick}
             />
           </Stack>
         </Section>
@@ -305,6 +409,9 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
             rows={unapprovedList}
             apiRef={apiRef}
             getRowId={(row) => row.id + row.tabNameAllRegistrationName}
+            tooltips={unapprovedTooltips}
+            hrefs={unapprovedHrefs}
+            onLinkClick={handleLinkClick}
           />
         </Section>
       </MainLayout>
