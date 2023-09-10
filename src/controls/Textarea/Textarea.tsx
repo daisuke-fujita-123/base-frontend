@@ -23,7 +23,6 @@ export const StyledTextArea = styled(TextareaAutosize)({
 export const Textarea = <T extends FieldValues>(props: TextareaProps<T>) => {
   const { name, disabled = false, maxRows = 8, size = 's' } = props;
   const { register, formState, control } = useFormContext();
-  const isReadOnly = control?._options?.context[0];
 
   const areaWidth = () => {
     if (size === 's') return 225;
@@ -40,7 +39,7 @@ export const Textarea = <T extends FieldValues>(props: TextareaProps<T>) => {
         disabled={disabled}
         maxRows={maxRows}
         minRows={8}
-        readOnly={isReadOnly}
+        readOnly={control?._options?.context?.readonly}
         style={{ width: areaWidth() }}
       ></StyledTextArea>
       <FormHelperText>

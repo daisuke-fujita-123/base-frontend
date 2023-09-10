@@ -73,7 +73,6 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
 
   const { register, formState, setValue, control } = useFormContext();
   const watchValue = useWatch({ name, control });
-  const isReadOnly = control?._options?.context[0];
   const registerRet = register(name);
   const isNotNull =
     watchValue !== null && watchValue !== undefined && watchValue !== '';
@@ -96,7 +95,11 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
             id={name}
             disabled={disabled}
             fullWidth={fullWidth}
-            variant={isReadOnly || readonly ? 'standard' : variant}
+            variant={
+              control?._options?.context?.readonly || readonly
+                ? 'standard'
+                : variant
+            }
             error={!!formState.errors[name]}
             helperText={
               formState.errors[name]?.message
@@ -114,7 +117,7 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
                   )}
                 </InputAdornment>
               ),
-              readOnly: isReadOnly || readonly,
+              readOnly: control?._options?.context?.readonly || readonly,
             }}
             onChange={registerRet.onChange}
             onBlur={(event) => {
@@ -154,7 +157,6 @@ export const PriceTextField = <T extends FieldValues>(
 
   const { register, formState, setValue, trigger, control } = useFormContext();
   const watchValue = useWatch({ name, control });
-  const isReadOnly = control?._options?.context[0];
   const registerRet = register(name);
   const isNotNull =
     watchValue !== null && watchValue !== undefined && watchValue !== '';
@@ -215,7 +217,11 @@ export const PriceTextField = <T extends FieldValues>(
         id={name}
         disabled={disabled}
         fullWidth={fullWidth}
-        variant={isReadOnly || readonly ? 'standard' : variant}
+        variant={
+          control?._options?.context?.readonly || readonly
+            ? 'standard'
+            : variant
+        }
         error={!!formState.errors[name]}
         helperText={
           formState.errors[name]?.message
@@ -232,7 +238,7 @@ export const PriceTextField = <T extends FieldValues>(
               )}
             </InputAdornment>
           ),
-          readOnly: isReadOnly,
+          readOnly: control?._options?.context?.readonly,
         }}
         onChange={registerRet.onChange}
         onBlur={(event) => {
@@ -266,7 +272,7 @@ export const PostalTextField = <T extends FieldValues>(
 
   const { register, formState, setValue, trigger, control } = useFormContext();
   const watchValue = useWatch({ name, control });
-  const isReadOnly = control?._options?.context[0];
+  const isReadOnly = control?._options?.context?.readonly;
   const registerRet = register(name);
   const isNotNull =
     watchValue !== null && watchValue !== undefined && watchValue !== '';
@@ -368,7 +374,6 @@ export const LinkTextField = <T extends FieldValues>(
       required={required}
       size={size}
     >
-      {/* <Link></Link> */}
       <StyledTextFiled
         id={name}
         disabled={disabled}

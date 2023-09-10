@@ -207,7 +207,7 @@ export const DatePicker = <T extends FieldValues>(
             },
           }}
           format='yyyy/mm/dd'
-          readOnly={control?._options?.context[0]}
+          readOnly={control?._options?.context?.readonly}
           disabled={disabled}
         />
       </LocalizationProvider>

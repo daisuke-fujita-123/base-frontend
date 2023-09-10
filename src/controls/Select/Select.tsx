@@ -119,7 +119,6 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
     }
   }, [isType, searchVal, selectValues]);
 
-  const isReadOnly = control?._options?.context[0];
   return (
     <InputLayout
       label={label}
@@ -138,7 +137,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
               multiple={multiple}
               sx={{ textAlign: 'left' }}
               inputProps={{
-                readOnly: isReadOnly,
+                readOnly: control?._options?.context?.readonly,
               }}
               IconComponent={PulldownIcon}
             >
@@ -164,7 +163,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
               multiple={multiple}
               sx={{ textAlign: 'left' }}
               inputProps={{
-                readOnly: isReadOnly,
+                readOnly: control?._options?.context?.readonly,
               }}
               IconComponent={PulldownIcon}
             >
@@ -210,7 +209,6 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
   } = props;
 
   const { register, formState, control, setValue } = useFormContext();
-  const isReadOnly = control?._options?.context[0];
   const watchValue = useWatch({ name, control });
   const selectList = [...watchValue];
   const handleClick = () => {
@@ -251,7 +249,7 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
                       })}
                       sx={{ textAlign: 'left' }}
                       inputProps={{
-                        readOnly: isReadOnly,
+                        readOnly: control?._options?.context?.readonly,
                       }}
                       IconComponent={PulldownIcon}
                     >
