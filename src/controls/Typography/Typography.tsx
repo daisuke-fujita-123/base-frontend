@@ -25,6 +25,7 @@ interface TypographyProps {
   textDecorationThickness?: number;
   bold?: boolean;
   openable?: boolean;
+  isDocDetail?: boolean;
 }
 export const Typography = (props: TypographyProps) => {
   const {
@@ -74,12 +75,15 @@ const StyledDivider = styled(DividerMui)({
 });
 
 export const SubTitle = (props: TypographyProps) => {
-  const { children, onClick, openable = false } = props;
+  const { children, onClick, openable = false, isDocDetail } = props;
   const [flip, setFlip] = useState<boolean>(false);
+  const style = { fontSize: 15, fontWeight: 'bold', marginBottom: '3px' };
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <StyledSubTitle>{children}</StyledSubTitle>
+        <StyledSubTitle sx={isDocDetail ? style : null}>
+          {children}
+        </StyledSubTitle>
         {openable && (
           <IconButton
             onClick={(e) => {
@@ -89,8 +93,8 @@ export const SubTitle = (props: TypographyProps) => {
             style={{
               transform: flip ? 'rotate(0)' : 'rotate(180deg)',
               padding: 0,
-              paddingTop: 10,
-              paddingBottom: 10,
+              paddingTop: isDocDetail ? 7 : 10,
+              paddingBottom: isDocDetail ? 7 : 10,
             }}
           >
             <img src={Pulldown}></img>
@@ -175,6 +179,7 @@ const StyledAccordionContentText = styled(TypographyMui)({
   paddingBottom: 7,
   display: 'flex',
   alignItems: 'center',
+  fontSize: 13,
   '&:hover': {
     cursor: 'pointer',
     background: theme.palette.accordion.selected,
