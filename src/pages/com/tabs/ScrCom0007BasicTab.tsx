@@ -18,33 +18,33 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'reportId',
     headerName: '帳票ID',
-    size: 'l',
+    size: 's',
     cellType: 'link',
   },
   {
     field: 'reportName',
     headerName: '帳票名',
-    size: 'l',
+    width: 400,
   },
   {
     field: 'reportOutputFormatKind',
     headerName: '出力形式',
-    size: 'l',
+    size: 's',
   },
   {
     field: 'commentEditFlag',
     headerName: 'コメント編集可否',
-    size: 'l',
+    size: 'm',
   },
   {
     field: 'changeReservationFlag',
     headerName: '変更予約',
-    size: 'l',
+    size: 's',
   },
   {
     field: 'outputSourceFunctionName',
     headerName: '出力元機能',
-    size: 'l',
+    width: 400,
   },
 ];
 
@@ -117,20 +117,10 @@ const ScrCom0007BasicTab = () => {
     SearchResultRowModelForConvert[]
   >([]);
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
-  // section の横幅
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
   // router
   const navigate = useNavigate();
 
   const apiRef = useGridApiRef();
-
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
 
   /**
    * 初期表示
@@ -178,7 +168,7 @@ const ScrCom0007BasicTab = () => {
       <MainLayout>
         {/* main */}
         <MainLayout main>
-          <Section name='帳票一覧' width={maxSectionWidth}>
+          <Section name='帳票一覧' fitInside>
             <DataGrid
               apiRef={apiRef}
               columns={searchResultColumns}

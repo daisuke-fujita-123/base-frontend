@@ -1,6 +1,13 @@
 import React, { ChangeEventHandler, FocusEventHandler } from 'react';
-import { FieldValues, Path, useController, useFormContext, useWatch } from 'react-hook-form';
+import {
+  FieldValues,
+  Path,
+  useController,
+  useFormContext,
+  useWatch,
+} from 'react-hook-form';
 
+import { MarginBox } from 'layouts/Box';
 import { InputLayout } from 'layouts/InputLayout';
 
 import { StyledTextFiled } from 'controls/TextField';
@@ -11,13 +18,21 @@ import Calendar from 'icons/button_calendar.png';
 
 import { Box, IconButton, styled } from '@mui/material';
 import {
-    BaseSingleInputFieldProps, DatePicker as DatePickerMui, DateValidationError, FieldSection,
-    LocalizationProvider, UseDateFieldProps
+  BaseSingleInputFieldProps,
+  DatePicker as DatePickerMui,
+  DateValidationError,
+  FieldSection,
+  LocalizationProvider,
+  UseDateFieldProps,
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
 
 import { ja } from 'date-fns/locale';
-import { convertFromDateToDisplay, isInvalidDate, transformWareki } from './DatePickerHelper';
+import {
+  convertFromDateToDisplay,
+  isInvalidDate,
+  transformWareki,
+} from './DatePickerHelper';
 
 /**
  * DatePickerFieldPropsコンポーネントのProps
@@ -76,7 +91,7 @@ const DatePickerField = (props: DatePickerFieldProps) => {
             : null
         }
         InputProps={{
-          endAdornment: endAdornment,
+          endAdornment: <MarginBox mr={-2}>{endAdornment}</MarginBox>,
           readOnly: readOnly,
         }}
         fullWidth
@@ -88,9 +103,6 @@ const DatePickerField = (props: DatePickerFieldProps) => {
 const StyledButton = styled(IconButton)({
   ...theme.palette.calender,
   borderRadius: 0,
-  width: 30,
-  height: 30,
-  marginRight: theme.spacing(-2),
   '&:hover': {
     ...theme.palette.calender,
   },
@@ -185,12 +197,19 @@ export const DatePicker = <T extends FieldValues>(
                     backgroundColor: '#fde8d4',
                     color: '#000000',
                   },
+                  '&:not(.Mui-selected)': {
+                    border: 'transparent',
+                  },
+                  '&.MuiPickersDay-today': {
+                    border: 'transparent',
+                    backgroundColor: 'transparent',
+                  },
                 },
               },
             },
           }}
           format='yyyy/mm/dd'
-          readOnly={control?._options?.context[0]}
+          readOnly={control?._options?.context?.readonly}
           disabled={disabled}
         />
       </LocalizationProvider>
