@@ -65,15 +65,29 @@ interface StyledBoxProps {
   transparent?: boolean;
   disable?: boolean;
   onClick?: () => void;
+  isDocDetail?: boolean;
 }
 
 export const ContentsBox = (props: StyledBoxProps) => {
-  const { children, transparent, disable } = props;
+  const { children, transparent, disable, isDocDetail } = props;
+  const style = { border: 0, marginBottom: 2 };
   return (
     <>
-      {disable && <StyledDisableBox>{children}</StyledDisableBox>}
-      {transparent && <StyledDefaultBox>{children}</StyledDefaultBox>}
-      {!(transparent || disable) && <StyledWhiteBox>{children}</StyledWhiteBox>}
+      {disable && (
+        <StyledDisableBox sx={isDocDetail ? style : null}>
+          {children}
+        </StyledDisableBox>
+      )}
+      {transparent && (
+        <StyledDefaultBox sx={isDocDetail ? style : null}>
+          {children}
+        </StyledDefaultBox>
+      )}
+      {!(transparent || disable) && (
+        <StyledWhiteBox sx={isDocDetail ? style : null}>
+          {children}
+        </StyledWhiteBox>
+      )}
     </>
   );
 };

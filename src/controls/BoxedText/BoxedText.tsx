@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 
 export interface BoxedTextLabel {
-  label: string | undefined;
+  label?: string;
   field?: string;
 }
 
@@ -23,10 +23,20 @@ export interface BoxedTextProps {
   values: BoxedTextValue;
   backgroundColor?: string;
   getValueColor?: (field: string, value: string) => string | undefined;
+  getFieldBackgroundColor?: (
+    field: string,
+    value: string
+  ) => string | undefined;
 }
 
 export const BoxedText = (props: BoxedTextProps) => {
-  const { labels, values, backgroundColor, getValueColor } = props;
+  const {
+    labels,
+    values,
+    backgroundColor,
+    getValueColor,
+    getFieldBackgroundColor,
+  } = props;
 
   return (
     <>
@@ -37,7 +47,15 @@ export const BoxedText = (props: BoxedTextProps) => {
         <Table>
           <TableBody>
             {labels.map((x, i) => (
-              <TableRow key={i}>
+              <TableRow
+                key={i}
+                sx={{
+                  background:
+                    x.field &&
+                    getFieldBackgroundColor &&
+                    getFieldBackgroundColor(x.field, values[x.field]),
+                }}
+              >
                 <TableCell
                   sx={{
                     padding: x.field ? 0 : 2,
@@ -48,25 +66,24 @@ export const BoxedText = (props: BoxedTextProps) => {
                 >
                   {x.label}
                 </TableCell>
-                {x.field && (
-                  <TableCell
-                    sx={{
-                      padding: x.field ? 0 : 2,
-                      border: x.field ? 'solid' : undefined,
-                      borderWidth: x.field ? 1 : 0,
+                <TableCell
+                  sx={{
+                    padding: x.field ? 0 : 2,
+                    border: x.field ? 'solid' : undefined,
+                    borderWidth: x.field ? 1 : 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      color:
+                        x.field &&
+                        getValueColor &&
+                        getValueColor(x.field, values[x.field]),
                     }}
                   >
-                    <span
-                      style={{
-                        color:
-                          getValueColor &&
-                          getValueColor(x.field, values[x.field]),
-                      }}
-                    >
-                      {values[x.field]}
-                    </span>
-                  </TableCell>
-                )}
+                    {x.field && values[x.field]}
+                  </span>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

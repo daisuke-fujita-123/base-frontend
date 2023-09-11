@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 
 interface RadioValue {
-  value: string | number;
+  value: string | number | boolean;
   displayValue: string;
   backgroundColor?: string;
 }
@@ -70,7 +70,7 @@ export const Radio = <T extends FieldValues>(props: RadioProps<T>) => {
               label={value.displayValue}
               control={
                 <MuiRadio
-                  readOnly={control?._options?.context[0]}
+                  readOnly={control?._options?.context?.readonly}
                   disabled={disabled}
                 />
               }

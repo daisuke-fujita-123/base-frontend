@@ -53,6 +53,7 @@ interface TabLayoutProps {
   tabDef: TabDef[];
   defaultValue: string;
   buttons?: ReactNode;
+  isDocDetail?: boolean;
 }
 // フッターは、タブ内の前ページに聞かせる場合は、ハンドリング方法を考える必要あり。
 
@@ -65,7 +66,7 @@ const StyledTab = styled(Tab)({
   height: 25,
   minHeight: 25,
   width: 116,
-  minWidth: 106,
+  minWidth: 116,
   whiteSpace: 'nowrap',
   border: `1px solid  ${theme.palette.tab?.border}`,
   marginRight: theme.spacing(1),
@@ -92,7 +93,7 @@ const StyledBox = styled(Box)({
  * Tabsコンポーネント
  */
 export const Tabs = (props: TabLayoutProps) => {
-  const { children, tabDef: tabValues, buttons } = props;
+  const { children, tabDef: tabValues, buttons, isDocDetail } = props;
 
   // router
   const location = useLocation();
@@ -129,6 +130,7 @@ export const Tabs = (props: TabLayoutProps) => {
                   disabled={value.disabled}
                   key={index}
                   label={value.title}
+                  sx={{ width: isDocDetail ? 106 : 116 }}
                 />
               ))}
             </TabsMui>

@@ -1,5 +1,12 @@
 import axios from 'axios';
 
+export const comBaseUrl =
+  process.env.REACT_APP_BACKEND_AUTH === 'enabled'
+    ? 'http://localhost:8083'
+    : 'http://localhost:8084';
+export const comApiPath =
+  process.env.REACT_APP_BACKEND_AUTH === 'enabled' ? '/api/com' : '/_exp';
+
 /**
  * memApiClient
  */
@@ -41,7 +48,7 @@ export const docApiClient = axios.create({
  */
 export const comApiClient = axios.create({
   baseURL: 'http://localhost:8083',
-  // withCredentials: true,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -52,8 +59,8 @@ export const comApiClient = axios.create({
  * _expApiClient
  */
 export const _expApiClient = axios.create({
-  baseURL: 'http://localhost:8084',
-  // withCredentials: true,
+  baseURL: comBaseUrl,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

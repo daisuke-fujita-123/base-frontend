@@ -1,4 +1,4 @@
-import { comApiClient } from 'providers/ApiClient';
+import { _expApiClient, comApiClient, comApiPath } from 'providers/ApiClient';
 
 /** 画面ID */
 interface ScreenId {
@@ -25,8 +25,8 @@ export interface ScrCom0002UpdateFavoriteResponse {
 export const ScrCom0002UpdateFavorite = async (
   req: ScrCom0002UpdateFavoriteRequest
 ): Promise<ScrCom0002UpdateFavoriteResponse> => {
-  const response = await comApiClient.post(
-    '/api/com/scr-com-0002/get-update-favorite',
+  const response = await _expApiClient.post(
+    `${comApiPath}/scr-com-0002/get-update-favorite`,
     req
   );
   return response.data;
@@ -54,8 +54,8 @@ export interface ScrCom0002GetMenuDetailResponse {
 export const ScrCom0002GetMenuDetail = async (
   req: ScrCom0002GetMenuDetailRequest
 ): Promise<ScrCom0002GetMenuDetailResponse> => {
-  const response = await comApiClient.post(
-    '/api/com/scr-com-0002/get-menu-detail',
+  const response = await _expApiClient.post(
+    `${comApiPath}/scr-com-0002/get-menu-detail`,
     req
   );
   return response.data;
@@ -100,6 +100,6 @@ export interface LogoutResponse {
 export const ScrCom9999Logout = async (
   req: LogoutRequest
 ): Promise<LogoutResponse> => {
-  const response = await comApiClient.post('/com/logout', req);
+  const response = await _expApiClient.post(`${comApiPath}/logout`, req);
   return response.data;
 };

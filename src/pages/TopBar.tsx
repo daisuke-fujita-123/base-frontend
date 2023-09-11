@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useLocation } from 'react-router';
-import { matchPath } from 'react-router-dom';
+import { matchPath, useNavigate } from 'react-router-dom';
 
 import { Stack } from 'layouts/Stack';
 
@@ -9,6 +9,8 @@ import { LogoutButton } from 'controls/Button';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
+
+import { ScrCom9999Logout } from 'apis/com/ScrCom0002Api';
 
 import { AuthContext } from 'providers/AuthProvider';
 
@@ -65,6 +67,27 @@ const TopBar = () => {
   // router
   const location = useLocation();
 
+  // 環境によってヘルプデスクとマニュアルのリンクを変更
+  const helpLink = (): string => {
+    if (process.env.NODE_ENV === 'development') {
+      return process.env.REACT_APP_HELP_LINK_DEVELOP || '';
+    } else if (process.env.NODE_ENV === 'production') {
+      return process.env.REACT_APP_HELP_LINK_PRODUCTION || '';
+    } else {
+      return '';
+    }
+  };
+
+  const manualLink = (): string => {
+    if (process.env.NODE_ENV === 'development') {
+      return process.env.REACT_APP_MANUAL_LINK_DEVELOP || '';
+    } else if (process.env.NODE_ENV === 'production') {
+      return process.env.REACT_APP_MANUAL_LINK_PRODUCTION || '';
+    } else {
+      return '';
+    }
+  };
+
   // 現在のURIをパスに分解
   const paths = location.pathname.split('/').map((e) => '/' + e);
   paths.shift();
@@ -95,6 +118,15 @@ const TopBar = () => {
     // return { name: matched.name, href: uri, movable: movable };
   });
 
+  // ログアウト
+  const navigate = useNavigate();
+  const TransitionLogout = async () => {
+    const response = await ScrCom9999Logout({
+      userId: user.employeeId,
+    });
+    if (response.rtnCode) return navigate('/_exp/logout');
+  };
+
   return (
     <Stack justifyContent='space-between' direction='row' alignItems='center'>
       <Breadcrumbs breadCrumbs={breadcrumbs} />
@@ -113,12 +145,12 @@ const TopBar = () => {
           alignItems='center'
           spacing={theme.spacing(1)}
         >
-          <Link href={''}>ヘルプ</Link>
+          <Link href={helpLink()}>ヘルプ</Link>
           <Typography>|</Typography>
-          <Link href={''}>マニュアル</Link>
+          <Link href={manualLink()}>マニュアル</Link>
         </Stack>
         <div style={{ marginRight: theme.spacing(6) }}>
-          <LogoutButton></LogoutButton>
+          <LogoutButton onClick={() => TransitionLogout()}></LogoutButton>
         </div>
       </Stack>
     </Stack>
