@@ -64,7 +64,7 @@ const ScrDoc0005Page = () => {
   );
 
   // 編集権限がない場合
-  const isNotEditable = user.editPossibleScreenIdList.includes('SCR-DOC-0005');
+  const isNotEditable = !user.editPossibleScreenIdList.includes('SCR-DOC-0005');
 
   const [allReadOnly, setAllReadOnly] = useState<boolean>(isNotEditable);
   const isReadOnly = (readOnly: boolean) => {
