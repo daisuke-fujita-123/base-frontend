@@ -615,11 +615,17 @@ const ScrTra0023Page = () => {
   // context
   const { saveState, loadState } = useContext(AppContext);
 
+  //遷移元がワークフローかどうか
+  //
+  let readOnlyFlg = false;
+  if (workList === dispType) {
+    readOnlyFlg = true;
+  }
   // form
   const methods = useForm<SearchConditionModel>({
     defaultValues: initialValues,
     resolver: yupResolver(yup.object(searchConditionSchema)),
-    context: false,
+    context: { readonly: readOnlyFlg },
   });
 
   const { getValues, setValue, reset, trigger } = methods;
@@ -666,40 +672,8 @@ const ScrTra0023Page = () => {
   const [gridCheckboxDisableFlg, setGridCheckboxDisableflg] =
     useState<boolean>(true);
 
-  //検索条件項目:会計処理日（FROM）非活性設定
+  //検索条件項目:読み込み専用設定
   const [accountingDateFromDisableFlg, setAccountingDateFromDisableFlg] =
-    useState<boolean>(false);
-  //検索条件項目:会計処理日（FROM）非活性設定
-  const [accountingDateToDisableFlg, setAccountingDateToDisableFlg] =
-    useState<boolean>(false);
-  //債務番号
-  const [debtNumberDisableFlg, setdebtNumberDisableFlg] =
-    useState<boolean>(false);
-  //請求種別
-  const [claimClassificationDisableFlg, setclaimClassificationDisableFlg] =
-    useState<boolean>(false);
-  //契約ID
-  const [
-    contractIdSelectValuesDisableFlg,
-    setcontractIdSelectValuesDisableFlg,
-  ] = useState<boolean>(false);
-  //出金種別
-  const [
-    paymentKindSelectValuesDisableFlg,
-    setpaymentKindSelectValuesDisableFlg,
-  ] = useState<boolean>(false);
-  //法人ID/法人名
-  const [
-    corporationIdSelectValuesDisableFlg,
-    setcorporationIdSelectValuesDisableFlg,
-  ] = useState<boolean>(false);
-  //承認ステータス
-  const [
-    approvalStatusSelectValuesDisableFlg,
-    setapprovalStatusSelectValuesDisableFlg,
-  ] = useState<boolean>(false);
-  //請求先ID
-  const [billingIdSelectValuesDisableFlg, setbillingIdSelectValuesDisableFlg] =
     useState<boolean>(false);
 
   // チェックボックス選択行
@@ -884,16 +858,11 @@ const ScrTra0023Page = () => {
         setConfirmButtonDisableFlg(true);
         //検索イベント発生
         handleSearchClick();
-        //検索条件項目,CSVボタン,帳票出力ボタン非活性,検索ボタン
+        //検索条件項目読み込み専用設定
         setAccountingDateFromDisableFlg(true);
-        setAccountingDateToDisableFlg(true);
-        setdebtNumberDisableFlg(true);
-        setclaimClassificationDisableFlg(true);
-        setcontractIdSelectValuesDisableFlg(true);
-        setpaymentKindSelectValuesDisableFlg(true);
-        setcorporationIdSelectValuesDisableFlg(true);
-        setapprovalStatusSelectValuesDisableFlg(true);
-        setbillingIdSelectValuesDisableFlg(true);
+        //const context = { readonly: true };
+
+        //CSVボタン,帳票出力ボタン,検索ボタン非活性
         setCsvOutputButtonDisableFlg(true);
         setReportOutputButtonDisableFlg(true);
         setSearchButtonDisableFlg(true);
@@ -1398,21 +1367,11 @@ const ScrTra0023Page = () => {
               <Grid container width={1690}>
                 <Grid item xs={4}>
                   <FromTo label='利用開始日'>
-                    <DatePicker
-                      disabled={accountingDateFromDisableFlg}
-                      name='accountingDateFrom'
-                    />
-                    <DatePicker
-                      disabled={accountingDateToDisableFlg}
-                      name='accountingDateTo'
-                    />
+                    <DatePicker name='accountingDateFrom' />
+                    <DatePicker name='accountingDateTo' />
                   </FromTo>
                   <Grid item xs={2}>
-                    <TextField
-                      label='債務番号'
-                      name='debtNumber'
-                      disabled={debtNumberDisableFlg}
-                    />
+                    <TextField label='債務番号' name='debtNumber' />
                   </Grid>
                 </Grid>
                 <Grid item xs={2}>
@@ -1420,7 +1379,6 @@ const ScrTra0023Page = () => {
                     label='請求種別'
                     name='claimClassification'
                     selectValues={selectValues.claimClassificationSelectValues}
-                    disabled={claimClassificationDisableFlg}
                     blankOption
                   />
 
@@ -1429,7 +1387,6 @@ const ScrTra0023Page = () => {
                       label='契約ID'
                       name='contractId'
                       selectValues={selectValues.contractIdSelectValues}
-                      disabled={contractIdSelectValuesDisableFlg}
                       blankOption
                     />
                   </Grid>
@@ -1439,7 +1396,6 @@ const ScrTra0023Page = () => {
                     label='出金種別'
                     name='paymentKind'
                     selectValues={selectValues.paymentKindSelectValues}
-                    disabled={paymentKindSelectValuesDisableFlg}
                     blankOption
                   />
                   <Grid item xs={2}>
@@ -1447,7 +1403,6 @@ const ScrTra0023Page = () => {
                       label='法人ID/法人名'
                       name='corporationId'
                       selectValues={selectValues.corporationIdSelectValues}
-                      disabled={corporationIdSelectValuesDisableFlg}
                       blankOption
                     />
                   </Grid>
@@ -1457,7 +1412,6 @@ const ScrTra0023Page = () => {
                     label='承認ステータス'
                     name='approvalStatus'
                     selectValues={selectValues.approvalStatusSelectValues}
-                    disabled={approvalStatusSelectValuesDisableFlg}
                     blankOption
                     multiple
                   />
@@ -1466,7 +1420,6 @@ const ScrTra0023Page = () => {
                       label='請求先ID'
                       name='billingId'
                       selectValues={selectValues.billingIdSelectValues}
-                      disabled={billingIdSelectValuesDisableFlg}
                       blankOption
                     />
                   </Grid>
