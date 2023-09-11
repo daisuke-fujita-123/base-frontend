@@ -361,7 +361,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 除外設定
+  // 除外設定 TODO要修正
   useEffect(() => {
     penaltyList.map((v) => {
       if (v.penaltyExclusionFlag) {
