@@ -1379,7 +1379,11 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                   />
                 </ColStack>
                 <ColStack>
-                  <DatePicker label='名変期限日' name='docChangeDueDate' />
+                  <DatePicker
+                    label='名義変更日'
+                    name='docChangeDate'
+                    disabled={allReadOnly}
+                  />
                   <TextField
                     label='（新登録）陸事コード'
                     name='newLandCode'
@@ -1393,8 +1397,8 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                 </ColStack>
                 <ColStack>
                   <TextField
-                    label='名義変更日'
-                    name='docChangeDate'
+                    label='名変処理日'
+                    name='docChangeExecuteTimestamp'
                     readonly={allReadOnly}
                   />
                   <TextField
