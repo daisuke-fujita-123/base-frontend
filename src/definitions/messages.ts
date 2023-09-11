@@ -16,6 +16,10 @@ export const MESSAGES = [
     message: '契約本数の指定が正しくありません。',
   },
   {
+    id: 'MSG-FR-INF-00006',
+    message: '登録・変更内容を確定してよろしいでしょうか。',
+  },
+  {
     id: 'MSG-FR-INF-00007',
     message: '申請データ(未提出)を登録しますがよろしいでしょうか',
   },
