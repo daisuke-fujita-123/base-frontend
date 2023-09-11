@@ -276,6 +276,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
           response.omatomeEquipmentShippingStopFlag === true
             ? 'する'
             : 'しない',
+        // TODO 車検有無変更処理、車種区分変更の追加
       };
       reset(Object.assign(addObj, response));
       setPenaltyList([
@@ -360,6 +361,17 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 除外設定
+  useEffect(() => {
+    penaltyList.map((v) => {
+      if (v.penaltyExclusionFlag) {
+        return { ...v, dueDate: v.dueDate };
+      } else {
+        return { ...v, dueDate: '' };
+      }
+    });
+  }, [penaltyList]);
+
   /**
    * キャンセルボタンクリック時のイベントハンドラ
    */
@@ -376,7 +388,6 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
     const res = await ScrDoc0005CheckDocumentDetailsInfo({
       documentBasicsNumber: documentBasicsNumber,
     });
-    console.log('入力', res);
     // 登録内容確認ポップアップに渡すデータをセット
     setScrCom0032PopupData({
       errorList: res.errorList,
@@ -402,33 +413,8 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
    */
   const sectionDef = [
     {
-      section: '書類情報詳細',
+      section: '基本情報編集',
       fields: [
-        'carInspectionEraNameKind',
-        'carInspectionYear',
-        'oldLandCode',
-        'oldRegistrationNumber1',
-        'oldRegistrationNumber2',
-        'oldRegistrationNumber3',
-        'cartypeKind',
-        'annualCarTax',
-        'depositCarTaxTotalAmount',
-        'recyclePriceDeposit',
-        'documentAdvanceFlag',
-        'equipmentAdvanceFlag',
-        'receiptBeatExistenceFlag',
-        'directDeliveryBeatExistenceFlag',
-        'docChangeDemandFaxStopExistenceFlag',
-        'detailsInformationAcquisitionChargesExistenceFlag',
-        'defaultSlipKind',
-        'shippingAmount',
-        'documentPenaltyExclusionFlag',
-        'documentSendingDueDate',
-        'docChangePenaltyExclusionFlag',
-        'omatomeDocumentShippingStopFlag',
-        'omatomeEquipmentShippingStopFlag',
-      ],
-      name: [
         '車検日（元号）',
         '車検日（年）',
         '陸事コード',
@@ -439,19 +425,56 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
         '年額自動車税',
         '預かり自税総額',
         'リサイクル料',
-        '書類先出し',
-        '備品先出し',
-        '入金のみ打ち',
-        '直接打ち',
-        '名変督促FAX停止',
-        '詳細情報取得課金',
-        '伝票種類',
-        '配送金額',
-        '除外設定',
-        '変更期限日',
-        '書類発送止め',
-        '備品発送止め',
       ],
+      name: [
+        'carInspectionEraNameKind',
+        'carInspectionYear',
+        'oldLandCode',
+        'oldRegistrationNumber1',
+        'oldRegistrationNumber2',
+        'oldRegistrationNumber3',
+        'cartypeKind',
+        'annualCarTax',
+        'depositCarTaxTotalAmount',
+        'recyclePriceDeposit',
+      ],
+    },
+    {
+      section: '先出し情報',
+      fields: ['documentAdvanceFlag', 'equipmentAdvanceFlag'],
+      name: ['書類先出し', '備品先出し'],
+    },
+    {
+      section: '有無フラグ情報',
+      fields: [
+        'receiptBeatExistenceFlag',
+        'directDeliveryBeatExistenceFlag',
+        'docChangeDemandFaxStopExistenceFlag',
+        'detailsInformationAcquisitionChargesExistenceFlag',
+      ],
+      name: ['入金のみ打ち', '直接打ち', '名変督促FAX停止', '詳細情報取得課金'],
+    },
+    {
+      section: '発送伝票情報',
+      fields: ['defaultSlipKind', 'shippingAmount'],
+      name: ['伝票種類', '配送金額'],
+    },
+    {
+      section: 'ペナルティ情報',
+      fields: [
+        'documentPenaltyExclusionFlag',
+        'documentSendingDueDate',
+        'docChangePenaltyExclusionFlag',
+      ],
+      name: ['除外設定', '変更期限日'],
+    },
+    {
+      section: '発送止め情報（おまとめ）',
+      fields: [
+        'omatomeDocumentShippingStopFlag',
+        'omatomeEquipmentShippingStopFlag',
+      ],
+      name: ['書類発送止め', '備品発送止め'],
     },
   ];
 

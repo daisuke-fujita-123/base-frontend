@@ -759,7 +759,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
         },
       ],
       // 日付の確認
-      changeExpectDate: null,
+      changeExpectDate: user.taskDate,
     });
     // 登録内容確認ポップアップを開く
     setScrCom00032PopupIsOpen(true);
@@ -770,29 +770,35 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
    */
   const sectionDef = [
     {
-      section: '書類情報詳細',
+      section: '車両情報',
+      fields: ['carbodyNumberFrameNo', 'placeDocumentShippingDate'],
+      name: ['車台番号・フレームNo', '会場書類発送日'],
+    },
+    {
+      section: '書類受付情報',
+      fields: ['validityDueDate'],
+      name: ['有効期限日'],
+    },
+    {
+      section: '不備対応情報セクション',
       fields: [
-        'carbodyNumberFrameNo',
-        'placeDocumentShippingDate',
-        'validityDueDate',
         'incompleteSupportDate',
         'incompleteSupportStatus',
         'incompleteSupportStaffName',
         'incompleteAttributeKind',
-        'docChangeDueDate',
-        'documentMemo',
       ],
-      name: [
-        '車台番号・フレームNo',
-        '会場書類発送日',
-        '有効期限日',
-        '日付',
-        '対応ステータス',
-        '対応担当者',
-        '不備属性',
-        '名変期限日',
-        'メモ',
-      ],
+      name: ['日付', '対応ステータス', '対応担当者', '不備属性'],
+    },
+    {
+      section: '名義変更情報',
+      fields: ['docChangeDate'],
+      name: ['名義変更日'],
+    },
+
+    {
+      section: 'メモ',
+      fields: ['documentMemo'],
+      name: ['メモ'],
     },
   ];
 
@@ -1307,6 +1313,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                       columns={showIncompleteSupportList}
                       rows={incompleteSupportList}
                       getRowId={(row) => row.id + row.incompleteSupportNo}
+                      apiRef={apiRef}
                     />
                   </Stack>
                 </Section>
@@ -1385,7 +1392,11 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                   />
                 </ColStack>
                 <ColStack>
-                  <TextField label='名義変更日' name='docChangeDate' readonly />
+                  <TextField
+                    label='名義変更日'
+                    name='docChangeDate'
+                    readonly={allReadOnly}
+                  />
                   <TextField
                     label='（新登録）登録番号'
                     name='newRegistrationNumber'
