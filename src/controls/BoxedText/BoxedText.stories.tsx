@@ -70,6 +70,11 @@ export const Example = () => {
     return undefined;
   };
 
+  const handleGetFieldBackgroundColor = (field: string) => {
+    if (field === 'encho') return '#CCCCCC';
+    return undefined;
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <RowStack>
@@ -79,6 +84,7 @@ export const Example = () => {
             labels={yonrinLabels}
             values={yonrinValues}
             getValueColor={hendleGetValueColor}
+            getFieldBackgroundColor={handleGetFieldBackgroundColor}
           />
         </ColStack>
         <ColStack>

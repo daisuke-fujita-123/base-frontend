@@ -253,12 +253,7 @@ export const Example = () => {
     setConditions([...conditions]);
   };
 
-  const onClickExport = () => {
-    exportCsv('filename.csv', dataset, []);
-    console.log('exportCSV');
-  };
-
-  const handleOnClick = () => {
+  const handleOnRefrectClick = () => {
     console.log(conditions);
     const dataset = convertFromConditionToPricingTableRows(
       conditions,
@@ -266,6 +261,20 @@ export const Example = () => {
       operators
     );
     setDataset(dataset);
+  };
+
+  const handleOnCsvExportClick = () => {
+    exportCsv('filename.csv', dataset);
+  };
+
+  const handleOnCsvImportClick = () => {
+    const newDataset = dataset.map((x, i) => {
+      return {
+        ...x,
+        commission: String(10000 + 100 * (i + 1)),
+      };
+    });
+    setDataset(newDataset);
   };
 
   return (
@@ -287,12 +296,15 @@ export const Example = () => {
           adjustableSubConditionCount
         />
         <CenterBox>
-          <PrimaryButton onClick={handleOnClick}>反映</PrimaryButton>
+          <PrimaryButton onClick={handleOnRefrectClick}>反映</PrimaryButton>
+          <PrimaryButton onClick={handleOnCsvExportClick}>
+            CSV出力
+          </PrimaryButton>
+          <PrimaryButton onClick={handleOnCsvImportClick}>
+            CSV取込
+          </PrimaryButton>
         </CenterBox>
         <PricingTable conditions={initialConditions} dataset={dataset} />
-        <CenterBox>
-          <PrimaryButton onClick={onClickExport}>CSV出力</PrimaryButton>
-        </CenterBox>
       </ColStack>
     </ThemeProvider>
   );
