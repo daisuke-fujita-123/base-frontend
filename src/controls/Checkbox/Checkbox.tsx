@@ -1,5 +1,10 @@
 import React from 'react';
-import { FieldValues, Path, useController, useFormContext } from 'react-hook-form';
+import {
+  FieldValues,
+  Path,
+  useController,
+  useFormContext,
+} from 'react-hook-form';
 
 import { MarginBox } from 'layouts/Box';
 import { InputLayout } from 'layouts/InputLayout';
@@ -7,7 +12,12 @@ import { InputLayout } from 'layouts/InputLayout';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import { Checkbox as MuiCheckbox, FormControl, FormControlLabel, styled } from '@mui/material';
+import {
+  Checkbox as MuiCheckbox,
+  FormControl,
+  FormControlLabel,
+  styled,
+} from '@mui/material';
 
 export interface CheckBoxProps<T extends FieldValues> {
   name: Path<T>;
@@ -54,7 +64,6 @@ export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
   // form
   const { formState, control } = useFormContext();
   const { field } = useController({ name, control });
-  const isReadOnly = control?._options?.context[0];
 
   return (
     <InputLayout label={''} size={size}>
@@ -63,7 +72,7 @@ export const Checkbox = <T extends FieldValues>(props: CheckBoxProps<T>) => {
           control={<StyledCheckbox checked={field.value} />}
           label={label}
           required={required}
-          disabled={disabled || isReadOnly}
+          disabled={disabled || control?._options?.context?.readonly}
           {...field}
           style={{ whiteSpace: 'nowrap', background: backgroundColor }}
         />

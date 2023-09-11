@@ -37,15 +37,29 @@ export const convertFromResolverToInvalids = (
 ): InvalidModel[] => {
   const defaultInvalids: InvalidModel[] = [];
   Object.keys(resolver.fields).forEach((x) => {
-    const invalid = (resolver.fields[x] as any).tests.map((y: any) => {
-      return {
-        field: x,
-        type: y.OPTIONS.name,
-        message: y.OPTIONS.message,
-        ids: [],
-      };
-    });
-    defaultInvalids.push(...invalid);
+    const field = resolver.fields[x] as any;
+    if (field.type === 'string') {
+      const invalid = field.tests.map((y: any) => {
+        return {
+          field: x,
+          type: y.OPTIONS.name,
+          message: y.OPTIONS.message,
+          ids: [],
+        };
+      });
+      defaultInvalids.push(...invalid);
+    }
+    if (field.type === 'array') {
+      const invalid = field.innerType.tests.map((y: any) => {
+        return {
+          field: x,
+          type: y.OPTIONS.name,
+          message: y.OPTIONS.message,
+          ids: [],
+        };
+      });
+      defaultInvalids.push(...invalid);
+    }
   });
   return defaultInvalids;
 };
@@ -63,7 +77,8 @@ export const appendErrorToInvalids = (
 ) => {
   err.forEach((e) => {
     const invalid = invalids.find(
-      (x) => x.field === e.path && x.type === e.type
+      // 配列に対するバリデーションエラーは、インデックス付のパスになるため前方一致で判断
+      (x) => e.path?.startsWith(x.field) && x.type === e.type
     );
     if (invalid === undefined) return;
     if (!invalid.ids.includes(id)) invalid.ids.push(id);
