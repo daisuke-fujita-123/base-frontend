@@ -358,8 +358,6 @@ const ScrCom0014Page = () => {
   // CSV読込ポップアップ
   const [isOpenCsvPopup, setIsOpenCsvPopup] = useState(false);
 
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
-
   // メッセージの取得
   const { getMessage } = useContext(MessageContext);
 
@@ -1442,7 +1440,7 @@ const ScrCom0014Page = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv(user.employeeId + '_' + user.taskDate, pricingRows, []);
+    exportCsv(user.employeeId + '_' + user.taskDate + '.csv', pricingRows);
   };
 
   // 価格セクションに設定する一括登録・CSVアイコン
@@ -1843,6 +1841,7 @@ const ScrCom0014Page = () => {
               <ThemeProvider theme={theme}>
                 <ConditionalTable
                   reorderable
+                  adjustableSubConditionCount
                   columns={columns}
                   // 条件種類 & 値 選択肢
                   conditionKinds={conditionKinds}
