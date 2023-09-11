@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -13,6 +13,7 @@ import { PopSection, Section } from 'layouts/Section';
 import { CancelButton, ConfirmButton } from 'controls/Button';
 import { Checkbox } from 'controls/Checkbox';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { Dialog } from 'controls/Dialog';
 import { TableRowModel } from 'controls/Table';
 // Controls
 import { Textarea } from 'controls/Textarea';
@@ -23,7 +24,9 @@ import {
   ScrCom0032GetApprovalRequest,
 } from 'apis/com/ScrCom0032Api';
 
-import { useGridApiRef } from '@mui/x-data-grid-pro';
+import { MessageContext } from 'providers/MessageProvider';
+
+import { Format } from 'utils/FormatUtil';
 
 /**
  * 登録内容確認ポップアップデータモデル
@@ -179,10 +182,11 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   // 判定用 画面名・タブ名・セクション名・項目名の内いずれかが存在する => true
   const [isExistColumns, setisExistColumns] = useState<boolean>();
 
-  // セクションサイズ
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
+  // メッセージポップアップ(ダイアログ)
+  const [handleDialog, setHandleDialog] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>('');
 
-  const apiRef = useGridApiRef();
+  const { getMessage } = useContext(MessageContext);
 
   // form
   const methods = useForm<formModel>({
@@ -270,14 +274,25 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     return tempList;
   };
 
-  // セクション幅調整
-  useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
+  // ダイアログのキャンセルボタン押下時の処理
+  const handleDialogCancel = () => {
+    // 取引会計管理の処理の場合のみポップアップまで閉じて処理終了とする
+    setHandleDialog(false);
+  };
+
+  // ダイアログのOKボタン押下時の処理(呼び出し元画面に登録メモを返却する)
+  const handleDialogConfirm = () => {
+    props.handleApprovalConfirm(
+      // 登録変更メモ
+      getValues('registrationChangeMemo')
     );
-  }, [apiRef, apiRef.current.rootElementRef]);
+  };
+
+  // button (ダイアログ(メッセージポップアップ)用)
+  const dialogButtons = [
+    { name: 'OK', onClick: handleDialogConfirm },
+    { name: 'キャンセル', onClick: handleDialogCancel },
+  ];
 
   // 登録内容確認ポップアップ表示時の処理
   useEffect(() => {
@@ -348,10 +363,12 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
 
   // 登録内容確認ポップアップ承認申請ボタン押下時の処理
   const handleApprovalConfirm = () => {
-    props.handleApprovalConfirm(
-      // 登録変更メモ
-      getValues('registrationChangeMemo')
-    );
+    const dialogMessege = Format(getMessage('MSG-FR-INF-00006'), [
+      'ダイアログ1',
+    ]);
+    setTitle(dialogMessege);
+    // ダイアログを表示
+    setHandleDialog(true);
   };
 
   // 登録内容確認ポップアップ確定ボタン押下時の処理
@@ -427,15 +444,11 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                   <br />
                 )}
                 {data.registrationChangeList.length > 0 ? (
-                  <Section name='登録・変更内容' width={maxSectionWidth}>
+                  <Section name='登録・変更内容'>
                     {/* 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
                     {isExistColumns ? (
                       <>
-                        <DataGrid
-                          columns={columns}
-                          rows={rowValuesList}
-                          apiRef={apiRef}
-                        />
+                        <DataGrid columns={columns} rows={rowValuesList} />
                         <br />
                       </>
                     ) : (
@@ -522,6 +535,8 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
           </FormProvider>
         </MainLayout>
       </MainLayout>
+      {/* ダイアログ */}
+      <Dialog open={handleDialog} title={title} buttons={dialogButtons} />
     </>
   );
 };
