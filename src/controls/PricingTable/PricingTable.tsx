@@ -136,7 +136,7 @@ export const convertFromConditionToPricingTableRows = (
       kind10: x[27],
       operator10: x[28],
       value10: x[29],
-      commission: '10,000',
+      commission: '',
     };
   });
 

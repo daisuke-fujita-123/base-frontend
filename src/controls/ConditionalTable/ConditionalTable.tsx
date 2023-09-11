@@ -500,26 +500,21 @@ export type DeepKey<T> = T extends object
     }[keyof T]
   : '';
 
-export const exportCsv = (filename: string, data: any[], colDef: any[]) => {
-  // const colDef = apiRef.current.getAllColumns();
-  // const rowIds = apiRef.current.getAllRowIds();
-
-  // DataGridのid列の除外、囲み文字の追加
-  // const data = rowIds.map((x) => {
-  //   const row = apiRef.current.getRow(x);
-  //   delete row.id;
-  //   Object.keys(row).forEach((key) => {
-  //     const value = row[key];
-  //     row[key] = `"${value}"`;
-  //   });
-  //   return row;
-  // });
-
+export const exportCsv = (filename: string, data: any[]) => {
   // CSVの文字列を生成
+  const fields = [];
+  for (let i = 1; i <= 10; i++) {
+    if (data[0]['kind' + i] === undefined) continue;
+    fields.push('手数料条件種類名No.' + i);
+    fields.push('手数料条件区分名No.' + i);
+    fields.push('手数料条件値No.' + i);
+  }
+  fields.push('手数料金額');
+
   const header =
-    colDef
-      .map((x: any) => {
-        return `"${x.headerName}"`;
+    fields
+      .map((x: string) => {
+        return `"${x}"`;
       })
       .join(',') + '\r\n';
   const rows = Papa.unparse(data, {

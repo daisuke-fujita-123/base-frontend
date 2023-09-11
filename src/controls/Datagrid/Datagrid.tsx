@@ -371,6 +371,17 @@ export const DataGrid = (props: DataGridProps) => {
       : params.colDef.selectValues;
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
 
+    if (getCellReadonly && getCellReadonly(params)) {
+      return (
+        <>
+          {
+            selectValues.find((x: any) => x.value === params.value)
+              ?.displayValue
+          }
+        </>
+      );
+    }
+
     return (
       <>
         <GridSelectCell
