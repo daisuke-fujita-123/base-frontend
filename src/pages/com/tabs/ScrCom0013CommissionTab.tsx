@@ -180,7 +180,10 @@ const ScrCom0013CommissionTab = (props: {
         changeHistoryNumber: changeHisoryNumber,
       };
       const response = (
-        await comApiClient.post('/com/scr-com-9999/get-history-info', request)
+        await comApiClient.post(
+          '/api/com/scr-com-9999/get-history-info',
+          request
+        )
       ).data;
       const commissionBasic = convertToHistoryInfoModel(response);
       // 画面にデータを設定
