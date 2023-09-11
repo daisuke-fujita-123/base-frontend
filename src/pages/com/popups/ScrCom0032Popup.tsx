@@ -363,20 +363,21 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
 
   // 登録内容確認ポップアップ承認申請ボタン押下時の処理
   const handleApprovalConfirm = () => {
+    props.handleRegistConfirm(
+      // 登録変更メモ
+      getValues('registrationChangeMemo')
+    );
+  };
+
+  // 登録内容確認ポップアップ確定ボタン押下時の処理
+  const handleRegistConfirm = () => {
+    // 確定ボタン押下時はダイアログを表示する
     const dialogMessege = Format(getMessage('MSG-FR-INF-00006'), [
       'ダイアログ1',
     ]);
     setTitle(dialogMessege);
     // ダイアログを表示
     setHandleDialog(true);
-  };
-
-  // 登録内容確認ポップアップ確定ボタン押下時の処理
-  const handleRegistConfirm = () => {
-    props.handleRegistConfirm(
-      // 登録変更メモ
-      getValues('registrationChangeMemo')
-    );
   };
 
   return (
