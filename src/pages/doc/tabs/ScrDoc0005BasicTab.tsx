@@ -26,7 +26,7 @@ import { CaptionLabel } from 'controls/Label';
 import { Radio } from 'controls/Radio';
 import { Select, SelectValue } from 'controls/Select';
 import { Textarea } from 'controls/Textarea';
-import { LinkTextField, TextField } from 'controls/TextField';
+import { LinkTextField, PriceTextField, TextField } from 'controls/TextField';
 
 import {
   ScrCom9999GetCodeManagementMaster,
@@ -196,10 +196,12 @@ const showDocumentInfoList: GridColDef[] = [
   {
     field: 'documentArrivesDate',
     headerName: '書類到着日',
+    size: 'm',
   },
   {
     field: 'documentShippingDate',
     headerName: '書類発送日',
+    size: 'm',
   },
   {
     field: 'lastInputEmployeeId',
@@ -277,20 +279,22 @@ const showEquipmentInfoList: GridColDef[] = [
   {
     field: 'equipmentAdditionCount',
     headerName: '備品追加回数',
-    size: 'm',
+    size: 's',
   },
   {
     field: 'equipmentArrivesDate',
     headerName: '備品到着日',
+    size: 'm',
   },
   {
     field: 'equipmentShippingDate',
     headerName: '備品発送日',
+    size: 'm',
   },
   {
     field: 'lastInputEmployeeId',
     headerName: '最終入力者',
-    size: 'm',
+    size: 's',
   },
   {
     field: 'equipmentExistenceFlag',
@@ -412,8 +416,17 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
       .max(10)
       .date(),
     validityDueDate: yup.string().label('有効期限日').max(10).date(),
-    incompleteSupportDate: yup.string().label('日付').max(10).date(),
-    incompleteSupportStaffName: yup.string().label('対応担当者').max(30),
+    equipmentReceptionInfoList: yup.array().of(
+      yup.object().shape({
+        othersEquipmentItemName: yup.string().label('その他備品名称').max(20),
+      })
+    ),
+    incompleteSupportList: yup.array().of(
+      yup.object().shape({
+        incompleteSupportDate: yup.string().label('日付').max(10).date(),
+        incompleteSupportStaffName: yup.string().label('対応担当者').max(30),
+      })
+    ),
     docChangeDueDate: yup.string().label('名変期限日').max(10).date(),
     documentMemo: yup.string().label('メモ').max(1000),
   };
@@ -1442,9 +1455,10 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                     name='detailsInformationAcquisitionChargesApprovalDate'
                     readonly
                   />
-                  <TextField
+                  <PriceTextField
                     label='リサイクル料預託金'
                     name='recyclePriceDeposit'
+                    readonly
                   />
                 </ColStack>
               </RowStack>

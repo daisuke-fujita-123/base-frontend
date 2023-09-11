@@ -24,7 +24,7 @@ import { DataGrid, GridColDef } from 'controls/Datagrid';
 import { CaptionLabel } from 'controls/Label';
 import { Radio } from 'controls/Radio';
 import { MultiSelect, Select, SelectValue } from 'controls/Select';
-import { MultiTextField, TextField } from 'controls/TextField';
+import { MultiTextField, PriceTextField, TextField } from 'controls/TextField';
 
 import { ScrCom9999GetCodeManagementMaster } from 'apis/com/ScrCom9999Api';
 import {
@@ -233,13 +233,21 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
   const detailsBasicSchama = {
     carInspectionEraNameKind: yup.string().label('車検日（元号）'),
     carInspectionYear: yup.string().label('車検日（年）'),
-    oldRegistrationNumber1: yup.string().label('登録番号1').max(3),
+    oldRegistrationNumber1: yup.string().label('登録番号1').max(3).half(),
     oldRegistrationNumber2: yup.string().label('登録番号2').max(1),
-    oldRegistrationNumber3: yup.string().label('登録番号3').max(4),
-    annualCarTax: yup.string().label('年額自動車税').max(7),
-    depositCarTaxTotalAmount: yup.string().label('預かり自税総額').max(7),
-    recyclePriceDeposit: yup.string().label('リサイクル料').max(7),
-    shippingAmount: yup.string().label('配送金額').max(7),
+    oldRegistrationNumber3: yup.string().label('登録番号3').max(4).half(),
+    annualCarTax: yup.string().label('年額自動車税').max(7).numberWithComma(),
+    depositCarTaxTotalAmount: yup
+      .string()
+      .label('預かり自税総額')
+      .max(7)
+      .numberWithComma(),
+    recyclePriceDeposit: yup
+      .string()
+      .label('リサイクル料')
+      .max(7)
+      .numberWithComma(),
+    shippingAmount: yup.string().label('配送金額').max(7).numberWithComma(),
     documentSendingDueDate: yup.string().label('書類送付期限日').max(10).date(),
     omatomeDocumentShippingStopFlag: yup
       .string()
@@ -611,7 +619,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                           minWidth={70}
                         />
                       </RowStack>
-                      <TextField
+                      <PriceTextField
                         label='年額自動車税'
                         name='annualCarTax'
                         readonly={
@@ -629,7 +637,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                           getValues('auctionKindName') === 'おまとめ'
                         }
                       />
-                      <TextField
+                      <PriceTextField
                         label='預り自税総額'
                         name='depositCarTaxTotalAmount'
                         readonly={
@@ -648,17 +656,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                         ]}
                         readonly={allReadOnly}
                       />
-                      {/* <TextField
-                        label='登録番号2'
-                        name='oldRegistrationNumber2'
-                        readonly={allReadOnly}
-                      />
-                      <TextField
-                        label='登録番号3'
-                        name='oldRegistrationNumber3'
-                        readonly={allReadOnly}
-                      /> */}
-                      <TextField
+                      <PriceTextField
                         label='リサイクル料'
                         name='recyclePriceDeposit'
                         readonly={
@@ -765,11 +763,11 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                   ></Select>
                 </ColStack>
                 <ColStack spacing={2.4}>
-                  <TextField
+                  <PriceTextField
                     label='配送金額'
                     name='shippingAmount'
                     readonly={allReadOnly}
-                  ></TextField>
+                  ></PriceTextField>
                 </ColStack>
               </RowStack>
             </Section>
