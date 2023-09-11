@@ -66,7 +66,7 @@ const showChangeHistoryList: GridColDef[] = [
     field: 'registrationChangeMemo',
     headerName: '登録・変更メモ',
     size: 'm',
-    cellType: 'link',
+    tooltip: true,
   },
   {
     field: 'approvalEmployeeIdName',
@@ -241,8 +241,12 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
           field: 'changeHistoryNumber',
           hrefs: response.changeHistoryList.map((x) => {
             return {
-              id: x.changeHistoryNumber,
-              href: '/doc/documents/' + x.changeHistoryNumber + '#' + x.tabName,
+              id: String(x.changeHistoryNumber),
+              href:
+                '/doc/documents/' +
+                String(x.changeHistoryNumber) +
+                '#' +
+                x.tabName,
             };
           }),
         },
@@ -253,7 +257,7 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
           field: 'registUpdateMemoExistence',
           tooltips: response.changeHistoryList.map((x) => {
             return {
-              id: x.changeHistoryNumber,
+              id: String(x.changeHistoryNumber),
               text: x.registrationChangeMemo,
             };
           }),
@@ -262,7 +266,7 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
           field: 'registUpdateMemoExistence',
           tooltips: response.changeHistoryList.map((x) => {
             return {
-              id: x.changeHistoryNumber,
+              id: String(x.changeHistoryNumber),
               text: x.approverComment,
             };
           }),
@@ -275,8 +279,12 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
           field: 'changeHistoryNumber',
           hrefs: response.unapprovedList.map((x) => {
             return {
-              id: x.changeHistoryNumber,
-              href: '/doc/documents/' + x.changeHistoryNumber + '#' + x.tabName,
+              id: String(x.changeHistoryNumber),
+              href:
+                '/doc/documents/' +
+                String(x.changeHistoryNumber) +
+                '#' +
+                x.tabName,
             };
           }),
         },
@@ -287,7 +295,7 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
           field: 'registrationChangeMemo',
           tooltips: response.unapprovedList.map((x) => {
             return {
-              id: x.changeHistoryNumber,
+              id: String(x.changeHistoryNumber),
               text: x.registrationChangeMemo,
             };
           }),
@@ -380,6 +388,11 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
   const handleLinkClick = (url: string) => {
     navigate(url, true);
   };
+
+  console.log(historyHrefs);
+  console.log(unapprovedHrefs);
+  console.log(historyTooltips);
+  console.log(unapprovedTooltips);
   return (
     <MainLayout>
       <MainLayout main>

@@ -113,7 +113,7 @@ const initialVal: ScrDoc0005DocumentDetails = {
 };
 
 // ペナルティリスト
-const showPenaltyList: GridColDef[] = [
+const penaltyListColDef: GridColDef[] = [
   {
     field: 'penaltyExclusionFlag',
     headerName: '除外設定',
@@ -765,7 +765,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
             </Section>
             <Section name='ペナルティ情報' isDocDetail>
               <DataGrid
-                columns={showPenaltyList}
+                columns={penaltyListColDef}
                 rows={penaltyList}
                 getRowId={(row) => row.id + row.penaltyKind}
                 disabled={allReadOnly}
