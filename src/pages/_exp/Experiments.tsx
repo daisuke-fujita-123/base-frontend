@@ -417,7 +417,7 @@ const Experiments = () => {
   const handleOnBlur = (name: string) => {
     console.log(`handleOnBlur: ${name}`);
   };
-  console.log(hrefs);
+
   return (
     <MainLayout>
       <MainLayout main>
