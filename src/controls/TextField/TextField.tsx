@@ -11,6 +11,7 @@ import {
 import { MarginBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
 import { InputLayout } from 'layouts/InputLayout';
+import { RowStack } from 'layouts/Stack';
 
 import { Link as TextLink } from 'controls/Link';
 import { theme } from 'controls/theme';
@@ -39,6 +40,7 @@ export interface TextFieldProps<T extends FieldValues> {
   onClick?: () => void;
   unit?: string;
   type?: 'text' | 'password';
+  names?: Path<T>[];
 }
 
 export const StyledTextFiled = styled(TextFiledMui)(({ error }) => ({
@@ -390,6 +392,66 @@ export const LinkTextField = <T extends FieldValues>(
           readOnly: true,
         }}
       />
+    </InputLayout>
+  );
+};
+
+export const MultiTextField = <T extends FieldValues>(
+  props: TextFieldProps<T>
+) => {
+  const {
+    label,
+    labelPosition = 'above',
+    required = false,
+    names,
+    disabled = false,
+    fullWidth = true,
+    size = 's',
+    variant = 'outlined',
+    readonly = false,
+    onBlur,
+  } = props;
+
+  const { register, formState, control } = useFormContext();
+
+  return (
+    <InputLayout
+      label={label}
+      labelPosition={labelPosition}
+      required={required}
+      size={size}
+    >
+      <RowStack>
+        {names?.map((name, index) => (
+          <StyledTextFiled
+            key={index}
+            id={name}
+            disabled={disabled}
+            fullWidth={fullWidth}
+            variant={
+              control?._options?.context?.readonly || readonly
+                ? 'standard'
+                : variant
+            }
+            error={!!formState.errors[name]}
+            helperText={
+              formState.errors[name]?.message
+                ? String(formState.errors[name]?.message)
+                : null
+            }
+            InputProps={{
+              readOnly: control?._options?.context?.readonly || readonly,
+            }}
+            onChange={register(name).onChange}
+            onBlur={(event) => {
+              register(name).onBlur(event);
+              onBlur && onBlur(name);
+            }}
+            ref={register(name).ref}
+            name={register(name).name}
+          />
+        ))}
+      </RowStack>
     </InputLayout>
   );
 };

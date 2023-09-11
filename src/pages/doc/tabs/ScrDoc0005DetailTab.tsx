@@ -23,8 +23,8 @@ import { Checkbox } from 'controls/Checkbox';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
 import { CaptionLabel } from 'controls/Label';
 import { Radio } from 'controls/Radio';
-import { Select, SelectValue } from 'controls/Select';
-import { TextField } from 'controls/TextField';
+import { MultiSelect, Select, SelectValue } from 'controls/Select';
+import { MultiTextField, TextField } from 'controls/TextField';
 
 import { ScrCom9999GetCodeManagementMaster } from 'apis/com/ScrCom9999Api';
 import {
@@ -592,20 +592,25 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                 <Section name='基本情報編集' isDocDetail>
                   <RowStack spacing={7}>
                     <ColStack spacing={2.4}>
-                      <Stack width={225}>
-                        <Select
-                          label='車検日（元号）'
-                          name='carInspectionEraNameKind'
+                      <RowStack spacing={1} width={225}>
+                        <MultiSelect
+                          label='車検日'
+                          name=''
+                          multi={[
+                            {
+                              name: 'carInspectionEraNameKind',
+                              selectValues: eraNameSelectValues,
+                            },
+                            {
+                              name: 'carInspectionYear',
+                              selectValues: [],
+                            },
+                          ]}
                           selectValues={eraNameSelectValues}
                           disabled={allReadOnly}
+                          minWidth={70}
                         />
-                        <Select
-                          label='車検日（年）'
-                          name='carInspectionYear'
-                          selectValues={[]}
-                          disabled={allReadOnly}
-                        />
-                      </Stack>
+                      </RowStack>
                       <TextField
                         label='年額自動車税'
                         name='annualCarTax'
@@ -633,12 +638,17 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                       />
                     </ColStack>
                     <ColStack spacing={2.4}>
-                      <TextField
-                        label='登録番号1'
-                        name='oldRegistrationNumber1'
+                      <MultiTextField
+                        name=''
+                        label='登録番号'
+                        names={[
+                          'oldRegistrationNumber1',
+                          'oldRegistrationNumber2',
+                          'oldRegistrationNumber3',
+                        ]}
                         readonly={allReadOnly}
                       />
-                      <TextField
+                      {/* <TextField
                         label='登録番号2'
                         name='oldRegistrationNumber2'
                         readonly={allReadOnly}
@@ -647,7 +657,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
                         label='登録番号3'
                         name='oldRegistrationNumber3'
                         readonly={allReadOnly}
-                      />
+                      /> */}
                       <TextField
                         label='リサイクル料'
                         name='recyclePriceDeposit'
