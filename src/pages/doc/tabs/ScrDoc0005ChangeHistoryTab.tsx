@@ -389,10 +389,6 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
     navigate(url, true);
   };
 
-  console.log(historyHrefs);
-  console.log(unapprovedHrefs);
-  console.log(historyTooltips);
-  console.log(unapprovedTooltips);
   return (
     <MainLayout>
       <MainLayout main>
