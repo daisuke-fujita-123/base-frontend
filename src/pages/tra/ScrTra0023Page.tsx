@@ -671,11 +671,6 @@ const ScrTra0023Page = () => {
   //チェックボックス非活性設定
   const [gridCheckboxDisableFlg, setGridCheckboxDisableflg] =
     useState<boolean>(true);
-
-  //検索条件項目:読み込み専用設定
-  const [accountingDateFromDisableFlg, setAccountingDateFromDisableFlg] =
-    useState<boolean>(false);
-
   // チェックボックス選択行
   const [rowSelectionModel, setRowSelectionModel] = useState<
     SearchResultRowModel[]
@@ -858,10 +853,6 @@ const ScrTra0023Page = () => {
         setConfirmButtonDisableFlg(true);
         //検索イベント発生
         handleSearchClick();
-        //検索条件項目読み込み専用設定
-        setAccountingDateFromDisableFlg(true);
-        //const context = { readonly: true };
-
         //CSVボタン,帳票出力ボタン,検索ボタン非活性
         setCsvOutputButtonDisableFlg(true);
         setReportOutputButtonDisableFlg(true);
