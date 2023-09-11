@@ -770,7 +770,7 @@ const ScrTra0023Page = () => {
       });
 
       //請求先ID
-      await searchconditionRefine.billingId.forEach((x) => {
+      searchconditionRefine.billingId.forEach((x) => {
         selectValues.billingIdSelectValues.push({
           value: x,
           displayValue: x,
