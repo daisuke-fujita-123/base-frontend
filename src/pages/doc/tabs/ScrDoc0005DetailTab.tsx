@@ -551,6 +551,7 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
     };
 
     const req: ScrDoc0005RegistrationDocumentDetailsInfoRequest = {
+      // basicsInfo: '',
       documentDetailsInfo: Object.assign(getValues(), values),
     };
     const res = await ScrDoc0005RegistrationDocumentDetailsInfo(req);

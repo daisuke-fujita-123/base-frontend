@@ -102,6 +102,7 @@ const initialVal: ScrDoc0005DocumentBasics = {
   pickUpExpectDate: '',
   omatomeCarPatternKind: '',
   paymentExtensionTargetedFlag: false,
+  paymentExtensionTargetedCar: '',
   paymentExtensionTargeted: '',
   landCode: '',
   registrationNumber: '',
@@ -111,7 +112,6 @@ const initialVal: ScrDoc0005DocumentBasics = {
   exhibitShopContractId: '',
   exhibitShopCorporationId: '',
   exhibitShopCorporationName: '',
-  exhibitShopPaymentExtensionTargetedFlag: false,
   exhibitShopPaymentExtensionTargeted: '',
   placeDocumentShippingDate: '',
   exhibitShopCourseEntryKind: '',
@@ -120,14 +120,12 @@ const initialVal: ScrDoc0005DocumentBasics = {
   exhibitShopAssignmentDocumentDestinationPhoneNumber: '',
   exhibitShopAssignmentDocumentDestinationFaxNumber: '',
   exhibitShopClaimStaffName: '',
-  exhibitShopMemberMemoFlag: false,
   exhibitShopMemberMemo: '',
   exhibitShopBikeRegistrationDepoName: '',
   exhibitShopBikeDepoKind: '',
   bidShopContractId: '',
   bidShopCorporationId: '',
   bidShopCorporationName: '',
-  bidShopPaymentExtensionTargetedFlag: false,
   bidShopPaymentExtensionTargeted: '',
   bidShopCourseEntryKind: '',
   bidShopAssignmentDocumentDestinationMailAddress: '',
@@ -135,13 +133,13 @@ const initialVal: ScrDoc0005DocumentBasics = {
   bidShopAssignmentDocumentDestinationPhoneNumber: '',
   bidShopAssignmentDocumentDestinationFaxNumber: '',
   bidShopClaimStaffName: '',
-  bidShopMemberMemoFlag: false,
   bidShopMemberMemo: '',
   bidShopBikeRegistrationDepoName: '',
   bidShopBikeDepoKind: '',
   auctionResultTranChangeBeforeTimestamp: new Date(),
   documentBasicsTranChangeBeforeTimestamp: new Date(),
-  documentReceptionInfoList: [],
+  requiredDocumentReceptionInfoList: [],
+  optionalDocumentReceptionInfoList: [],
   equipmentReceptionInfoList: [],
   arrivesStatus: '',
   documentArrivesCompletionDate: '',
@@ -152,19 +150,15 @@ const initialVal: ScrDoc0005DocumentBasics = {
   documentInfoList: [],
   incompleteSupportList: [],
   equipmentInfoList: [],
-  guaranteeFlag: false,
   guarantee: '',
-  manualFlag: false,
   manual: '',
-  recordFlag: false,
   record: '',
-  notebookFlag: false,
   notebook: '',
   receiptStatus: '',
   receiptCompletionDate: '',
   docChangeDueDate: '',
   docChangeDate: '',
-  docChangeExecuteTimestamp: '',
+  docChangeExecuteTimestamp: new Date(),
   carTaxCashBackDate: '',
   bikeDepositCashBackDate: '',
   detailsInformationAcquisitionChargesApprovalDate: '',
@@ -297,7 +291,7 @@ const showEquipmentInfoList: GridColDef[] = [
     size: 's',
   },
   {
-    field: 'equipmentExistenceFlag',
+    field: 'equipmentExistence',
     headerName: '備品有無',
   },
   {
@@ -317,8 +311,8 @@ interface EquipmentInfoListModel {
   equipmentShippingDate: string;
   /** 備品最終入力従業員ID*/
   lastInputEmployeeId: string;
-  /** 備品有無フラグ*/
-  equipmentExistenceFlag: boolean;
+  /** 備品有無*/
+  equipmentExistence: string;
   /** 備品発送伝票種類区分/備品発送伝票番号*/
   equipmentShippingSpecifySlipKindEquipmentShippingSlipNumber: string;
 }
@@ -347,9 +341,19 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   /**
    * 変数関連
    */
-  // 書類受付情報リスト
-  const [documentReceptionInfoList, setDocumentReceptionInfoList] = useState<
-    ScrDoc0005DocumentBasicsInfoResponse['documentReceptionInfoList']
+  // 必須書類受付情報リスト
+  const [
+    requiredDocumentReceptionInfoList,
+    setRequiredDocumentReceptionInfoList,
+  ] = useState<
+    ScrDoc0005DocumentBasicsInfoResponse['requiredDocumentReceptionInfoList']
+  >([]);
+  // 任意書類受付情報リスト
+  const [
+    optionalDocumentReceptionInfoList,
+    setOptionalDocumentReceptionInfoList,
+  ] = useState<
+    ScrDoc0005DocumentBasicsInfoResponse['optionalDocumentReceptionInfoList']
   >([]);
   // 備品受付情報リスト
   const [equipmentReceptionInfoList, setEquipmentReceptionInfoList] = useState<
@@ -457,21 +461,19 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
         paymentExtensionTargeted:
           response.paymentExtensionTargetedFlag === true ? '対象' : '対象外',
         exhibitShopPaymentExtensionTargeted:
-          response.exhibitShopPaymentExtensionTargetedFlag === true
+          response.exhibitShopPaymentExtensionTargeted === 'true'
             ? 'あり'
             : 'なし',
         exhibitShopMemberMemo:
-          response.exhibitShopMemberMemoFlag === true ? 'あり' : 'なし',
+          response.exhibitShopMemberMemo === 'true' ? 'あり' : 'なし',
         bidShopPaymentExtensionTargeted:
-          response.bidShopPaymentExtensionTargetedFlag === true
-            ? 'あり'
-            : 'なし',
+          response.bidShopPaymentExtensionTargeted === 'true' ? 'あり' : 'なし',
         bidShopMemberMemo:
-          response.bidShopMemberMemoFlag === true ? 'あり' : 'なし',
-        guarantee: response.guaranteeFlag === true ? '有' : '無',
-        manual: response.manualFlag === true ? '対象' : '対象外',
-        record: response.recordFlag === true ? 'あり' : 'なし',
-        notebook: response.notebookFlag === true ? 'あり' : 'なし',
+          response.bidShopMemberMemo === 'true' ? 'あり' : 'なし',
+        guarantee: response.guarantee === 'true' ? '有' : '無',
+        manual: response.manual === 'true' ? '対象' : '対象外',
+        record: response.record === 'true' ? 'あり' : 'なし',
+        notebook: response.notebook === 'true' ? 'あり' : 'なし',
         newRegistrationNumber:
           response.newRegistrationNumber1 +
           ' ' +
@@ -502,8 +504,14 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
       // 基本情報タブ情報
       reset(Object.assign(addObj, response));
 
-      // 書類受付情報リスト作成
-      setDocumentReceptionInfoList(response.documentReceptionInfoList);
+      // 必須書類受付情報リスト作成
+      setRequiredDocumentReceptionInfoList(
+        response.requiredDocumentReceptionInfoList
+      );
+      // 任意書類受付情報リスト作成
+      setOptionalDocumentReceptionInfoList(
+        response.optionalDocumentReceptionInfoList
+      );
       // 備品受付情報リスト作成
       setEquipmentReceptionInfoList(response.equipmentReceptionInfoList);
       // 書類・備品情報（書類）リスト作成
@@ -631,7 +639,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
         equipmentArrivesDate: x.equipmentArrivesDate,
         equipmentShippingDate: x.equipmentShippingDate,
         lastInputEmployeeId: x.lastInputEmployeeId,
-        equipmentExistenceFlag: x.equipmentExistenceFlag,
+        equipmentExistence: x.equipmentExistence,
         equipmentShippingSpecifySlipKindEquipmentShippingSlipNumber:
           x.equipmentShippingSpecifySlipKindEquipmentShippingSlipNumber,
       };
@@ -674,10 +682,15 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
         '113',
         '114',
       ];
-      const newVal = documentReceptionInfoList.filter((val) =>
-        documentItemCode.includes(val.documentItemCode)
+      const newRequiredDocument = requiredDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
       );
-      setDocumentReceptionInfoList(newVal);
+      setRequiredDocumentReceptionInfoList(newRequiredDocument);
+
+      const newOptionalDocument = optionalDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
+      );
+      setOptionalDocumentReceptionInfoList(newOptionalDocument);
 
       // おまとめ車両パターンが普通車検有(1)の場合。
     } else if (getValues('omatomeCarPatternKind') === '1') {
@@ -695,18 +708,28 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
         '112',
         '113',
       ];
-      const newVal = documentReceptionInfoList.filter((val) =>
-        documentItemCode.includes(val.documentItemCode)
+      const newRequiredDocument = requiredDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
       );
-      setDocumentReceptionInfoList(newVal);
+      setRequiredDocumentReceptionInfoList(newRequiredDocument);
+
+      const newOptionalDocument = optionalDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
+      );
+      setOptionalDocumentReceptionInfoList(newOptionalDocument);
 
       // おまとめ車両パターンが普通車検無(2)の場合。
     } else if (getValues('omatomeCarPatternKind') === '2') {
       const documentItemCode = ['101', '104', '107'];
-      const newVal = documentReceptionInfoList.filter((val) =>
-        documentItemCode.includes(val.documentItemCode)
+      const newRequiredDocument = requiredDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
       );
-      setDocumentReceptionInfoList(newVal);
+      setRequiredDocumentReceptionInfoList(newRequiredDocument);
+
+      const newOptionalDocument = optionalDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
+      );
+      setOptionalDocumentReceptionInfoList(newOptionalDocument);
 
       // おまとめ車両パターンが軽自動車検有(3)の場合。
     } else if (getValues('omatomeCarPatternKind') === '3') {
@@ -722,22 +745,37 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
         '112',
         '113',
       ];
-      const newVal = documentReceptionInfoList.filter((val) =>
-        documentItemCode.includes(val.documentItemCode)
+      const newRequiredDocument = requiredDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
       );
-      setDocumentReceptionInfoList(newVal);
+      setRequiredDocumentReceptionInfoList(newRequiredDocument);
+
+      const newOptionalDocument = optionalDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
+      );
+      setOptionalDocumentReceptionInfoList(newOptionalDocument);
 
       // おまとめ車両パターンが軽自動車検無(4)の場合。
     } else if (getValues('omatomeCarPatternKind') === '4') {
       const documentItemCode = ['101', '104', '107'];
-      const newVal = documentReceptionInfoList.filter((val) =>
-        documentItemCode.includes(val.documentItemCode)
+      const newRequiredDocument = requiredDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
       );
-      setDocumentReceptionInfoList(newVal);
+      setRequiredDocumentReceptionInfoList(newRequiredDocument);
+
+      const newOptionalDocument = optionalDocumentReceptionInfoList.filter(
+        (val) => documentItemCode.includes(val.documentItemCode)
+      );
+      setOptionalDocumentReceptionInfoList(newOptionalDocument);
     } else {
-      setDocumentReceptionInfoList([]);
+      setRequiredDocumentReceptionInfoList([]);
+      setOptionalDocumentReceptionInfoList([]);
     }
-  }, [getValues, documentReceptionInfoList]);
+  }, [
+    getValues,
+    requiredDocumentReceptionInfoList,
+    optionalDocumentReceptionInfoList,
+  ]);
   const navigate = useNavigate();
   const handlenavigate = (url: string) => {
     navigate(url, true);
@@ -836,13 +874,15 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
     return sectionList;
   };
 
+  // 登録時の値
+  const basicVal = getValues();
+  // fetchBasicInfo(basicVal);
+
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-
   const handlePopupConfirm = async (registrationChangeMemo: string) => {
     setScrCom00032PopupIsOpen(false);
-
     const values = {
       applicationEmployeeId: user.employeeId,
       registrationChangeMemo: registrationChangeMemo,
@@ -850,8 +890,9 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
       tabId: '1',
     };
 
+    const registerBasicInfo = Object.assign(basicVal, values);
     const req: ScrDoc0005RegistrationDocumentBasicsInfoRequest = {
-      basicsInfo: Object.assign(getValues(), values),
+      basicsInfo: registerBasicInfo,
     };
     const res = await ScrDoc0005RegistrationDocumentBasicsInfo(req);
   };
@@ -1173,56 +1214,46 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
               <Stack spacing={1}>
                 <CaptionLabel text='必須書類' />
                 <Grid container spacing={2}>
-                  {documentReceptionInfoList.map(
-                    (val, index) =>
-                      val.requiredDocumentFlag && (
-                        <Grid item xs={2} key={index}>
-                          <Checkbox
-                            name={val.documentItemCode}
-                            label={val.documentItemName}
-                            helperText={`書類到着日:${val.documentArrivesDate}`}
-                            disabled={allReadOnly || val.documentExistenceFlag}
-                          />
-                          {val.validityDueDateFlag && (
-                            <DatePicker
-                              name={val.validityDueDate}
-                              label='有効期限'
-                              disabled={
-                                allReadOnly || val.documentExistenceFlag
-                              }
-                            />
-                          )}
-                        </Grid>
-                      )
-                  )}
+                  {requiredDocumentReceptionInfoList.map((val, index) => (
+                    <Grid item xs={2} key={index}>
+                      <Checkbox
+                        name={val.documentItemCode}
+                        label={val.documentItemName}
+                        helperText={`書類到着日:${val.documentArrivesDate}`}
+                        disabled={allReadOnly || val.documentExistenceFlag}
+                      />
+                      {val.validityDueDateFlag && (
+                        <DatePicker
+                          name={val.validityDueDate}
+                          label='有効期限'
+                          disabled={allReadOnly || val.documentExistenceFlag}
+                        />
+                      )}
+                    </Grid>
+                  ))}
                 </Grid>
               </Stack>
               <TableDivider isBlack />
               <Stack spacing={1}>
                 <CaptionLabel text='任意書類' />
                 <Grid container spacing={2}>
-                  {documentReceptionInfoList.map(
-                    (val, index) =>
-                      !val.requiredDocumentFlag && (
-                        <Grid item xs={2} key={index}>
-                          <Checkbox
-                            name={val.documentItemCode}
-                            label={val.documentItemName}
-                            helperText={`書類到着日:${val.documentArrivesDate}`}
-                            disabled={allReadOnly || val.documentExistenceFlag}
-                          />
-                          {val.validityDueDateFlag && (
-                            <DatePicker
-                              name={val.validityDueDate}
-                              label='有効期限'
-                              disabled={
-                                allReadOnly || val.documentExistenceFlag
-                              }
-                            />
-                          )}
-                        </Grid>
-                      )
-                  )}
+                  {optionalDocumentReceptionInfoList.map((val, index) => (
+                    <Grid item xs={2} key={index}>
+                      <Checkbox
+                        name={val.documentItemCode}
+                        label={val.documentItemName}
+                        helperText={`書類到着日:${val.documentArrivesDate}`}
+                        disabled={allReadOnly || val.documentExistenceFlag}
+                      />
+                      {val.validityDueDateFlag && (
+                        <DatePicker
+                          name={val.validityDueDate}
+                          label='有効期限'
+                          disabled={allReadOnly || val.documentExistenceFlag}
+                        />
+                      )}
+                    </Grid>
+                  ))}
                 </Grid>
               </Stack>
             </Section>

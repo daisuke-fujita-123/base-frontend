@@ -16,6 +16,8 @@ import {
 import { WarningLabel } from 'controls/Label';
 import { theme } from 'controls/theme';
 
+import { ScrDoc0005RegistrationDocumentBasicsInfoRequest } from 'apis/doc/ScrDoc0005Api';
+
 import { AuthContext } from 'providers/AuthProvider';
 
 import { ThemeProvider } from '@mui/material/styles';
@@ -119,6 +121,25 @@ const ScrDoc0005Page = () => {
     </RowStack>
   );
 
+  // 基本情報、詳細情報の取得用API
+  const [basicInfo, setBasicInfo] =
+    useState<ScrDoc0005RegistrationDocumentBasicsInfoRequest['basicsInfo']>();
+  const [detailInfo, setDetailInfo] =
+    useState<
+      ScrDoc0005RegistrationDocumentBasicsInfoRequest['documentDetailsInfo']
+    >();
+  const fetchBasicInfo = (
+    basicInfo: ScrDoc0005RegistrationDocumentBasicsInfoRequest['basicsInfo']
+  ) => {
+    setBasicInfo(basicInfo);
+  };
+
+  const fetchDetailInfo = (
+    detailInfo: ScrDoc0005RegistrationDocumentBasicsInfoRequest['documentDetailsInfo']
+  ) => {
+    setDetailInfo(detailInfo);
+  };
+
   return (
     <>
       {/* Contents */}
@@ -137,10 +158,14 @@ const ScrDoc0005Page = () => {
             isReadOnly={isReadOnly}
             allReadOnly={allReadOnly}
             isNotEditable={isNotEditable}
+            // fetchBasicInfo={fetchBasicInfo}
+            // detailInfo={detailInfo}
           />
           <ScrDoc0005DetailTab
             documentBasicsNumber={Number(documentBasicsNumber)}
             allReadOnly={allReadOnly}
+            // fetchDetailInfo={fetchDetailInfo}
+            // basicInfo={basicInfo}
           />
           <ScrDoc0005ChangeHistoryTab
             documentBasicsNumber={Number(documentBasicsNumber)}

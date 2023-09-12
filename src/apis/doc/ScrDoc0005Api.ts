@@ -48,6 +48,8 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   exhaust: string;
   /** 書類有無フラグ */
   documentExistenceFlag: boolean;
+  /** 書類有無 */
+  documentExistence: string;
   /** 先取種別 */
   preemptionKind: string;
   /** 引取予定日 */
@@ -56,6 +58,8 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   omatomeCarPatternKind: string;
   /** 支払延長対象区分 */
   paymentExtensionTargetedFlag: boolean;
+  /** 支払延長対象車両 */
+  paymentExtensionTargetedCar: string;
   /** 陸事コード */
   landCode: string;
   /** 登録番号1 */
@@ -70,8 +74,8 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   exhibitShopCorporationId: string;
   /** 出品店法人名称 */
   exhibitShopCorporationName: string;
-  /** 出品店支払延長対象フラグ */
-  exhibitShopPaymentExtensionTargetedFlag: boolean;
+  /** 出品店支払延長対象 */
+  exhibitShopPaymentExtensionTargeted: string;
   /** 出品店会場書類発送日 */
   placeDocumentShippingDate: string;
   /** 出品店コース参加区分 */
@@ -86,8 +90,8 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   exhibitShopAssignmentDocumentDestinationFaxNumber: string;
   /** 出品店クレーム担当従業員名 */
   exhibitShopClaimStaffName: string;
-  /** 出品店会員メモ有無フラグ */
-  exhibitShopMemberMemoFlag: boolean;
+  /** 出品店会員メモ有無 */
+  exhibitShopMemberMemo: string;
   /** 出品店二輪登録デポ */
   exhibitShopBikeRegistrationDepoName: string;
   /** 出品店二輪デポ区分 */
@@ -98,8 +102,8 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   bidShopCorporationId: string;
   /** 落札店法人名称 */
   bidShopCorporationName: string;
-  /** 落札店支払延長対象フラグ */
-  bidShopPaymentExtensionTargetedFlag: boolean;
+  /** 落札店支払延長対象 */
+  bidShopPaymentExtensionTargeted: string;
   /** 落札店コース参加区分 */
   bidShopCourseEntryKind: string;
   /** 落札店譲渡書類送付先メールアドレス */
@@ -112,8 +116,8 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   bidShopAssignmentDocumentDestinationFaxNumber: string;
   /** 落札店クレーム担当従業員名 */
   bidShopClaimStaffName: string;
-  /** 落札店会員メモ有無フラグ */
-  bidShopMemberMemoFlag: boolean;
+  /** 落札店会員メモ有無 */
+  bidShopMemberMemo: string;
   /** 落札店二輪登録デポ */
   bidShopBikeRegistrationDepoName: string;
   /** 落札店二輪デポ区分 */
@@ -122,8 +126,10 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   auctionResultTranChangeBeforeTimestamp: Date;
   /** 書類基本トラン変更前タイムスタンプ */
   documentBasicsTranChangeBeforeTimestamp: Date;
-  /** 書類受付情報リスト */
-  documentReceptionInfoList: DocumentReceptionInfoList[];
+  /** 必須書類受付情報リスト */
+  requiredDocumentReceptionInfoList: RequiredDocumentReceptionInfoList[];
+  /** 任意書類受付情報リスト */
+  optionalDocumentReceptionInfoList: OptionalDocumentReceptionInfoList[];
   /** 備品受付情報リスト */
   equipmentReceptionInfoList: EquipmentReceptionInfoList[];
   /** 到着ステータス */
@@ -136,8 +142,6 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   documentReportDueDate: string;
   /** 書類実質期限日 */
   documentSubstanceDueDate: string;
-  // /** 書類発送指示フラグ */
-  // documentShippingInstructionFlag: boolean;
   /** おまとめ書類発送先区分 */
   omatomeDocumentShippingDestinationKind: string;
   /** 書類・備品情報（書類）リスト */
@@ -146,14 +150,14 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   incompleteSupportList: IncompleteSupportList[];
   /** 書類・備品情報（備品）リスト */
   equipmentInfoList: EquipmentInfoList[];
-  /** 保証フラグ */
-  guaranteeFlag: boolean;
-  /** 取説フラグ */
-  manualFlag: boolean;
-  /** 記録フラグ */
-  recordFlag: boolean;
-  /** 手帳フラグ */
-  notebookFlag: boolean;
+  /** 保証 */
+  guarantee: string;
+  /** 取説 */
+  manual: string;
+  /** 記録 */
+  record: string;
+  /** 手帳 */
+  notebook: string;
   /** 入金ステータス */
   receiptStatus: string;
   /** 入金完了日 */
@@ -163,7 +167,7 @@ export interface ScrDoc0005DocumentBasicsInfoResponse {
   /** 名義変更日 */
   docChangeDate: string;
   /** 名変実施タイムスタンプ */
-  docChangeExecuteTimestamp: string;
+  docChangeExecuteTimestamp: Date;
   /** 自税返金日 */
   carTaxCashBackDate: string;
   /** 二輪預かり金返金日 */
@@ -287,8 +291,8 @@ interface IncompleteSupportList {
   changeBeforeTimestamp: Date;
 }
 
-/** 書類受付情報リスト */
-interface DocumentReceptionInfoList {
+/** 必須書類受付情報リスト */
+interface RequiredDocumentReceptionInfoList {
   /** 書類品目コード */
   documentItemCode: string;
   /** 書類連番 */
@@ -303,8 +307,30 @@ interface DocumentReceptionInfoList {
   validityDueDate: string;
   /** 書類有無フラグ */
   documentExistenceFlag: boolean;
-  /** 必須書類フラグ */
-  requiredDocumentFlag: boolean;
+  /** おまとめ車両パターン区分 */
+  omatomeCarPatternKind: string;
+  /** 表示順 */
+  displaySortOrder: number;
+  /** 変更前タイムスタンプ */
+  changeBeforeTimestamp: Date;
+}
+
+/** 任意書類受付情報リスト */
+interface OptionalDocumentReceptionInfoList {
+  /** 書類品目コード */
+  documentItemCode: string;
+  /** 書類連番 */
+  documentNumber: number;
+  /** 書類品目名称 */
+  documentItemName: string;
+  /** 書類到着日 */
+  documentArrivesDate: string;
+  /** 有効期限フラグ */
+  validityDueDateFlag: boolean;
+  /** 有効期限日 */
+  validityDueDate: string;
+  /** 書類有無フラグ */
+  documentExistenceFlag: boolean;
   /** おまとめ車両パターン区分 */
   omatomeCarPatternKind: string;
   /** 表示順 */
@@ -375,8 +401,8 @@ interface EquipmentInfoList {
   equipmentShippingDate: string;
   /** 備品最終入力従業員ID*/
   lastInputEmployeeId: string;
-  /** 備品有無フラグ*/
-  equipmentExistenceFlag: boolean;
+  /** 備品有無*/
+  equipmentExistence: string;
   /** 備品発送伝票種類区分/備品発送伝票番号*/
   equipmentShippingSpecifySlipKindEquipmentShippingSlipNumber: string;
 }
