@@ -543,7 +543,7 @@ const ScrMem0003BranchNumberTab = () => {
   /**
    * 承認申請ボタン押下イベントハンドラ
    */
-  const handleApprovalConfirm = async () => {
+  const handleApprovalConfirm = () => {
     console.log('[SCR-MEN-0003#BranchNumber]Ignore approval request events.');
     return;
   };
