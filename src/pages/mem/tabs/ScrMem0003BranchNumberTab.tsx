@@ -583,7 +583,7 @@ const ScrMem0003BranchNumberTab = () => {
                 </Typography>
               ) : (
                 <DataGrid
-                  width='100%'
+                  width='auto'
                   disableColumnFilter
                   columns={branchNumberColumns}
                   rows={branchNumbers}
@@ -600,7 +600,7 @@ const ScrMem0003BranchNumberTab = () => {
                           o.courseEntryKind === CDE_COM_0025_LEAVING
                       ).length > 0
                     ) {
-                      return 'cold'; // TODO 脱会の背景色指定のスタイル追加待ち
+                      return 'cold';
                     }
                     // 物流拠点代表契約判定
                     if (
@@ -608,9 +608,17 @@ const ScrMem0003BranchNumberTab = () => {
                       initValues.logisticsBases[params.row['id']]
                         .logisticsBaseRepresentativeContractId
                     ) {
-                      return 'hot'; // TODO 物流拠点代表契約の背景色指定のスタイル追加待ち
+                      return 'hot';
                     }
                     return '';
+                  }}
+                  sx={{
+                    '& .cold': {
+                      backgroundColor: '#dddddd',
+                    },
+                    '& .hot': {
+                      backgroundColor: '#eeff9e',
+                    },
                   }}
                 />
               )}
