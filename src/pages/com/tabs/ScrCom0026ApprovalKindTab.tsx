@@ -321,7 +321,7 @@ const ScrCom0026ApprovalKindTab = () => {
       initialize(user.taskDate);
       return;
     }
-  }, [applicationId, user, initApprovalResult]);
+  }, [applicationId, user]);
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
