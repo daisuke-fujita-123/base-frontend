@@ -16,7 +16,7 @@ export const useForm = <
 >(
   props: useFormPropsReact<TFieldValues, TContext>
 ) => {
-  const { defaultValues, resolver, context = false } = props;
+  const { defaultValues, resolver, context } = props;
 
   // context
   const { setNeedsConfirmNavigate } = useContext(AppContext);
