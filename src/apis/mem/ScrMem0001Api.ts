@@ -3,85 +3,85 @@ import { memApiClient } from 'providers/ApiClient';
 /** 法人情報検索APIリクエスト */
 export interface ScrMem0001SearchCorporationsRequest {
   // 法人ID
-  corporationId: string;
+  corporationId?: string;
   // 法人名
-  corporationName: string;
+  corporationName?: string;
   // 法人グループID
-  corporationGroupId: string;
+  corporationGroupId?: string;
   // 法人参加区分
-  corporationEntryKinds: string[];
+  corporationEntryKinds?: string[];
   // 代表者名
-  representativeName: string;
+  representativeName?: string;
   // 連帯保証人名①
-  guarantorName1: string;
+  guarantorName1?: string;
   // 連帯保証人名②
-  guarantorName2: string;
+  guarantorName2?: string;
   // 適格事業者番号
-  eligibleBusinessNumber: string;
+  eligibleBusinessNumber?: string;
   // 古物商許可番号
-  antiqueBusinessLicenseNumber: string;
+  antiqueBusinessLicenseNumber?: string;
   // 物流拠点住所（市区町村以降）
-  logisticsBaseAddressAfterMunicipalities: string;
+  logisticsBaseAddressAfterMunicipalities?: string;
   // 物流拠点市区郡コード
-  logisticsBaseDistrictCode: string;
+  logisticsBaseDistrictCode?: string;
   // 物流拠点電話番号
-  logisticsBasePhoneNumber: string;
+  logisticsBasePhoneNumber?: string;
   // 制限状況区分
-  limitStatusKinds: string;
+  limitStatusKinds?: string;
   // コース参加区分
-  courseEntryKinds: string[];
+  courseEntryKinds?: string[];
   // 基本法人与信額（FROM）
-  basicsCorporationCreditAmountFrom: string;
+  basicsCorporationCreditAmountFrom?: string;
   // 基本法人与信額（TO）
-  basicsCorporationCreditAmountTo: string;
+  basicsCorporationCreditAmountTo?: string;
   // 臨時与信設定日（FROM）
-  temporaryCreditSettingDateFrom: string;
+  temporaryCreditSettingDateFrom?: string;
   // 臨時与信設定日（TO）
-  temporaryCreditSettingDateTo: string;
+  temporaryCreditSettingDateTo?: string;
   // 契約ID
-  contractId: string;
+  contractId?: string;
   // 請求先ID
-  billingId: string;
+  billingId?: string;
   // 担当部門区分
-  staffDepartmentKinds: string;
+  staffDepartmentKinds?: string;
   // ライブオプション参加区分
-  liveOptionEntryKinds: string[];
+  liveOptionEntryKinds?: string[];
   // POSまとめ会場コード
-  posPutTogetherPlaceCode: string;
+  posPutTogetherPlaceCode?: string;
   // POS番号
-  posNumber: string;
+  posNumber?: string;
   // アイオーク管理番号
-  iaucManagementNumber: string;
+  iaucManagementNumber?: string;
   // オートバンクシステム端末契約ID
-  autobankSystemTerminalContractId: string;
+  autobankSystemTerminalContractId?: string;
   // 利用開始日（FROM）
-  useStartDateFrom: string;
+  useStartDateFrom?: string;
   // 利用開始日（TO）
-  useStartDateTo: string;
+  useStartDateTo?: string;
   // ID発行日（FROM）
-  idIssuanceDateFrom: string;
+  idIssuanceDateFrom?: string;
   // ID発行日（TO）
-  idIssuanceDateTo: string;
+  idIssuanceDateTo?: string;
   // コース変更日（FROM）
-  courseChangeDateFrom: string;
+  courseChangeDateFrom?: string;
   // コース変更日（TO）
-  courseChangeDateTo: string;
+  courseChangeDateTo?: string;
   // 休会期間開始日（FROM）
-  recessPeriodStartDateFrom: string;
+  recessPeriodStartDateFrom?: string;
   // 休会期間開始日（TO）
-  recessPeriodStartDateTo: string;
+  recessPeriodStartDateTo?: string;
   // 休会期間終了日（FROM）
-  recessPeriodEndDateFrom: string;
+  recessPeriodEndDateFrom?: string;
   // 休会期間終了日（TO）
-  recessPeriodEndDateTo: string;
+  recessPeriodEndDateTo?: string;
   // 脱会日（FROM）
-  leavingDateFrom: string;
+  leavingDateFrom?: string;
   // 脱会日（TO）
-  leavingDateTo: string;
+  leavingDateTo?: string;
   // 変更予定日（FROM）
-  changeExpectDateFrom: string;
+  changeExpectDateFrom?: string;
   // 変更予定日（TO）
-  changeExpectDateTo: string;
+  changeExpectDateTo?: string;
   // 制限件数
   limitCount: number;
 }
@@ -95,7 +95,7 @@ export interface ScrMem0001SearchCorporationsResponse {
   // 返却件数
   responseCount: number;
   // リスト
-  list: List[];
+  corpInfo: List[];
 }
 
 // リスト

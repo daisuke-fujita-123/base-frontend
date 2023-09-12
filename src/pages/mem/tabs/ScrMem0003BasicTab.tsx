@@ -1046,7 +1046,7 @@ const ScrMem0003BasicTab = (props: {
       // リスト取得
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [{ codeId: 'CDE-COM-0017' }, { codeId: 'CDE-COM-0021' }],
+        codeId: ['CDE-COM-0017', 'CDE-COM-0021'],
       };
       const codeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
@@ -1149,7 +1149,7 @@ const ScrMem0003BasicTab = (props: {
       // リスト取得
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [{ codeId: 'CDE-COM-0017' }, { codeId: 'CDE-COM-0021' }],
+        codeId: ['CDE-COM-0017', 'CDE-COM-0021'],
       };
       const codeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
