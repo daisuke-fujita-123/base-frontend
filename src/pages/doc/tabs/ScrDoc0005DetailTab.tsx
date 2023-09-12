@@ -784,7 +784,6 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
               <DataGrid
                 columns={penaltyListColDef}
                 rows={penaltyList}
-                getRowId={(row) => row.id + row.penaltyKind}
                 disabled={allReadOnly}
               />
             </Section>

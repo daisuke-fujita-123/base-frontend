@@ -1346,7 +1346,6 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                     <DataGrid
                       columns={showDocumentInfoList}
                       rows={documentInfoList}
-                      getRowId={(row) => row.id + row.documentAdditionCount}
                     />
                   </Stack>
                 </Section>
@@ -1365,7 +1364,6 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                     <DataGrid
                       columns={showIncompleteSupportList}
                       rows={incompleteSupportList}
-                      getRowId={(row) => row.id + row.incompleteSupportNo}
                       apiRef={apiRef}
                     />
                   </Stack>
@@ -1379,7 +1377,6 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
                     columns={showEquipmentInfoList}
                     rows={equipmentInfoList}
                     disabled={allReadOnly}
-                    getRowId={(row) => row.id + row.equipmentAdditionCount}
                   />
                 </Section>
               </Grid>
