@@ -130,10 +130,6 @@ const ScrCom0026ChangeHistoryTab = () => {
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
   const [tooltips, setTooltips] = useState<GridTooltipsModel[]>([]);
   const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 40;
 
   // router
   const navigate = useNavigate();
@@ -268,7 +264,7 @@ const ScrCom0026ChangeHistoryTab = () => {
                 </AddButton>
               </MarginBox>
             }
-            width={maxSectionWidth}
+            fitInside
           >
             <DataGrid
               columns={approvalResultColumns}

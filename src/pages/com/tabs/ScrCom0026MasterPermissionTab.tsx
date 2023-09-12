@@ -191,6 +191,7 @@ const ScrCom0026MasterPermissionTab = () => {
                 </AddButton>
               </MarginBox>
             }
+            fitInside
           >
             <DataGrid
               columns={masterResultColumns}

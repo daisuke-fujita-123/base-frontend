@@ -194,6 +194,7 @@ const ScrCom0026ApprovalPermissionTab = () => {
                 </AddButton>
               </MarginBox>
             }
+            fitInside
           >
             <DataGrid
               columns={approvalResultColumns}

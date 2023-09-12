@@ -192,6 +192,7 @@ const ScrCom0026ScreenPermissionTab = () => {
                 </AddButton>
               </MarginBox>
             }
+            fitInside
           >
             <DataGrid
               columns={screenResultColumns}
