@@ -82,6 +82,7 @@ const today = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(
   2,
   '0'
 )}/${String(now.getDate()).padStart(2, '0')}`;
+
 /**
  * 登録内容確認用情報のデータモデル
  */
@@ -478,11 +479,12 @@ const convertToSearchResultRowModel = (
 };
 
 /**
- * テーブル表示モデル
+ * 検索結果テーブル表示モデル
  */
 interface SearchResultTable {
-  count: number;
-  limit: number;
+  acquisitionCount: number;
+  limitCount: number;
+  responseCount: number;
   debtAmount: number;
   bankTransfer: number;
   offsettingAmount: number;
@@ -500,8 +502,9 @@ const convertToSearchResultTableModel = (
   model: ScrTra0023GetPaymentResponse
 ): SearchResultTable => {
   return {
-    count: model.count,
-    limit: model.limit,
+    acquisitionCount: model.acquisitionCount,
+    limitCount: model.limitCount,
+    responseCount: model.responseCount,
     // 債務金額
     debtAmount: model.debtAmount,
     bankTransfer: model.bankTransfer,
@@ -968,12 +971,25 @@ const ScrTra0023Page = () => {
         },
       ];
 
-      //テーブルに値設定
+      //検索結果をモデルに展開
       const tableResult = convertToSearchResultTableModel(response);
+      //件数チェック：制限件数 < 取得件数の場合メッセージ表示
+      if (tableResult.limitCount < tableResult.acquisitionCount) {
+        const messege = Format(getMessage('MSG-FR-INF-00004'), [
+          tableResult.acquisitionCount,
+          tableResult.responseCount,
+        ]);
+        // ダイアログを表示
+        setTitle(messege);
+        setHandleDialog(true);
+      }
+
+      //テーブルに値設定
       const tableRows: TableRowModel[] = [
         {
-          count: numberFormat(tableResult.count),
-          limit: tableResult.limit,
+          acquisitionCount: tableResult.acquisitionCount,
+          limitCount: tableResult.limitCount,
+          responseCount: tableResult.responseCount,
           debtAmount: numberFormat(tableResult.debtAmount),
           bankTransfer: numberFormat(tableResult.bankTransfer),
           offsettingAmount: numberFormat(tableResult.offsettingAmount),
@@ -995,7 +1011,7 @@ const ScrTra0023Page = () => {
       }
 
       // 検索結果が1件以上存在する場合は各種ボタンを有効化する
-      if (1 <= Number(tableResult.count)) {
+      if (1 <= tableResult.acquisitionCount) {
         if (LedgerList !== dispType && workList !== dispType) {
           // CSV出力ボタン活性化
           setCsvOutputButtonDisableFlg(false);
@@ -1052,19 +1068,9 @@ const ScrTra0023Page = () => {
       //請求先ID(選択値)
       sessionStorage.setItem('history_billingId', getValues('billingId'));
 
-      //ワーニングメッセージが指定されている場合ワーニングメッセージを表示させる。
       //ワーニングに値設定
       const WarnResult = convertToSearchResultWarnModel(response);
-      const warnCount = Object.keys(WarnResult).length;
-      if (0 < warnCount) {
-        const messege = Format(getMessage('MSG-BK-WRN-00011'), [
-          tableResult.limit.toString(),
-          tableResult.count.toString(),
-        ]);
-        // ダイアログを表示
-        setTitle(messege);
-        setHandleDialog(true);
-      }
+      //仕様変更でワーニングメッセージがある場合メッセージ表示だったが未使用になった。
     } else {
       //バリデーションエラーありの場合は検索ボタンの動作は無効とする
       return;
@@ -1129,7 +1135,16 @@ const ScrTra0023Page = () => {
   /**
    * 帳票選択ポップアップ、出力ボタンクリック時のイベントハンドラ
    */
-  const handleReportConfirm = async () => {
+  const handleReportConfirm = async (
+    // 帳票ID
+    reportId: string,
+    // 帳票名
+    reportName: string,
+    // コメント行数可変を戻り値にしたい
+    reportComment: string,
+    // 初期値
+    defaultValue: string
+  ) => {
     //Response用配列定義
     const request: string[] = [];
     //明細入力件数チェック
@@ -1217,6 +1232,7 @@ const ScrTra0023Page = () => {
   /**
    * 登録内容確認ポップアップ確定クリック時のイベントハンドラ
    */
+
   const scrCom0033handleConfirm = async (
     employeeId1: string,
     employeeId2: string,
@@ -1225,6 +1241,11 @@ const ScrTra0023Page = () => {
     applicationComment: string
   ) => {
     // request項目設定
+    // 現在時刻でDateTimeの作成（変更タイムスタンプ）
+    const now = new Date();
+    //YYYY-MM-DDThh:mm:ss:SSS形式で生成
+    const dateTimeString = String(now.toISOString()).slice(0, -1);
+
     //セッションストレージから出金番号リスト取得
     //出金番号リストはJson型で保存していた値を配列に変換
     const request: ScrTra0023registrationPaymentRequest = {
@@ -1245,7 +1266,7 @@ const ScrTra0023Page = () => {
       // マスタID
       masterId: null,
       // 変更予定日
-      changeExpectDate: today,
+      changeExpectDate: dateTimeString,
       // 画面ID
       screenId: 'SCR-TRA-0023',
       // タブID
@@ -1478,9 +1499,11 @@ const ScrTra0023Page = () => {
                 onLinkClick={handleLinkClick}
                 checkboxSelection={true}
                 isRowSelectable={(params: GridRowParams) =>
-                  Number(params.row.bankTransfer.replace(/,/g, '')) !== 0 &&
-                  params.row.approvalStatus !== '承認依頼中' &&
-                  params.row.approvalStatus !== '承認済'
+                  (Number(params.row.bankTransfer.replace(/,/g, '')) !== 0 &&
+                    params.row.approvalStatus === '却下') ||
+                  params.row.approvalStatus === '取下げ' ||
+                  params.row.approvalStatus === '一部承認済' ||
+                  params.row.approvalStatus === '未提出'
                 }
                 // チェックボックス選択済みリスト取得
                 onRowSelectionModelChange={(RowId) => {

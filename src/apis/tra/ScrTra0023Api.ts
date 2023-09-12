@@ -26,21 +26,33 @@ export interface ScrTra0023GetPaymentRequest {
 
 /** 出金一覧検索APIレスポンス */
 export interface ScrTra0023GetPaymentResponse {
-  // 件数
-  count: number;
-  // リミット
-  limit: number;
+  // 取得件数
+  acquisitionCount: number;
+  // 制限件数
+  limitCount: number;
+  // 返却件数
+  responseCount: number;
+  // 債務金額
   debtAmount: number;
+  // 銀行振込
   bankTransfer: number;
+  // 相殺金額
   offsettingAmount: number;
+  // 出金保留
   paymentPending: number;
+  // 手振出金
   drawerPayment: number;
+  // 現金手渡
   cachToPass: number;
+  // 出金止め相殺
   paymentStopOffsetting: number;
+  // 自社取引
   ownCompanyDeal: number;
+  // 償却
   amortization: number;
   // リスト
   searchResult: SearchResult[];
+  //ワーニング内容リスト
   warnList: WarnList[];
 }
 /** 出力一覧リスト */
@@ -96,11 +108,11 @@ export interface SearchResult {
   // 変更タイムスタンプ
   changeTimestamp: string;
 }
-/** ワーニングリスト */
+/** ワーニング内容リスト */
 export interface WarnList {
   // ワーニングコード
   warnCode: string;
-  // ワーニングコード
+  // ワーニングメッセージ
   warnMessage: string;
 }
 
@@ -139,7 +151,7 @@ export interface ErrorList {
   errorMessage: string;
 }
 
-/** 出金申請入力チェックAPIワーニングリスト */
+/** 出金申請入力チェックAPIワーニング内容リスト */
 export interface WarnList {
   // ワーニングコード
   warnCode: string;
