@@ -375,7 +375,7 @@ const ScrTra0001ChangeHistoryTab = () => {
     for (let i = 0; i < response.unapprovedChangeHistories.length; i++) {
       const o = response.unapprovedChangeHistories[i];
       const tmp: { [key: string]: string | number } = {};
-      tmp['id'] = i;
+      tmp['id'] = i + 1;
       tmp['changeHistoryNumber'] = o.changeHistoryNumber;
       tmp['screenName'] = o.screenName;
       tmp['tabName'] = o.tabName ? o.tabName : o.allRegistrationName;
@@ -480,7 +480,7 @@ const ScrTra0001ChangeHistoryTab = () => {
 
       // 申請ID href
       unapprovedChangeHistoriesHrefs[0].hrefs.push({
-        id: i,
+        id: i + 1,
         href:
           '/tra/deal-masters/' +
           o.masterId +
@@ -490,11 +490,12 @@ const ScrTra0001ChangeHistoryTab = () => {
       // 登録変更メモ tooltip
       if (o.registrationChangeMemo) {
         unapprovedChangeHistoriesTooltips[0].tooltips.push({
-          id: i,
+          id: i + 1,
           text: o.registrationChangeMemo,
         });
       }
     }
+    console.log(unapprovedChangeHistories);
     setUnapprovedChangeHistories(unapprovedChangeHistories);
   };
 
@@ -554,7 +555,7 @@ const ScrTra0001ChangeHistoryTab = () => {
             <DataGrid
               width='100%'
               height={200}
-              pagination={false}
+              pagination={true}
               apiRef={apiRef}
               columns={unapprovedChangeHistoriesColumns}
               rows={unapprovedChangeHistories}
