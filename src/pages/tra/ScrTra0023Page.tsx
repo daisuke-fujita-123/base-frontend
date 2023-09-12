@@ -1241,17 +1241,12 @@ const ScrTra0023Page = () => {
     applicationComment: string
   ) => {
     // request項目設定
-    // 現在時刻でDateTimeの作成（変更タイムスタンプ）
-    const now = new Date();
-    //YYYY-MM-DDThh:mm:ss:SSS形式で生成
-    const dateTimeString = String(now.toISOString()).slice(0, -1);
-
-    //セッションストレージから出金番号リスト取得
+    //セッションストレージから出金番号、変更タイムスタンプリスト取得
     //出金番号リストはJson型で保存していた値を配列に変換
     const request: ScrTra0023registrationPaymentRequest = {
       // 出金番号リスト配列
-      paymentList: JSON.parse(
-        sessionStorage.getItem('history_approvalStatus') || ''
+      list: JSON.parse(
+        sessionStorage.getItem('history_CheckPaymentRequest') || ''
       ),
       // 従業員ID1
       employeeId1: employeeId1,
@@ -1266,7 +1261,7 @@ const ScrTra0023Page = () => {
       // マスタID
       masterId: null,
       // 変更予定日
-      changeExpectDate: dateTimeString,
+      changeExpectDate: today,
       // 画面ID
       screenId: 'SCR-TRA-0023',
       // タブID

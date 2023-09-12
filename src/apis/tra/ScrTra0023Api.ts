@@ -173,7 +173,7 @@ export const ScrTra0023CheckPayment = async (
 /** 出金申請登録APIリクエスト */
 export interface ScrTra0023registrationPaymentRequest {
   // 出金番号リスト配列
-  paymentList: PaymentList[];
+  list: List[];
   // 従業員ID1
   employeeId1: string;
   // 従業員ID2
@@ -198,7 +198,7 @@ export interface ScrTra0023registrationPaymentRequest {
   registrationChangeMemo: string;
 }
 /** 出金番号リスト */
-export interface PaymentList {
+export interface List {
   // 出金番号
   paymentNumber: string;
   // 変更タイムスタンプ
