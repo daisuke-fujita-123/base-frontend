@@ -120,11 +120,13 @@ const ScrCom0036Popup = (props: ScrCom0036PopupProps) => {
   const { isOpen, setIsOpen, contents } = props;
 
   // DataGrid：エラー一覧
-  const [errorsData, setErrorsData] = useState<{ [key: string]: string }[]>([]);
+  const [errorsData, setErrorsData] = useState<
+    { [key: string]: string | number }[]
+  >([]);
   // DataGrid：ワーニング一覧
-  const [warningsData, setWarningsData] = useState<{ [key: string]: string }[]>(
-    []
-  );
+  const [warningsData, setWarningsData] = useState<
+    { [key: string]: string | number }[]
+  >([]);
 
   // form
   const methods = useForm<ScrCom0036PopupModel>({});
@@ -136,11 +138,11 @@ const ScrCom0036Popup = (props: ScrCom0036PopupProps) => {
       setErrorsData([]);
       if (contents.errors) {
         const errors = contents.errors.map<{
-          [key: string]: string;
+          [key: string]: string | number;
         }>((o, i) => {
-          const tmp: { [key: string]: string } = {};
+          const tmp: { [key: string]: string | number } = {};
           tmp['id'] = i.toString();
-          tmp['no'] = (i + 1).toString();
+          tmp['no'] = i + 1;
           for (const [key, value] of Object.entries(o)) {
             tmp[key] = value;
           }
@@ -153,11 +155,11 @@ const ScrCom0036Popup = (props: ScrCom0036PopupProps) => {
       setWarningsData([]);
       if (contents.warnings) {
         const warnings = contents.warnings.map<{
-          [key: string]: string;
+          [key: string]: string | number;
         }>((o, i) => {
-          const tmp: { [key: string]: string } = {};
+          const tmp: { [key: string]: string | number } = {};
           tmp['id'] = i.toString();
-          tmp['no'] = (i + 1).toString();
+          tmp['no'] = i + 1;
           for (const [key, value] of Object.entries(o)) {
             tmp[key] = value;
           }
