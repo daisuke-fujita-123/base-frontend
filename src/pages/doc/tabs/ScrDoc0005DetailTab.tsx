@@ -28,6 +28,7 @@ import { MultiTextField, PriceTextField, TextField } from 'controls/TextField';
 
 import { ScrCom9999GetCodeManagementMaster } from 'apis/com/ScrCom9999Api';
 import {
+  ScrDoc0005ChangeHistoryCrossSectionInfo,
   ScrDoc0005CheckDocumentDetailsInfo,
   ScrDoc0005DocumentDetailsInfo,
   ScrDoc0005DocumentDetailsInfoResponse,
@@ -163,9 +164,10 @@ interface PenaltyListModel {
 interface ScrDoc0005DetailTabProps {
   documentBasicsNumber: number;
   allReadOnly: boolean;
+  pageParams: boolean;
 }
 const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
-  const { documentBasicsNumber, allReadOnly } = props;
+  const { documentBasicsNumber, allReadOnly, pageParams } = props;
   // 陸事コード
   const [landcodes, setLandCodes] = useState<SelectValue[]>([]);
   // 書類・備品情報（書類）リスト
@@ -273,9 +275,15 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
 
   useEffect(() => {
     const initialize = async () => {
-      const response = await ScrDoc0005DocumentDetailsInfo({
-        documentBasicsNumber: Number(documentBasicsNumber),
-      });
+      const response: ScrDoc0005DocumentDetailsInfoResponse = pageParams
+        ? (
+            await ScrDoc0005ChangeHistoryCrossSectionInfo({
+              changeHistoryNumber: documentBasicsNumber,
+            })
+          ).detailsCross_sectionInfo.documentDetailsInfo
+        : await ScrDoc0005DocumentDetailsInfo({
+            documentBasicsNumber: documentBasicsNumber,
+          });
 
       const addObj = {
         omatomeDocumentShippingStop:

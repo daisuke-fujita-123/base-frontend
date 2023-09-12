@@ -386,7 +386,9 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
   // router
   const navigate = useNavigate();
   const handleLinkClick = (url: string) => {
-    navigate(url, true);
+    navigate(url, true, {
+      state: { changeHistoryNumber: true },
+    });
   };
 
   return (

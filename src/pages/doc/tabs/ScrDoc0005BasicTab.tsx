@@ -33,6 +33,7 @@ import {
   ScrCom9999getCodeManagementMasterMultiple,
 } from 'apis/com/ScrCom9999Api';
 import {
+  ScrDoc0005ChangeHistoryCrossSectionInfo,
   ScrDoc0005DocumentBasicsInfo,
   ScrDoc0005DocumentBasicsInfoResponse,
   ScrDoc0005RegistrationDocumentBasicsInfo,
@@ -325,6 +326,7 @@ interface ScrDoc0005BasicTabProps {
   allReadOnly: boolean;
   isReadOnly: (readOnly: boolean) => void;
   isNotEditable: boolean;
+  pageParams: boolean;
 }
 
 const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
@@ -336,6 +338,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
     allReadOnly,
     isReadOnly,
     isNotEditable,
+    pageParams,
   } = props;
   const { user } = useContext(AuthContext);
   /**
@@ -450,10 +453,16 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
   // 初期表示
   useEffect(() => {
     const initialize = async () => {
-      const response: ScrDoc0005DocumentBasicsInfoResponse =
-        await ScrDoc0005DocumentBasicsInfo({
-          documentBasicsNumber: documentBasicsNumber,
-        });
+      const response: ScrDoc0005DocumentBasicsInfoResponse = pageParams
+        ? (
+            await ScrDoc0005ChangeHistoryCrossSectionInfo({
+              changeHistoryNumber: documentBasicsNumber,
+            })
+          ).detailsCross_sectionInfo.basicsInfo
+        : await ScrDoc0005DocumentBasicsInfo({
+            documentBasicsNumber: documentBasicsNumber,
+          });
+
       // 取得値を変換
       const addObj = {
         documentExistence:

@@ -65,6 +65,9 @@ const ScrDoc0005Page = () => {
     location.pathname.lastIndexOf('/') + 1
   );
 
+  // 画面パラメータ取得
+  const pageParams = location.state?.changeHistoryNumber;
+
   // 編集権限がない場合
   const isNotEditable = !user.editPossibleScreenIdList.includes('SCR-DOC-0005');
 
@@ -78,7 +81,8 @@ const ScrDoc0005Page = () => {
 
   // 個別通知関連処理
   const [isDoc0007PopOpen, setIsDoc0007PopOpen] = useState<boolean>(false);
-  const [isDoc0007Disable, setIsDoc0007Disable] = useState<boolean>(false);
+  const [isDoc0007Disable, setIsDoc0007Disable] =
+    useState<boolean>(isNotEditable);
   const mailClick = () => {
     setIsDoc0007PopOpen(!isDoc0007PopOpen);
   };
@@ -88,7 +92,8 @@ const ScrDoc0005Page = () => {
 
   // 個別印刷関連処理
   const [isDoc0006PopOpen, setIsDoc0006opOpen] = useState<boolean>(false);
-  const [isDoc0006Disable, setIsDoc0006Disable] = useState<boolean>(false);
+  const [isDoc0006Disable, setIsDoc0006Disable] =
+    useState<boolean>(isNotEditable);
   const printClick = () => {
     setIsDoc0006opOpen(!isDoc0006PopOpen);
   };
@@ -98,7 +103,8 @@ const ScrDoc0005Page = () => {
 
   // 帳票出力関連処理
   const [isCom0011PopOpen, setIsCom0011PopOpen] = useState<boolean>(false);
-  const [isCom0011Disable, setIsCom0011Disable] = useState<boolean>(false);
+  const [isCom0011Disable, setIsCom0011Disable] =
+    useState<boolean>(isNotEditable);
   const outputClick = () => {
     setIsCom0011PopOpen(!isCom0011PopOpen);
   };
@@ -158,12 +164,14 @@ const ScrDoc0005Page = () => {
             isReadOnly={isReadOnly}
             allReadOnly={allReadOnly}
             isNotEditable={isNotEditable}
+            pageParams={pageParams}
             // fetchBasicInfo={fetchBasicInfo}
             // detailInfo={detailInfo}
           />
           <ScrDoc0005DetailTab
             documentBasicsNumber={Number(documentBasicsNumber)}
             allReadOnly={allReadOnly}
+            pageParams={pageParams}
             // fetchDetailInfo={fetchDetailInfo}
             // basicInfo={basicInfo}
           />

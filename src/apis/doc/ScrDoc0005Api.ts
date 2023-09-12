@@ -623,7 +623,7 @@ interface UnapprovedList {
 
 /** 変更履歴断面情報取得APIリクエスト */
 export interface ScrDoc0005ChangeHistoryCrossSectionInfoRequest {
-  /** 書類基本番号 */
+  /** 変更履歴番号 */
   changeHistoryNumber: number;
 }
 
