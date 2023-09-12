@@ -315,7 +315,6 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
     return response.changeHistoryList.map((x) => {
       return {
         id: String(x.changeHistoryNumber),
-
         tabNameAllRegistrationName: x.tabName,
         changeApplicationEmployeeIdName:
           x.changeApplicationEmployeeId + ' ' + x.changeApplicationEmployeeName,
@@ -407,7 +406,6 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
             <DataGrid
               columns={showChangeHistoryList}
               rows={changeHistoryList}
-              getRowId={(row) => row.id + row.tabNameAllRegistrationName}
               tooltips={historyTooltips}
               hrefs={historyHrefs}
               onLinkClick={handleLinkClick}
@@ -419,7 +417,6 @@ const ScrDoc0005ChangeHistoryTab = (props: ScrDoc0005ChangeHistory) => {
             columns={showUnapprovedList}
             rows={unapprovedList}
             apiRef={apiRef}
-            getRowId={(row) => row.id + row.tabNameAllRegistrationName}
             tooltips={unapprovedTooltips}
             hrefs={unapprovedHrefs}
             onLinkClick={handleLinkClick}
