@@ -36,6 +36,7 @@ import {
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
+import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Typography } from '@mui/material';
@@ -288,6 +289,7 @@ const convertToChangedSections = (
 const ScrMem0003BranchNumberTab = () => {
   // router
   const { corporationId } = useParams();
+  const { user } = useContext(AuthContext);
   const { getMessage } = useContext(MessageContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -316,7 +318,10 @@ const ScrMem0003BranchNumberTab = () => {
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
   // コンポーネントを読み取り専用に変更するフラグ
-  const [isReadOnly, setIsReadOnly] = useState<boolean>(false);
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(
+    user.editPossibleScreenIdList.indexOf('SCR-MEM-0003') === -1
+  );
+
   // 拠点別枝番設定一覧を非表示にするフラグ
   const [isHideBranchNumbers, setIsHideBranchNumbers] =
     useState<boolean>(false);
@@ -498,10 +503,7 @@ const ScrMem0003BranchNumberTab = () => {
     setScrCom0032PopupData({
       errorList: errorMsgList,
       warningList: [],
-      registrationChangeList: convertToChangedSections(
-        initValues.branchNumbers,
-        branchNumbersReqData
-      ),
+      registrationChangeList: registrationChangeList,
       changeExpectDate: '',
     });
   };
@@ -517,15 +519,14 @@ const ScrMem0003BranchNumberTab = () => {
   /**
    * ポップアップの確定ボタンクリック時のイベントハンドラ
    */
-  const handlePopupConfirm = async () => {
+  const handlePopupConfirm = async (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
-
     // 拠点枝番紐付け情報登録API
     const request: ScrMem0003RegistrationBranchNumberInfoRequest = {
       corporationId: initValues.corporationId,
       branchNumbers: getBranchNumberValues(),
       changeTimestamp: initValues.changeTimestamp,
-      registrationChangeMemo: '', // TODO 登録変更メモが登録内容確認ポップアップから連携されるようになったら修正
+      registrationChangeMemo: registrationChangeMemo,
     };
     await ScrMem0003RegistrationBranchNumberInfo(request);
     // 自画面リロード
@@ -542,7 +543,8 @@ const ScrMem0003BranchNumberTab = () => {
   /**
    * 承認申請ボタン押下イベントハンドラ
    */
-  const handleApprovalConfirm = () => {
+  const handleApprovalConfirm = async () => {
+    console.log('[SCR-MEN-0003#BranchNumber]Ignore approval request events.');
     return;
   };
 
@@ -568,7 +570,7 @@ const ScrMem0003BranchNumberTab = () => {
             </Section>
             <Section name='契約ID別枝番設定状況'>
               <DataGrid
-                height={200}
+                height='100%'
                 pagination={true}
                 columns={contractBranchNumberSummariesColumns}
                 rows={contractBranchNumberSummaries}
@@ -629,13 +631,15 @@ const ScrMem0003BranchNumberTab = () => {
         </MainLayout>
       </MainLayout>
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleCancel={handlePopupCancel}
-        handleRegistConfirm={handlePopupConfirm}
-        handleApprovalConfirm={handleApprovalConfirm}
-      />
+      {isOpenPopup && (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleCancel={handlePopupCancel}
+          handleRegistConfirm={handlePopupConfirm}
+          handleApprovalConfirm={handleApprovalConfirm}
+        />
+      )}
     </>
   );
 };
