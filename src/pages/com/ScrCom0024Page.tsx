@@ -255,7 +255,11 @@ const validationSchema = {
   placeCd: yup.string().label('会場コード').max(2).half().required(),
   placeName: yup.string().label('会場名').max(15).required(),
   omatomePlaceValue: yup.string().label('おまとめ会場').required(),
-  statementDisplayPlaceName: yup.string().label('計算書表示会場名').max(8).required(),
+  statementDisplayPlaceName: yup
+    .string()
+    .label('計算書表示会場名')
+    .max(8)
+    .required(),
   partnerStartDate: yup.string().label('提携開始日（FROM）').date().required(),
   sessionWeekKind: yup.array().label('開催曜日').required(),
   contractId: yup.string().label('契約ID').max(7).half().required(),
@@ -455,20 +459,18 @@ const ScrCom0024Page = () => {
       ),
       // 会場グループ
       placeGroupCodeSelectValues: convertFrom0016ToSelectValueModel(
-        placeGroupResponse.searchGetPlaceMasterListbox
+        placeGroupResponse.placeList
       ),
       // 支払先会場名
       paymentDestinationPlaceNameSelectValues:
-        convertFrom0016ToSelectValueModel(
-          placeGroupResponse.searchGetPlaceMasterListbox
-        ),
+        convertFrom0016ToSelectValueModel(placeGroupResponse.placeList),
       // POSまとめ会場
       posPutTogetherPlaceCodeSelectValues: convertFrom0016ToSelectValueModel(
-        placeGroupResponse.searchGetPlaceMasterListbox
+        placeGroupResponse.placeList
       ),
       // ライブ会場グループコード
       livePlaceGroupCodeSelectValues: convertFrom0016ToSelectValueModel(
-        placeGroupResponse.searchGetPlaceMasterListbox
+        placeGroupResponse.placeList
       ),
       // バーチャル口座付与ルール
       virtualAccountGrantRuleSelectValues: convertFrom0010ToSelectValueModel(
@@ -494,7 +496,6 @@ const ScrCom0024Page = () => {
   useEffect(() => {
     // 現在表示 初期表示
     const initialize = async (placeCd: string) => {
-
       // 既存編集のflag設定
       setNewFlag(false);
 
@@ -544,15 +545,13 @@ const ScrCom0024Page = () => {
       // バーチャル口座付与ルール(リストボックス)
       setValue('virtualAccountGiveRuleCode', placeBasic.placeCd);
       // おまとめ会場連絡不可対象(リストボックス)
-       setValue('omatomePlaceContactImpossibleTargetedKind', placeBasic.placeCd);
+      setValue('omatomePlaceContactImpossibleTargetedKind', placeBasic.placeCd);
       // 銀行名(リストボックス)
       setValue('receiptSourceBankName', placeBasic.placeCd);
       // 支店名(リストボックス)
       setValue('receiptSourceBranchName', placeBasic.placeCd);
       // 開催曜日
       setValue('sessionWeekKind', placeBasic.placeCd);
-
-
 
       // 判定用データを設定
       setOmatomePlaceFlag(placeBasic.omatomePlaceFlag);
@@ -566,7 +565,6 @@ const ScrCom0024Page = () => {
 
     // 新規追加 初期表示
     const initializeNew = () => {
-
       // 新規追加のflag設定
       setNewFlag(true);
 
@@ -724,7 +722,7 @@ const ScrCom0024Page = () => {
     const placeDetailCheckRequest: ScrCom0024PlaceDetailCheckRequest = {
       placeCd: getValues('placeCd'),
       placeName: getValues('placeName'),
-      newFlag: newFlag
+      newFlag: newFlag,
     };
     const response = await ScrCom0024PlaceDetailCheck(placeDetailCheckRequest);
 
