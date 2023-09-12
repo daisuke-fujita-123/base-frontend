@@ -127,7 +127,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
       required={required}
       size={size}
     >
-      <Box sx={{ minWidth: minWidth, minHeight: 30 }}>
+      <Box sx={{ minWidth: minWidth }}>
         {/* 選択肢が10個未満の場合が上段、選択肢が10個以上の場合が下段。10個以上の場合は、選択肢を検索することができる。 */}
         {selectValues.length < 10 ? (
           <StyledFormControl fullWidth error={!!formState.errors[name]}>
