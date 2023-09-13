@@ -575,7 +575,7 @@ const ScrMem0014BillingTab = (props: {
 
       // コード管理マスタ情報取得
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [{ codeId: 'CDE-COM-0029' }],
+        codeId: ['CDE-COM-0029'],
       };
       const getCodeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
@@ -669,7 +669,7 @@ const ScrMem0014BillingTab = (props: {
 
       // コード管理マスタ情報取得
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [{ codeId: 'CDE-COM-0029' }],
+        codeId: ['CDE-COM-0029'],
       };
       const getCodeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
