@@ -694,10 +694,10 @@ const ScrTra0023Page = () => {
 
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0062' },
-          { codeId: 'CDE-COM-0118' },
-          { codeId: 'CDE-COM-0133' },
+        codeId: [
+          'CDE-COM-0062' ,
+          'CDE-COM-0118' ,
+          'CDE-COM-0133' ,
         ],
       };
 
