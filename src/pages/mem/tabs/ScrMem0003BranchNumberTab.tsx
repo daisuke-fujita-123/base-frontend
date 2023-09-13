@@ -312,6 +312,10 @@ const ScrMem0003BranchNumberTab = () => {
   const [branchNumbers, setBranchNumbers] = useState<
     { [key: string]: string }[]
   >([]);
+  // DataGrid：拠点別枝番設定（高さ調整）
+  const [branchNumberDataGridHeight, setBranchNumberDataGridHeight] =
+    useState<string>('auto');
+
   // ポップアップ表示状態
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   // 登録内容確認ポップアップデータ
@@ -399,16 +403,13 @@ const ScrMem0003BranchNumberTab = () => {
           sortable: false,
           filterable: false,
           disableColumnMenu: true,
-          cellType:
+          cellType: 'select',
+          selectValues: selectValuesInitialValues.branchNumberSelectValues,
+          editable: !(
             isReadOnly ||
             branchNumberInfo.contracts[i].courseEntryKind ===
               CDE_COM_0025_LEAVING
-              ? 'default'
-              : 'select', // TODO 表上入力オブジェクトの入力不可に対応できていないので、暫定対処
-          selectValues: selectValuesInitialValues.branchNumberSelectValues,
-          editable:
-            branchNumberInfo.contracts[i].courseEntryKind !==
-            CDE_COM_0025_LEAVING,
+          ),
         };
         branchNumberColumns.push(tmpGridColDef);
         // カラムグルーピングの子要素を削除
@@ -442,6 +443,10 @@ const ScrMem0003BranchNumberTab = () => {
         branchNumbersData.push(tmp);
       }
       setBranchNumbers(branchNumbersData);
+      // Datagrid：高さ調整（フルHDで一画面に収まる上限）
+      if (branchNumbersData.length > 20) {
+        setBranchNumberDataGridHeight('648px');
+      }
     }
   };
 
@@ -548,6 +553,41 @@ const ScrMem0003BranchNumberTab = () => {
     return;
   };
 
+  /**
+   * Datagrid（物流拠点別枝番設定）：セルの非活制御判定
+   */
+  const handleBranchNumberDataGridGetCellDisabled = (
+    params: GridCellParams
+  ) => {
+    return !params.isEditable;
+  };
+
+  /**
+   * Datagrid（物流拠点別枝番設定）：データの状態によるClass付与
+   */
+  const handleBranchNumberDataGridGetCellClassName = (
+    params: GridCellParams
+  ) => {
+    // 脱会している契約判定
+    if (
+      initValues.contracts.filter(
+        (o: { contractId: string; courseEntryKind: string }) =>
+          o.contractId === params.colDef.headerName &&
+          o.courseEntryKind === CDE_COM_0025_LEAVING
+      ).length > 0
+    ) {
+      return 'cold';
+    }
+    // 物流拠点代表契約判定
+    if (
+      params.colDef.headerName ===
+      initValues.logisticsBases[params.row['id']]
+        .logisticsBaseRepresentativeContractId
+    ) {
+      return 'hot';
+    }
+    return '';
+  };
   return (
     <>
       <MainLayout>
@@ -570,7 +610,6 @@ const ScrMem0003BranchNumberTab = () => {
             </Section>
             <Section name='契約ID別枝番設定状況'>
               <DataGrid
-                height='100%'
                 pagination={true}
                 columns={contractBranchNumberSummariesColumns}
                 rows={contractBranchNumberSummaries}
@@ -584,34 +623,14 @@ const ScrMem0003BranchNumberTab = () => {
               ) : (
                 <DataGrid
                   width='auto'
+                  height={branchNumberDataGridHeight}
                   disableColumnFilter
                   columns={branchNumberColumns}
                   rows={branchNumbers}
                   columnGroupingModel={branchNumberColumnGrouping}
                   initialState={branchNumberInitialState}
-                  getCellClassName={(
-                    params: GridCellParams<any, any, number>
-                  ) => {
-                    // 脱会している契約判定
-                    if (
-                      initValues.contracts.filter(
-                        (o: { contractId: string; courseEntryKind: string }) =>
-                          o.contractId === params.colDef.headerName &&
-                          o.courseEntryKind === CDE_COM_0025_LEAVING
-                      ).length > 0
-                    ) {
-                      return 'cold';
-                    }
-                    // 物流拠点代表契約判定
-                    if (
-                      params.colDef.headerName ===
-                      initValues.logisticsBases[params.row['id']]
-                        .logisticsBaseRepresentativeContractId
-                    ) {
-                      return 'hot';
-                    }
-                    return '';
-                  }}
+                  getCellDisabled={handleBranchNumberDataGridGetCellDisabled}
+                  getCellClassName={handleBranchNumberDataGridGetCellClassName}
                   sx={{
                     '& .cold': {
                       backgroundColor: '#dddddd',
