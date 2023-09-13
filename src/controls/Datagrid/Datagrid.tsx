@@ -293,6 +293,7 @@ export const DataGrid = (props: DataGridProps) => {
     getCellDisabled,
     getCellReadonly,
     getSelectValues,
+    sx,
     apiRef,
   } = props;
 
@@ -725,6 +726,7 @@ export const DataGrid = (props: DataGridProps) => {
             columnGrouping: true,
           }}
           sx={{
+            ...sx,
             '& .MuiDataGrid-virtualScroller': {
               overflow: height ? 'auto' : 'hidden',
             },
