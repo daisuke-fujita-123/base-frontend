@@ -208,14 +208,6 @@ export const ScrCom0026GetApprovalPermission = async (
   return response.data;
 };
 
-// API-COM-0026-0006: 変更履歴一覧情報取得 リクエスト
-export interface ScrCom0026GetChangeHistoryRequest {
-  // 画面ID
-  screenId: string;
-  // タブID
-  tabId: number;
-}
-
 // API-COM-0026-0006: 変更履歴一覧情報取得 レスポンス
 export interface ScrCom0026GetChangeHistoryResponse {
   // 変更履歴一覧リスト
@@ -245,7 +237,7 @@ interface ChangeHistoryList {
 
 // API-COM-0026-0006: 変更履歴一覧情報取得
 export const ScrCom0026GetChangeHistory = async (
-  req: ScrCom0026GetChangeHistoryRequest
+  req: null
 ): Promise<ScrCom0026GetChangeHistoryResponse> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-0026/get-change-history',

@@ -15,7 +15,6 @@ import {
 
 import {
   ScrCom0026GetChangeHistory,
-  ScrCom0026GetChangeHistoryRequest,
   ScrCom0026GetChangeHistoryResponse,
 } from 'apis/com/ScrCom0026Api';
 
@@ -149,13 +148,7 @@ const ScrCom0026ChangeHistoryTab = () => {
   useEffect(() => {
     const initialize = async (screenId: string, tabId: number) => {
       // API-COM-0026-0006: 変更履歴一覧情報取得
-      const changeHistoryRequest: ScrCom0026GetChangeHistoryRequest = {
-        screenId: screenId,
-        tabId: tabId,
-      };
-      const changeHistoryResponse = await ScrCom0026GetChangeHistory(
-        changeHistoryRequest
-      );
+      const changeHistoryResponse = await ScrCom0026GetChangeHistory(null);
       const changeHistoryResult = convertToScreenModel(changeHistoryResponse);
 
       // link設定
