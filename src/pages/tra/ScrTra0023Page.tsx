@@ -939,7 +939,6 @@ const ScrTra0023Page = () => {
       getValues('accountingDateTo') !== ''
     ) {
       if (getValues('accountingDateFrom') > getValues('accountingDateTo')) {
-        //TODO:日付のFROM～TOバリデーション暫定処理
         setTitle('期間が正しくありません。');
         setHandleDialog(true);
         return;
