@@ -109,7 +109,14 @@ const convertToScreenModel = (
       applicationSourceScreen: x.applicationSourceScreen,
       tabName: x.tabName,
       allRegistrationName: x.allRegistrationName,
-      tabRegistrationName: x.tabName + x.allRegistrationName,
+      tabRegistrationName:
+        x.allRegistrationName === null
+          ? x.tabName
+          : x.tabName === null
+          ? x.allRegistrationName
+          : x.allRegistrationName !== null && x.tabName !== null
+          ? x.tabName
+          : '',
       changeDate: x.changeDate,
       applicationEmployeeId: x.applicationEmployeeId,
       applicationEmployeeName: x.applicationEmployeeName,
