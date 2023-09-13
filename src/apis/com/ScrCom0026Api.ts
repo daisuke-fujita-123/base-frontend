@@ -22,7 +22,7 @@ interface ScreenPermissionList {
   // 画面権限名
   screenPermissionName: string;
   // 利用フラグ
-  useFlag: string;
+  useFlag: boolean;
   // 設定役職数
   totalSettingPost: number;
 }
@@ -58,7 +58,7 @@ interface MasterPermissionList {
   // マスタ権限名
   masterPermissionName: string;
   // 利用フラグ
-  useFlag: string;
+  useFlag: boolean;
   // 設定役職数
   totalSettingPost: number;
 }
@@ -90,7 +90,7 @@ interface ApprovalKindList {
   // 項目内リンクId(hrefs)
   id: string;
   // No
-  number: string;
+  approvalKindNumber: string;
   // システム種別
   systemKind: string;
   // 画面名
@@ -100,15 +100,15 @@ interface ApprovalKindList {
   // 承認条件名
   approvalConditionName: string;
   // 第1
-  number1: boolean;
+  authorizerFirst: boolean;
   // 第2
-  number2: boolean;
+  authorizerSecond: boolean;
   // 第3
-  number3: boolean;
+  authorizerThird: boolean;
   // 第4
-  number4: boolean;
+  authorizerFourth: boolean;
   // 承認要否
-  approval: boolean;
+  approvalFlag: boolean;
   // 承認種類ID
   approvalKindId: string;
   // 有効開始日
@@ -192,7 +192,7 @@ interface ApprovalPermissionList {
   // 承認権限名
   approvalPermissionName: string;
   // 利用フラグ
-  useFlag: string;
+  useFlag: boolean;
   // 設定役職数
   totalSettingPost: number;
 }

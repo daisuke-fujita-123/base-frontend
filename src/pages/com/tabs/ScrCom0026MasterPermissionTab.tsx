@@ -79,7 +79,7 @@ const convertToMasterModel = (
       id: x.masterPermissionId,
       masterPermissionId: x.masterPermissionId,
       masterPermissionName: x.masterPermissionName,
-      useFlag: x.useFlag,
+      useFlag: x.useFlag === true ? '可' : '不可',
       totalSettingPost: x.totalSettingPost,
     };
   });

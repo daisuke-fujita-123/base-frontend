@@ -152,23 +152,23 @@ const columnGroups: GridColumnGroupingModel = [
   },
 ];
 
-//
+// API-COM-0026-0003: 承認種類一覧取得API 変換処理
 const convertToApprovalKindModel = (
   approval: ScrCom0026GetApprovalKindResponse
 ): SearchResultApprovalModel[] => {
   return approval.approvalKindList.map((x) => {
     return {
-      id: x.number,
-      number: x.number,
+      id: x.approvalKindNumber,
+      number: x.approvalKindNumber,
       systemKind: x.systemKind,
       screenName: x.screenName,
       tabName: x.tabName,
       approvalConditionName: x.approvalConditionName,
-      number1: x.number1,
-      number2: x.number2,
-      number3: x.number3,
-      number4: x.number4,
-      approval: x.approval,
+      number1: x.authorizerFirst,
+      number2: x.authorizerSecond,
+      number3: x.authorizerThird,
+      number4: x.authorizerFourth,
+      approval: x.approvalFlag,
       approvalKindId: x.approvalKindId,
       validityStartDate: x.validityStartDate,
       beforeTimestamp: x.beforeTimestamp,
@@ -184,17 +184,17 @@ const convertToHistoryInfo = (
 ): SearchResultApprovalModel[] => {
   return approval.approvalKindList.map((x) => {
     return {
-      id: x.number,
-      number: x.number,
+      id: x.approvalKindNumber,
+      number: x.approvalKindNumber,
       systemKind: x.systemKind,
       screenName: x.screenName,
       tabName: x.tabName,
       approvalConditionName: x.approvalConditionName,
-      number1: x.number1,
-      number2: x.number2,
-      number3: x.number3,
-      number4: x.number4,
-      approval: x.approval,
+      number1: x.authorizerFirst,
+      number2: x.authorizerSecond,
+      number3: x.authorizerThird,
+      number4: x.authorizerFourth,
+      approval: x.approvalFlag,
       approvalKindId: x.approvalKindId,
       validityStartDate: x.validityStartDate,
       beforeTimestamp: x.beforeTimestamp,

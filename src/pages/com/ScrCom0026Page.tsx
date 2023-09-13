@@ -18,11 +18,11 @@ const ScrCom0026Page = () => {
 
   // tab
   const tabValues: TabDef[] = [
-    { title: '画面権限一覧', hash: '#screen' },
-    { title: 'マスタ権限一覧', hash: '#master' },
-    { title: '承認種類一覧', hash: '#approval-kind' },
-    { title: '承認権限一覧', hash: '#approvalpermission' },
-    { title: '変更履歴一覧', hash: '#changehistory' },
+    { title: '画面権限', hash: '#screen' },
+    { title: 'マスタ権限', hash: '#master' },
+    { title: '承認種類', hash: '#approval-kind' },
+    { title: '承認権限', hash: '#approvalpermission' },
+    { title: '変更履歴', hash: '#changehistory' },
   ];
 
   return (
