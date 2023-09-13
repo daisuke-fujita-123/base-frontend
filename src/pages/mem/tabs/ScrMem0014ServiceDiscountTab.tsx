@@ -2783,17 +2783,17 @@ const ScrMem0014ServiceDiscountTab = (props: {
 
       // コード管理マスタ情報取得
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0147' },
-          { codeId: 'CDE-COM-0025' },
-          { codeId: 'CDE-COM-0026' },
-          { codeId: 'CDE-COM-0041' },
-          { codeId: 'CDE-COM-0042' },
-          { codeId: 'CDE-COM-0043' },
-          { codeId: 'CDE-COM-0211' },
-          { codeId: 'CDE-COM-0212' },
-          { codeId: 'CDE-COM-0049' },
-          { codeId: 'CDE-COM-0047' },
+        codeId: [
+          'CDE-COM-0147',
+          'CDE-COM-0025',
+          'CDE-COM-0026',
+          'CDE-COM-0041',
+          'CDE-COM-0042',
+          'CDE-COM-0043',
+          'CDE-COM-0211',
+          'CDE-COM-0212',
+          'CDE-COM-0049',
+          'CDE-COM-0047',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
@@ -3126,17 +3126,17 @@ const ScrMem0014ServiceDiscountTab = (props: {
 
       // コード管理マスタ情報取得
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0147' },
-          { codeId: 'CDE-COM-0025' },
-          { codeId: 'CDE-COM-0026' },
-          { codeId: 'CDE-COM-0041' },
-          { codeId: 'CDE-COM-0042' },
-          { codeId: 'CDE-COM-0043' },
-          { codeId: 'CDE-COM-0211' },
-          { codeId: 'CDE-COM-0212' },
-          { codeId: 'CDE-COM-0049' },
-          { codeId: 'CDE-COM-0047' },
+        codeId: [
+          'CDE-COM-0147',
+          'CDE-COM-0025',
+          'CDE-COM-0026',
+          'CDE-COM-0041',
+          'CDE-COM-0042',
+          'CDE-COM-0043',
+          'CDE-COM-0211',
+          'CDE-COM-0212',
+          'CDE-COM-0049',
+          'CDE-COM-0047',
         ],
       };
       const getCodeManagementMasterMultipleResponse =

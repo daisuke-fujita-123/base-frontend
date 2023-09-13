@@ -260,7 +260,7 @@ export const ScrCom9999GetCodeManagementMaster = async (
 /** API-COM-9999-0011: コード管理マスタ情報取得API リクエスト */
 export interface ScrCom9999getCodeManagementMasterMultipleRequest {
   /** 手数料ID */
-  codeIdList: CodeIdList[];
+  codeId: string[];
 }
 
 /** API-COM-9999-0011: コード管理マスタ情報取得API リクエスト (リスト行) */
@@ -296,7 +296,7 @@ export const ScrCom9999getCodeManagementMasterMultiple = async (
   request?: ScrCom9999getCodeManagementMasterMultipleRequest
 ): Promise<ScrCom9999getCodeManagementMasterMultipleResponse> => {
   const response = await comApiClient.post(
-    '/api/com/scr-com-9999/get-code-management-master-multiple',
+    '/api/com/scr-com-9999/get-code-management-multiple',
     request
   );
   return response.data;
@@ -373,7 +373,7 @@ export interface ScrCom9999GetPlaceMasterRequest {
 /** API-COM-9999-0016: 会場マスタリストボックス情報取得API レスポンス */
 export interface ScrCom9999GetPlaceMasterResponse {
   // リスト
-  searchGetPlaceMasterListbox: SearchGetPlaceMasterListbox[];
+  placeList: SearchGetPlaceMasterListbox[];
 }
 
 /** API-COM-9999-0016: 会場マスタリストボックス情報取得API レスポンス(リスト行) */
@@ -966,6 +966,3 @@ export const ScrCom9999SearchCampaignInfo =
     );
     return response.data;
   };
-
-
-

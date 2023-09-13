@@ -282,7 +282,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
 
   // ダイアログのOKボタン押下時の処理(呼び出し元画面に登録メモを返却する)
   const handleDialogConfirm = () => {
-    props.handleApprovalConfirm(
+    props.handleRegistConfirm(
       // 登録変更メモ
       getValues('registrationChangeMemo')
     );
@@ -361,15 +361,15 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
     return () => subscription.unsubscribe();
   }, [setValue, watch]);
 
-  // 登録内容確認ポップアップ承認申請ボタン押下時の処理
+  // 登録内容確認ポップアップ【承認申請】ボタン押下時の処理
   const handleApprovalConfirm = () => {
-    props.handleRegistConfirm(
+    props.handleApprovalConfirm(
       // 登録変更メモ
       getValues('registrationChangeMemo')
     );
   };
 
-  // 登録内容確認ポップアップ確定ボタン押下時の処理
+  // 登録内容確認ポップアップ【確定】ボタン押下時の処理
   const handleRegistConfirm = () => {
     // 確定ボタン押下時はダイアログを表示する
     const dialogMessege = Format(getMessage('MSG-FR-INF-00006'), [
@@ -445,7 +445,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                   <br />
                 )}
                 {data.registrationChangeList.length > 0 ? (
-                  <Section name='登録・変更内容'>
+                  <Section name='登録・変更内容' fitInside>
                     {/* 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
                     {isExistColumns ? (
                       <>
@@ -494,7 +494,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
               </Popup>
               <Popup bottom>
                 <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-                {/* 承認要否で確定ボタンのラベルを変更する。 承認要*/}
+                {/* 承認不要(承認要否:false)の場合はボタンのラベルを【確定】に変更する。 */}
                 {!approvalFlag ? (
                   <ConfirmButton
                     onClick={handleRegistConfirm}
@@ -513,7 +513,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     確定
                   </ConfirmButton>
                 ) : (
-                  // 承認要否で確定ボタンのラベルを変更する。 承認不要
+                  // 承認要(承認要否:true)の場合はボタンのラベルを【承認申請】に変更する。
                   <ConfirmButton
                     onClick={handleApprovalConfirm}
                     // 条件１：エラーが1件以上存在する場合 -> 非活性
