@@ -152,6 +152,7 @@ const ScrTra0001BasicTab = () => {
       masterName: screenData.masterName,
       primaryKeyColumnName: screenData.primaryKeyColumnName,
     };
+    console.log(request);
     const response = await ScrTra0001SearchDealAccountingMasterInfo(request);
 
     // 検索結果件数0件の場合は取引管理マスタ一覧を非表示に設定
@@ -193,22 +194,16 @@ const ScrTra0001BasicTab = () => {
             <Section name='取引管理マスタ一覧検索'>
               <RowStack>
                 <ColStack>
-                  <TextField label='マスタID' name='masterId' readonly />
+                  <TextField label='マスタID' name='masterId' />
                 </ColStack>
                 <ColStack>
-                  <TextField
-                    label='マスタ名'
-                    name='masterName'
-                    size='m'
-                    readonly
-                  />
+                  <TextField label='マスタ名' name='masterName' size='m' />
                 </ColStack>
                 <ColStack>
                   <TextField
                     label='キー情報'
                     name='primaryKeyColumnName'
                     size='m'
-                    readonly
                   />
                 </ColStack>
               </RowStack>

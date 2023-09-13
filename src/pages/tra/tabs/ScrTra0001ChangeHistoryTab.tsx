@@ -176,7 +176,7 @@ const unapprovedChangeHistoriesColumns: GridColDef[] = [
     editable: false,
   },
   {
-    field: 'registrationChangeMemo',
+    field: 'changeExpectDate',
     headerName: '変更日',
     size: 's',
     cellType: 'default',
@@ -375,7 +375,7 @@ const ScrTra0001ChangeHistoryTab = () => {
     for (let i = 0; i < response.unapprovedChangeHistories.length; i++) {
       const o = response.unapprovedChangeHistories[i];
       const tmp: { [key: string]: string | number } = {};
-      tmp['id'] = i + 1;
+      tmp['id'] = i;
       tmp['changeHistoryNumber'] = o.changeHistoryNumber;
       tmp['screenName'] = o.screenName;
       tmp['tabName'] = o.tabName ? o.tabName : o.allRegistrationName;
@@ -480,7 +480,7 @@ const ScrTra0001ChangeHistoryTab = () => {
 
       // 申請ID href
       unapprovedChangeHistoriesHrefs[0].hrefs.push({
-        id: i + 1,
+        id: i,
         href:
           '/tra/deal-masters/' +
           o.masterId +
@@ -490,7 +490,7 @@ const ScrTra0001ChangeHistoryTab = () => {
       // 登録変更メモ tooltip
       if (o.registrationChangeMemo) {
         unapprovedChangeHistoriesTooltips[0].tooltips.push({
-          id: i + 1,
+          id: i,
           text: o.registrationChangeMemo,
         });
       }
