@@ -1,10 +1,41 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
+
+import ScrCom0026ApprovalKindTab from 'pages/com/tabs/ScrCom0026ApprovalKindTab';
+import ScrCom0026ApprovalPermissionTab from 'pages/com/tabs/ScrCom0026ApprovalPermissionTab';
+import ScrCom0026ChangeHistoryTab from 'pages/com/tabs/ScrCom0026ChangeHistoryTab';
+import ScrCom0026MasterPermissionTab from 'pages/com/tabs/ScrCom0026MasterPermissionTab';
+import ScrCom0026ScreenPermissionTab from 'pages/com/tabs/ScrCom0026ScreenPermissionTab';
+
+import { TabDef, Tabs } from 'layouts/Tabs';
 
 /**
  * SCR-COM-0026 アクセス権限管理画面
  */
 const ScrCom0026Page = () => {
-  return <h1>SCR-COM-0026 アクセス権限管理画面</h1>;
+  // router
+  const location = useLocation();
+
+  // tab
+  const tabValues: TabDef[] = [
+    { title: '画面権限一覧', hash: '#screen' },
+    { title: 'マスタ権限一覧', hash: '#master' },
+    { title: '承認種類一覧', hash: '#approval-kind' },
+    { title: '承認権限一覧', hash: '#approvalpermission' },
+    { title: '変更履歴一覧', hash: '#changehistory' },
+  ];
+
+  return (
+    <>
+      <Tabs tabDef={tabValues} defaultValue={location.hash}>
+        <ScrCom0026ScreenPermissionTab />
+        <ScrCom0026MasterPermissionTab />
+        <ScrCom0026ApprovalKindTab />
+        <ScrCom0026ApprovalPermissionTab />
+        <ScrCom0026ChangeHistoryTab />
+      </Tabs>
+    </>
+  );
 };
 
 export default ScrCom0026Page;

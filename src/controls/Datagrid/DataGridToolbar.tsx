@@ -70,25 +70,15 @@ const StyledDataGrid = styled(MuiDataGridPro)({
  * GridPaginationコンポーネント
  */
 const GridPagination = () => {
-  // const { total } = props;
-
   const apiRef = useGridApiContext();
   const totalRowCount = apiRef.current.state.rows.totalRowCount;
   const paginationModel = useGridSelector(apiRef, gridPaginationModelSelector);
   const pageCount = useGridSelector(apiRef, gridPageCountSelector);
-
-  const pageNumber = (page: number) => {
-    if (isNaN(page)) {
-      return 0;
-    }
-    return page;
-  };
-  const currentPageStart = pageNumber(
-    paginationModel.pageSize * paginationModel.page + 1
-  );
-  const cureentPageEnd = pageNumber(
-    paginationModel.pageSize * (paginationModel.page + 1)
-  );
+  const currentPageStart = paginationModel.pageSize * paginationModel.page + 1;
+  const cureentPageEnd =
+    totalRowCount < paginationModel.pageSize * (paginationModel.page + 1)
+      ? totalRowCount
+      : paginationModel.pageSize * (paginationModel.page + 1);
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -155,10 +145,14 @@ const GridPagination = () => {
           />
         )}
       />
-      <Typography>
-        {totalRowCount.toLocaleString()} 件 （ {currentPageStart}～
-        {cureentPageEnd} 件）
-      </Typography>
+      {totalRowCount === 0 ? (
+        <Typography>0 件</Typography>
+      ) : (
+        <Typography>
+          {totalRowCount.toLocaleString()} 件 （ {currentPageStart}～
+          {cureentPageEnd} 件）
+        </Typography>
+      )}
     </Stack>
   );
 };
@@ -191,9 +185,11 @@ export const GridToolbar = (props: GridToolbarProps) => {
   } = props;
 
   const displayRow =
-    headerRow !== undefined
-      ? { ...headerRow, internalId: -1 }
-      : { internalId: -1 };
+    headerRow !== undefined ? { ...headerRow, id: -1 } : { id: -1 };
+
+  const displayColumns = headerCheckboxSelection
+    ? [{ field: '__empty__', headerName: '', width: 50 }, ...headerColumns]
+    : headerColumns;
 
   return (
     <>
@@ -203,13 +199,12 @@ export const GridToolbar = (props: GridToolbarProps) => {
       ))}
       {showHeaderRow && (
         <StyledDataGrid
-          columns={headerColumns}
+          columns={displayColumns}
           rows={[displayRow]}
           columnHeaderHeight={0}
           showCellVerticalBorder
           rowHeight={30}
-          getRowId={(row) => row.internalId}
-          checkboxSelection={headerCheckboxSelection}
+          // getRowId={(row) => row.internalId}
           hideFooter
           apiRef={headerApiRef}
         />

@@ -1,8 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Controller, FieldValues, Path, useFormContext } from 'react-hook-form';
+import {
+  Controller,
+  FieldErrors,
+  FieldValues,
+  Path,
+  useFormContext,
+} from 'react-hook-form';
 
 import { Stack } from 'layouts/Stack';
 
+import { SelectValue } from 'controls/Select';
 import { Typography } from 'controls/Typography';
 
 import {
@@ -22,16 +29,21 @@ import {
 
 import { getWeeksInMonth } from 'date-fns';
 
+export interface CalenderMultiTypeModel {
+  type: string;
+  selectValues?: SelectValue[];
+}
+
 export interface CalenderItemDef {
   name: string;
   field: string;
-  type: 'input' | 'select' | any[];
-  selectValues?: any[];
+  type: 'input' | 'select' | CalenderMultiTypeModel[];
+  selectValues?: SelectValue[];
 }
 
 export interface CalenderItemModel {
   date: Date;
-  [key: string]: any;
+  [key: string]: string | number | Date;
 }
 
 /**
@@ -56,6 +68,7 @@ export interface CalenderProps<T extends FieldValues> {
   getCellDisabled?: (
     date: Date,
     field: string,
+    index?: number,
     value?: string | number
   ) => boolean;
 }
@@ -67,7 +80,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
     props;
 
   // state
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<FieldErrors<FieldValues>>({});
 
   // form
   const { formState, control, register, getValues } = useFormContext();
@@ -82,7 +95,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
   const cloned = [...values[name]];
 
   // 一週間単位のデータに変換する
-  const dataPerWeeks = [...Array(weeksInMonth)].map((_, i) => {
+  const dataPerWeeks = [...Array(weeksInMonth)].map(() => {
     // 何曜日はじまりか
     const headDayOfWeek = cloned[0].date.getDay();
     // 先頭を空データで埋める
@@ -165,7 +178,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
               {itemDef.map((def) => (
                 <TableRow key={def.name}>
                   <TableCell sx={tableCellSx}>{def.name}</TableCell>
-                  {dataPerWeek.map((data: any, i: number) => (
+                  {dataPerWeek.map((data, i) => (
                     <TableCell
                       key={i}
                       sx={{
@@ -185,8 +198,9 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                           size='small'
                           fullWidth
                           helperText={
-                            errors[name]?.[data.date.getDate() - 1]?.[def.field]
-                              ?.message
+                            (errors[name] as any)?.[data.date.getDate() - 1]?.[
+                              def.field
+                            ]?.message
                           }
                           {...register(
                             `${name}.${data.date.getDate() - 1}.${def.field}`
@@ -204,7 +218,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                             def.field
                           }`}
                           control={control}
-                          render={({ field, fieldState }) => (
+                          render={({ field }) => (
                             <>
                               <Select
                                 {...field}
@@ -216,7 +230,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                                   getCellDisabled(data.date, def.field)
                                 }
                               >
-                                {def.selectValues?.map((x: any, i: number) => (
+                                {def.selectValues?.map((x, i) => (
                                   <MenuItem key={i} value={x.value}>
                                     {x.displayValue}
                                   </MenuItem>
@@ -224,9 +238,9 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                               </Select>
                               <Typography>
                                 {
-                                  errors[name]?.[data.date.getDate() - 1]?.[
-                                    def.field
-                                  ]?.message
+                                  (errors[name] as any)?.[
+                                    data.date.getDate() - 1
+                                  ]?.[def.field]?.message
                                 }
                               </Typography>
                             </>
@@ -235,14 +249,14 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                       )}
                       {data.date && Array.isArray(def.type) && (
                         <Stack direction='column'>
-                          {def.type.map((x: any, i: number) => (
+                          {def.type.map((x, i) => (
                             <Controller
                               key={i}
                               name={`${name}.${data.date.getDate() - 1}.${
                                 def.field
                               }.${i}`}
                               control={control}
-                              render={({ field, fieldState }) => (
+                              render={({ field }) => (
                                 <>
                                   <Select
                                     {...field}
@@ -251,22 +265,20 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                                     disabled={
                                       data.date &&
                                       getCellDisabled &&
-                                      getCellDisabled(data.date, def.field)
+                                      getCellDisabled(data.date, def.field, i)
                                     }
                                   >
-                                    {x.selectValues?.map(
-                                      (x: any, i: number) => (
-                                        <MenuItem key={i} value={x.value}>
-                                          {x.displayValue}
-                                        </MenuItem>
-                                      )
-                                    )}
+                                    {x.selectValues?.map((x, i) => (
+                                      <MenuItem key={i} value={x.value}>
+                                        {x.displayValue}
+                                      </MenuItem>
+                                    ))}
                                   </Select>
                                   <Typography>
                                     {
-                                      errors[name]?.[data.date.getDate() - 1]?.[
-                                        def.field
-                                      ]?.[i]?.message
+                                      (errors[name] as any)?.[
+                                        data.date.getDate() - 1
+                                      ]?.[def.field]?.[i]?.message
                                     }
                                   </Typography>
                                 </>

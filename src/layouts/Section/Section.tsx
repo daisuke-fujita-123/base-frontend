@@ -5,7 +5,6 @@ import {
   ContentsOutsideBox,
   ErrorBox,
   MarginBox,
-  RightBox,
   SearchTextBox,
   WarningBox,
 } from 'layouts/Box';
@@ -38,6 +37,8 @@ interface SectionProps {
   isError?: boolean;
   openable?: boolean;
   width?: number;
+  fitInside?: boolean;
+  isDocDetail?: boolean;
 }
 export interface SectionClose {
   closeSection: () => void;
@@ -59,6 +60,8 @@ export const Section = forwardRef((props: SectionProps, ref) => {
     serchLabels,
     openable = true,
     width,
+    fitInside = false,
+    isDocDetail,
   } = props;
 
   const [expanded, setExpanded] = useState<boolean>(true);
@@ -78,25 +81,43 @@ export const Section = forwardRef((props: SectionProps, ref) => {
   const flexColSx = { display: 'flex', flexDirection: 'column' };
 
   return (
-    <Box width={width}>
-      <SubTitle onClick={onClick} openable={openable}>
+    <Box width={width} display={fitInside ? 'inline-table' : undefined}>
+      <SubTitle onClick={onClick} openable={openable} isDocDetail={isDocDetail}>
         {name}
       </SubTitle>
-      <ContentsBox transparent={isTransparent} disable={isSearch}>
+      <ContentsBox
+        transparent={isTransparent}
+        disable={isSearch}
+        isDocDetail={isDocDetail}
+      >
         <StyledAccordion expanded={expanded}>
-          {!expanded && (
+          {!isDocDetail && !expanded ? (
             <AccordionSummary>
               <SearchTextBox>{serchLabels}</SearchTextBox>
             </AccordionSummary>
+          ) : (
+            <></>
           )}
-          {expanded && (
-            <RightBox>
+          {expanded && decoration && (
+            <Box
+              sx={{
+                width: '80vw',
+                position: 'relative',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                 {decoration}
               </MarginBox>
-            </RightBox>
+            </Box>
           )}
-          <AccordionDetails sx={{ m: theme.spacing(4) }}>
+          <AccordionDetails
+            sx={{
+              marginX: theme.spacing(4),
+              marginY: isDocDetail ? theme.spacing(2) : theme.spacing(4),
+            }}
+          >
             <Stack sx={{ ...flexColSx, flexGrow: 1 }}>{children}</Stack>
           </AccordionDetails>
         </StyledAccordion>

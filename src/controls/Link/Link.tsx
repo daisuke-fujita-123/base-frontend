@@ -11,13 +11,7 @@ interface LinkProps {
 }
 
 export const Link = (props: LinkProps) => {
-  const {
-    children,
-    href,
-    underline = 'always',
-    color = '#00C2FF',
-    onClick,
-  } = props;
+  const { children, href, underline = 'always', color, onClick } = props;
 
   const handleClick = (
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>

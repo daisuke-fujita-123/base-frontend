@@ -1,10 +1,17 @@
 import axios from 'axios';
 
+export const comBaseUrl =
+  process.env.REACT_APP_BACKEND_AUTH === 'enabled'
+    ? 'http://localhost:8084'
+    : 'http://localhost:8085';
+export const comApiPath =
+  process.env.REACT_APP_BACKEND_AUTH === 'enabled' ? '/api/com' : '/_exp';
+
 /**
  * memApiClient
  */
 export const memApiClient = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: 'http://localhost:8081',
   // withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -16,7 +23,7 @@ export const memApiClient = axios.create({
  * traApiClient
  */
 export const traApiClient = axios.create({
-  baseURL: 'http://localhost:8081',
+  baseURL: 'http://localhost:8082',
   // withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -28,7 +35,7 @@ export const traApiClient = axios.create({
  * docApiClient
  */
 export const docApiClient = axios.create({
-  baseURL: 'http://localhost:8082',
+  baseURL: 'http://localhost:8083',
   // withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -40,8 +47,8 @@ export const docApiClient = axios.create({
  * comApiClient
  */
 export const comApiClient = axios.create({
-  baseURL: 'http://localhost:8083',
-  // withCredentials: true,
+  baseURL: 'http://localhost:8084',
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -52,8 +59,8 @@ export const comApiClient = axios.create({
  * _expApiClient
  */
 export const _expApiClient = axios.create({
-  baseURL: 'http://localhost:8084',
-  // withCredentials: true,
+  baseURL: comBaseUrl,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },

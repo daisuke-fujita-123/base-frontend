@@ -4,13 +4,24 @@ import { ObjectSchema, ValidationError } from 'yup';
 
 import { InfoButton } from 'controls/Button';
 import {
-    GridCellForTooltip as MuiGridCellForTooltip, GridCheckboxCell, GridCustomizableRadiioCell,
-    GridDatepickerCell, GridFromtoCell, GridInputCell, GridRadioCell, GridSelectCell
+  GridCellForTooltip as MuiGridCellForTooltip,
+  GridCheckboxCell,
+  GridCustomizableRadiioCell,
+  GridDatepickerCell,
+  GridFromtoCell,
+  GridInputCell,
+  GridRadioCell,
+  GridSelectCell,
 } from 'controls/Datagrid/DataGridCell';
 import { GridToolbar } from 'controls/Datagrid/DataGridToolbar';
 import {
-    appendErrorToInvalids, convertFromInvalidToMessage, convertFromResolverToInvalids,
-    convertFromSizeToWidth, InvalidModel, removeIdFromInvalids, resolveGridWidth
+  appendErrorToInvalids,
+  convertFromInvalidToMessage,
+  convertFromResolverToInvalids,
+  convertFromSizeToWidth,
+  InvalidModel,
+  removeIdFromInvalids,
+  resolveGridWidth,
 } from 'controls/Datagrid/DataGridUtil';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
@@ -20,8 +31,13 @@ import SortDesc from 'icons/content_sort_descend.png';
 
 import { Box, Stack, styled, Tooltip } from '@mui/material';
 import {
-    DataGridPro as MuiDataGridPro, DataGridProProps, GridColDef as MuiGridColDef,
-    GridColumnHeaderParams, GridRenderCellParams, GridRowsProp, GridValidRowModel
+  DataGridPro as MuiDataGridPro,
+  DataGridProProps,
+  GridColDef as MuiGridColDef,
+  GridColumnHeaderParams,
+  GridRenderCellParams,
+  GridRowsProp,
+  GridValidRowModel,
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
 
@@ -68,9 +84,6 @@ const StyledDataGrid = styled(MuiDataGridPro)({
   },
   '& .MuiDataGrid-columnSeparator': {
     display: 'none',
-  },
-  '& .MuiDataGrid-virtualScroller': {
-    overflow: 'hidden',
   },
 });
 
@@ -334,6 +347,7 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
+          controlled={controlled}
           width={params.colDef.width - 10}
           helperText={params.colDef.cellHelperText}
           disabled={disabled || cellDisabled}
@@ -353,6 +367,17 @@ export const DataGrid = (props: DataGridProps) => {
       ? getSelectValues(params)
       : params.colDef.selectValues;
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    if (getCellReadonly && getCellReadonly(params)) {
+      return (
+        <>
+          {
+            selectValues.find((x: any) => x.value === params.value)
+              ?.displayValue
+          }
+        </>
+      );
+    }
 
     return (
       <>
@@ -450,6 +475,7 @@ export const DataGrid = (props: DataGridProps) => {
           id={params.id}
           value={params.value}
           field={params.field}
+          controlled={controlled}
           disabled={disabled || cellDisabled}
           onRowValueChange={handleRowValueChange}
         />
@@ -485,6 +511,8 @@ export const DataGrid = (props: DataGridProps) => {
   const generateMultiInputCell = (params: any) => {
     if (params.value === undefined) return <></>;
 
+    const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
     const cellTypes = params.colDef.cellType;
     const stackWidth = params.colDef.width - 10;
     const elementWidth =
@@ -506,12 +534,14 @@ export const DataGrid = (props: DataGridProps) => {
                   id={params.id}
                   value={params.value[i]}
                   field={[params.field, i]}
+                  controlled={controlled}
                   width={
                     x.helperText === undefined
                       ? elementWidth
                       : elementWidth - 40
                   }
                   helperText={x.helperText}
+                  disabled={disabled || cellDisabled}
                   onRowValueChange={handleRowValueChange}
                 />
               );
@@ -526,6 +556,7 @@ export const DataGrid = (props: DataGridProps) => {
                   selectValues={x.selectValues}
                   controlled={controlled}
                   width={elementWidth}
+                  disabled={disabled || cellDisabled}
                   onRowValueChange={handleRowValueChange}
                 />
               );
@@ -562,7 +593,7 @@ export const DataGrid = (props: DataGridProps) => {
 
   // 独自のカラム定義からMUI DataGridのカラム定義へ変換
   const muiColumns: MuiGridColDef[] = columns.map((value) => {
-    const width =
+    let width =
       value.width !== undefined
         ? value.width
         : convertFromSizeToWidth(value.size);
@@ -587,9 +618,11 @@ export const DataGrid = (props: DataGridProps) => {
     }
     if (value.cellType === 'datepicker') {
       renderCell = generateDatepickerCell;
+      width = 200;
     }
     if (value.cellType === 'fromto') {
       renderCell = generateFromtoCell;
+      width = 400;
     }
     if (value.cellType === 'link') {
       renderCell = generateLinkCell;
@@ -642,15 +675,6 @@ export const DataGrid = (props: DataGridProps) => {
           width: width
             ? width
             : resolveGridWidth(muiColumns, checkboxSelection),
-          '& .cold': {
-            backgroundColor: '#b9d5ff91',
-          },
-          '& .hot': {
-            backgroundColor: '#ff943975',
-          },
-          '& .disabled': {
-            backgroundColor: '#D8D8D8',
-          },
           overflowX: 'hidden',
         }}
       >
@@ -693,11 +717,17 @@ export const DataGrid = (props: DataGridProps) => {
               showHeaderRow: showHeaderRow,
               headerColumns: muiColumns,
               headerRow: headerRow,
+              headerCheckboxSelection: checkboxSelection,
               headerApiRef: headerApiRef,
             },
           }}
           experimentalFeatures={{
             columnGrouping: true,
+          }}
+          sx={{
+            '& .MuiDataGrid-virtualScroller': {
+              overflow: height ? 'auto' : 'hidden',
+            },
           }}
           apiRef={apiRef}
         />
@@ -716,12 +746,13 @@ export const exportCsv = (
   // DataGridのid列の除外、囲み文字の追加
   const data = rowIds.map((x) => {
     const row = apiRef.current.getRow(x);
-    delete row.id;
+    const cloned: { [key: string]: string } = {};
     Object.keys(row).forEach((key) => {
+      if (key === 'id') return;
       const value = row[key];
-      row[key] = `"${value}"`;
+      cloned[key] = `"${value}"`;
     });
-    return row;
+    return cloned;
   });
 
   // CSVの文字列を生成
