@@ -57,7 +57,7 @@ import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
 
-import { useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridRowSelectionModel, useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件データモデル
@@ -194,28 +194,37 @@ const corporationBasicSchama = {
     .label('物流拠点住所（市区町村以降）')
     .max(80),
   logisticsBaseDistrictCode: yup.string().label('市区郡コード/市区郡名'),
-  logisticsBasePhoneNumber: yup.string().label('物流拠点TEL').max(13).phone(),
+  logisticsBasePhoneNumber: yup
+    .string()
+    .label('物流拠点TEL')
+    .max(13)
+    .half()
+    .phone(),
   limitStatusKinds: yup.string().label('制限状況'),
   courseEntryKinds: yup.array().label('コース参加区分'),
   basicsCorporationCreditAmountFrom: yup
     .string()
     .label('基本法人与信額（FROM）')
     .max(11)
+    .half()
     .numberWithComma(),
   basicsCorporationCreditAmountTo: yup
     .string()
     .label('基本法人与信額（TO）')
     .max(11)
+    .half()
     .numberWithComma(),
   temporaryCreditSettingDateFrom: yup
     .string()
     .label('臨時与信設定日（FROM）')
     .max(10)
+    .half()
     .date(),
   temporaryCreditSettingDateTo: yup
     .string()
     .label('臨時与信設定日（TO）')
     .max(10)
+    .half()
     .date(),
   contractId: yup.string().label('契約ID').max(7).half(),
   billingId: yup.string().label('請求先ID').max(4).half(),
@@ -229,36 +238,70 @@ const corporationBasicSchama = {
     .label('端末契約ID')
     .max(7)
     .half(),
-  useStartDateFrom: yup.string().label('利用開始日（FROM）').max(10).date(),
-  useStartDateTo: yup.string().label('利用開始日（TO）').max(10).date(),
-  idIssuanceDateFrom: yup.string().label('ID発行年月日（FROM）').max(10).date(),
-  idIssuanceDateTo: yup.string().label('ID発行年月日（TO）').max(10).date(),
+  useStartDateFrom: yup
+    .string()
+    .label('利用開始日（FROM）')
+    .max(10)
+    .half()
+    .date(),
+  useStartDateTo: yup.string().label('利用開始日（TO）').max(10).half().date(),
+  idIssuanceDateFrom: yup
+    .string()
+    .label('ID発行年月日（FROM）')
+    .max(10)
+    .half()
+    .date(),
+  idIssuanceDateTo: yup
+    .string()
+    .label('ID発行年月日（TO）')
+    .max(10)
+    .half()
+    .date(),
   courseChangeDateFrom: yup
     .string()
     .label('コース変更日（FROM）')
     .max(10)
+    .half()
     .date(),
-  courseChangeDateTo: yup.string().label('コース変更日（TO）').max(10).date(),
+  courseChangeDateTo: yup
+    .string()
+    .label('コース変更日（TO）')
+    .max(10)
+    .half()
+    .date(),
   recessPeriodStartDateFrom: yup
     .string()
     .label('休会期間FROM（FROM）')
     .max(10)
+    .half()
     .date(),
   recessPeriodStartDateTo: yup
     .string()
     .label('休会期間FROM（TO）')
     .max(10)
+    .half()
     .date(),
   recessPeriodEndDateFrom: yup
     .string()
     .label('休会期間TO（FROM）')
     .max(10)
+    .half()
     .date(),
-  recessPeriodEndDateTo: yup.string().label('休会期間TO（TO）').max(10).date(),
-  leavingDateFrom: yup.string().label('脱会日（FROM）').max(10).date(),
-  leavingDateTo: yup.string().label('脱会日（TO）').max(10).date(),
-  changeExpectDateFrom: yup.string().label('変更日（FROM）').max(10).date(),
-  changeExpectDateTo: yup.string().label('変更日（TO）').max(10).date(),
+  recessPeriodEndDateTo: yup
+    .string()
+    .label('休会期間TO（TO）')
+    .max(10)
+    .half()
+    .date(),
+  leavingDateFrom: yup.string().label('脱会日（FROM）').max(10).half().date(),
+  leavingDateTo: yup.string().label('脱会日（TO）').max(10).half().date(),
+  changeExpectDateFrom: yup
+    .string()
+    .label('変更日（FROM）')
+    .max(10)
+    .half()
+    .date(),
+  changeExpectDateTo: yup.string().label('変更日（TO）').max(10).half().date(),
 };
 
 /**
@@ -587,7 +630,8 @@ const convertToSearchResultRowModel = (
  */
 const convertFromCreateReportParameterInfo = (
   reportId: string,
-  searchCondition: SearchConditionModel
+  searchCondition: SearchConditionModel,
+  rowSelectionModel: GridRowSelectionModel
 ) => {
   switch (reportId) {
     case 'REP-MEM-0001':
@@ -595,8 +639,7 @@ const convertFromCreateReportParameterInfo = (
       // 会員リスト（基本情報）
       // 与信情報リスト
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
       };
     case 'REP-MEM-0002':
     case 'REP-MEM-0012':
@@ -605,8 +648,7 @@ const convertFromCreateReportParameterInfo = (
       // POS情報
       // 延滞履歴一覧
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         courseEntryKindList: searchCondition.courseEntryKinds,
         billingId: searchCondition.billingId,
@@ -633,8 +675,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0003':
       // 利用サービス一覧
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
@@ -667,8 +708,7 @@ const convertFromCreateReportParameterInfo = (
       // POS番号データ（おまとめ）
       // POS番号データ（新規）
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         billingId: searchCondition.billingId,
         staffDepartmentKind: searchCondition.staffDepartmentKinds,
@@ -698,8 +738,7 @@ const convertFromCreateReportParameterInfo = (
       // 休脱会リスト
       // 再開リスト
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
@@ -730,8 +769,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0009':
       // 会員登録変更連絡
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         courseEntryKindList: searchCondition.courseEntryKinds,
         billingId: searchCondition.billingId,
@@ -758,8 +796,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0011':
       // 参加制限リスト
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
@@ -790,8 +827,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0013':
       // 物流拠点情報
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
         logisticsBaseDistrictCode: searchCondition.logisticsBaseDistrictCode,
@@ -879,6 +915,8 @@ const ScrMem0001Page = () => {
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
   const [csvButtonDisable, setCsvButtonDisable] = useState<boolean>(true);
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>([]);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -925,7 +963,7 @@ const ScrMem0001Page = () => {
           x.codeValueList.forEach((f) => {
             selectValues.logisticsBaseDistrictCodeSelectValues.push({
               value: f.codeValue,
-              displayValue: f.codeValue + '' + f.codeName,
+              displayValue: f.codeValue + '　' + f.codeName,
             });
           });
         }
@@ -1049,6 +1087,15 @@ const ScrMem0001Page = () => {
   };
 
   /**
+   * チェックボックスチェック時のイベントハンドラ
+   */
+  const onRowSelectionModelChange = (
+    rowSelectionModel: GridRowSelectionModel
+  ) => {
+    setRowSelectionModel(rowSelectionModel);
+  };
+
+  /**
    * リンククリック時のイベントハンドラ
    */
   const handleLinkClick = (url: string) => {
@@ -1120,7 +1167,8 @@ const ScrMem0001Page = () => {
       comment: reportComment,
       createReportParameterInfo: convertFromCreateReportParameterInfo(
         reportId,
-        getValues()
+        getValues(),
+        rowSelectionModel
       ),
     };
     // 帳票出力API 呼び出し
@@ -1211,17 +1259,14 @@ const ScrMem0001Page = () => {
       nameVal = nameValues.join(',');
     }
     if (val.name === 'posPutTogetherPlaceCode') {
-      const nameValues: string[] = [];
-      selectValues.posPutTogetherPlaceCodeSelectValues.filter((x) => {
-        if (typeof nameVal !== 'string') {
-          nameVal.map((f) => {
-            if (x.value === f) {
-              nameValues.push(x.displayValue);
-            }
-          });
+      const filter = selectValues.posPutTogetherPlaceCodeSelectValues.filter(
+        (x) => {
+          return nameVal === x.value;
         }
+      );
+      filter.map((x) => {
+        nameVal = x.displayValue;
       });
-      nameVal = nameValues.join(',');
     }
 
     return (
@@ -1433,6 +1478,7 @@ const ScrMem0001Page = () => {
                 pagination
                 onLinkClick={handleLinkClick}
                 checkboxSelection
+                onRowSelectionModelChange={onRowSelectionModelChange}
               />
             </Section>
           </FormProvider>
