@@ -32,18 +32,31 @@ interface SearchResultChangeHistoryModel {
   applicationId: string;
   // 申請元画面
   applicationSourceScreen: string;
-  // タブ名
-  tabName: string;
-  // 一括登録
-  allRegistrationName: string;
+  // タブ名/一括登録
+  tabRegistrationName: string;
   // 変更日
   changeDate: string;
-  // 申請者ID
-  applicationEmployeeId: string;
-  // 申請者名
-  applicationEmployeeName: string;
+  // 申請者ID+名
+  EmployeeIdName: string;
   // 申請日時
   applicationDateTime: string;
+  // 登録・変更メモ
+  registrationChangeFlag: string;
+}
+
+interface ChangeHistoryList {
+  // 申請ID
+  applicationId: string;
+  // タブ名
+  tabName: string;
+  // 申請元画面
+  applicationSourceScreen: string;
+  // 一括登録
+  allRegistrationName: string;
+  // // 申請者ID
+  applicationEmployeeId: string;
+  // // 申請者名
+  applicationEmployeeName: string;
   // 登録・変更メモ
   registrationChangeMemo: string;
 }
@@ -106,8 +119,6 @@ const convertToScreenModel = (
       id: x.applicationId,
       applicationId: x.applicationId,
       applicationSourceScreen: x.applicationSourceScreen,
-      tabName: x.tabName,
-      allRegistrationName: x.allRegistrationName,
       tabRegistrationName:
         x.allRegistrationName === null
           ? x.tabName
@@ -117,13 +128,26 @@ const convertToScreenModel = (
           ? x.tabName
           : '',
       changeDate: x.changeDate,
-      applicationEmployeeId: x.applicationEmployeeId,
-      applicationEmployeeName: x.applicationEmployeeName,
       EmployeeIdName:
         x.applicationEmployeeId + '　' + x.applicationEmployeeName,
       applicationDateTime: x.applicationDateTime,
-      registrationChangeMemo: x.registrationChangeMemo,
       registrationChangeFlag: x.registrationChangeMemo !== '' ? 'あり' : '',
+    };
+  });
+};
+
+const convertToChangeHistory = (
+  data: ScrCom0026GetChangeHistoryResponse
+): ChangeHistoryList[] => {
+  return data.changeHistoryList.map((x) => {
+    return {
+      applicationId: x.applicationId,
+      tabName: x.tabName,
+      applicationSourceScreen: x.applicationSourceScreen,
+      allRegistrationName: x.allRegistrationName,
+      applicationEmployeeId: x.applicationEmployeeId,
+      applicationEmployeeName: x.applicationEmployeeName,
+      registrationChangeMemo: x.registrationChangeMemo,
     };
   });
 };
@@ -150,9 +174,10 @@ const ScrCom0026ChangeHistoryTab = () => {
       // API-COM-0026-0006: 変更履歴一覧情報取得
       const changeHistoryResponse = await ScrCom0026GetChangeHistory(null);
       const changeHistoryResult = convertToScreenModel(changeHistoryResponse);
+      const changeHistoryList = convertToChangeHistory(changeHistoryResponse);
 
       // link設定
-      const href = changeHistoryResult.map((x) => {
+      const href = changeHistoryList.map((x) => {
         return {
           id: x.applicationId,
           href:
@@ -183,7 +208,7 @@ const ScrCom0026ChangeHistoryTab = () => {
       ];
 
       // tooltip設定
-      const tooltip = changeHistoryResult.map((x) => {
+      const tooltip = changeHistoryList.map((x) => {
         return {
           id: x.applicationId,
           text: x.registrationChangeMemo,

@@ -52,6 +52,44 @@ interface SearchResultApprovalModel {
   number3: boolean;
   // 第4
   number4: boolean;
+}
+
+interface ApprovalList {
+  // 承認要否
+  approval: boolean;
+  // 承認種類ID
+  approvalKindId: string;
+  // 有効開始日
+  validityStartDate: string;
+  // 変更前タイムスタンプ
+  beforeTimestamp: string;
+  // 変更履歴番号
+  changeHistoryNumber: string;
+  // 変更予定日
+  changeExpectDate: string;
+}
+
+interface ApprovalModel {
+  // 項目内Id(hrefs)
+  id: string;
+  // No
+  number: string;
+  // システム種別
+  systemKind: string;
+  // 画面名
+  screenName: string;
+  // タブ名称
+  tabName: string;
+  // 承認条件名
+  approvalConditionName: string;
+  // 第1
+  number1: boolean;
+  // 第2
+  number2: boolean;
+  // 第3
+  number3: boolean;
+  // 第4
+  number4: boolean;
   // 承認要否
   approval: boolean;
   // 承認種類ID
@@ -168,6 +206,15 @@ const convertToApprovalKindModel = (
       number2: x.authorizerSecond,
       number3: x.authorizerThird,
       number4: x.authorizerFourth,
+    };
+  });
+};
+
+const convertToApprovalList = (
+  approval: ScrCom0026GetApprovalKindResponse
+): ApprovalList[] => {
+  return approval.approvalKindList.map((x) => {
+    return {
       approval: x.approvalFlag,
       approvalKindId: x.approvalKindId,
       validityStartDate: x.validityStartDate,
@@ -179,8 +226,7 @@ const convertToApprovalKindModel = (
 };
 
 const convertToHistoryInfo = (
-  approval: ScrCom9999GetHistoryInfoResponse,
-  changeHistoryNumber: string
+  approval: ScrCom9999GetHistoryInfoResponse
 ): SearchResultApprovalModel[] => {
   return approval.approvalKindList.map((x) => {
     return {
@@ -194,6 +240,16 @@ const convertToHistoryInfo = (
       number2: x.authorizerSecond,
       number3: x.authorizerThird,
       number4: x.authorizerFourth,
+    };
+  });
+};
+
+const convertToHistoryInfoList = (
+  approval: ScrCom0026GetApprovalKindResponse,
+  changeHistoryNumber: string
+): ApprovalList[] => {
+  return approval.approvalKindList.map((x) => {
+    return {
       approval: x.approvalFlag,
       approvalKindId: x.approvalKindId,
       validityStartDate: x.validityStartDate,
@@ -239,6 +295,7 @@ const ScrCom0026ApprovalKindTab = () => {
   const [approvalResult, setApprovalResult] = useState<
     SearchResultApprovalModel[]
   >([]);
+  const [approvalList, setApprovalList] = useState<ApprovalList[]>([]);
   const [initApprovalResult, setInitApprovalResult] = useState<
     SearchResultApprovalModel[]
   >([]);
@@ -270,9 +327,12 @@ const ScrCom0026ApprovalKindTab = () => {
       };
       const approvalResponse = await ScrCom0026GetApprovalKind(approvalRequest);
       const approvalResult = convertToApprovalKindModel(approvalResponse);
+      const approvalList = convertToApprovalList(approvalResponse);
 
       // データグリッドにデータを設定
       setApprovalResult(approvalResult);
+
+      setApprovalList(approvalList);
 
       // 初期データを格納
       if (initApprovalResult.length === 0) {
@@ -292,13 +352,15 @@ const ScrCom0026ApprovalKindTab = () => {
       const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
         getHistoryInfoRequest
       );
-      const historyInfo = convertToHistoryInfo(
+      const historyInfo = convertToHistoryInfo(getHistoryInfoResponse);
+      const historyInfoList = convertToHistoryInfoList(
         getHistoryInfoResponse,
         applicationId
       );
 
       // データグリッドにデータを設定
       setApprovalResult(historyInfo);
+      setApprovalList(historyInfoList);
 
       // 初期データを格納
       if (initApprovalResult) {
@@ -385,7 +447,7 @@ const ScrCom0026ApprovalKindTab = () => {
   const handleConfirm = () => {
     // 画面入力チェック
     const errorMessages: ErrorList[] = [];
-    const approvalResultRequest: SearchResultApprovalModel[] = [];
+    const approvalResultRequest: ApprovalModel[] = [];
     approvalResult.map((x, i) => {
       // 承認者.第1~4のいずれかがチェック済みであること
       if (
@@ -445,12 +507,12 @@ const ScrCom0026ApprovalKindTab = () => {
           number2: x.number2,
           number3: x.number3,
           number4: x.number4,
-          approval: x.approval,
-          approvalKindId: x.approvalKindId,
-          validityStartDate: x.validityStartDate,
-          beforeTimestamp: x.beforeTimestamp,
-          changeHistoryNumber: '',
-          changeExpectDate: '',
+          approval: approvalList[i].approval,
+          approvalKindId: approvalList[i].approvalKindId,
+          validityStartDate: approvalList[i].validityStartDate,
+          beforeTimestamp: approvalList[i].beforeTimestamp,
+          changeHistoryNumber: approvalList[i].changeHistoryNumber,
+          changeExpectDate: approvalList[i].changeExpectDate,
         });
       }
     });
@@ -480,7 +542,7 @@ const ScrCom0026ApprovalKindTab = () => {
     setIsOpenPopup(false);
 
     // 変更行のデータを取得
-    const approvalResultRequest: SearchResultApprovalModel[] = [];
+    const approvalResultRequest: ApprovalModel[] = [];
     approvalResult.forEach((x, i) => {
       if (
         x.number1 !== initApprovalResult[i].number1 &&
@@ -499,12 +561,12 @@ const ScrCom0026ApprovalKindTab = () => {
           number2: x.number2,
           number3: x.number3,
           number4: x.number4,
-          approval: x.approval,
-          approvalKindId: x.approvalKindId,
-          validityStartDate: x.validityStartDate,
-          beforeTimestamp: x.beforeTimestamp,
-          changeHistoryNumber: '',
-          changeExpectDate: '',
+          approval: approvalList[i].approval,
+          approvalKindId: approvalList[i].approvalKindId,
+          validityStartDate: approvalList[i].validityStartDate,
+          beforeTimestamp: approvalList[i].beforeTimestamp,
+          changeHistoryNumber: approvalList[i].changeHistoryNumber,
+          changeExpectDate: approvalList[i].changeExpectDate,
         });
       }
     });
