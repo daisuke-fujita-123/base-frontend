@@ -289,6 +289,8 @@ export const Example = () => {
           columns={columns}
           rows={rows}
           resolver={validationSchema}
+          width={1200}
+          height={150}
           checkboxSelection
           getCellReadonly={handleGetCellReadonly}
           getSelectValues={handleGetSelectValues}

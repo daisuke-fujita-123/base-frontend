@@ -7,6 +7,7 @@ import { ScrMem0003RegistrationCorporationInfoRequest } from 'apis/mem/ScrMem000
 
 import ScrMem0003BaseTab from './tabs/ScrMem0003BaseTab';
 import ScrMem0003BasicTab from './tabs/ScrMem0003BasicTab';
+import ScrMem0003BranchNumberTab from './tabs/ScrMem0003BranchNumberTab';
 import ScrMem0003ChangeHistoryTab from './tabs/ScrMem0003ChangeHistoryTab';
 import ScrMem0003ContractTab from './tabs/ScrMem0003ContractTab';
 import ScrMem0003CreditLimitTab from './tabs/ScrMem0003CreditLimitTab';
@@ -89,6 +90,7 @@ export interface TabDisabledsModel {
   ScrMem0003ContractTab: boolean;
   ScrMem0003BaseTab: boolean;
   ScrMem0003DealHistoryTab: boolean;
+  ScrMem0003BranchNumberTab: boolean;
   ScrMem0003ChangeHistoryTab: boolean;
 }
 
@@ -109,6 +111,7 @@ const ScrMem0003Page = () => {
     ScrMem0003ContractTab: false,
     ScrMem0003BaseTab: false,
     ScrMem0003DealHistoryTab: false,
+    ScrMem0003BranchNumberTab: false,
     ScrMem0003ChangeHistoryTab: false,
   });
 
@@ -147,6 +150,11 @@ const ScrMem0003Page = () => {
       disabled: tabDisableds.ScrMem0003DealHistoryTab,
     },
     {
+      title: '拠点枝番紐付け',
+      hash: '#branch-number',
+      disabled: tabDisableds.ScrMem0003BranchNumberTab,
+    },
+    {
       title: '変更履歴',
       hash: '#change-hisotry',
       disabled: tabDisableds.ScrMem0003ChangeHistoryTab,
@@ -163,6 +171,7 @@ const ScrMem0003Page = () => {
         ScrMem0003ContractTab: false,
         ScrMem0003BaseTab: true,
         ScrMem0003DealHistoryTab: true,
+        ScrMem0003BranchNumberTab: true,
         ScrMem0003ChangeHistoryTab: true,
       });
       return;
@@ -175,6 +184,7 @@ const ScrMem0003Page = () => {
         ScrMem0003ContractTab: true,
         ScrMem0003BaseTab: true,
         ScrMem0003DealHistoryTab: true,
+        ScrMem0003BranchNumberTab: true,
         ScrMem0003ChangeHistoryTab: true,
       });
       return;
@@ -214,6 +224,7 @@ const ScrMem0003Page = () => {
       />
       <ScrMem0003BaseTab />
       <ScrMem0003DealHistoryTab />
+      <ScrMem0003BranchNumberTab />
       <ScrMem0003ChangeHistoryTab />
     </Tabs>
   );

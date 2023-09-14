@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 
+import { Box } from 'layouts/Box';
 import { BlankLayout } from 'layouts/InputLayout';
 import { Popup } from 'layouts/Popup';
 import { Stack } from 'layouts/Stack';
@@ -8,10 +9,9 @@ import { StackSection } from 'layouts/StackSection';
 
 import { CancelButton } from 'controls/Button';
 import { DataGrid, GridColDef } from 'controls/Datagrid';
+import { Typography } from 'controls/Typography';
 
 import { useForm } from 'hooks/useForm';
-
-import { Box, Typography } from '@mui/material';
 
 /**
  * 一括登録エラー確認ポップアップデータモデル
