@@ -206,7 +206,7 @@ const ScrTra0001BasicTab = () => {
       <MainLayout>
         <MainLayout main>
           <FormProvider {...methods}>
-            <Section name='取引管理マスタ一覧検索'>
+            <Section name='取引管理マスタ一覧検索' isSearch>
               <RowStack>
                 <ColStack>
                   <TextField label='マスタID' name='masterId' />
@@ -229,7 +229,7 @@ const ScrTra0001BasicTab = () => {
                 <SearchButton onClick={handleSearch}>検索</SearchButton>
               </RowStack>
             </Section>
-            <Section name='取引管理マスタ一覧'>
+            <Section name='取引管理マスタ一覧' fitInside>
               {isHideDealAccountingMasters ? (
                 <></>
               ) : (

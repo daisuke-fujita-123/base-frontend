@@ -478,7 +478,7 @@ const ScrTra0001ChangeHistoryTab = () => {
     <>
       <MainLayout>
         <MainLayout main>
-          <Section name='変更履歴一覧'>
+          <Section name='変更履歴一覧' fitInside>
             <RowStack justifyContent='flex-end'>
               <OutputButton
                 onClick={handlChangeHistoriesCsvExport}
@@ -497,7 +497,7 @@ const ScrTra0001ChangeHistoryTab = () => {
               onLinkClick={handleLinkClick}
             />
           </Section>
-          <Section name='未承認一覧'>
+          <Section name='未承認一覧' fitInside>
             <RowStack justifyContent='flex-end'>
               <OutputButton
                 onClick={handleUnapprovedChangeHistoriesCsvExport}
