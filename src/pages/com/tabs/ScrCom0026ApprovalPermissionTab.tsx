@@ -102,6 +102,12 @@ const ScrCom0026ApprovalPermissionTab = () => {
   // user情報
   const { user } = useContext(AuthContext);
 
+  // 編集権限_disable設定
+  const setDisableFlg = user.editPossibleScreenIdList.filter((x) => {
+    return x.includes('SCR-COM-0026');
+  });
+  const disableFlg = setDisableFlg[0] === 'SCR-COM-0026' ? false : true;
+
   // 初期表示処理
   useEffect(() => {
     const initialize = async (businessDate: string) => {
@@ -188,7 +194,9 @@ const ScrCom0026ApprovalPermissionTab = () => {
             name='承認権限一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton onClick={handleIconAddClick}>追加</AddButton>
+                <AddButton onClick={handleIconAddClick} disable={disableFlg}>
+                  追加
+                </AddButton>
                 <AddButton onClick={handleIconOutputCsvClick}>
                   CSV出力
                 </AddButton>

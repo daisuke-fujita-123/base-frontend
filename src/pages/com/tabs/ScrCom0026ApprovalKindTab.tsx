@@ -26,7 +26,12 @@ import {
 
 import { AuthContext } from 'providers/AuthProvider';
 
-import { GridColumnGroupingModel, useGridApiRef } from '@mui/x-data-grid-pro';
+import {
+  GridCellParams,
+  GridColumnGroupingModel,
+  GridTreeNode,
+  useGridApiRef,
+} from '@mui/x-data-grid-pro';
 
 /**
  * 検索結果行データモデル
@@ -55,6 +60,8 @@ interface SearchResultApprovalModel {
 }
 
 interface ApprovalList {
+  // No
+  number: string;
   // 承認要否
   approval: boolean;
   // 承認種類ID
@@ -215,6 +222,7 @@ const convertToApprovalList = (
 ): ApprovalList[] => {
   return approval.approvalKindList.map((x) => {
     return {
+      number: x.approvalKindNumber,
       approval: x.approvalFlag,
       approvalKindId: x.approvalKindId,
       validityStartDate: x.validityStartDate,
@@ -250,6 +258,7 @@ const convertToHistoryInfoList = (
 ): ApprovalList[] => {
   return approval.approvalKindList.map((x) => {
     return {
+      number: x.approvalKindNumber,
       approval: x.approvalFlag,
       approvalKindId: x.approvalKindId,
       validityStartDate: x.validityStartDate,
@@ -315,11 +324,17 @@ const ScrCom0026ApprovalKindTab = () => {
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
 
+  // 編集権限_disable設定
+  const setDisableFlg = user.editPossibleScreenIdList.filter((x) => {
+    return x.includes('SCR-COM-0026');
+  });
+  const disableFlg = setDisableFlg[0] === 'SCR-COM-0026' ? false : true;
+
   // 初期表示処理
   useEffect(() => {
     const initialize = async (businessDate: string) => {
       // ボタン活性
-      setActiveFlag(false);
+      setActiveFlag(disableFlg);
 
       // API-COM-0026-0003: 承認種類一覧取得API
       const approvalRequest: ScrCom0026GetApprovalKindRequest = {
@@ -601,6 +616,31 @@ const ScrCom0026ApprovalKindTab = () => {
     setIsOpenPopup(false);
   };
 
+  const handleGetCellDisabled = (params: any) => {
+    if (disableFlg) return true;
+    let flg = '';
+    approvalList.forEach((x) => {
+      if (params.row.number === x.number && x.approval === false) {
+        flg = 'true';
+      }
+    });
+    if (flg === 'true') return true;
+    return false;
+  };
+
+  const handleGetRowClassName = (
+    params: GridCellParams<any, any, any, GridTreeNode>
+  ) => {
+    let flg = '';
+    approvalList.forEach((x) => {
+      if (params.row.number === x.number && x.approval === false) {
+        flg = 'true';
+      }
+    });
+    if (flg === 'true') return 'not-available';
+    return '';
+  };
+
   return (
     <>
       <MainLayout>
@@ -611,10 +651,7 @@ const ScrCom0026ApprovalKindTab = () => {
             name='承認種類一覧'
             decoration={
               <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
-                <AddButton
-                  disable={activeFlag}
-                  onClick={handleIconOutputCsvClick}
-                >
+                <AddButton onClick={handleIconOutputCsvClick}>
                   CSV出力
                 </AddButton>
               </MarginBox>
@@ -627,6 +664,13 @@ const ScrCom0026ApprovalKindTab = () => {
               rows={approvalResult}
               disabled={activeFlag}
               apiRef={apiRef}
+              getCellDisabled={handleGetCellDisabled}
+              getCellClassName={handleGetRowClassName}
+              sx={{
+                '& .not-available': {
+                  backgroundColor: '#dddddd',
+                },
+              }}
             />
           </Section>
         </MainLayout>
