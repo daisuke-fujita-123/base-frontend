@@ -541,6 +541,7 @@ const ScrMem0003CreditTab = (props: {
       ScrMem0003ContractTab: true,
       ScrMem0003BaseTab: true,
       ScrMem0003DealHistoryTab: true,
+      ScrMem0003BranchNumberTab: true,
       ScrMem0003ChangeHistoryTab: true,
     });
   };
