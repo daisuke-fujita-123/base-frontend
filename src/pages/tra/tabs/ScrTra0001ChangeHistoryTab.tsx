@@ -242,10 +242,6 @@ const ScrTra0001ChangeHistoryTab = () => {
   const apiRef = useGridApiRef();
 
   // state
-  // DataGrid：変更履歴(CSV出力用)
-  const [changeHistoriesCsv, setChangeHistoriesCsv] = useState<
-    ChangeHistoriesRowModel[]
-  >([]);
   // DataGrid：変更履歴
   const [changeHistories, setChangeHistories] = useState<
     ChangeHistoriesRowModel[]
@@ -259,9 +255,6 @@ const ScrTra0001ChangeHistoryTab = () => {
     { field: 'registrationChangeMemo', tooltips: [] },
     { field: 'approverComment', tooltips: [] },
   ]);
-  // DataGrid：未承認一覧(CSV出力用)
-  const [unapprovedChangeHistoriesCsv, setUnapprovedChangeHistoriesCsv] =
-    useState<UnapprovedChangeHistoriesRowModel[]>([]);
   // DataGrid：未承認一覧
   const [unapprovedChangeHistories, setUnapprovedChangeHistories] = useState<
     UnapprovedChangeHistoriesRowModel[]
@@ -281,6 +274,7 @@ const ScrTra0001ChangeHistoryTab = () => {
       await setInitData();
     };
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -295,28 +289,6 @@ const ScrTra0001ChangeHistoryTab = () => {
     changeHistoriesTooltips[0].tooltips.splice(0);
     changeHistoriesTooltips[1].tooltips.splice(0);
     if (response.changeHistories.length > 0) {
-      // CSV出力用データのセット
-      setChangeHistoriesCsv(
-        response.changeHistories.map((o, i) => {
-          return {
-            id: i,
-            changeHistoryNumber: o.changeHistoryNumber,
-            screenName: o.screenName,
-            tabName: o.tabName ? o.tabName : o.allRegistrationName,
-            changeExpectDate: o.changeExpectDate,
-            changeApplicationEmployee:
-              o.changeApplicationEmployeeId +
-              ' ' +
-              o.changeApplicationEmployeeName,
-            changeApplicationTimestamp: o.changeApplicationTimestamp,
-            registrationChangeMemo: o.registrationChangeMemo,
-            approvalEmployee:
-              o.approvalEmployeeId + ' ' + o.approvalEmployeeName,
-            approvalTimestamp: o.approvalTimestamp,
-            approverComment: o.approverComment,
-          };
-        })
-      );
       // Datagrid用データのセット
       setChangeHistories(
         response.changeHistories.map((o, i) => {
@@ -444,22 +416,6 @@ const ScrTra0001ChangeHistoryTab = () => {
               step.approvalEmployeeId + ' ' + step.approvalEmployeeName;
           });
       }
-      // CSV用データのセット
-      const csvData: UnapprovedChangeHistoriesRowModel = {
-        id: tmp['id'],
-        changeHistoryNumber: tmp['changeHistoryNumber'],
-        screenName: tmp['screenName'],
-        tabName: tmp['tabName'],
-        changeExpectDate: tmp['changeExpectDate'],
-        changeApplicationEmployee: tmp['changeApplicationEmployee'],
-        changeApplicationTimestamp: tmp['changeApplicationTimestamp'],
-        registrationChangeMemo: o.registrationChangeMemo,
-        approvalEmployee1: tmp['approvalEmployee1'].toString(),
-        approvalEmployee2: tmp['approvalEmployee2'].toString(),
-        approvalEmployee3: tmp['approvalEmployee3'].toString(),
-        approvalEmployee4: tmp['approvalEmployee4'].toString(),
-      };
-      unapprovedChangeHistoriesCsv.push(csvData);
 
       // DataGrid用データのセット
       const rowData: UnapprovedChangeHistoriesRowModel = {
@@ -495,7 +451,6 @@ const ScrTra0001ChangeHistoryTab = () => {
         });
       }
     }
-    console.log(unapprovedChangeHistories);
     setUnapprovedChangeHistories(unapprovedChangeHistories);
   };
 
@@ -533,7 +488,6 @@ const ScrTra0001ChangeHistoryTab = () => {
               </OutputButton>
             </RowStack>
             <DataGrid
-              width='100%'
               height={200}
               pagination={true}
               columns={changeHistoriesColumns}
@@ -553,7 +507,6 @@ const ScrTra0001ChangeHistoryTab = () => {
               </OutputButton>
             </RowStack>
             <DataGrid
-              width='100%'
               height={200}
               pagination={true}
               apiRef={apiRef}

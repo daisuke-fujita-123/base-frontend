@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
+import { yupResolver } from '@hookform/resolvers/yup';
+
 import { BlankLayout } from 'layouts/InputLayout';
 // レイアウト
 import { MainLayout } from 'layouts/MainLayout';
@@ -22,9 +24,11 @@ import {
 // 共通部品
 import { useForm } from 'hooks/useForm';
 
+import yup from 'utils/validation/ValidationDefinition';
+
 /** モデル定義 */
-/** 取引管理マスタ情報データモデル */
-interface SearchCondModel {
+/** 検索条件モデル */
+interface SearchCondition {
   // マスタID
   masterId: string;
   // マスタ名
@@ -32,6 +36,13 @@ interface SearchCondModel {
   // キー情報
   primaryKeyColumnName: string;
 }
+
+const initSearchCondition: SearchCondition = {
+  masterId: '',
+  masterName: '',
+  primaryKeyColumnName: '',
+};
+
 /** 取引管理マスタ一覧データモデル */
 interface DealAccountingMastersRowModel {
   // ID
@@ -47,6 +58,7 @@ interface DealAccountingMastersRowModel {
   // 件数
   masterCount: number;
 }
+
 /** 取引管理マスタ一覧 カラム定義 */
 const dealAccountingMastersColumns: GridColDef[] = [
   {
@@ -92,18 +104,21 @@ const dealAccountingMastersColumns: GridColDef[] = [
   },
 ];
 
+/**
+ * バリデーションスキーマ
+ */
+const validationSchama = {
+  masterId: yup.string().label('マスタID'),
+  masterName: yup.string().label('マスタ名'),
+  primaryKeyColumnName: yup.string().label('キー情報'),
+};
+
 /** SCR-TRA-0001：取引管理マスタ一覧 基本情報タブ */
 const ScrTra0001BasicTab = () => {
   // router
   const navigate = useNavigate();
 
   // state
-  // 初期表示値
-  const [screenData, setScreenData] = useState<SearchCondModel>({
-    masterId: '',
-    masterName: '',
-    primaryKeyColumnName: '',
-  });
   // DataGrid：マスタ一覧
   const [dealAccountingMasters, setDealAccountingMasters] = useState<
     DealAccountingMastersRowModel[]
@@ -118,24 +133,25 @@ const ScrTra0001BasicTab = () => {
     useState<boolean>(true);
 
   // form
-  const methods = useForm<SearchCondModel>({});
-  const { reset } = methods;
+  const methods = useForm<SearchCondition>({
+    defaultValues: initSearchCondition,
+    resolver: yupResolver(yup.object(validationSchama)),
+  });
+  const { reset, getValues } = methods;
 
   // 初期表示処理
   useEffect(() => {
-    const initialize = async () => {
-      await setInitData();
+    const initialize = () => {
+      setInitData();
     };
 
     initialize();
-  }, [reset]);
+  }, [reset, getValues]);
 
   /**
-   * 物流拠点別枝番設定一覧の値取得
+   * 初期表示
    */
   const setInitData = () => {
-    // レスポンスを変換、画面にデータを設定
-    reset(screenData);
     // マスタ一覧を非表示にする
     setIsHideDealAccountingMasters(true);
   };
@@ -143,16 +159,15 @@ const ScrTra0001BasicTab = () => {
    * 検索ボタンクリック時のイベントハンドラ
    */
   const handleSearch = async () => {
-    // 取引管理マスタ一覧を非表示にする
-    setIsHideDealAccountingMasters(true);
+    // 検索条件の取得
+    const searchCondition: SearchCondition = getValues();
 
     // 取引管理マスタ一覧検索API呼出
     const request: ScrTra0001SearchDealAccountingMasterInfoRequest = {
-      masterId: screenData.masterId,
-      masterName: screenData.masterName,
-      primaryKeyColumnName: screenData.primaryKeyColumnName,
+      masterId: searchCondition.masterId,
+      masterName: searchCondition.masterName,
+      primaryKeyColumnName: searchCondition.primaryKeyColumnName,
     };
-    console.log(request);
     const response = await ScrTra0001SearchDealAccountingMasterInfo(request);
 
     // 検索結果件数0件の場合は取引管理マスタ一覧を非表示に設定
@@ -219,7 +234,7 @@ const ScrTra0001BasicTab = () => {
                 <></>
               ) : (
                 <DataGrid
-                  // height={200}
+                  height={400}
                   pagination={true}
                   columns={dealAccountingMastersColumns}
                   rows={dealAccountingMasters}
