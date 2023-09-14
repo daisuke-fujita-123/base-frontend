@@ -15,7 +15,6 @@ import {
 
 import {
   ScrCom0026GetChangeHistory,
-  ScrCom0026GetChangeHistoryRequest,
   ScrCom0026GetChangeHistoryResponse,
 } from 'apis/com/ScrCom0026Api';
 
@@ -109,7 +108,14 @@ const convertToScreenModel = (
       applicationSourceScreen: x.applicationSourceScreen,
       tabName: x.tabName,
       allRegistrationName: x.allRegistrationName,
-      tabRegistrationName: x.tabName + x.allRegistrationName,
+      tabRegistrationName:
+        x.allRegistrationName === null
+          ? x.tabName
+          : x.tabName === null
+          ? x.allRegistrationName
+          : x.allRegistrationName !== null && x.tabName !== null
+          ? x.tabName
+          : '',
       changeDate: x.changeDate,
       applicationEmployeeId: x.applicationEmployeeId,
       applicationEmployeeName: x.applicationEmployeeName,
@@ -130,10 +136,6 @@ const ScrCom0026ChangeHistoryTab = () => {
   const [hrefs, setHrefs] = useState<GridHrefsModel[]>([]);
   const [tooltips, setTooltips] = useState<GridTooltipsModel[]>([]);
   const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 40;
 
   // router
   const navigate = useNavigate();
@@ -146,13 +148,7 @@ const ScrCom0026ChangeHistoryTab = () => {
   useEffect(() => {
     const initialize = async (screenId: string, tabId: number) => {
       // API-COM-0026-0006: 変更履歴一覧情報取得
-      const changeHistoryRequest: ScrCom0026GetChangeHistoryRequest = {
-        screenId: screenId,
-        tabId: tabId,
-      };
-      const changeHistoryResponse = await ScrCom0026GetChangeHistory(
-        changeHistoryRequest
-      );
+      const changeHistoryResponse = await ScrCom0026GetChangeHistory(null);
       const changeHistoryResult = convertToScreenModel(changeHistoryResponse);
 
       // link設定
@@ -268,7 +264,7 @@ const ScrCom0026ChangeHistoryTab = () => {
                 </AddButton>
               </MarginBox>
             }
-            width={maxSectionWidth}
+            fitInside
           >
             <DataGrid
               columns={approvalResultColumns}

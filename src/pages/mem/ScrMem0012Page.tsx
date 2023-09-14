@@ -1136,12 +1136,12 @@ const ScrMem0012Page = () => {
       const newSelectValues = selectValuesInitialValues;
       // コード管理マスタ情報取得API
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0050' },
-          { codeId: 'CDE-COM-0051' },
-          { codeId: 'CDE-COM-0052' },
-          { codeId: 'CDE-COM-0053' },
-          { codeId: 'CDE-COM-0054' },
+        codeId: [
+          'CDE-COM-0050',
+          'CDE-COM-0051',
+          'CDE-COM-0052',
+          'CDE-COM-0053',
+          'CDE-COM-0054',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
@@ -1390,12 +1390,12 @@ const ScrMem0012Page = () => {
       const newSelectValues = selectValuesInitialValues;
       // コード管理マスタ情報取得API
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0050' },
-          { codeId: 'CDE-COM-0051' },
-          { codeId: 'CDE-COM-0052' },
-          { codeId: 'CDE-COM-0053' },
-          { codeId: 'CDE-COM-0054' },
+        codeId: [
+          'CDE-COM-0050',
+          'CDE-COM-0051',
+          'CDE-COM-0052',
+          'CDE-COM-0053',
+          'CDE-COM-0054',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
@@ -1624,12 +1624,12 @@ const ScrMem0012Page = () => {
       const newSelectValues = selectValuesInitialValues;
       // コード管理マスタ情報取得API
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0050' },
-          { codeId: 'CDE-COM-0051' },
-          { codeId: 'CDE-COM-0052' },
-          { codeId: 'CDE-COM-0053' },
-          { codeId: 'CDE-COM-0054' },
+        codeId: [
+          'CDE-COM-0050',
+          'CDE-COM-0051',
+          'CDE-COM-0052',
+          'CDE-COM-0053',
+          'CDE-COM-0054',
         ],
       };
       const getCodeManagementMasterMultipleResponse =

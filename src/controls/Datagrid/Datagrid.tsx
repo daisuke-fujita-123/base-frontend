@@ -85,9 +85,6 @@ const StyledDataGrid = styled(MuiDataGridPro)({
   '& .MuiDataGrid-columnSeparator': {
     display: 'none',
   },
-  '& .MuiDataGrid-virtualScroller': {
-    overflow: 'hidden',
-  },
 });
 
 const GridCellForTooltip = styled(MuiGridCellForTooltip)({
@@ -296,6 +293,7 @@ export const DataGrid = (props: DataGridProps) => {
     getCellDisabled,
     getCellReadonly,
     getSelectValues,
+    sx,
     apiRef,
   } = props;
 
@@ -726,6 +724,12 @@ export const DataGrid = (props: DataGridProps) => {
           }}
           experimentalFeatures={{
             columnGrouping: true,
+          }}
+          sx={{
+            ...sx,
+            '& .MuiDataGrid-virtualScroller': {
+              overflow: height ? 'auto' : 'hidden',
+            },
           }}
           apiRef={apiRef}
         />
