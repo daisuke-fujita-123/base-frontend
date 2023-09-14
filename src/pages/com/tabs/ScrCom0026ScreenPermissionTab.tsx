@@ -79,7 +79,7 @@ const convertToScreenModel = (
       id: x.screenPermissionId,
       screenPermissionId: x.screenPermissionId,
       screenPermissionName: x.screenPermissionName,
-      useFlag: x.useFlag === true ? '可' : '不可',
+      useFlag: x.useFlag ? '可' : '不可',
       totalSettingPost: x.totalSettingPost,
     };
   });
