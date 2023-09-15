@@ -31,9 +31,9 @@ export interface ScrMem0001SearchCorporationsRequest {
   // コース参加区分
   courseEntryKinds?: string[];
   // 基本法人与信額（FROM）
-  basicsCorporationCreditAmountFrom?: string;
+  basicsCorporationCreditAmountFrom?: number;
   // 基本法人与信額（TO）
-  basicsCorporationCreditAmountTo?: string;
+  basicsCorporationCreditAmountTo?: number;
   // 臨時与信設定日（FROM）
   temporaryCreditSettingDateFrom?: string;
   // 臨時与信設定日（TO）
