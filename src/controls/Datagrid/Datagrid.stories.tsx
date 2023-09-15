@@ -189,7 +189,7 @@ export const Example = () => {
       representativeName: '代表者2',
       input1: undefined,
       input2: 'Input 2',
-      select: '1',
+      select: '4',
       radio: '1',
       checkbox: true,
       datepicker: '2020/01/01',
@@ -217,7 +217,7 @@ export const Example = () => {
       representativeName: '代表者4',
       input1: 'Input 1',
       input2: 'Input 2',
-      select: '1',
+      select: '4',
       radio: undefined,
       checkbox: true,
       datepicker: '2020/01/01',
@@ -242,12 +242,18 @@ export const Example = () => {
   const validationSchema: ObjectSchema<any> = yup.object({
     input1: yup.string().required().max(10).label('Input 1'),
     input2: yup.string().required().max(10).label('Input 2'),
+    fromto: yup
+      .array()
+      .of(yup.string().required().label('FromTo'))
+      .label('Select'),
   });
 
   const apiRef = useGridApiRef();
 
   const handleGetCellReadonly = (params: any) => {
-    return params.field === 'input2' && params.id % 2 === 0;
+    if (params.field === 'input2' && params.id % 2 === 0) return true;
+    if (params.field === 'select' && params.id % 2 === 1) return true;
+    return false;
   };
 
   const handleGetSelectValues = (params: any) => {
@@ -283,6 +289,8 @@ export const Example = () => {
           columns={columns}
           rows={rows}
           resolver={validationSchema}
+          width={1200}
+          height={150}
           checkboxSelection
           getCellReadonly={handleGetCellReadonly}
           getSelectValues={handleGetSelectValues}

@@ -79,7 +79,7 @@ const convertToScreenModel = (
       id: x.screenPermissionId,
       screenPermissionId: x.screenPermissionId,
       screenPermissionName: x.screenPermissionName,
-      useFlag: x.useFlag,
+      useFlag: x.useFlag === true ? '可' : '不可',
       totalSettingPost: x.totalSettingPost,
     };
   });
@@ -192,6 +192,7 @@ const ScrCom0026ScreenPermissionTab = () => {
                 </AddButton>
               </MarginBox>
             }
+            fitInside
           >
             <DataGrid
               columns={screenResultColumns}

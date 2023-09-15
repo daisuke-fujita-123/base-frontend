@@ -85,9 +85,6 @@ const StyledDataGrid = styled(MuiDataGridPro)({
   '& .MuiDataGrid-columnSeparator': {
     display: 'none',
   },
-  '& .MuiDataGrid-virtualScroller': {
-    overflow: 'hidden',
-  },
 });
 
 const GridCellForTooltip = styled(MuiGridCellForTooltip)({
@@ -296,6 +293,7 @@ export const DataGrid = (props: DataGridProps) => {
     getCellDisabled,
     getCellReadonly,
     getSelectValues,
+    sx,
     apiRef,
   } = props;
 
@@ -370,6 +368,17 @@ export const DataGrid = (props: DataGridProps) => {
       ? getSelectValues(params)
       : params.colDef.selectValues;
     const cellDisabled = getCellDisabled ? getCellDisabled(params) : false;
+
+    if (getCellReadonly && getCellReadonly(params)) {
+      return (
+        <>
+          {
+            selectValues.find((x: any) => x.value === params.value)
+              ?.displayValue
+          }
+        </>
+      );
+    }
 
     return (
       <>
@@ -715,6 +724,12 @@ export const DataGrid = (props: DataGridProps) => {
           }}
           experimentalFeatures={{
             columnGrouping: true,
+          }}
+          sx={{
+            ...sx,
+            '& .MuiDataGrid-virtualScroller': {
+              overflow: height ? 'auto' : 'hidden',
+            },
           }}
           apiRef={apiRef}
         />

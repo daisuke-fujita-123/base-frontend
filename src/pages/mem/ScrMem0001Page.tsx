@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FormProvider } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import yup from 'utils/yup';
@@ -15,7 +15,12 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section, SectionClose } from 'layouts/Section';
 import { ColStack, RowStack } from 'layouts/Stack';
 
-import { AddButton, SearchButton } from 'controls/Button';
+import {
+  AddButton,
+  OutputButton,
+  RegisterButton,
+  SearchButton,
+} from 'controls/Button';
 import {
   DataGrid,
   exportCsv,
@@ -31,7 +36,7 @@ import { SerchLabelText } from 'controls/Typography';
 
 import {
   ScrCom9999getCodeManagementMasterMultiple,
-  ScrCom9999GetCodeValue,
+  ScrCom9999GetPlaceMaster,
 } from 'apis/com/ScrCom9999Api';
 import {
   ScrMem0001SearchCorporations,
@@ -44,6 +49,7 @@ import {
   ScrMem9999OutputReportRequest,
 } from 'apis/mem/ScrMem9999Api';
 
+import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
@@ -51,7 +57,7 @@ import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
 
-import { useGridApiRef } from '@mui/x-data-grid-pro';
+import { GridRowSelectionModel, useGridApiRef } from '@mui/x-data-grid-pro';
 
 /**
  * 検索条件データモデル
@@ -188,28 +194,37 @@ const corporationBasicSchama = {
     .label('物流拠点住所（市区町村以降）')
     .max(80),
   logisticsBaseDistrictCode: yup.string().label('市区郡コード/市区郡名'),
-  logisticsBasePhoneNumber: yup.string().label('物流拠点TEL').max(13).phone(),
+  logisticsBasePhoneNumber: yup
+    .string()
+    .label('物流拠点TEL')
+    .max(13)
+    .half()
+    .phone(),
   limitStatusKinds: yup.string().label('制限状況'),
   courseEntryKinds: yup.array().label('コース参加区分'),
   basicsCorporationCreditAmountFrom: yup
     .string()
     .label('基本法人与信額（FROM）')
     .max(11)
+    .half()
     .numberWithComma(),
   basicsCorporationCreditAmountTo: yup
     .string()
     .label('基本法人与信額（TO）')
     .max(11)
+    .half()
     .numberWithComma(),
   temporaryCreditSettingDateFrom: yup
     .string()
     .label('臨時与信設定日（FROM）')
     .max(10)
+    .half()
     .date(),
   temporaryCreditSettingDateTo: yup
     .string()
     .label('臨時与信設定日（TO）')
     .max(10)
+    .half()
     .date(),
   contractId: yup.string().label('契約ID').max(7).half(),
   billingId: yup.string().label('請求先ID').max(4).half(),
@@ -223,36 +238,70 @@ const corporationBasicSchama = {
     .label('端末契約ID')
     .max(7)
     .half(),
-  useStartDateFrom: yup.string().label('利用開始日（FROM）').max(10).date(),
-  useStartDateTo: yup.string().label('利用開始日（TO）').max(10).date(),
-  idIssuanceDateFrom: yup.string().label('ID発行年月日（FROM）').max(10).date(),
-  idIssuanceDateTo: yup.string().label('ID発行年月日（TO）').max(10).date(),
+  useStartDateFrom: yup
+    .string()
+    .label('利用開始日（FROM）')
+    .max(10)
+    .half()
+    .date(),
+  useStartDateTo: yup.string().label('利用開始日（TO）').max(10).half().date(),
+  idIssuanceDateFrom: yup
+    .string()
+    .label('ID発行年月日（FROM）')
+    .max(10)
+    .half()
+    .date(),
+  idIssuanceDateTo: yup
+    .string()
+    .label('ID発行年月日（TO）')
+    .max(10)
+    .half()
+    .date(),
   courseChangeDateFrom: yup
     .string()
     .label('コース変更日（FROM）')
     .max(10)
+    .half()
     .date(),
-  courseChangeDateTo: yup.string().label('コース変更日（TO）').max(10).date(),
+  courseChangeDateTo: yup
+    .string()
+    .label('コース変更日（TO）')
+    .max(10)
+    .half()
+    .date(),
   recessPeriodStartDateFrom: yup
     .string()
     .label('休会期間FROM（FROM）')
     .max(10)
+    .half()
     .date(),
   recessPeriodStartDateTo: yup
     .string()
     .label('休会期間FROM（TO）')
     .max(10)
+    .half()
     .date(),
   recessPeriodEndDateFrom: yup
     .string()
     .label('休会期間TO（FROM）')
     .max(10)
+    .half()
     .date(),
-  recessPeriodEndDateTo: yup.string().label('休会期間TO（TO）').max(10).date(),
-  leavingDateFrom: yup.string().label('脱会日（FROM）').max(10).date(),
-  leavingDateTo: yup.string().label('脱会日（TO）').max(10).date(),
-  changeExpectDateFrom: yup.string().label('変更日（FROM）').max(10).date(),
-  changeExpectDateTo: yup.string().label('変更日（TO）').max(10).date(),
+  recessPeriodEndDateTo: yup
+    .string()
+    .label('休会期間TO（TO）')
+    .max(10)
+    .half()
+    .date(),
+  leavingDateFrom: yup.string().label('脱会日（FROM）').max(10).half().date(),
+  leavingDateTo: yup.string().label('脱会日（TO）').max(10).half().date(),
+  changeExpectDateFrom: yup
+    .string()
+    .label('変更日（FROM）')
+    .max(10)
+    .half()
+    .date(),
+  changeExpectDateTo: yup.string().label('変更日（TO）').max(10).half().date(),
 };
 
 /**
@@ -390,51 +439,162 @@ const convertFromSearchConditionModel = (
   searchCondition: SearchConditionModel
 ): ScrMem0001SearchCorporationsRequest => {
   return {
-    corporationId: searchCondition.corporationId,
-    corporationName: searchCondition.corporationName,
-    corporationGroupId: searchCondition.corporationGroupName,
-    corporationEntryKinds: searchCondition.corporationEntryKinds,
-    representativeName: searchCondition.representativeName,
-    guarantorName1: searchCondition.guarantorName1,
-    guarantorName2: searchCondition.guarantorName2,
-    eligibleBusinessNumber: searchCondition.eligibleBusinessNumber,
-    antiqueBusinessLicenseNumber: searchCondition.antiqueBusinessLicenseNumber,
+    corporationId:
+      searchCondition.corporationId === ''
+        ? undefined
+        : searchCondition.corporationId,
+    corporationName:
+      searchCondition.corporationName === ''
+        ? undefined
+        : searchCondition.corporationName,
+    corporationGroupId:
+      searchCondition.corporationGroupName === ''
+        ? undefined
+        : searchCondition.corporationGroupName,
+    corporationEntryKinds:
+      searchCondition.corporationEntryKinds.length === 0
+        ? undefined
+        : searchCondition.corporationEntryKinds,
+    representativeName:
+      searchCondition.representativeName === ''
+        ? undefined
+        : searchCondition.representativeName,
+    guarantorName1:
+      searchCondition.guarantorName1 === ''
+        ? undefined
+        : searchCondition.guarantorName1,
+    guarantorName2:
+      searchCondition.guarantorName2 === ''
+        ? undefined
+        : searchCondition.guarantorName2,
+    eligibleBusinessNumber:
+      searchCondition.eligibleBusinessNumber === ''
+        ? undefined
+        : searchCondition.eligibleBusinessNumber,
+    antiqueBusinessLicenseNumber:
+      searchCondition.antiqueBusinessLicenseNumber === ''
+        ? undefined
+        : searchCondition.antiqueBusinessLicenseNumber,
     logisticsBaseAddressAfterMunicipalities:
-      searchCondition.logisticsBaseAddressAfterMunicipalities,
-    logisticsBaseDistrictCode: searchCondition.logisticsBaseDistrictCode,
-    logisticsBasePhoneNumber: searchCondition.logisticsBasePhoneNumber,
-    limitStatusKinds: searchCondition.limitStatusKinds,
-    courseEntryKinds: searchCondition.courseEntryKinds,
+      searchCondition.logisticsBaseAddressAfterMunicipalities === ''
+        ? undefined
+        : searchCondition.logisticsBaseAddressAfterMunicipalities,
+    logisticsBaseDistrictCode:
+      searchCondition.logisticsBaseDistrictCode === ''
+        ? undefined
+        : searchCondition.logisticsBaseDistrictCode,
+    logisticsBasePhoneNumber:
+      searchCondition.logisticsBasePhoneNumber === ''
+        ? undefined
+        : searchCondition.logisticsBasePhoneNumber,
+    limitStatusKinds:
+      searchCondition.limitStatusKinds === ''
+        ? undefined
+        : searchCondition.limitStatusKinds,
+    courseEntryKinds:
+      searchCondition.courseEntryKinds.length === 0
+        ? undefined
+        : searchCondition.courseEntryKinds,
     basicsCorporationCreditAmountFrom:
-      searchCondition.basicsCorporationCreditAmountFrom,
+      searchCondition.basicsCorporationCreditAmountFrom === ''
+        ? undefined
+        : searchCondition.basicsCorporationCreditAmountFrom,
     basicsCorporationCreditAmountTo:
-      searchCondition.basicsCorporationCreditAmountTo,
+      searchCondition.basicsCorporationCreditAmountTo === ''
+        ? undefined
+        : searchCondition.basicsCorporationCreditAmountTo,
     temporaryCreditSettingDateFrom:
-      searchCondition.temporaryCreditSettingDateFrom,
-    temporaryCreditSettingDateTo: searchCondition.temporaryCreditSettingDateTo,
-    contractId: searchCondition.contractId,
-    billingId: searchCondition.billingId,
-    staffDepartmentKinds: searchCondition.staffDepartmentKinds,
-    liveOptionEntryKinds: searchCondition.liveOptionEntryKinds,
-    posPutTogetherPlaceCode: searchCondition.posPutTogetherPlaceCode,
-    posNumber: searchCondition.posNumber,
-    iaucManagementNumber: searchCondition.iaucManagementNumber,
+      searchCondition.temporaryCreditSettingDateFrom === ''
+        ? undefined
+        : searchCondition.temporaryCreditSettingDateFrom,
+    temporaryCreditSettingDateTo:
+      searchCondition.temporaryCreditSettingDateTo === ''
+        ? undefined
+        : searchCondition.temporaryCreditSettingDateTo,
+    contractId:
+      searchCondition.contractId === ''
+        ? undefined
+        : searchCondition.contractId,
+    billingId:
+      searchCondition.billingId === '' ? undefined : searchCondition.billingId,
+    staffDepartmentKinds:
+      searchCondition.staffDepartmentKinds === ''
+        ? undefined
+        : searchCondition.staffDepartmentKinds,
+    liveOptionEntryKinds:
+      searchCondition.liveOptionEntryKinds.length === 0
+        ? undefined
+        : searchCondition.liveOptionEntryKinds,
+    posPutTogetherPlaceCode:
+      searchCondition.posPutTogetherPlaceCode === ''
+        ? undefined
+        : searchCondition.posPutTogetherPlaceCode,
+    posNumber:
+      searchCondition.posNumber === '' ? undefined : searchCondition.posNumber,
+    iaucManagementNumber:
+      searchCondition.iaucManagementNumber === ''
+        ? undefined
+        : searchCondition.iaucManagementNumber,
     autobankSystemTerminalContractId:
-      searchCondition.autobankSystemTerminalContractId,
-    useStartDateFrom: searchCondition.useStartDateFrom,
-    useStartDateTo: searchCondition.useStartDateTo,
-    idIssuanceDateFrom: searchCondition.idIssuanceDateFrom,
-    idIssuanceDateTo: searchCondition.idIssuanceDateTo,
-    courseChangeDateFrom: searchCondition.courseChangeDateFrom,
-    courseChangeDateTo: searchCondition.courseChangeDateTo,
-    recessPeriodStartDateFrom: searchCondition.recessPeriodStartDateFrom,
-    recessPeriodStartDateTo: searchCondition.recessPeriodStartDateTo,
-    recessPeriodEndDateFrom: searchCondition.recessPeriodEndDateFrom,
-    recessPeriodEndDateTo: searchCondition.recessPeriodEndDateTo,
-    leavingDateFrom: searchCondition.leavingDateFrom,
-    leavingDateTo: searchCondition.leavingDateTo,
-    changeExpectDateFrom: searchCondition.changeExpectDateFrom,
-    changeExpectDateTo: searchCondition.changeExpectDateTo,
+      searchCondition.autobankSystemTerminalContractId === ''
+        ? undefined
+        : searchCondition.autobankSystemTerminalContractId,
+    useStartDateFrom:
+      searchCondition.useStartDateFrom === ''
+        ? undefined
+        : searchCondition.useStartDateFrom,
+    useStartDateTo:
+      searchCondition.useStartDateTo === ''
+        ? undefined
+        : searchCondition.useStartDateTo,
+    idIssuanceDateFrom:
+      searchCondition.idIssuanceDateFrom === ''
+        ? undefined
+        : searchCondition.idIssuanceDateFrom,
+    idIssuanceDateTo:
+      searchCondition.idIssuanceDateTo === ''
+        ? undefined
+        : searchCondition.idIssuanceDateTo,
+    courseChangeDateFrom:
+      searchCondition.courseChangeDateFrom === ''
+        ? undefined
+        : searchCondition.courseChangeDateFrom,
+    courseChangeDateTo:
+      searchCondition.courseChangeDateTo === ''
+        ? undefined
+        : searchCondition.courseChangeDateTo,
+    recessPeriodStartDateFrom:
+      searchCondition.recessPeriodStartDateFrom === ''
+        ? undefined
+        : searchCondition.recessPeriodStartDateFrom,
+    recessPeriodStartDateTo:
+      searchCondition.recessPeriodStartDateTo === ''
+        ? undefined
+        : searchCondition.recessPeriodStartDateTo,
+    recessPeriodEndDateFrom:
+      searchCondition.recessPeriodEndDateFrom === ''
+        ? undefined
+        : searchCondition.recessPeriodEndDateFrom,
+    recessPeriodEndDateTo:
+      searchCondition.recessPeriodEndDateTo === ''
+        ? undefined
+        : searchCondition.recessPeriodEndDateTo,
+    leavingDateFrom:
+      searchCondition.leavingDateFrom === ''
+        ? undefined
+        : searchCondition.leavingDateFrom,
+    leavingDateTo:
+      searchCondition.leavingDateTo === ''
+        ? undefined
+        : searchCondition.leavingDateTo,
+    changeExpectDateFrom:
+      searchCondition.changeExpectDateFrom === ''
+        ? undefined
+        : searchCondition.changeExpectDateFrom,
+    changeExpectDateTo:
+      searchCondition.changeExpectDateTo === ''
+        ? undefined
+        : searchCondition.changeExpectDateTo,
     limitCount: 15000,
   };
 };
@@ -445,7 +605,7 @@ const convertFromSearchConditionModel = (
 const convertToSearchResultRowModel = (
   response: ScrMem0001SearchCorporationsResponse
 ): SearchResultRowModel[] => {
-  return response.list.map((x) => {
+  return response.corpInfo.map((x) => {
     return {
       id: x.corporationId,
       corporationId: x.corporationId,
@@ -460,7 +620,7 @@ const convertToSearchResultRowModel = (
           : x.corporationEntryKindName === '2'
           ? '休会'
           : '脱会',
-      changeExpectFlagName: x.changeExpectFlagName === '0' ? 'なし' : 'あり',
+      changeExpectFlagName: x.changeExpectFlagName === '0' ? '' : 'あり',
     };
   });
 };
@@ -470,7 +630,8 @@ const convertToSearchResultRowModel = (
  */
 const convertFromCreateReportParameterInfo = (
   reportId: string,
-  searchCondition: SearchConditionModel
+  searchCondition: SearchConditionModel,
+  rowSelectionModel: GridRowSelectionModel
 ) => {
   switch (reportId) {
     case 'REP-MEM-0001':
@@ -478,8 +639,7 @@ const convertFromCreateReportParameterInfo = (
       // 会員リスト（基本情報）
       // 与信情報リスト
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
       };
     case 'REP-MEM-0002':
     case 'REP-MEM-0012':
@@ -488,8 +648,7 @@ const convertFromCreateReportParameterInfo = (
       // POS情報
       // 延滞履歴一覧
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         courseEntryKindList: searchCondition.courseEntryKinds,
         billingId: searchCondition.billingId,
@@ -516,8 +675,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0003':
       // 利用サービス一覧
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
@@ -550,8 +708,7 @@ const convertFromCreateReportParameterInfo = (
       // POS番号データ（おまとめ）
       // POS番号データ（新規）
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         billingId: searchCondition.billingId,
         staffDepartmentKind: searchCondition.staffDepartmentKinds,
@@ -581,8 +738,7 @@ const convertFromCreateReportParameterInfo = (
       // 休脱会リスト
       // 再開リスト
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
@@ -613,8 +769,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0009':
       // 会員登録変更連絡
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         courseEntryKindList: searchCondition.courseEntryKinds,
         billingId: searchCondition.billingId,
@@ -641,8 +796,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0011':
       // 参加制限リスト
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         contractId: searchCondition.contractId,
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
@@ -673,8 +827,7 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0013':
       // 物流拠点情報
       return {
-        // TODO:チェックがついた法人ID 現段階取得不可
-        corporationIdList: [],
+        corporationIdList: rowSelectionModel.map((x) => x.toString()),
         logisticsBaseAddressAfterMunicipalities:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
         logisticsBaseDistrictCode: searchCondition.logisticsBaseDistrictCode,
@@ -762,6 +915,8 @@ const ScrMem0001Page = () => {
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
   const [csvButtonDisable, setCsvButtonDisable] = useState<boolean>(true);
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>([]);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -780,13 +935,13 @@ const ScrMem0001Page = () => {
 
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-MEM-1025' },
-          { codeId: 'CDE-MEM-0004' },
-          { codeId: 'CDE-COM-0209' },
-          { codeId: 'CDE-COM-0025' },
-          { codeId: 'CDE-COM-0001' },
-          { codeId: 'CDE-COM-0033' },
+        codeId: [
+          'CDE-MEM-1025',
+          'CDE-MEM-0004',
+          'CDE-COM-0209',
+          'CDE-COM-0025',
+          'CDE-COM-0001',
+          'CDE-COM-0033',
         ],
       };
 
@@ -795,9 +950,9 @@ const ScrMem0001Page = () => {
           getCodeManagementMasterMultipleRequest
         );
 
-      getCodeManagementMasterMultipleResponse.resultList.map((x) => {
+      getCodeManagementMasterMultipleResponse.resultList.forEach((x) => {
         if (x.codeId === 'CDE-MEM-1025') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.corporationEntryKindsSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -805,7 +960,7 @@ const ScrMem0001Page = () => {
           });
         }
         if (x.codeId === 'CDE-MEM-0004') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.logisticsBaseDistrictCodeSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeValue + '　' + f.codeName,
@@ -813,7 +968,7 @@ const ScrMem0001Page = () => {
           });
         }
         if (x.codeId === 'CDE-COM-0209') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.limitStatusKindsSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -821,7 +976,7 @@ const ScrMem0001Page = () => {
           });
         }
         if (x.codeId === 'CDE-COM-0025') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.courseEntryKindsSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -829,7 +984,7 @@ const ScrMem0001Page = () => {
           });
         }
         if (x.codeId === 'CDE-COM-0001') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.staffDepartmentKindsSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -837,7 +992,7 @@ const ScrMem0001Page = () => {
           });
         }
         if (x.codeId === 'CDE-COM-0033') {
-          x.codeValueList.map((f) => {
+          x.codeValueList.forEach((f) => {
             selectValues.liveOptionEntryKindsSelectValues.push({
               value: f.codeValue,
               displayValue: f.codeName,
@@ -846,27 +1001,23 @@ const ScrMem0001Page = () => {
         }
       });
 
-      // コード値取得API（コード管理マスタ以外）
-      const getCodeValueRequest = {
-        entityList: [{ entityName: 'place_master' }],
+      // 会場マスタリストボックス情報取得API
+      const getPlaceMasterRequest = {
+        businessDate: user.taskDate,
       };
-      const getCodeValueResponse = await ScrCom9999GetCodeValue(
-        getCodeValueRequest
+      const getPlaceMasterResponse = await ScrCom9999GetPlaceMaster(
+        getPlaceMasterRequest
       );
-      getCodeValueResponse.resultList.map((x) => {
-        if (x.entityName === 'place_master') {
-          x.codeValueList.map((f) => {
-            selectValues.posPutTogetherPlaceCodeSelectValues.push({
-              value: f.codeValue,
-              displayValue: f.codeValueName,
-            });
-          });
-        }
+      getPlaceMasterResponse.placeList.forEach((x) => {
+        selectValues.posPutTogetherPlaceCodeSelectValues.push({
+          value: x.placeCode,
+          displayValue: x.placeName,
+        });
       });
 
       // 法人グループ取得API
       const getCorporationGroupResponse = await ScrMem9999GetCorporationGroup();
-      getCorporationGroupResponse.corporationGroupList.map((x) => {
+      getCorporationGroupResponse.corporationGroupList.forEach((x) => {
         selectValues.corporationGroupNameSelectValues.push({
           value: x.corporationGroupId,
           displayValue: x.corporationGroupName,
@@ -905,7 +1056,7 @@ const ScrMem0001Page = () => {
     const searchResult = convertToSearchResultRowModel(response);
 
     const hrefs: GridHrefsModel[] = [{ field: 'corporationId', hrefs: [] }];
-    searchResult.map((x) => {
+    searchResult.forEach((x) => {
       hrefs[0].hrefs.push({
         id: x.corporationId,
         href: '/mem/corporations/' + x.corporationId,
@@ -936,6 +1087,15 @@ const ScrMem0001Page = () => {
   };
 
   /**
+   * チェックボックスチェック時のイベントハンドラ
+   */
+  const onRowSelectionModelChange = (
+    rowSelectionModel: GridRowSelectionModel
+  ) => {
+    setRowSelectionModel(rowSelectionModel);
+  };
+
+  /**
    * リンククリック時のイベントハンドラ
    */
   const handleLinkClick = (url: string) => {
@@ -946,7 +1106,7 @@ const ScrMem0001Page = () => {
    * 追加アイコンクリック時のイベントハンドラ
    */
   const handleIconAddClick = () => {
-    navigate('/mem/corporations/');
+    navigate('/mem/corporations/new');
   };
 
   /**
@@ -1007,13 +1167,12 @@ const ScrMem0001Page = () => {
       comment: reportComment,
       createReportParameterInfo: convertFromCreateReportParameterInfo(
         reportId,
-        getValues()
+        getValues(),
+        rowSelectionModel
       ),
     };
     // 帳票出力API 呼び出し
-    const outputReportResponse = await ScrMem9999OutputReport(
-      outputReportRequest
-    );
+    await ScrMem9999OutputReport(outputReportRequest);
   };
 
   /**
@@ -1100,17 +1259,14 @@ const ScrMem0001Page = () => {
       nameVal = nameValues.join(',');
     }
     if (val.name === 'posPutTogetherPlaceCode') {
-      const nameValues: string[] = [];
-      selectValues.posPutTogetherPlaceCodeSelectValues.filter((x) => {
-        if (typeof nameVal !== 'string') {
-          nameVal.map((f) => {
-            if (x.value === f) {
-              nameValues.push(x.displayValue);
-            }
-          });
+      const filter = selectValues.posPutTogetherPlaceCodeSelectValues.filter(
+        (x) => {
+          return nameVal === x.value;
         }
+      );
+      filter.map((x) => {
+        nameVal = x.displayValue;
       });
-      nameVal = nameValues.join(',');
     }
 
     return (
@@ -1299,18 +1455,18 @@ const ScrMem0001Page = () => {
               decoration={
                 <MarginBox mt={2} mb={2} ml={2} mr={2} gap={2}>
                   <AddButton onClick={handleIconAddClick}>追加</AddButton>
-                  <AddButton onClick={handleIconBulkAddClick}>
+                  <RegisterButton onClick={handleIconBulkAddClick}>
                     一括登録
-                  </AddButton>
-                  <AddButton onClick={handleIconOutputReportClick}>
+                  </RegisterButton>
+                  <OutputButton onClick={handleIconOutputReportClick}>
                     帳票出力
-                  </AddButton>
-                  <AddButton
+                  </OutputButton>
+                  <OutputButton
                     disable={csvButtonDisable}
                     onClick={handleIconOutputCsvClick}
                   >
                     CSV出力
-                  </AddButton>
+                  </OutputButton>
                 </MarginBox>
               }
             >
@@ -1322,6 +1478,7 @@ const ScrMem0001Page = () => {
                 pagination
                 onLinkClick={handleLinkClick}
                 checkboxSelection
+                onRowSelectionModelChange={onRowSelectionModelChange}
               />
             </Section>
           </FormProvider>
@@ -1341,7 +1498,7 @@ const ScrMem0001Page = () => {
       )}
 
       {/* 帳票選択（ポップアップ） */}
-      {/* {scrCom0011PopupIsOpen ? (
+      {scrCom0011PopupIsOpen ? (
         <ScrCom0011Popup
           isOpen={scrCom0011PopupIsOpen}
           data={{ screenId: 'SCR-MEM-0001' }}
@@ -1350,7 +1507,7 @@ const ScrMem0001Page = () => {
         />
       ) : (
         ''
-      )} */}
+      )}
 
       {/* ダイアログ */}
       {handleDialog ? (

@@ -1046,7 +1046,7 @@ const ScrMem0003BasicTab = (props: {
       // リスト取得
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [{ codeId: 'CDE-COM-0017' }, { codeId: 'CDE-COM-0021' }],
+        codeId: ['CDE-COM-0017', 'CDE-COM-0021'],
       };
       const codeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
@@ -1140,6 +1140,7 @@ const ScrMem0003BasicTab = (props: {
         ScrMem0003ContractTab: false,
         ScrMem0003BaseTab: true,
         ScrMem0003DealHistoryTab: true,
+        ScrMem0003BranchNumberTab: true,
         ScrMem0003ChangeHistoryTab: true,
       });
     };
@@ -1148,7 +1149,7 @@ const ScrMem0003BasicTab = (props: {
       // リスト取得
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [{ codeId: 'CDE-COM-0017' }, { codeId: 'CDE-COM-0021' }],
+        codeId: ['CDE-COM-0017', 'CDE-COM-0021'],
       };
       const codeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
@@ -1322,6 +1323,7 @@ const ScrMem0003BasicTab = (props: {
         ScrMem0003ContractTab: true,
         ScrMem0003BaseTab: true,
         ScrMem0003DealHistoryTab: true,
+        ScrMem0003BranchNumberTab: true,
         ScrMem0003ChangeHistoryTab: true,
       });
       const newCorporationIdResponse = await ScrMem0003GetNewCorporationId();
@@ -1374,6 +1376,7 @@ const ScrMem0003BasicTab = (props: {
       ScrMem0003ContractTab: true,
       ScrMem0003BaseTab: true,
       ScrMem0003DealHistoryTab: true,
+      ScrMem0003BranchNumberTab: true,
       ScrMem0003ChangeHistoryTab: true,
     });
   };

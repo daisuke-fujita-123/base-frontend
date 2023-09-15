@@ -1084,13 +1084,13 @@ const ScrMem0014BasicTab = (props: {
       const newSelectValues = selectValuesInitialValues;
       // コード管理マスタ情報取得
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0024' },
-          { codeId: 'CDE-COM-0031' },
-          { codeId: 'CDE-COM-0044' },
-          { codeId: 'CDE-COM-0046' },
-          { codeId: 'CDE-COM-0030' },
-          { codeId: 'CDE-COM-0038' },
+        codeId: [
+          'CDE-COM-0024',
+          'CDE-COM-0031',
+          'CDE-COM-0044',
+          'CDE-COM-0046',
+          'CDE-COM-0030',
+          'CDE-COM-0038',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
@@ -1312,13 +1312,13 @@ const ScrMem0014BasicTab = (props: {
       const newSelectValues = selectValuesInitialValues;
       // コード管理マスタ情報取得
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0024' },
-          { codeId: 'CDE-COM-0031' },
-          { codeId: 'CDE-COM-0044' },
-          { codeId: 'CDE-COM-0046' },
-          { codeId: 'CDE-COM-0030' },
-          { codeId: 'CDE-COM-0038' },
+        codeId: [
+          'CDE-COM-0024',
+          'CDE-COM-0031',
+          'CDE-COM-0044',
+          'CDE-COM-0046',
+          'CDE-COM-0030',
+          'CDE-COM-0038',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
@@ -1507,13 +1507,13 @@ const ScrMem0014BasicTab = (props: {
       const newSelectValues = selectValuesInitialValues;
       // コード管理マスタ情報取得
       const getCodeManagementMasterMultipleRequest = {
-        codeIdList: [
-          { codeId: 'CDE-COM-0024' },
-          { codeId: 'CDE-COM-0031' },
-          { codeId: 'CDE-COM-0044' },
-          { codeId: 'CDE-COM-0046' },
-          { codeId: 'CDE-COM-0030' },
-          { codeId: 'CDE-COM-0038' },
+        codeId: [
+          'CDE-COM-0024',
+          'CDE-COM-0031',
+          'CDE-COM-0044',
+          'CDE-COM-0046',
+          'CDE-COM-0030',
+          'CDE-COM-0038',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
