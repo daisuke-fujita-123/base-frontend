@@ -37,6 +37,9 @@ interface SearchCondition {
   primaryKeyColumnName: string;
 }
 
+/**
+ * 検索条件の初期値
+ */
 const initSearchCondition: SearchCondition = {
   masterId: '',
   masterName: '',
@@ -137,30 +140,27 @@ const ScrTra0001BasicTab = () => {
     defaultValues: initSearchCondition,
     resolver: yupResolver(yup.object(validationSchama)),
   });
-  const { reset, getValues } = methods;
+  const { getValues } = methods;
 
   // 初期表示処理
   useEffect(() => {
     const initialize = () => {
-      setInitData();
+      // マスタ一覧を非表示にする
+      setIsHideDealAccountingMasters(true);
     };
 
     initialize();
-  }, [reset, getValues]);
+  }, []);
 
-  /**
-   * 初期表示
-   */
-  const setInitData = () => {
-    // マスタ一覧を非表示にする
-    setIsHideDealAccountingMasters(true);
-  };
   /**
    * 検索ボタンクリック時のイベントハンドラ
    */
   const handleSearch = async () => {
     // 検索条件の取得
     const searchCondition: SearchCondition = getValues();
+
+    setIsHideDealAccountingMasters(true);
+    setDealAccountingMasters([]);
 
     // 取引管理マスタ一覧検索API呼出
     const request: ScrTra0001SearchDealAccountingMasterInfoRequest = {
@@ -171,7 +171,6 @@ const ScrTra0001BasicTab = () => {
     const response = await ScrTra0001SearchDealAccountingMasterInfo(request);
 
     // 検索結果件数0件の場合は取引管理マスタ一覧を非表示に設定
-    dealAccountingMastersHrefs[0].hrefs.splice(0);
     if (response.dealAccountingMasters.length > 0) {
       for (let i = 0; i < response.dealAccountingMasters.length; i++) {
         dealAccountingMastersHrefs[0].hrefs.push({
