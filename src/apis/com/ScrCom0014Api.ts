@@ -3,15 +3,13 @@ import { ScrCom0032PopupModel } from 'pages/com/popups/ScrCom0032Popup';
 import { comApiClient } from 'providers/ApiClient';
 
 /** API-COM-0014-0001: 手数料表示API リクエスト */
-export interface ScrCom0014GetCommissionDisplayRequest {
-  /** 業務日付 */
-  businessDate: string;
+export interface ScrCom0014GetCommissionCurrentRequest {
   /** 手数料ID */
   commissionId: string;
 }
 
 /** API-COM-0014-0001: 手数料表示API レスポンス */
-export interface ScrCom0014GetCommissionDisplayResponse {
+export interface ScrCom0014GetCommissionCurrentResponse {
   /** 手数料名 */
   commissionName: string;
   /** 手数料種類区分 */
@@ -29,13 +27,13 @@ export interface ScrCom0014GetCommissionDisplayResponse {
   /** 利用開始日 */
   useStartDate: string;
   /** 条件設定セクション リスト */
-  commissionConditionList: commissionConditionList[];
+  conditionSettingList: conditionSettingList[];
   /** 価格設定セクション リスト */
-  commissionPriceList: commissionPriceList[];
+  priceSettingList: priceSettingList[];
 }
 
 /** API-COM-0014-0001: 手数料表示API 条件設定セクションレスポンス(リスト行) */
-export interface commissionConditionList {
+export interface conditionSettingList {
   /** 手数料条件種類No */
   commissionConditionKindNo: string | number;
   /** 条件種類コード */
@@ -53,7 +51,7 @@ export interface commissionConditionList {
 }
 
 /** API-COM-0014-0001: 手数料表示API 価格設定セクションレスポンス(リスト行) */
-export interface commissionPriceList {
+export interface priceSettingList {
   /** 手数料条件種類名No1 */
   commissionConditionKindNo1: string | number;
   /** 手数料条件区分名No1 */
@@ -125,15 +123,15 @@ export interface ScrCom0014CommissionCheckRequest {
   /** 利用開始日 */
   useStartDate: string;
   /** 条件設定セクション リスト */
-  commissionConditionList: checkCommissionConditionList[];
+  conditionSettingList: checkConditionSettingList[];
   /** 価格設定セクション リスト */
-  commissionPriceList: commissionPriceList[];
+  priceSettingList: priceSettingList[];
   /** 業務日付 */
   businessDate: string;
 }
 
 /** API-COM-0014-0003: 手数料テーブル詳細入力チェックAPI レスポンス 条件設定セクション(リスト行) */
-export interface checkCommissionConditionList {
+export interface checkConditionSettingList {
   /** 手数料条件種類No */
   commissionConditionKindNo: string | number;
   /** 条件種類コード */
@@ -169,9 +167,9 @@ export interface ScrCom0014ApplyRegistrationCommissionInfoRequest {
   /** 利用開始日 */
   useStartDate: string;
   /** 条件設定セクション リスト */
-  commissionConditionList: commissionConditionList[];
+  conditionSettingList: conditionSettingList[];
   /** 価格設定セクション リスト */
-  commissionPriceList: commissionPriceList[];
+  priceSettingList: priceSettingList[];
   /** 申請従業員ID */
   applicationEmployeeId: string;
   /** 登録変更メモ */
@@ -194,10 +192,80 @@ export interface ScrCom0014ApplyRegistrationCommissionInfoRequest {
   screenId: string;
 }
 
+/** API-COM-0014-0008: 条件設定ワーク登録API リクエスト */
+export interface ScrCom0014RegistrationWorkCommissionInfoRequest {
+  /** ワークトランテーブル リスト情報 */
+  registrationWorkCommissionList: RegistrationWorkCommissionList[];
+}
+
+/** API-COM-0014-0008: 条件設定ワーク登録API リクエスト(リスト行) */
+export interface RegistrationWorkCommissionList {
+  /** 手数料条件種類名No1 */
+  commissionConditionKindNo1: string | number;
+  /** 手数料条件区分名No1 */
+  commissionConditionNo1: string | number;
+  /** 手数料条件値No1 */
+  commissionConditionValueNo1: string | number;
+  /** 手数料条件種類名No2 */
+  commissionConditionKindNo2: string | number;
+  /** 手数料条件区分名No2 */
+  commissionConditionNo2: string | number;
+  /** 手数料条件値No2 */
+  commissionConditionValueNo2: string | number;
+  /** 手数料条件種類名No3 */
+  commissionConditionKindNo3: string | number;
+  /** 手数料条件区分名No3 */
+  commissionConditionNo3: string | number;
+  /** 手数料条件値No3 */
+  commissionConditionValueNo3: string | number;
+  /** 手数料条件種類名No4 */
+  commissionConditionKindNo4: string | number;
+  /** 手数料条件区分名No4 */
+  commissionConditionNo4: string | number;
+  /** 手数料条件値No4 */
+  commissionConditionValueNo4: string | number;
+  /** 手数料条件種類名No5 */
+  commissionConditionKindNo5: string | number;
+  /** 手数料条件区分名No5 */
+  commissionConditionNo5: string | number;
+  /** 手数料条件値No5 */
+  commissionConditionValueNo5: string | number;
+  /** 手数料条件種類名No6 */
+  commissionConditionKindNo6: string | number;
+  /** 手数料条件区分名No6 */
+  commissionConditionNo6: string | number;
+  /** 手数料条件値No6 */
+  commissionConditionValueNo6: string | number;
+  /** 手数料条件種類名No7 */
+  commissionConditionKindNo7: string | number;
+  /** 手数料条件区分名No7 */
+  commissionConditionNo7: string | number;
+  /** 手数料条件値No7 */
+  commissionConditionValueNo7: string | number;
+  /** 手数料条件種類名No8 */
+  commissionConditionKindNo8: string | number;
+  /** 手数料条件区分名No8 */
+  commissionConditionNo8: string | number;
+  /** 手数料条件値No8 */
+  commissionConditionValueNo8: string | number;
+  /** 手数料条件種類名No9 */
+  commissionConditionKindNo9: string | number;
+  /** 手数料条件区分名No9 */
+  commissionConditionNo9: string | number;
+  /** 手数料条件値No9 */
+  commissionConditionValueNo9: string | number;
+  /** 手数料条件種類名No10 */
+  commissionConditionKindNo10: string | number;
+  /** 手数料条件区分名No10 */
+  commissionConditionNo10: string | number;
+  /** 手数料条件値No10 */
+  commissionConditionValueNo10: string | number;
+}
+
 /** API-COM-0014-0001: 手数料表示API */
 export const ScrCom0014GetCommissionDisplay = async (
-  request: ScrCom0014GetCommissionDisplayRequest
-): Promise<ScrCom0014GetCommissionDisplayResponse> => {
+  request: ScrCom0014GetCommissionCurrentRequest
+): Promise<ScrCom0014GetCommissionCurrentResponse> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-0014/get-commission-display-current-info',
     request
@@ -222,6 +290,16 @@ export const ScrCom0014ApplyRegistrationCommissionInfo = async (
 ): Promise<void> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-0014/apply-registration-commission-info',
+    request
+  );
+  return response.data;
+};
+/** API-COM-0014-0008: 条件設定ワーク登録API */
+export const ScrCom0014RegistrationWorkCommissionInfo = async (
+  request: ScrCom0014RegistrationWorkCommissionInfoRequest
+): Promise<void> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-0014/registration-work-commission-info',
     request
   );
   return response.data;

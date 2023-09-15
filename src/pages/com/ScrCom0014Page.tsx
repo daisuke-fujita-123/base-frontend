@@ -33,15 +33,17 @@ import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
 import {
-  commissionConditionList,
-  commissionPriceList,
+  conditionSettingList,
+  priceSettingList,
   ScrCom0014ApplyRegistrationCommissionInfo,
   ScrCom0014ApplyRegistrationCommissionInfoRequest,
   ScrCom0014CommissionCheck,
   ScrCom0014CommissionCheckRequest,
+  ScrCom0014GetCommissionCurrentRequest,
+  ScrCom0014GetCommissionCurrentResponse,
   ScrCom0014GetCommissionDisplay,
-  ScrCom0014GetCommissionDisplayRequest,
-  ScrCom0014GetCommissionDisplayResponse,
+  ScrCom0014RegistrationWorkCommissionInfo,
+  ScrCom0014RegistrationWorkCommissionInfoRequest,
 } from 'apis/com/ScrCom0014Api';
 import {
   ScrCom0034DeleteAllRegistrationWork,
@@ -87,7 +89,6 @@ import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
 import { Format } from 'utils/FormatUtil';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { useGridApiRef } from '@mui/x-data-grid';
 import ScrCom0032Popup, {
   ScrCom0032PopupModel,
 } from './popups/ScrCom0032Popup';
@@ -121,9 +122,9 @@ interface CommissionTableDetailModel {
   /** 利用開始日 */
   useStartDate: string;
   /** 条件設定セクション */
-  commissionConditionList: commissionConditionList[];
+  conditionSettingList: conditionSettingList[];
   /** 価格設定セクション */
-  commissionPriceList: commissionPriceList[];
+  priceSettingList: priceSettingList[];
   // 変更履歴番号
   changeHistoryNumber: string;
   // 変更予定日
@@ -143,8 +144,8 @@ const initialValues: CommissionTableDetailModel = {
   useFlag: '',
   statementKind: '',
   useStartDate: '',
-  commissionConditionList: [],
-  commissionPriceList: [],
+  conditionSettingList: [],
+  priceSettingList: [],
   // 変更履歴関連
   changeHistoryNumber: '',
   changeExpectedDate: '',
@@ -340,8 +341,6 @@ const ScrCom0014Page = () => {
       ? ''
       : user.editPossibleScreenIdList.includes(SCR_COM_0014);
 
-  const apiRef = useGridApiRef();
-
   // 登録内容確認ポップアップ
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
@@ -369,9 +368,8 @@ const ScrCom0014Page = () => {
       setActiveFlag(false);
 
       // API-COM-0014-0001: 手数料表示API
-      const getCommissionDisplayRequest: ScrCom0014GetCommissionDisplayRequest =
+      const getCommissionDisplayRequest: ScrCom0014GetCommissionCurrentRequest =
         {
-          businessDate: user.taskDate,
           commissionId: commissionId,
         };
       const getCommissionDisplayResponse = await ScrCom0014GetCommissionDisplay(
@@ -835,8 +833,8 @@ const ScrCom0014Page = () => {
       /** 利用開始日 */
       useStartDate: commissionTableDetail.useStartDate,
       /** 条件設定セクション */
-      commissionConditionList:
-        commissionTableDetail.commissionConditionList.map((x) => {
+      conditionSettingList: commissionTableDetail.conditionSettingList.map(
+        (x) => {
           return {
             commissionConditionKindNo: x.commissionConditionKindNo,
             conditionKindCode: x.conditionKindCode,
@@ -844,46 +842,91 @@ const ScrCom0014Page = () => {
             commissionConditionKind: x.commissionConditionKind,
             commissionConditionValue: x.commissionConditionValue,
           };
-        }),
-      /** 価格設定セクション */
-      commissionPriceList: commissionTableDetail.commissionPriceList.map(
-        (x) => {
-          return {
-            commissionConditionKindNo1: x.commissionConditionKindNo1,
-            commissionConditionNo1: x.commissionConditionNo1,
-            commissionConditionValueNo1: x.commissionConditionValueNo1,
-            commissionConditionKindNo2: x.commissionConditionKindNo2,
-            commissionConditionNo2: x.commissionConditionNo2,
-            commissionConditionValueNo2: x.commissionConditionValueNo2,
-            commissionConditionKindNo3: x.commissionConditionKindNo3,
-            commissionConditionNo3: x.commissionConditionNo3,
-            commissionConditionValueNo3: x.commissionConditionValueNo3,
-            commissionConditionKindNo4: x.commissionConditionKindNo4,
-            commissionConditionNo4: x.commissionConditionNo4,
-            commissionConditionValueNo4: x.commissionConditionValueNo4,
-            commissionConditionKindNo5: x.commissionConditionKindNo5,
-            commissionConditionNo5: x.commissionConditionNo5,
-            commissionConditionValueNo5: x.commissionConditionValueNo5,
-            commissionConditionKindNo6: x.commissionConditionKindNo6,
-            commissionConditionNo6: x.commissionConditionNo6,
-            commissionConditionValueNo6: x.commissionConditionValueNo6,
-            commissionConditionKindNo7: x.commissionConditionKindNo7,
-            commissionConditionNo7: x.commissionConditionNo7,
-            commissionConditionValueNo7: x.commissionConditionValueNo7,
-            commissionConditionKindNo8: x.commissionConditionKindNo8,
-            commissionConditionNo8: x.commissionConditionNo8,
-            commissionConditionValueNo8: x.commissionConditionValueNo8,
-            commissionConditionKindNo9: x.commissionConditionKindNo9,
-            commissionConditionNo9: x.commissionConditionNo9,
-            commissionConditionValueNo9: x.commissionConditionValueNo9,
-            commissionConditionKindNo10: x.commissionConditionKindNo10,
-            commissionConditionNo10: x.commissionConditionNo10,
-            commissionConditionValueNo10: x.commissionConditionValueNo10,
-            commissionPrice: x.commissionPrice,
-          };
         }
       ),
+      /** 価格設定セクション */
+      priceSettingList: commissionTableDetail.priceSettingList.map((x) => {
+        return {
+          commissionConditionKindNo1: x.commissionConditionKindNo1,
+          commissionConditionNo1: x.commissionConditionNo1,
+          commissionConditionValueNo1: x.commissionConditionValueNo1,
+          commissionConditionKindNo2: x.commissionConditionKindNo2,
+          commissionConditionNo2: x.commissionConditionNo2,
+          commissionConditionValueNo2: x.commissionConditionValueNo2,
+          commissionConditionKindNo3: x.commissionConditionKindNo3,
+          commissionConditionNo3: x.commissionConditionNo3,
+          commissionConditionValueNo3: x.commissionConditionValueNo3,
+          commissionConditionKindNo4: x.commissionConditionKindNo4,
+          commissionConditionNo4: x.commissionConditionNo4,
+          commissionConditionValueNo4: x.commissionConditionValueNo4,
+          commissionConditionKindNo5: x.commissionConditionKindNo5,
+          commissionConditionNo5: x.commissionConditionNo5,
+          commissionConditionValueNo5: x.commissionConditionValueNo5,
+          commissionConditionKindNo6: x.commissionConditionKindNo6,
+          commissionConditionNo6: x.commissionConditionNo6,
+          commissionConditionValueNo6: x.commissionConditionValueNo6,
+          commissionConditionKindNo7: x.commissionConditionKindNo7,
+          commissionConditionNo7: x.commissionConditionNo7,
+          commissionConditionValueNo7: x.commissionConditionValueNo7,
+          commissionConditionKindNo8: x.commissionConditionKindNo8,
+          commissionConditionNo8: x.commissionConditionNo8,
+          commissionConditionValueNo8: x.commissionConditionValueNo8,
+          commissionConditionKindNo9: x.commissionConditionKindNo9,
+          commissionConditionNo9: x.commissionConditionNo9,
+          commissionConditionValueNo9: x.commissionConditionValueNo9,
+          commissionConditionKindNo10: x.commissionConditionKindNo10,
+          commissionConditionNo10: x.commissionConditionNo10,
+          commissionConditionValueNo10: x.commissionConditionValueNo10,
+          commissionPrice: x.commissionPrice,
+        };
+      }),
       businessDate: user.taskDate,
+    };
+  };
+
+  // API-COM-0014-0008: 条件設定ワーク登録API用 リクエストデータ作成
+  const convertToRegistrationWorkCommissionInfoaRequest = (
+    pricingRows: PricingTableModel[]
+  ): ScrCom0014RegistrationWorkCommissionInfoRequest => {
+    return {
+      registrationWorkCommissionList: pricingRows.map((pricingRow) => {
+        return {
+          // 条件種類
+          commissionConditionKindNo1: pricingRow['type1'],
+          // 条件
+          commissionConditionNo1: pricingRow['operator1'],
+          // 値
+          commissionConditionValueNo1: pricingRow['value1'],
+          commissionConditionKindNo2: pricingRow['type2'],
+          commissionConditionNo2: pricingRow['operator2'],
+          commissionConditionValueNo2: pricingRow['value2'],
+          commissionConditionKindNo3: pricingRow['type3'],
+          commissionConditionNo3: pricingRow['operator3'],
+          commissionConditionValueNo3: pricingRow['value3'],
+          commissionConditionKindNo4: pricingRow['type4'],
+          commissionConditionNo4: pricingRow['operator4'],
+          commissionConditionValueNo4: pricingRow['value4'],
+          commissionConditionKindNo5: pricingRow['type5'],
+          commissionConditionNo5: pricingRow['operator5'],
+          commissionConditionValueNo5: pricingRow['value5'],
+          commissionConditionKindNo6: pricingRow['type6'],
+          commissionConditionNo6: pricingRow['operator6'],
+          commissionConditionValueNo6: pricingRow['value6'],
+          commissionConditionKindNo7: pricingRow['type7'],
+          commissionConditionNo7: pricingRow['operator7'],
+          commissionConditionValueNo7: pricingRow['value7'],
+          commissionConditionKindNo8: pricingRow['type8'],
+          commissionConditionNo8: pricingRow['operator8'],
+          commissionConditionValueNo8: pricingRow['value8'],
+          commissionConditionKindNo9: pricingRow['type9'],
+          commissionConditionNo9: pricingRow['operator9'],
+          commissionConditionValueNo9: pricingRow['value9'],
+          commissionConditionKindNo10: pricingRow['type10'],
+          commissionConditionNo10: pricingRow['operator10'],
+          commissionConditionValueNo10: pricingRow['value10'],
+          commissionPrice: pricingRow['commission'],
+        };
+      }),
     };
   };
 
@@ -916,7 +959,7 @@ const ScrCom0014Page = () => {
     // 申請コメント
     applicationComment: string
   ): ScrCom0014ApplyRegistrationCommissionInfoRequest => {
-    const tempList: commissionConditionList[] = [];
+    const tempList: conditionSettingList[] = [];
     conditions.forEach((condition, i) => {
       condition.subConditions.forEach((y, j) => {
         const temp = {
@@ -961,9 +1004,9 @@ const ScrCom0014Page = () => {
       /** 利用開始日 */
       useStartDate: getValues.useStartDate,
       /** 条件設定セクション */
-      commissionConditionList: tempList,
+      conditionSettingList: tempList,
       /** 価格設定セクション */
-      commissionPriceList: pricingRows.map((pricingRow, j) => {
+      priceSettingList: pricingRows.map((pricingRow, j) => {
         return {
           // 条件種類
           commissionConditionKindNo1: pricingRow['type1'],
@@ -1041,8 +1084,8 @@ const ScrCom0014Page = () => {
       useFlag: getHistoryInfoResponse.useFlag,
       statementKind: getHistoryInfoResponse.statementKind,
       useStartDate: getHistoryInfoResponse.useStartDate,
-      commissionConditionList:
-        getHistoryInfoResponse.commissionConditionList.map((x) => {
+      conditionSettingList: getHistoryInfoResponse.conditionSettingList.map(
+        (x) => {
           return {
             commissionConditionKindNo: x.commissionConditionKindNo,
             conditionKindCode: x.conditionKindCode,
@@ -1052,44 +1095,43 @@ const ScrCom0014Page = () => {
             commissionConditionKindName: x.commissionConditionKindName,
             commissionConditionValue: x.commissionConditionValue,
           };
-        }),
-      commissionPriceList: getHistoryInfoResponse.commissionPriceList.map(
-        (x) => {
-          return {
-            commissionConditionKindNo1: x.commissionConditionKindNo1,
-            commissionConditionNo1: x.commissionConditionNo1,
-            commissionConditionValueNo1: x.commissionConditionValueNo1,
-            commissionConditionKindNo2: x.commissionConditionKindNo2,
-            commissionConditionNo2: x.commissionConditionNo2,
-            commissionConditionValueNo2: x.commissionConditionValueNo2,
-            commissionConditionKindNo3: x.commissionConditionKindNo3,
-            commissionConditionNo3: x.commissionConditionNo3,
-            commissionConditionValueNo3: x.commissionConditionValueNo3,
-            commissionConditionKindNo4: x.commissionConditionKindNo4,
-            commissionConditionNo4: x.commissionConditionNo4,
-            commissionConditionValueNo4: x.commissionConditionValueNo4,
-            commissionConditionKindNo5: x.commissionConditionKindNo5,
-            commissionConditionNo5: x.commissionConditionNo5,
-            commissionConditionValueNo5: x.commissionConditionValueNo5,
-            commissionConditionKindNo6: x.commissionConditionKindNo6,
-            commissionConditionNo6: x.commissionConditionNo6,
-            commissionConditionValueNo6: x.commissionConditionValueNo6,
-            commissionConditionKindNo7: x.commissionConditionKindNo7,
-            commissionConditionNo7: x.commissionConditionNo7,
-            commissionConditionValueNo7: x.commissionConditionValueNo7,
-            commissionConditionKindNo8: x.commissionConditionKindNo8,
-            commissionConditionNo8: x.commissionConditionNo8,
-            commissionConditionValueNo8: x.commissionConditionValueNo8,
-            commissionConditionKindNo9: x.commissionConditionKindNo9,
-            commissionConditionNo9: x.commissionConditionNo9,
-            commissionConditionValueNo9: x.commissionConditionValueNo9,
-            commissionConditionKindNo10: x.commissionConditionKindNo10,
-            commissionConditionNo10: x.commissionConditionNo10,
-            commissionConditionValueNo10: x.commissionConditionValueNo10,
-            commissionPrice: x.commissionPrice,
-          };
         }
       ),
+      priceSettingList: getHistoryInfoResponse.priceSettingList.map((x) => {
+        return {
+          commissionConditionKindNo1: x.commissionConditionKindNo1,
+          commissionConditionNo1: x.commissionConditionNo1,
+          commissionConditionValueNo1: x.commissionConditionValueNo1,
+          commissionConditionKindNo2: x.commissionConditionKindNo2,
+          commissionConditionNo2: x.commissionConditionNo2,
+          commissionConditionValueNo2: x.commissionConditionValueNo2,
+          commissionConditionKindNo3: x.commissionConditionKindNo3,
+          commissionConditionNo3: x.commissionConditionNo3,
+          commissionConditionValueNo3: x.commissionConditionValueNo3,
+          commissionConditionKindNo4: x.commissionConditionKindNo4,
+          commissionConditionNo4: x.commissionConditionNo4,
+          commissionConditionValueNo4: x.commissionConditionValueNo4,
+          commissionConditionKindNo5: x.commissionConditionKindNo5,
+          commissionConditionNo5: x.commissionConditionNo5,
+          commissionConditionValueNo5: x.commissionConditionValueNo5,
+          commissionConditionKindNo6: x.commissionConditionKindNo6,
+          commissionConditionNo6: x.commissionConditionNo6,
+          commissionConditionValueNo6: x.commissionConditionValueNo6,
+          commissionConditionKindNo7: x.commissionConditionKindNo7,
+          commissionConditionNo7: x.commissionConditionNo7,
+          commissionConditionValueNo7: x.commissionConditionValueNo7,
+          commissionConditionKindNo8: x.commissionConditionKindNo8,
+          commissionConditionNo8: x.commissionConditionNo8,
+          commissionConditionValueNo8: x.commissionConditionValueNo8,
+          commissionConditionKindNo9: x.commissionConditionKindNo9,
+          commissionConditionNo9: x.commissionConditionNo9,
+          commissionConditionValueNo9: x.commissionConditionValueNo9,
+          commissionConditionKindNo10: x.commissionConditionKindNo10,
+          commissionConditionNo10: x.commissionConditionNo10,
+          commissionConditionValueNo10: x.commissionConditionValueNo10,
+          commissionPrice: x.commissionPrice,
+        };
+      }),
       changeHistoryNumber: changeHistoryNumber,
       changeExpectedDate: '',
     };
@@ -1099,7 +1141,7 @@ const ScrCom0014Page = () => {
    * API-COM-0014-0001: 手数料表示API レスポンスから 手数料情報詳細 データモデルへの変換
    */
   const convertToCommissionTableDetailModel = (
-    getCommissionDisplayResponse: ScrCom0014GetCommissionDisplayResponse,
+    getCommissionDisplayResponse: ScrCom0014GetCommissionCurrentResponse,
     commissionId: string
   ): CommissionTableDetailModel => {
     return {
@@ -1116,8 +1158,8 @@ const ScrCom0014Page = () => {
       // リストボックスへの値設定
       statementKind: commissionId,
       useStartDate: getCommissionDisplayResponse.useStartDate,
-      commissionConditionList:
-        getCommissionDisplayResponse.commissionConditionList.map((x) => {
+      conditionSettingList:
+        getCommissionDisplayResponse.conditionSettingList.map((x) => {
           return {
             commissionConditionKindNo: x.commissionConditionKindNo,
             conditionKindCode: x.conditionKindCode,
@@ -1128,7 +1170,7 @@ const ScrCom0014Page = () => {
             commissionConditionValue: x.commissionConditionValue,
           };
         }),
-      commissionPriceList: getCommissionDisplayResponse.commissionPriceList.map(
+      priceSettingList: getCommissionDisplayResponse.priceSettingList.map(
         (x) => {
           return {
             commissionConditionKindNo1: x.commissionConditionKindNo1,
@@ -1259,10 +1301,10 @@ const ScrCom0014Page = () => {
    * 初期表示条件設定セクション変換用
    */
   const convertToCommissionConditionRowModel = (
-    request: ScrCom0014GetCommissionDisplayResponse
+    request: ScrCom0014GetCommissionCurrentResponse
   ): ConditionModel[] => {
     const temp: ConditionModel[] = [];
-    request.commissionConditionList.forEach((obj) => {
+    request.conditionSettingList.forEach((obj) => {
       const hasConditionKindCode = temp.find(
         (x) => x.conditionKind === obj.conditionKindCode
       );
@@ -1406,6 +1448,15 @@ const ScrCom0014Page = () => {
       // CSV読込ポップアップを表示
       setIsOpenCsvPopup(true);
     }
+
+    // API-COM-0014-0008: 条件設定ワーク登録API
+    const registrationWorkCommissionInfoRequest: ScrCom0014RegistrationWorkCommissionInfoRequest =
+      convertToRegistrationWorkCommissionInfoaRequest(pricingRows);
+    await ScrCom0014RegistrationWorkCommissionInfo(
+      registrationWorkCommissionInfoRequest
+    );
+
+    // 一括登録からの再表示イベント
 
     // API-COM-0034-0004: 一括登録参照API
     const getCommissionKindRequest: ScrCom0034GetAllRegistrationWorkRequest = {
