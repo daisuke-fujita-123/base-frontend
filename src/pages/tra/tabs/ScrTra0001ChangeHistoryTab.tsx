@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 // レイアウト
 import { MainLayout } from 'layouts/MainLayout';
 import { Section } from 'layouts/Section';
-import { RowStack } from 'layouts/Stack';
 
 import { OutputButton } from 'controls/Button';
 import {
@@ -463,32 +462,34 @@ const ScrTra0001ChangeHistoryTab = () => {
   // 変更履歴一覧CSV出力
   const handlChangeHistoriesCsvExport = () => {
     // TODO ファイル名を日時仮設定
-    const today = dayjs().format('YYYYMMDD_HHmmssSSS_');
-    exportCsv(today + '.csv', apiRef);
+    const filename = dayjs().format('YYYYMMDD_HHmmssSSS') + '_変更履歴一覧';
+    exportCsv(filename + '.csv', apiRef);
   };
 
   // 未承認一覧CSV出力
   const handleUnapprovedChangeHistoriesCsvExport = () => {
     // TODO ファイル名を日時仮設定
-    const today = dayjs().format('YYYYMMDD_HHmmssSSS_');
-    exportCsv(today + '.csv', apiRef);
+    const filename = dayjs().format('YYYYMMDD_HHmmssSSS') + '_未承認一覧';
+    exportCsv(filename + '.csv', apiRef);
   };
 
   return (
     <>
       <MainLayout>
         <MainLayout main>
-          <Section name='変更履歴一覧' fitInside>
-            <RowStack justifyContent='flex-end'>
+          <Section
+            name='変更履歴一覧'
+            fitInside
+            decoration={
               <OutputButton
                 onClick={handlChangeHistoriesCsvExport}
                 disable={changeHistories.length === 0}
               >
                 CSV出力
               </OutputButton>
-            </RowStack>
+            }
+          >
             <DataGrid
-              height={200}
               pagination={true}
               columns={changeHistoriesColumns}
               rows={changeHistories}
@@ -497,17 +498,19 @@ const ScrTra0001ChangeHistoryTab = () => {
               onLinkClick={handleLinkClick}
             />
           </Section>
-          <Section name='未承認一覧' fitInside>
-            <RowStack justifyContent='flex-end'>
+          <Section
+            name='未承認一覧'
+            fitInside
+            decoration={
               <OutputButton
                 onClick={handleUnapprovedChangeHistoriesCsvExport}
                 disable={unapprovedChangeHistories.length === 0}
               >
                 CSV出力
               </OutputButton>
-            </RowStack>
+            }
+          >
             <DataGrid
-              height={200}
               pagination={true}
               apiRef={apiRef}
               columns={unapprovedChangeHistoriesColumns}

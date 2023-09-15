@@ -233,7 +233,6 @@ const ScrTra0001BasicTab = () => {
                 <></>
               ) : (
                 <DataGrid
-                  height={400}
                   pagination={true}
                   columns={dealAccountingMastersColumns}
                   rows={dealAccountingMasters}
