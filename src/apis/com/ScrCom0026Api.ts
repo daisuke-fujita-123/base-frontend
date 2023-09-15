@@ -74,12 +74,6 @@ export const ScrCom0026GetMasterPermission = async (
   return response.data;
 };
 
-// API-COM-0026-0003: 承認種類一覧取得 リクエスト
-export interface ScrCom0026GetApprovalKindRequest {
-  /** 業務日付 */
-  businessDate: string;
-}
-
 // API-COM-0026-0003: 承認種類一覧取得 レスポンス
 export interface ScrCom0026GetApprovalKindResponse {
   // 承認種類一覧リスト
@@ -97,6 +91,8 @@ interface ApprovalKindList {
   screenName: string;
   // タブ名称
   tabName: string;
+  // 一括登録名称
+  allRegistrationName: string;
   // 承認条件名
   approvalConditionName: string;
   // 第1
@@ -119,7 +115,7 @@ interface ApprovalKindList {
 
 // API-COM-0026-0003: 承認種類一覧取得
 export const ScrCom0026GetApprovalKind = async (
-  req: ScrCom0026GetApprovalKindRequest
+  req: null
 ): Promise<ScrCom0026GetApprovalKindResponse> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-0026/get-approval-kind',

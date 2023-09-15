@@ -17,7 +17,6 @@ import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
 
 import {
   ScrCom0026GetApprovalKind,
-  ScrCom0026GetApprovalKindRequest,
   ScrCom0026GetApprovalKindResponse,
   ScrCom0026RegistApprovalKind,
   ScrCom9999GetHistoryInfo,
@@ -45,8 +44,8 @@ interface SearchResultApprovalModel {
   systemKind: string;
   // 画面名
   screenName: string;
-  // タブ名称
-  tabName: string;
+  // タブ名/一括登録名称
+  tabRegistrationName: string;
   // 承認条件名
   approvalConditionName: string;
   // 第1
@@ -85,8 +84,8 @@ interface ApprovalModel {
   systemKind: string;
   // 画面名
   screenName: string;
-  // タブ名称
-  tabName: string;
+  // タブ名/一括登録名称
+  tabRegistrationName: string;
   // 承認条件名
   approvalConditionName: string;
   // 第1
@@ -139,7 +138,7 @@ const approvalResultColumns: GridColDef[] = [
     width: 400,
   },
   {
-    field: 'tabName',
+    field: 'tabRegistrationName',
     headerName: 'タブ名',
     headerAlign: 'center',
     size: 'm',
@@ -207,7 +206,14 @@ const convertToApprovalKindModel = (
       number: x.approvalKindNumber,
       systemKind: x.systemKind,
       screenName: x.screenName,
-      tabName: x.tabName,
+      tabRegistrationName:
+        x.allRegistrationName === null
+          ? x.tabName
+          : x.tabName === null
+          ? x.allRegistrationName
+          : x.allRegistrationName !== null && x.tabName !== null
+          ? x.tabName
+          : '',
       approvalConditionName: x.approvalConditionName,
       number1: x.authorizerFirst,
       number2: x.authorizerSecond,
@@ -242,7 +248,14 @@ const convertToHistoryInfo = (
       number: x.approvalKindNumber,
       systemKind: x.systemKind,
       screenName: x.screenName,
-      tabName: x.tabName,
+      tabRegistrationName:
+        x.allRegistrationName === null
+          ? x.tabName
+          : x.tabName === null
+          ? x.allRegistrationName
+          : x.allRegistrationName !== null && x.tabName !== null
+          ? x.tabName
+          : '',
       approvalConditionName: x.approvalConditionName,
       number1: x.authorizerFirst,
       number2: x.authorizerSecond,
@@ -337,10 +350,7 @@ const ScrCom0026ApprovalKindTab = () => {
       setActiveFlag(disableFlg);
 
       // API-COM-0026-0003: 承認種類一覧取得API
-      const approvalRequest: ScrCom0026GetApprovalKindRequest = {
-        businessDate: businessDate,
-      };
-      const approvalResponse = await ScrCom0026GetApprovalKind(approvalRequest);
+      const approvalResponse = await ScrCom0026GetApprovalKind(null);
       const approvalResult = convertToApprovalKindModel(approvalResponse);
       const approvalList = convertToApprovalList(approvalResponse);
 
@@ -516,7 +526,7 @@ const ScrCom0026ApprovalKindTab = () => {
           number: x.number,
           systemKind: x.systemKind,
           screenName: x.screenName,
-          tabName: x.tabName,
+          tabRegistrationName: x.tabRegistrationName,
           approvalConditionName: x.approvalConditionName,
           number1: x.number1,
           number2: x.number2,
@@ -570,7 +580,7 @@ const ScrCom0026ApprovalKindTab = () => {
           number: x.number,
           systemKind: x.systemKind,
           screenName: x.screenName,
-          tabName: x.tabName,
+          tabRegistrationName: x.tabRegistrationName,
           approvalConditionName: x.approvalConditionName,
           number1: x.number1,
           number2: x.number2,
