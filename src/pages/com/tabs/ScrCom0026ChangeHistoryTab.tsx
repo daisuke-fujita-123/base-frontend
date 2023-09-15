@@ -170,7 +170,7 @@ const ScrCom0026ChangeHistoryTab = () => {
 
   // 初期表示処理
   useEffect(() => {
-    const initialize = async (screenId: string, tabId: number) => {
+    const initialize = async () => {
       // API-COM-0026-0006: 変更履歴一覧情報取得
       const changeHistoryResponse = await ScrCom0026GetChangeHistory(null);
       const changeHistoryResult = convertToScreenModel(changeHistoryResponse);
@@ -228,7 +228,7 @@ const ScrCom0026ChangeHistoryTab = () => {
     };
 
     if (screenId !== null && tabId !== null) {
-      initialize(screenId, tabId);
+      initialize();
     }
   }, [screenId, tabId]);
 

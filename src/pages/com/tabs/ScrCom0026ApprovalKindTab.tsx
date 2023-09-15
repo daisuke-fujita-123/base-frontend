@@ -345,7 +345,7 @@ const ScrCom0026ApprovalKindTab = () => {
 
   // 初期表示処理
   useEffect(() => {
-    const initialize = async (businessDate: string) => {
+    const initialize = async () => {
       // ボタン活性
       setActiveFlag(disableFlg);
 
@@ -401,7 +401,7 @@ const ScrCom0026ApprovalKindTab = () => {
 
     // 初期表示処理
     if (user.taskDate !== null) {
-      initialize(user.taskDate);
+      initialize();
       return;
     }
   }, [applicationId, user]);
@@ -476,9 +476,9 @@ const ScrCom0026ApprovalKindTab = () => {
     approvalResult.map((x, i) => {
       // 承認者.第1~4のいずれかがチェック済みであること
       if (
-        x.number1 === false ||
-        x.number2 === false ||
-        x.number3 === false ||
+        x.number1 === false &&
+        x.number2 === false &&
+        x.number3 === false &&
         x.number4 === false
       ) {
         errorMessages.push({
@@ -490,9 +490,7 @@ const ScrCom0026ApprovalKindTab = () => {
       // 最大の承認者より前のチェックが全てチェック済みか
       if (
         x.number4 === true &&
-        x.number3 !== true &&
-        x.number2 !== true &&
-        x.number1 !== true
+        (x.number3 !== true || x.number2 !== true || x.number1 !== true)
       ) {
         errorMessages.push({
           errorCode: 'MSG-FR-ERR-00006',
@@ -500,8 +498,7 @@ const ScrCom0026ApprovalKindTab = () => {
         });
       } else if (
         x.number3 === true &&
-        x.number2 !== true &&
-        x.number1 !== true
+        (x.number2 !== true || x.number1 !== true)
       ) {
         errorMessages.push({
           errorCode: 'MSG-FR-ERR-00006',
