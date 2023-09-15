@@ -1,5 +1,5 @@
 // React、mui
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,6 +14,7 @@ import { ColStack, RowStack } from 'layouts/Stack';
 // UI
 import { SearchButton } from 'controls/Button';
 import { DataGrid, GridColDef, GridHrefsModel } from 'controls/Datagrid';
+import { Dialog } from 'controls/Dialog';
 import { TextField } from 'controls/TextField/TextField';
 
 import {
@@ -23,6 +24,8 @@ import {
 
 // 共通部品
 import { useForm } from 'hooks/useForm';
+
+import { MessageContext } from 'providers/MessageProvider';
 
 import yup from 'utils/validation/ValidationDefinition';
 
@@ -121,6 +124,12 @@ const ScrTra0001BasicTab = () => {
   // router
   const navigate = useNavigate();
 
+  // message
+  const { getMessage } = useContext(MessageContext);
+
+  const [handleDialog, setHandleDialog] = useState<boolean>(false);
+  const [title, setTitle] = useState<string>('');
+
   // state
   // DataGrid：マスタ一覧
   const [dealAccountingMasters, setDealAccountingMasters] = useState<
@@ -148,7 +157,6 @@ const ScrTra0001BasicTab = () => {
       // マスタ一覧を非表示にする
       setIsHideDealAccountingMasters(true);
     };
-
     initialize();
   }, []);
 
@@ -159,7 +167,6 @@ const ScrTra0001BasicTab = () => {
     // 検索条件の取得
     const searchCondition: SearchCondition = getValues();
 
-    setIsHideDealAccountingMasters(true);
     setDealAccountingMasters([]);
 
     // 取引管理マスタ一覧検索API呼出
@@ -190,8 +197,14 @@ const ScrTra0001BasicTab = () => {
           };
         })
       );
-      setIsHideDealAccountingMasters(false);
+      // setIsHideDealAccountingMasters(false);
+    } else {
+      const message = getMessage('MSG-FR-INF-00017');
+      // ダイアログを表示
+      setTitle(message);
+      setHandleDialog(true);
     }
+    setIsHideDealAccountingMasters(false);
   };
 
   // 申請IDリンククリック
@@ -244,6 +257,12 @@ const ScrTra0001BasicTab = () => {
           </FormProvider>
         </MainLayout>
       </MainLayout>
+      {/* ダイアログ */}
+      <Dialog
+        open={handleDialog}
+        title={title}
+        buttons={[{ name: 'OK', onClick: () => setHandleDialog(false) }]}
+      />
     </>
   );
 };
