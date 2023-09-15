@@ -127,6 +127,7 @@ const ScrTra0001BasicTab = () => {
   // message
   const { getMessage } = useContext(MessageContext);
 
+  // ダイアログ表示用
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
 

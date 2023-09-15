@@ -238,7 +238,9 @@ const ScrTra0001ChangeHistoryTab = () => {
   // router
   const navigate = useNavigate();
 
-  const apiRef = useGridApiRef();
+  const changeApiRef = useGridApiRef();
+
+  const unapprovedApiRef = useGridApiRef();
 
   // state
   // DataGrid：変更履歴
@@ -463,14 +465,14 @@ const ScrTra0001ChangeHistoryTab = () => {
   const handlChangeHistoriesCsvExport = () => {
     // TODO ファイル名を日時仮設定
     const filename = dayjs().format('YYYYMMDD_HHmmssSSS') + '_変更履歴一覧';
-    exportCsv(filename + '.csv', apiRef);
+    exportCsv(filename + '.csv', changeApiRef);
   };
 
   // 未承認一覧CSV出力
   const handleUnapprovedChangeHistoriesCsvExport = () => {
     // TODO ファイル名を日時仮設定
     const filename = dayjs().format('YYYYMMDD_HHmmssSSS') + '_未承認一覧';
-    exportCsv(filename + '.csv', apiRef);
+    exportCsv(filename + '.csv', unapprovedApiRef);
   };
 
   return (
@@ -490,6 +492,7 @@ const ScrTra0001ChangeHistoryTab = () => {
             }
           >
             <DataGrid
+              apiRef={changeApiRef}
               pagination={true}
               columns={changeHistoriesColumns}
               rows={changeHistories}
@@ -512,7 +515,7 @@ const ScrTra0001ChangeHistoryTab = () => {
           >
             <DataGrid
               pagination={true}
-              apiRef={apiRef}
+              apiRef={unapprovedApiRef}
               columns={unapprovedChangeHistoriesColumns}
               rows={unapprovedChangeHistories}
               hrefs={unapprovedChangeHistoriesHrefs}
