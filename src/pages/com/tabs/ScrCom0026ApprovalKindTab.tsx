@@ -361,6 +361,7 @@ const ScrCom0026ApprovalKindTab = () => {
 
       // 初期データを格納
       if (initApprovalResult.length === 0) {
+        if (approvalResult.length === 0) return;
         setInitApprovalResult(approvalResult);
       }
     };
@@ -389,6 +390,7 @@ const ScrCom0026ApprovalKindTab = () => {
 
       // 初期データを格納
       if (initApprovalResult) {
+        if (historyInfo.length === 0) return;
         setInitApprovalResult(historyInfo);
       }
     };
@@ -404,7 +406,7 @@ const ScrCom0026ApprovalKindTab = () => {
       initialize();
       return;
     }
-  }, [applicationId, user]);
+  }, [applicationId, user, initApprovalResult]);
 
   /**
    * CSV出力アイコンクリック時のイベントハンドラ
@@ -448,8 +450,7 @@ const ScrCom0026ApprovalKindTab = () => {
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToChngedSections = (dirtyFields: object): sectionList[] => {
-    const fields = Object.keys(dirtyFields);
+  const convertToChngedSections = (fields: string[]): sectionList[] => {
     const changedSections: sectionList[] = [];
     sectionDef.forEach((d) => {
       const columnList: columnList[] = [];
@@ -472,7 +473,7 @@ const ScrCom0026ApprovalKindTab = () => {
   const handleConfirm = () => {
     // 画面入力チェック
     const errorMessages: ErrorList[] = [];
-    const approvalResultRequest: ApprovalModel[] = [];
+    const fields: string[] = [];
     approvalResult.map((x, i) => {
       if (approvalList[i].approval === true) {
         // 承認者.第1~4のいずれかがチェック済みであること
@@ -513,31 +514,30 @@ const ScrCom0026ApprovalKindTab = () => {
         }
       }
 
-      // 変更行のデータを取得
+      // 変更カラムのデータを取得
       if (
-        x.number1 !== initApprovalResult[i].number1 ||
-        x.number2 !== initApprovalResult[i].number2 ||
-        x.number3 !== initApprovalResult[i].number3 ||
-        x.number4 !== initApprovalResult[i].number4
+        x.number1 !== initApprovalResult[i].number1 &&
+        !fields.includes('number1')
       ) {
-        approvalResultRequest.push({
-          id: x.number,
-          number: x.number,
-          systemKind: x.systemKind,
-          screenName: x.screenName,
-          tabRegistrationName: x.tabRegistrationName,
-          approvalConditionName: x.approvalConditionName,
-          number1: x.number1,
-          number2: x.number2,
-          number3: x.number3,
-          number4: x.number4,
-          approval: approvalList[i].approval,
-          approvalKindId: approvalList[i].approvalKindId,
-          validityStartDate: approvalList[i].validityStartDate,
-          beforeTimestamp: approvalList[i].beforeTimestamp,
-          changeHistoryNumber: approvalList[i].changeHistoryNumber,
-          changeExpectDate: approvalList[i].changeExpectDate,
-        });
+        fields.push('number1');
+      }
+      if (
+        x.number2 !== initApprovalResult[i].number2 &&
+        !fields.includes('number2')
+      ) {
+        fields.push('number2');
+      }
+      if (
+        x.number3 !== initApprovalResult[i].number3 &&
+        !fields.includes('number3')
+      ) {
+        fields.push('number3');
+      }
+      if (
+        x.number4 !== initApprovalResult[i].number4 &&
+        !fields.includes('number4')
+      ) {
+        fields.push('number4');
       }
     });
 
@@ -552,7 +552,7 @@ const ScrCom0026ApprovalKindTab = () => {
           screenName: 'アクセス権限管理',
           tabId: 3,
           tabName: '承認種類',
-          sectionList: convertToChngedSections(approvalResultRequest),
+          sectionList: convertToChngedSections(fields),
         },
       ],
       changeExpectDate: '',
