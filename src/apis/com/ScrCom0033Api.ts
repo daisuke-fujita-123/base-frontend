@@ -5,9 +5,11 @@ export interface ScrCom0033GetApproverRequest {
   /** 画面ID */
   screenId: string;
   /** タブID */
-  tabId: number;
+  tabId?: number;
+  /** 一括登録ID */
+  allRegistrationId?: string;
   /** 申請金額 */
-  applicationMoney: number;
+  applicationMoney?: number;
   /** 申請者ID */
   appalicationId: string;
 }
