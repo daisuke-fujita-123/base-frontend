@@ -474,41 +474,43 @@ const ScrCom0026ApprovalKindTab = () => {
     const errorMessages: ErrorList[] = [];
     const approvalResultRequest: ApprovalModel[] = [];
     approvalResult.map((x, i) => {
-      // 承認者.第1~4のいずれかがチェック済みであること
-      if (
-        x.number1 === false &&
-        x.number2 === false &&
-        x.number3 === false &&
-        x.number4 === false
-      ) {
-        errorMessages.push({
-          errorCode: 'MSG-FR-ERR-00005',
-          errorMessage: '承認者を入力してください。',
-        });
-      }
+      if (approvalList[i].approval === true) {
+        // 承認者.第1~4のいずれかがチェック済みであること
+        if (
+          x.number1 === false &&
+          x.number2 === false &&
+          x.number3 === false &&
+          x.number4 === false
+        ) {
+          errorMessages.push({
+            errorCode: 'MSG-FR-ERR-00005',
+            errorMessage: '承認者を入力してください。',
+          });
+        }
 
-      // 最大の承認者より前のチェックが全てチェック済みか
-      if (
-        x.number4 === true &&
-        (x.number3 !== true || x.number2 !== true || x.number1 !== true)
-      ) {
-        errorMessages.push({
-          errorCode: 'MSG-FR-ERR-00006',
-          errorMessage: '承認者を正しい組み合わせで入力してください。',
-        });
-      } else if (
-        x.number3 === true &&
-        (x.number2 !== true || x.number1 !== true)
-      ) {
-        errorMessages.push({
-          errorCode: 'MSG-FR-ERR-00006',
-          errorMessage: '承認者を正しい組み合わせで入力してください。',
-        });
-      } else if (x.number2 === true && x.number1 !== true) {
-        errorMessages.push({
-          errorCode: 'MSG-FR-ERR-00006',
-          errorMessage: '承認者を正しい組み合わせで入力してください。',
-        });
+        // 最大の承認者より前のチェックが全てチェック済みか
+        if (
+          x.number4 === true &&
+          (x.number3 !== true || x.number2 !== true || x.number1 !== true)
+        ) {
+          errorMessages.push({
+            errorCode: 'MSG-FR-ERR-00006',
+            errorMessage: '承認者を正しい組み合わせで入力してください。',
+          });
+        } else if (
+          x.number3 === true &&
+          (x.number2 !== true || x.number1 !== true)
+        ) {
+          errorMessages.push({
+            errorCode: 'MSG-FR-ERR-00006',
+            errorMessage: '承認者を正しい組み合わせで入力してください。',
+          });
+        } else if (x.number2 === true && x.number1 !== true) {
+          errorMessages.push({
+            errorCode: 'MSG-FR-ERR-00006',
+            errorMessage: '承認者を正しい組み合わせで入力してください。',
+          });
+        }
       }
 
       // 変更行のデータを取得
