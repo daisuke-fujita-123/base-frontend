@@ -38,9 +38,11 @@ export interface ScrCom0033PopupModel {
   // 画面ID
   screenId: string;
   // タブID
-  tabId: number;
+  tabId?: number;
+  // 一括登録ID
+  allRegistrationId?: string;
   // 申請金額
-  applicationMoney: number;
+  applicationMoney?: number;
 }
 
 /**
@@ -307,11 +309,6 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
       const lastApprover3 = localStorage.getItem('lastApprover3');
       const lastApprover4 = localStorage.getItem('lastApprover4');
 
-      console.log(lastApprover1);
-      console.log(lastApprover2);
-      console.log(lastApprover3);
-      console.log(lastApprover4);
-
       // 初期値は前回承認者が存在しない場合はブランクを設定、存在する場合は初期値を前回承認者に設定
       setValue(
         'needApprovalStep1',
@@ -336,6 +333,8 @@ const ScrCom0033Popup = (props: ScrCom0033PopupProps) => {
         screenId: data.screenId,
         /** タブID */
         tabId: data.tabId,
+        /** 一括登録ID */
+        allRegistrationId: data.allRegistrationId,
         /** 申請金額 */
         applicationMoney: data.applicationMoney,
         /** 申請者ID */
