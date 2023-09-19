@@ -618,15 +618,14 @@ const ScrMem0003BaseTab = () => {
       const getCodeManagementMasterRequest = { codeId: 'CDE-MEM-1026' };
       const getCodeManagementMasterResponse =
         await ScrCom9999GetCodeManagementMaster(getCodeManagementMasterRequest);
-      const usePurposeSelectValues =
-        getCodeManagementMasterResponse.searchGetCodeManagementMasterListbox.map(
-          (x) => {
-            return {
-              value: x.codeValue,
-              displayValue: x.codeName,
-            };
-          }
-        );
+      const usePurposeSelectValues = getCodeManagementMasterResponse.list.map(
+        (x) => {
+          return {
+            value: x.codeValue,
+            displayValue: x.codeName,
+          };
+        }
+      );
 
       const getEmployeeFromDistrictRequest = { corporationId: corporationId };
       const getEmployeeFromDistrictResponse =

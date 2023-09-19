@@ -452,7 +452,7 @@ const ScrCom0024Page = () => {
     setSelectValues({
       // 開催曜日
       sessionWeekKindSelectValues: convertFrom0010ToSelectValueModel(
-        sessionWeekKindResponse.searchGetCodeManagementMasterListbox
+        sessionWeekKindResponse.list
       ),
       // 会場グループ
       placeGroupCodeSelectValues: convertFrom0016ToSelectValueModel(
@@ -471,7 +471,7 @@ const ScrCom0024Page = () => {
       ),
       // バーチャル口座付与ルール
       virtualAccountGrantRuleSelectValues: convertFrom0010ToSelectValueModel(
-        virtualAccountGrantRuleResponse.searchGetCodeManagementMasterListbox
+        virtualAccountGrantRuleResponse.list
       ),
       // 銀行名
       bankNameSelectValues: convertToCodeValueSelectValueModel(
@@ -484,7 +484,7 @@ const ScrCom0024Page = () => {
       // おまとめ会場連絡不可対象
       omatomePlaceContactImpossibleTargetedKindSelectValues:
         convertFrom0010ToSelectValueModel(
-          omatomePlaceContactImpossibleTargetedKindResponse.searchGetCodeManagementMasterListbox
+          omatomePlaceContactImpossibleTargetedKindResponse.list
         ),
     });
   };

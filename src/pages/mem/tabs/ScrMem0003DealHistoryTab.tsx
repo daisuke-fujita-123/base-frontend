@@ -873,15 +873,14 @@ const ScrMem0003DealHistoryTab = () => {
       setSelectValues({
         useBillingIdSelectValues: useBillingIdSelectValues,
         useContractIdSelectValues: useContractIdSelectValues,
-        useAuctionKindSelectValues:
-          codeManagementMasterResponse.searchGetCodeManagementMasterListbox.map(
-            (x) => {
-              return {
-                value: x.codeValue,
-                displayValue: x.codeName,
-              };
-            }
-          ),
+        useAuctionKindSelectValues: codeManagementMasterResponse.list.map(
+          (x) => {
+            return {
+              value: x.codeValue,
+              displayValue: x.codeName,
+            };
+          }
+        ),
         useYearSelectValues: years,
         useMonthSelectValues: months,
       });
