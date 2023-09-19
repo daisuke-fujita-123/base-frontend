@@ -15,8 +15,6 @@ export interface ScrCom0026GetScreenPermissionResponse {
 }
 
 interface ScreenPermissionList {
-  // 項目内リンクId(hrefs)
-  id: string;
   // 画面権限ID
   screenPermissionId: string;
   // 画面権限名
@@ -51,8 +49,6 @@ export interface ScrCom0026GetMasterPermissionResponse {
 }
 
 interface MasterPermissionList {
-  // 項目内リンクId(hrefs)
-  id: string;
   // マスタ権限ID
   masterPermissionId: string;
   // マスタ権限名
@@ -81,8 +77,6 @@ export interface ScrCom0026GetApprovalKindResponse {
 }
 
 interface ApprovalKindList {
-  // 項目内リンクId(hrefs)
-  id: string;
   // No
   approvalKindNumber: string;
   // システム種別
@@ -127,7 +121,7 @@ export const ScrCom0026GetApprovalKind = async (
 // API-COM-0026-0007: 承認種類登録更新API リクエスト
 export interface ScrCom0026RegistApprovalKindRequest {
   /** リスト */
-  registApprovalKindList: RegistApprovalKindList[];
+  approvalKindList: RegistApprovalKindList[];
   // 画面ID
   screenId: string;
   // タブID
@@ -135,7 +129,7 @@ export interface ScrCom0026RegistApprovalKindRequest {
   // 登録変更メモ
   registrationChangeMemo: string;
   // 変更申請従業員ID
-  changeApplicationEmployeeId: string;
+  applicationEmployeeId: string;
   // 業務日付
   businessDate: string;
 }
@@ -146,13 +140,13 @@ interface RegistApprovalKindList {
   // 有効開始日
   validityStartDate: string;
   // 第1
-  number1: boolean;
+  firstApproval: boolean;
   // 第2
-  number2: boolean;
+  secondApproval: boolean;
   // 第3
-  number3: boolean;
+  thirdApproval: boolean;
   // 第4
-  number4: boolean;
+  fourthApproval: boolean;
   // 変更前タイムスタンプ
   beforeTimestamp: string;
 }
@@ -162,7 +156,7 @@ export const ScrCom0026RegistApprovalKind = async (
   req: ScrCom0026RegistApprovalKindRequest
 ): Promise<ScrCom0032PopupModel> => {
   const response = await comApiClient.post(
-    '/api/com/scr-com-0026/get-approval-kind',
+    '/api/com/scr-com-0026/regist-update-approval-kind',
     req
   );
   return response.data;
@@ -181,8 +175,6 @@ export interface ScrCom0026GetApprovalPermissionResponse {
 }
 
 interface ApprovalPermissionList {
-  // 項目内リンクId(hrefs)
-  id: string;
   // 承認権限ID
   approvalPermissionId: string;
   // 承認権限名

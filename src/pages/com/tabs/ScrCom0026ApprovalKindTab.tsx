@@ -569,9 +569,9 @@ const ScrCom0026ApprovalKindTab = () => {
     const approvalResultRequest: ApprovalModel[] = [];
     approvalResult.forEach((x, i) => {
       if (
-        x.number1 !== initApprovalResult[i].number1 &&
-        x.number2 !== initApprovalResult[i].number2 &&
-        x.number3 !== initApprovalResult[i].number3 &&
+        x.number1 !== initApprovalResult[i].number1 ||
+        x.number2 !== initApprovalResult[i].number2 ||
+        x.number3 !== initApprovalResult[i].number3 ||
         x.number4 !== initApprovalResult[i].number4
       ) {
         approvalResultRequest.push({
@@ -601,15 +601,15 @@ const ScrCom0026ApprovalKindTab = () => {
       tabId: '3',
       registrationChangeMemo: registrationChangeMemo,
       businessDate: user.taskDate,
-      changeApplicationEmployeeId: user.employeeId,
-      registApprovalKindList: approvalResultRequest.map((x) => {
+      applicationEmployeeId: user.employeeId,
+      approvalKindList: approvalResultRequest.map((x) => {
         return {
           approvalKindId: x.approvalKindId,
           validityStartDate: x.validityStartDate,
-          number1: x.number1,
-          number2: x.number2,
-          number3: x.number3,
-          number4: x.number4,
+          firstApproval: x.number1,
+          secondApproval: x.number2,
+          thirdApproval: x.number3,
+          fourthApproval: x.number4,
           beforeTimestamp: x.beforeTimestamp,
         };
       }),
