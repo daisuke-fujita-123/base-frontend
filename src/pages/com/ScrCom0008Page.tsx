@@ -812,7 +812,7 @@ const ScrCom0008Page = () => {
                 </ColStack>
                 <ColStack>
                   <Box>
-                    <Typography variant='body1'>最大文字数</Typography>
+                    <Typography variant='body1'>1行最大文字数</Typography>
                     <Typography variant='body1'>{getCommentLine}</Typography>
                   </Box>
                 </ColStack>
