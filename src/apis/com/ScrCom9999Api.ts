@@ -137,6 +137,12 @@ export const ScrCom9999GetApprovalPermissionId = async (
   return response.data;
 };
 
+/** API-COM-9999-0007: 所属組織IDリストボックス情報取得API リクエスト */
+export interface ScrCom9999GetBelongOrganizationIdRequest {
+  /** 業務日付 */
+  businessDate: string;
+}
+
 /** API-COM-9999-0007: 所属組織IDリストボックス情報取得API レスポンス */
 export interface ScrCom9999GetBelongOrganizationIdResponse {
   // リスト
@@ -153,7 +159,7 @@ export interface SearchGetBelongOrganizationIdListbox {
 
 /** API-COM-9999-0007: 所属組織IDリストボックス情報取得API */
 export const ScrCom9999GetBelongOrganizationId = async (
-  request: null
+  request: ScrCom9999GetBelongOrganizationIdRequest
 ): Promise<ScrCom9999GetBelongOrganizationIdResponse> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-9999/get-organizationid',
