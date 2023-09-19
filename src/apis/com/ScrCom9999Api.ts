@@ -601,7 +601,7 @@ export interface ScrCom9999GetChangeDateRequest {
   // 画面ID
   screenId: string;
   // タブID
-  tabId: number;
+  tabId?: number;
   // マスタID
   masterId: string;
   // 業務日付

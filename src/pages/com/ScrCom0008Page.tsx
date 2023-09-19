@@ -346,7 +346,6 @@ const ScrCom0008Page = () => {
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: SCR_COM_0008,
-        tabId: 0,
         masterId: reportId,
         businessDate: user.taskDate,
       };
@@ -427,6 +426,7 @@ const ScrCom0008Page = () => {
    * 確定ボタンクリック時のイベントハンドラ
    */
   const onClickConfirm = () => {
+    console.log(user.taskDate);
     if (Object.keys(errors).length) return;
     // 反映予定日整合性チェック
     setChangeHistoryDateCheckisOpen(true);
