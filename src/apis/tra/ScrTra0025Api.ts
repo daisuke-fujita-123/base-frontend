@@ -15,7 +15,7 @@ export interface ScrTra0025GetPaymentDetailsResponse {
   // 請求先ID
   billingId: string;
   // 即支払可否フラグ
-  immediatePaymentFlag: string;
+  immediatePaymentFlag: boolean;
   // 即時出金限度額
   immediatePaymentLimitAmount: number;
   // 取引区分
@@ -63,7 +63,7 @@ export interface PaymentDetailsList {
   // 出金種別
   paymentKind: string;
   // 出金元口座
-  paymentSourceAccount: string;
+  paymentSourceAccountName: string;
   // 出金元口座ID
   paymentSourceAccountId: string;
   // 出金額
@@ -83,5 +83,110 @@ export const ScrTra0025GetPaymentDetails = async (
     request
   );
   return response.data;
+};
+
+/** 出金伝票詳細入力チェックAPIリクエスト */
+export interface ScrTra0025CheckPaymentRequest {
+  // 債務番号
+  debtNumber: string;
+  // 出金番号
+  paymentNumber: string;
+  // 債務一覧リスト
+  paymentDetailsList: PaymentDetailsListreq[];
+  // 変更タイムスタンプ
+  changeTimestamp: string;
+}
+
+/** 出金伝票詳細入力チェック用リスト */
+export interface PaymentDetailsListreq {
+  // 出金明細番号
+  paymentDetailsNumber: number;
+  // 会計処理日
+  accountingDate: string;
+  // 出金種別
+  paymentKind: string;
+  // 出金元口座
+  paymentSourceAccountName: string;
+  // 出金元口座ID
+  paymentSourceAccountId: string;
+  // 出金額
+  paymentAmount: number;
+  // 出金メモ
+  paymentMemo: string;
+}
+
+/** 出金伝票詳細入力チェックAPIレスポンス */
+export interface ScrTra0025CheckPaymentResponse {
+  // エラー内容リスト
+  errorList: ErrorList[];
+  // ワーニング内容リスト
+  warnList: WarnList[];
+}
+
+/** 出金伝票詳細入力チェックAPIエラーリスト */
+export interface ErrorList {
+  // エラーコード
+  errorCode: string;
+  // エラーメッセージ
+  errorMessage: string;
+}
+
+/** 出金伝票詳細入力チェックAPIワーニング内容リスト */
+export interface WarnList {
+  // ワーニングコード
+  warnCode: string;
+  // ワーニングメッセージ
+  warnMessage: string;
+}
+
+/** 出金伝票入力チェックAPI /api/tra/scr-tra-0025/input-check-payment-details */
+export const ScrTra0025CheckPayment = async (
+  request: ScrTra0025CheckPaymentRequest
+): Promise<ScrTra0025CheckPaymentResponse> => {
+  const response = await traApiClient.post(
+    '/api/tra/scr-tra-0025/input-check-payment-details',
+    request
+  );
+  return response.data;
+};
+
+/** 出金伝票詳細登録APIリクエスト */
+export interface ScrTra0025registrationPaymentRequest {
+  // 債務番号
+  debtNumber: string;
+  // 出金番号
+  paymentNumber: string;
+  // 債務一覧リスト
+  paymentDetailsList: registrationPymentDetailsListreq[];
+  // 変更タイムスタンプ
+  changeTimestamp: string | null;
+}
+
+/** 出金伝票詳細登録用リスト */
+export interface registrationPymentDetailsListreq {
+  // 出金明細番号
+  paymentDetailsNumber: number;
+  // 会計処理日
+  accountingDate: string;
+  // 出金種別
+  paymentKind: string;
+  // 出金元口座
+  paymentSourceAccountName: string;
+  // 出金元口座ID
+  paymentSourceAccountId: string;
+  // 出金額
+  paymentAmount: number;
+  // 出金メモ
+  paymentMemo: string;
+}
+
+/** 出金伝票詳細登録API /api/tra/scr-tra-0025/registration-payment-details */
+export const ScrTra0025registrationpayment = async (
+  request: ScrTra0025registrationPaymentRequest
+) => {
+  const response = await traApiClient.post(
+    '/api/tra/scr-tra-0025/registration-payment-details',
+    request
+  );
 };
 
