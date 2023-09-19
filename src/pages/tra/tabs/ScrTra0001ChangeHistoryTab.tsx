@@ -483,10 +483,7 @@ const ScrTra0001ChangeHistoryTab = () => {
             name='変更履歴一覧'
             fitInside
             decoration={
-              <OutputButton
-                onClick={handlChangeHistoriesCsvExport}
-                disable={changeHistories.length === 0}
-              >
+              <OutputButton onClick={handlChangeHistoriesCsvExport}>
                 CSV出力
               </OutputButton>
             }
@@ -505,10 +502,7 @@ const ScrTra0001ChangeHistoryTab = () => {
             name='未承認一覧'
             fitInside
             decoration={
-              <OutputButton
-                onClick={handleUnapprovedChangeHistoriesCsvExport}
-                disable={unapprovedChangeHistories.length === 0}
-              >
+              <OutputButton onClick={handleUnapprovedChangeHistoriesCsvExport}>
                 CSV出力
               </OutputButton>
             }
