@@ -392,7 +392,6 @@ const ScrCom0024Page = () => {
   const listboxSetting = async () => {
     // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
     const sessionWeekKindRequest: ScrCom9999GetCodeManagementMasterRequest = {
-      businessDate: user.taskDate,
       // 開催曜日区分
       codeId: CDE_COM_0138,
     };
@@ -406,7 +405,6 @@ const ScrCom0024Page = () => {
     // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
     const virtualAccountGrantRuleRequest: ScrCom9999GetCodeManagementMasterRequest =
       {
-        businessDate: user.taskDate,
         // バーチャル口座付与ルール
         codeId: CDE_COM_0139,
       };
@@ -442,7 +440,6 @@ const ScrCom0024Page = () => {
     // SCR-COM-9999-0010: コード管理マスタリストボックス情報取得API
     const omatomePlaceContactImpossibleTargetedKindRequest: ScrCom9999GetCodeManagementMasterRequest =
       {
-        businessDate: user.taskDate,
         // おまとめ会場連絡不可対象
         codeId: CDE_COM_0140,
       };

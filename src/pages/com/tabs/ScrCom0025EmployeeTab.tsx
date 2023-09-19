@@ -271,7 +271,7 @@ const convertToSearchResultRowModel = (
 const belongOrganizationIdSelectValuesModel = (
   response: ScrCom9999GetBelongOrganizationIdResponse
 ): SelectValue[] => {
-  return response.searchGetBelongOrganizationIdListbox.map((x) => {
+  return response.organizationList.map((x) => {
     return {
       value: x.organizationId,
       displayValue: x.organizationName,
@@ -285,7 +285,7 @@ const belongOrganizationIdSelectValuesModel = (
 const postIdSelectValuesModel = (
   response: ScrCom9999GetPostIdResponse
 ): SelectValue[] => {
-  return response.searchGetPostIdListbox.map((x) => {
+  return response.postList.map((x) => {
     return {
       value: x.postId,
       displayValue: x.postName,
