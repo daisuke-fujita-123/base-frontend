@@ -155,9 +155,7 @@ const SCR_COM_0008 = 'SCR-COM-0008';
  */
 const ScrCom0008Page = () => {
   // router
-  const { reportIdFromUseParam } = useParams();
-  const reportId: string =
-    reportIdFromUseParam !== undefined ? reportIdFromUseParam : '';
+  const { reportId } = useParams();
 
   // パスパラメータから取得する変更履歴番号
   const [searchParams] = useSearchParams();
@@ -548,7 +546,7 @@ const ScrCom0008Page = () => {
       const createReportImageTraRequest: ScrTra9999CreateReportImageTraRequest =
         {
           functionId: SCR_COM_0008,
-          reportId: reportId,
+          reportId: reportId !== undefined ? reportId : '',
           reportTitle: '',
           operatorId: user.employeeId,
           operatorName: user.organizationName,
@@ -562,7 +560,7 @@ const ScrCom0008Page = () => {
       const createReportImageDocRequest: ScrDoc9999CreateReportImageDocRequest =
         {
           functionId: SCR_COM_0008,
-          reportId: reportId,
+          reportId: reportId !== undefined ? reportId : '',
           reportTitle: '',
           operatorId: user.employeeId,
           operatorName: user.organizationName,
@@ -746,7 +744,7 @@ const ScrCom0008Page = () => {
     const applyRegistrationCommissionInfoRequest: ScrCom0008RegistUpdateReportCommentRequest =
       {
         /** 帳票ID */
-        reportId: reportId,
+        reportId: reportId !== undefined ? reportId : '',
         /** 帳票コメント */
         // 改行コードでつなげた一つの文字列として帳票コメントを送る
         reportComment: reportComment,
