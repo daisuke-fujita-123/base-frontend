@@ -1117,6 +1117,7 @@ const ScrMem0001Page = () => {
     };
     // 帳票出力API 呼び出し
     await ScrMem9999OutputReport(outputReportRequest);
+    setScrCom0011PopupIsOpen(false);
   };
 
   /**
