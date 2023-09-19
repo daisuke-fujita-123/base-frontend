@@ -226,8 +226,6 @@ export const ScrCom9999GetStaff = async (
 
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API リクエスト */
 export interface ScrCom9999GetCodeManagementMasterRequest {
-  /** 業務日付 */
-  businessDate?: string;
   /** コードID */
   codeId: string;
 }
