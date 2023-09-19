@@ -3,6 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import { CenterBox, MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
@@ -46,7 +47,6 @@ import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
-import yup from 'utils/validation/ValidationDefinition';
 
 import { GridColumnGroupingModel, useGridApiRef } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
@@ -888,6 +888,8 @@ const ScrMem0003DealHistoryTab = () => {
 
       setValue('corporationId', corporationId);
     };
+    if (corporationId === 'new') return;
+
     if (corporationId !== undefined) {
       initialize(corporationId);
     }
