@@ -168,7 +168,7 @@ const convertToSearchResultRowModel = (
 const parentorganizationidSelectValuesModel = (
   response: ScrCom9999GetParentorganizationidListboxResponse
 ): SelectValue[] => {
-  return response.searchGetParentorganizationidListbox.map((x) => {
+  return response.parentorganizationidList.map((x) => {
     return {
       value: x.parentOrganizationId,
       displayValue: x.organizationName,

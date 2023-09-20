@@ -9,7 +9,7 @@ export interface ScrCom9999GetParentorganizationidListboxRequest {
 /** API-COM-9999-0002: 親組織ID情報取得API レスポンス */
 export interface ScrCom9999GetParentorganizationidListboxResponse {
   // リスト
-  searchGetParentorganizationidListbox: SearchGetParentorganizationidListbox[];
+  parentorganizationidList: SearchGetParentorganizationidListbox[];
 }
 
 /** API-COM-9999-0002: 親組織ID情報取得API レスポンス(リスト行) */
@@ -40,7 +40,7 @@ export interface ScrCom9999GetOrganizationidListboxRequest {
 /** API-COM-9999-0003: 組織ID情報取得API レスポンス */
 export interface ScrCom9999GetOrganizationidListboxResponse {
   // リスト
-  searchGetOrganizationidListbox: SearchGetOrganizationidListbox[];
+  organizationidList: SearchGetOrganizationidListbox[];
 }
 
 /** API-COM-9999-0003: 組織ID情報取得API レスポンス(リスト行) */
@@ -65,7 +65,7 @@ export const ScrCom9999GetOrganizationidListbox = async (
 /** API-COM-9999-0004: 画面権限ID情報取得API レスポンス */
 export interface ScrCom9999GetScreenpermissionidListboxResponse {
   // リスト
-  searchGetScreenpermissionidListbox: SearchGetScreenpermissionidListbox[];
+  screenpermissionidList: SearchGetScreenpermissionidListbox[];
 }
 
 /** API-COM-9999-0004: 画面権限ID情報取得API レスポンス(リスト行) */
@@ -90,7 +90,7 @@ export const ScrCom9999GetScreenpermissionidListbox = async (
 /** API-COM-9999-0005: マスタ権限ID情報取得API レスポンス */
 export interface ScrCom9999GetMasterpermissionidResponse {
   // リスト
-  searchGetMasterpermissionidListbox: SearchGetMasterpermissionid[];
+  masterpermissionidList: SearchGetMasterpermissionid[];
 }
 
 /** API-COM-9999-0005: マスタ権限ID情報取得API レスポンス(リスト行) */
@@ -115,7 +115,7 @@ export const ScrCom9999GetMasterpermissionid = async (
 /** API-COM-9999-0006: 承認権限ID情報取得API レスポンス */
 export interface ScrCom9999GetApprovalPermissionIdResponse {
   // リスト
-  searchGetApprovalPermissionIdListbox: SearchGetApprovalPermissionIdListbox[];
+  approvalPermissionList: SearchGetApprovalPermissionIdListbox[];
 }
 
 /** API-COM-9999-0006: 承認権限ID情報取得API レスポンス(リスト行) */
@@ -137,10 +137,16 @@ export const ScrCom9999GetApprovalPermissionId = async (
   return response.data;
 };
 
+/** API-COM-9999-0007: 所属組織IDリストボックス情報取得API リクエスト */
+export interface ScrCom9999GetBelongOrganizationIdRequest {
+  /** 業務日付 */
+  businessDate: string;
+}
+
 /** API-COM-9999-0007: 所属組織IDリストボックス情報取得API レスポンス */
 export interface ScrCom9999GetBelongOrganizationIdResponse {
   // リスト
-  searchGetBelongOrganizationIdListbox: SearchGetBelongOrganizationIdListbox[];
+  organizationList: SearchGetBelongOrganizationIdListbox[];
 }
 
 /** API-COM-9999-0007: 所属組織IDリストボックス情報取得API レスポンス(リスト行) */
@@ -153,7 +159,7 @@ export interface SearchGetBelongOrganizationIdListbox {
 
 /** API-COM-9999-0007: 所属組織IDリストボックス情報取得API */
 export const ScrCom9999GetBelongOrganizationId = async (
-  request: null
+  request: ScrCom9999GetBelongOrganizationIdRequest
 ): Promise<ScrCom9999GetBelongOrganizationIdResponse> => {
   const response = await comApiClient.post(
     '/api/com/scr-com-9999/get-organizationid',
@@ -165,7 +171,7 @@ export const ScrCom9999GetBelongOrganizationId = async (
 /** API-COM-9999-0008: 所属役職IDリストボックス情報取得API レスポンス */
 export interface ScrCom9999GetPostIdResponse {
   // リスト
-  searchGetPostIdListbox: SearchGetPostIdListbox[];
+  postList: SearchGetPostIdListbox[];
 }
 
 /** API-COM-9999-0008: 所属役職IDリストボックス情報取得API レスポンス(リスト行) */
@@ -226,8 +232,6 @@ export const ScrCom9999GetStaff = async (
 
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API リクエスト */
 export interface ScrCom9999GetCodeManagementMasterRequest {
-  /** 業務日付 */
-  businessDate?: string;
   /** コードID */
   codeId: string;
 }
@@ -597,7 +601,7 @@ export interface ScrCom9999GetChangeDateRequest {
   // 画面ID
   screenId: string;
   // タブID
-  tabId: number;
+  tabId?: number;
   // マスタID
   masterId: string;
   // 業務日付
