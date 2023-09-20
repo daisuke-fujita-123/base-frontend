@@ -73,8 +73,7 @@ const dealAccountingMastersColumns: GridColDef[] = [
     size: 's',
     cellType: 'default',
     editable: false,
-    filterable: false,
-    sortable: false,
+    disableColumnMenu: true,
   },
   {
     field: 'masterId',
@@ -82,7 +81,7 @@ const dealAccountingMastersColumns: GridColDef[] = [
     size: 'm',
     cellType: 'link',
     editable: false,
-    filterable: false,
+    disableColumnMenu: true,
   },
   {
     field: 'masterName',
@@ -90,7 +89,7 @@ const dealAccountingMastersColumns: GridColDef[] = [
     size: 'l',
     cellType: 'default',
     editable: false,
-    filterable: false,
+    disableColumnMenu: true,
   },
   {
     field: 'primaryKeyColumnName',
@@ -98,7 +97,7 @@ const dealAccountingMastersColumns: GridColDef[] = [
     size: 'l',
     cellType: 'default',
     editable: false,
-    filterable: false,
+    disableColumnMenu: true,
   },
   {
     field: 'masterCount',
@@ -106,7 +105,7 @@ const dealAccountingMastersColumns: GridColDef[] = [
     size: 'm',
     cellType: 'default',
     editable: false,
-    filterable: false,
+    disableColumnMenu: true,
   },
 ];
 
@@ -114,9 +113,13 @@ const dealAccountingMastersColumns: GridColDef[] = [
  * バリデーションスキーマ
  */
 const validationSchama = {
-  masterId: yup.string().label('マスタID'),
-  masterName: yup.string().label('マスタ名'),
-  primaryKeyColumnName: yup.string().label('キー情報'),
+  masterId: yup.string().halfWidthOnly().max(12).label('マスタID'),
+  masterName: yup.string().fullAndHalfWidth().max(30).label('マスタ名'),
+  primaryKeyColumnName: yup
+    .string()
+    .fullAndHalfWidth()
+    .max(30)
+    .label('キー情報'),
 };
 
 /** SCR-TRA-0001：取引管理マスタ一覧 基本情報タブ */
@@ -167,7 +170,6 @@ const ScrTra0001BasicTab = () => {
   const handleSearch = async () => {
     // 検索条件の取得
     const searchCondition: SearchCondition = getValues();
-
     setDealAccountingMasters([]);
 
     // 取引管理マスタ一覧検索API呼出

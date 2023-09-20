@@ -14,7 +14,10 @@ import {
   GridTooltipsModel,
 } from 'controls/Datagrid';
 
-import { ScrTra0001GetAccountingDealMasterChangeHistoryInfo } from 'apis/tra/ScrTra0001Api';
+import {
+  ScrTra0001GetAccountingDealMasterChangeHistoryInfo,
+  ScrTra0001GetAccountingDealMasterChangeHistoryInfoResponse,
+} from 'apis/tra/ScrTra0001Api';
 
 import { useNavigate } from 'hooks/useNavigate';
 
@@ -23,7 +26,7 @@ import dayjs from 'dayjs';
 
 /** モデル定義 */
 /** 変更履歴情報データモデル */
-interface ChangeHistoriesRowModel {
+interface ChangeHistoryRowModel {
   // ID
   id: number;
   /** 変更管理番号 */
@@ -47,8 +50,8 @@ interface ChangeHistoriesRowModel {
   /** 最終承認者コメント */
   approverComment: string;
 }
-/** 契約情報データモデル */
-interface UnapprovedChangeHistoriesRowModel {
+/** 未承認情報データモデル */
+interface UnapprovedChangeHistoryRowModel {
   // ID
   id: number;
   /** 変更管理番号 */
@@ -75,9 +78,25 @@ interface UnapprovedChangeHistoriesRowModel {
   approvalEmployee4: string;
 }
 
+/**
+ * Hrefモデル
+ */
+interface HrefModel {
+  id: string | number;
+  href: string;
+}
+
+/**
+ * Tooltipモデル
+ */
+interface TooltipModel {
+  id: string | number;
+  text: string;
+}
+
 /** 変数定義 */
 /** 変更履歴一覧 カラム定義 */
-const changeHistoriesColumns: GridColDef[] = [
+const changeHistoryColumns: GridColDef[] = [
   {
     field: 'changeHistoryNumber',
     headerName: '申請ID',
@@ -151,8 +170,9 @@ const changeHistoriesColumns: GridColDef[] = [
     tooltip: true,
   },
 ];
+
 /** 未承認一覧 カラム定義 */
-const unapprovedChangeHistoriesColumns: GridColDef[] = [
+const unapprovedChangeHistoryColumns: GridColDef[] = [
   {
     field: 'changeHistoryNumber',
     headerName: '申請ID',
@@ -232,6 +252,197 @@ const unapprovedChangeHistoriesColumns: GridColDef[] = [
     editable: false,
   },
 ];
+/**
+ * レスポンスを変更履歴情報データモデルに変換
+ * @param response 取引管理マスタ一覧情報取得API レスポンス.変更履歴情報配列
+ * @returns 変更履歴情報データモデル
+ */
+const convertToChangeHistoryRows = (
+  response: ScrTra0001GetAccountingDealMasterChangeHistoryInfoResponse['changeHistories']
+): ChangeHistoryRowModel[] => {
+  const changeHistoryModels: ChangeHistoryRowModel[] = [];
+  response.forEach((c, index) => {
+    changeHistoryModels.push({
+      id: index,
+      changeHistoryNumber: c.changeHistoryNumber,
+      screenName: c.screenName,
+      tabName: c.tabName ? c.tabName : c.allRegistrationName,
+      changeExpectDate: c.changeExpectDate,
+      changeApplicationEmployee:
+        c.changeApplicationEmployeeId + ' ' + c.changeApplicationEmployeeName,
+      changeApplicationTimestamp: c.changeApplicationTimestamp,
+      registrationChangeMemo: c.registrationChangeMemo ? 'あり' : '',
+      approvalEmployee: c.approvalEmployeeId + ' ' + c.approvalEmployeeName,
+      approvalTimestamp: c.approvalTimestamp,
+      approverComment: c.approverComment ? 'あり' : '',
+    });
+  });
+  return changeHistoryModels;
+};
+
+/**
+ * レスポンスをhrefリンクデータモデルに変換
+ * @param response 取引管理マスタ一覧情報取得API レスポンス.変更履歴情報配列
+ * @returns hrefリンクデータモデル
+ */
+const convertToChangeHistoryHrefs = (
+  response: ScrTra0001GetAccountingDealMasterChangeHistoryInfoResponse['changeHistories']
+): GridHrefsModel[] => {
+  const changeHistoryHrefsModel: GridHrefsModel[] = [];
+  const hrefsModel: HrefModel[] = [];
+  response.forEach((c, index) => {
+    hrefsModel.push({
+      id: index,
+      href:
+        '/tra/masters/' +
+        c.masterId +
+        '?changeHistoryNumber=' +
+        c.changeHistoryNumber.toString(),
+    });
+  });
+  changeHistoryHrefsModel.push({
+    field: 'changeHistoryNumber',
+    hrefs: hrefsModel,
+  });
+  return changeHistoryHrefsModel;
+};
+
+/**
+ * レスポンスをツールチップデータモデルに変換
+ * @param response 取引管理マスタ一覧情報取得API レスポンス.変更履歴情報配列
+ * @returns ツールチップデータモデル
+ */
+const convertToChangeHistoryTooltips = (
+  response: ScrTra0001GetAccountingDealMasterChangeHistoryInfoResponse['changeHistories']
+): GridTooltipsModel[] => {
+  const changeHistoryTooltipModel: GridTooltipsModel[] = [];
+  const memoTooltips: TooltipModel[] = [];
+  const approverTooltips: TooltipModel[] = [];
+
+  for (let i = 0; i < response.length; i++) {
+    const changeHistory = response[i];
+    if (changeHistory.registrationChangeMemo !== null) {
+      memoTooltips.push({
+        id: i,
+        text: changeHistory.registrationChangeMemo,
+      });
+    }
+    if (changeHistory.approverComment !== null) {
+      approverTooltips.push({
+        id: i,
+        text: changeHistory.approverComment,
+      });
+    }
+  }
+
+  changeHistoryTooltipModel.push({
+    field: 'registrationChangeMemo',
+    tooltips: memoTooltips,
+  });
+
+  changeHistoryTooltipModel.push({
+    field: 'approverComment',
+    tooltips: approverTooltips,
+  });
+
+  return changeHistoryTooltipModel;
+};
+
+/**
+ * レスポンスを未承認情報データモデルに変換
+ * @param response 取引管理マスタ一覧情報取得API レスポンス
+ * @returns 未承認情報データモデル
+ */
+const convertToUnapprovedChangeHistoryRows = (
+  response: ScrTra0001GetAccountingDealMasterChangeHistoryInfoResponse
+): UnapprovedChangeHistoryRowModel[] => {
+  const unapprovedChangeHistoryRowModel: UnapprovedChangeHistoryRowModel[] = [];
+  response.unapprovedChangeHistories.forEach((u, index) => {
+    const approvalEmployee = ['', '', '', ''];
+    response.unapprovedApprovalInfos
+      .filter((step) => {
+        return (
+          step.changeHistoryNumber === u.changeHistoryNumber &&
+          step.approvalStepNo <= u.needApprovalStep
+        );
+      })
+      .forEach((step, index) => {
+        approvalEmployee[index] =
+          step.approvalEmployeeId + ' ' + step.approvalEmployeeName;
+      });
+
+    unapprovedChangeHistoryRowModel.push({
+      id: index,
+      changeHistoryNumber: u.changeHistoryNumber,
+      screenName: u.screenName,
+      tabName: u.tabName,
+      changeExpectDate: u.changeExpectDate,
+      changeApplicationEmployee: u.changeApplicationEmployeeName,
+      changeApplicationTimestamp: u.changeApplicationTimestamp,
+      registrationChangeMemo: u.registrationChangeMemo ? 'あり' : '',
+      approvalEmployee1: approvalEmployee[0],
+      approvalEmployee2: approvalEmployee[1],
+      approvalEmployee3: approvalEmployee[2],
+      approvalEmployee4: approvalEmployee[3],
+    });
+  });
+  return unapprovedChangeHistoryRowModel;
+};
+
+/**
+ * レスポンスをhrefリンクデータモデルに変換
+ * @param response 取引管理マスタ一覧情報取得API レスポンス.未承認変更履歴情報配列
+ * @returns hrefリンクデータモデル
+ */
+const convertToUnapprovedChangeHistoryHrefs = (
+  response: ScrTra0001GetAccountingDealMasterChangeHistoryInfoResponse['unapprovedChangeHistories']
+): GridHrefsModel[] => {
+  const changeHistoryHrefsModel: GridHrefsModel[] = [];
+  const hrefsModel: HrefModel[] = [];
+  response.forEach((c, index) => {
+    hrefsModel.push({
+      id: index,
+      href:
+        '/tra/masters/' +
+        c.masterId +
+        '?changeHistoryNumber=' +
+        c.changeHistoryNumber.toString(),
+    });
+  });
+  changeHistoryHrefsModel.push({
+    field: 'changeHistoryNumber',
+    hrefs: hrefsModel,
+  });
+  return changeHistoryHrefsModel;
+};
+
+/**
+ * レスポンスをツールチップデータモデルに変換
+ * @param response 取引管理マスタ一覧情報取得API レスポンス.未承認変更履歴情報配列
+ * @returns ツールチップデータモデル
+ */
+const convertToUnapprovedChangeHistoriesTooltips = (
+  response: ScrTra0001GetAccountingDealMasterChangeHistoryInfoResponse['unapprovedChangeHistories']
+): GridTooltipsModel[] => {
+  const changeHistoryTooltipModel: GridTooltipsModel[] = [];
+  const memoTooltips: TooltipModel[] = [];
+
+  for (let i = 0; i < response.length; i++) {
+    const changeHistory = response[i];
+    if (changeHistory.registrationChangeMemo !== null) {
+      memoTooltips.push({
+        id: i,
+        text: changeHistory.registrationChangeMemo,
+      });
+    }
+  }
+  changeHistoryTooltipModel.push({
+    field: 'registrationChangeMemo',
+    tooltips: memoTooltips,
+  });
+
+  return changeHistoryTooltipModel;
+};
 
 /** SCR-TRA-0001：取引管理マスタ一覧 変更履歴タブ */
 const ScrTra0001ChangeHistoryTab = () => {
@@ -239,41 +450,37 @@ const ScrTra0001ChangeHistoryTab = () => {
   const navigate = useNavigate();
 
   const changeApiRef = useGridApiRef();
-
   const unapprovedApiRef = useGridApiRef();
 
   // state
-  // DataGrid：変更履歴
-  const [changeHistories, setChangeHistories] = useState<
-    ChangeHistoriesRowModel[]
+  // DataGrid：変更履歴const
+  const [changeHistoryRows, setChangeHistoryRows] = useState<
+    ChangeHistoryRowModel[]
   >([]);
   // DataGrid：変更履歴 Hrefs
-  const [changeHistoriesHrefs] = useState<GridHrefsModel[]>([
-    { field: 'changeHistoryNumber', hrefs: [] },
-  ]);
-  // DataGrid：変更履歴 Tooltips
-  const [changeHistoriesTooltips] = useState<GridTooltipsModel[]>([
-    { field: 'registrationChangeMemo', tooltips: [] },
-    { field: 'approverComment', tooltips: [] },
-  ]);
-  // DataGrid：未承認一覧
-  const [unapprovedChangeHistories, setUnapprovedChangeHistories] = useState<
-    UnapprovedChangeHistoriesRowModel[]
+  const [changeHistoryHrefs, setChangeHistoryHrefs] = useState<
+    GridHrefsModel[]
   >([]);
+  // DataGrid：変更履歴 Tooltips
+  const [changeHistoriesTooltips, setChangeHistoryTooltips] = useState<
+    GridTooltipsModel[]
+  >([]);
+  // DataGrid：未承認一覧
+  const [unapprovedChangeHistoryRows, setUnapprovedChangeHistoryRows] =
+    useState<UnapprovedChangeHistoryRowModel[]>([]);
   // DataGrid：未承認一覧 Hrefs
-  const [unapprovedChangeHistoriesHrefs] = useState<GridHrefsModel[]>([
-    { field: 'changeHistoryNumber', hrefs: [] },
-  ]);
+  const [unapprovedChangeHistoryHrefs, setUnapprovedChangeHistoryHrefs] =
+    useState<GridHrefsModel[]>([]);
   // DataGrid：未承認一覧 Tooltips
-  const [unapprovedChangeHistoriesTooltips] = useState<GridTooltipsModel[]>([
-    { field: 'registrationChangeMemo', tooltips: [] },
-  ]);
+  const [unapprovedChangeHistoryTooltips, setUnapprovedChangeHistoryTooltips] =
+    useState<GridTooltipsModel[]>([]);
 
   // 初期表示処理
   useEffect(() => {
     const initialize = async () => {
       await setInitData();
     };
+
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -286,173 +493,36 @@ const ScrTra0001ChangeHistoryTab = () => {
     const response = await ScrTra0001GetAccountingDealMasterChangeHistoryInfo();
 
     // 変更履歴一覧
-    changeHistoriesHrefs[0].hrefs.splice(0);
-    changeHistoriesTooltips[0].tooltips.splice(0);
-    changeHistoriesTooltips[1].tooltips.splice(0);
     if (response.changeHistories.length > 0) {
-      // Datagrid用データのセット
-      setChangeHistories(
-        response.changeHistories.map((o, i) => {
-          return {
-            id: i,
-            changeHistoryNumber: o.changeHistoryNumber,
-            screenName: o.screenName,
-            tabName: o.tabName ? o.tabName : o.allRegistrationName,
-            changeExpectDate: o.changeExpectDate,
-            changeApplicationEmployee:
-              o.changeApplicationEmployeeId +
-              ' ' +
-              o.changeApplicationEmployeeName,
-            changeApplicationTimestamp: o.changeApplicationTimestamp,
-            registrationChangeMemo: o.registrationChangeMemo ? 'あり' : '',
-            approvalEmployee:
-              o.approvalEmployeeId + ' ' + o.approvalEmployeeName,
-            approvalTimestamp: o.approvalTimestamp,
-            approverComment: o.approverComment ? 'あり' : '',
-          };
-        })
-      );
-      for (let i = 0; i < response.changeHistories.length; i++) {
-        const o = response.changeHistories[i];
-        // 申請ID href
-        changeHistoriesHrefs[0].hrefs.push({
-          id: i,
-          href:
-            '/tra/masters/' +
-            o.masterId +
-            '?changeHistoryNumber=' +
-            o.changeHistoryNumber.toString(),
-        });
-        // 登録変更メモ tooltip
-        if (o.registrationChangeMemo) {
-          changeHistoriesTooltips[0].tooltips.push({
-            id: i,
-            text: o.registrationChangeMemo,
-          });
-        }
-        // 承認者コメント tooltip
-        if (o.approverComment) {
-          changeHistoriesTooltips[1].tooltips.push({
-            id: i,
-            text: o.approverComment,
-          });
-        }
-      }
+      setChangeHistoryRows(() => {
+        return convertToChangeHistoryRows(response.changeHistories);
+      });
+      setChangeHistoryHrefs(() => {
+        return convertToChangeHistoryHrefs(response.changeHistories);
+      });
+      setChangeHistoryTooltips(() => {
+        return convertToChangeHistoryTooltips(response.changeHistories);
+      });
     }
 
     // 未承認一覧
-    unapprovedChangeHistoriesHrefs[0].hrefs.splice(0);
-    unapprovedChangeHistoriesTooltips[0].tooltips.splice(0);
-    const unapprovedChangeHistories: UnapprovedChangeHistoriesRowModel[] = [];
-
-    for (let i = 0; i < response.unapprovedChangeHistories.length; i++) {
-      const o = response.unapprovedChangeHistories[i];
-      const tmp: { [key: string]: string | number } = {};
-      tmp['id'] = i;
-      tmp['changeHistoryNumber'] = o.changeHistoryNumber;
-      tmp['screenName'] = o.screenName;
-      tmp['tabName'] = o.tabName ? o.tabName : o.allRegistrationName;
-      tmp['changeExpectDate'] = o.changeExpectDate;
-      tmp['changeApplicationEmployee'] =
-        o.changeApplicationEmployeeId + ' ' + o.changeApplicationEmployeeName;
-      tmp['changeApplicationTimestamp'] = o.changeApplicationTimestamp;
-      tmp['registrationChangeMemo'] = o.registrationChangeMemo ? 'あり' : '';
-      tmp['approvalEmployee1'] = '';
-      tmp['approvalEmployee2'] = '';
-      tmp['approvalEmployee3'] = '';
-      tmp['approvalEmployee4'] = '';
-      // 1次承認者
-      if (o.needApprovalStep >= 1) {
-        response.unapprovedApprovalInfos
-          .filter((step) => {
-            return (
-              step.changeHistoryNumber === o.changeHistoryNumber &&
-              +step.approvalStepNo === 1
-            );
-          })
-          .forEach((step) => {
-            tmp['approvalEmployee1'] =
-              step.approvalEmployeeId + ' ' + step.approvalEmployeeName;
-          });
-      }
-      // 2次承認者
-      if (o.needApprovalStep >= 2) {
-        response.unapprovedApprovalInfos
-          .filter((step) => {
-            return (
-              step.changeHistoryNumber === o.changeHistoryNumber &&
-              +step.approvalStepNo === 2
-            );
-          })
-          .forEach((step) => {
-            tmp['approvalEmployee2'] =
-              step.approvalEmployeeId + ' ' + step.approvalEmployeeName;
-          });
-      }
-      // 3次承認者
-      if (o.needApprovalStep >= 3) {
-        response.unapprovedApprovalInfos
-          .filter((step) => {
-            return (
-              step.changeHistoryNumber === o.changeHistoryNumber &&
-              +step.approvalStepNo === 3
-            );
-          })
-          .forEach((step) => {
-            tmp['approvalEmployee3'] =
-              step.approvalEmployeeId + ' ' + step.approvalEmployeeName;
-          });
-      }
-      // 4次承認者
-      if (o.needApprovalStep >= 4) {
-        response.unapprovedApprovalInfos
-          .filter((step) => {
-            return (
-              step.changeHistoryNumber === o.changeHistoryNumber &&
-              +step.approvalStepNo === 4
-            );
-          })
-          .forEach((step) => {
-            tmp['approvalEmployee4'] =
-              step.approvalEmployeeId + ' ' + step.approvalEmployeeName;
-          });
-      }
-
-      // DataGrid用データのセット
-      const rowData: UnapprovedChangeHistoriesRowModel = {
-        id: tmp['id'],
-        changeHistoryNumber: tmp['changeHistoryNumber'],
-        screenName: tmp['screenName'],
-        tabName: tmp['tabName'],
-        changeExpectDate: tmp['changeExpectDate'],
-        changeApplicationEmployee: tmp['changeApplicationEmployee'],
-        changeApplicationTimestamp: tmp['changeApplicationTimestamp'],
-        registrationChangeMemo: tmp['registrationChangeMemo'],
-        approvalEmployee1: tmp['approvalEmployee1'].toString(),
-        approvalEmployee2: tmp['approvalEmployee2'].toString(),
-        approvalEmployee3: tmp['approvalEmployee3'].toString(),
-        approvalEmployee4: tmp['approvalEmployee4'].toString(),
-      };
-      unapprovedChangeHistories.push(rowData);
-
-      // 申請ID href
-      unapprovedChangeHistoriesHrefs[0].hrefs.push({
-        id: i,
-        href:
-          '/tra/deal-masters/' +
-          o.masterId +
-          '?changeHistoryNumber=' +
-          o.changeHistoryNumber.toString(),
+    if (response.unapprovedChangeHistories.length > 0) {
+      setUnapprovedChangeHistoryRows(() => {
+        return convertToUnapprovedChangeHistoryRows(response);
       });
-      // 登録変更メモ tooltip
-      if (o.registrationChangeMemo) {
-        unapprovedChangeHistoriesTooltips[0].tooltips.push({
-          id: i,
-          text: o.registrationChangeMemo,
-        });
-      }
+
+      setUnapprovedChangeHistoryHrefs(() => {
+        return convertToUnapprovedChangeHistoryHrefs(
+          response.unapprovedChangeHistories
+        );
+      });
+
+      setUnapprovedChangeHistoryTooltips(() => {
+        return convertToUnapprovedChangeHistoriesTooltips(
+          response.unapprovedChangeHistories
+        );
+      });
     }
-    setUnapprovedChangeHistories(unapprovedChangeHistories);
   };
 
   // 申請IDリンククリック
@@ -462,14 +532,14 @@ const ScrTra0001ChangeHistoryTab = () => {
   };
 
   // 変更履歴一覧CSV出力
-  const handlChangeHistoriesCsvExport = () => {
+  const handlChangeHistorysCsvExport = () => {
     // TODO ファイル名を日時仮設定
     const filename = dayjs().format('YYYYMMDD_HHmmssSSS') + '_変更履歴一覧';
     exportCsv(filename + '.csv', changeApiRef);
   };
 
   // 未承認一覧CSV出力
-  const handleUnapprovedChangeHistoriesCsvExport = () => {
+  const handleUnapprovedChangeHistoryCsvExport = () => {
     // TODO ファイル名を日時仮設定
     const filename = dayjs().format('YYYYMMDD_HHmmssSSS') + '_未承認一覧';
     exportCsv(filename + '.csv', unapprovedApiRef);
@@ -483,7 +553,7 @@ const ScrTra0001ChangeHistoryTab = () => {
             name='変更履歴一覧'
             fitInside
             decoration={
-              <OutputButton onClick={handlChangeHistoriesCsvExport}>
+              <OutputButton onClick={handlChangeHistorysCsvExport}>
                 CSV出力
               </OutputButton>
             }
@@ -491,9 +561,9 @@ const ScrTra0001ChangeHistoryTab = () => {
             <DataGrid
               apiRef={changeApiRef}
               pagination={true}
-              columns={changeHistoriesColumns}
-              rows={changeHistories}
-              hrefs={changeHistoriesHrefs}
+              columns={changeHistoryColumns}
+              rows={changeHistoryRows}
+              hrefs={changeHistoryHrefs}
               tooltips={changeHistoriesTooltips}
               onLinkClick={handleLinkClick}
             />
@@ -502,18 +572,18 @@ const ScrTra0001ChangeHistoryTab = () => {
             name='未承認一覧'
             fitInside
             decoration={
-              <OutputButton onClick={handleUnapprovedChangeHistoriesCsvExport}>
+              <OutputButton onClick={handleUnapprovedChangeHistoryCsvExport}>
                 CSV出力
               </OutputButton>
             }
           >
             <DataGrid
-              pagination={true}
+              pagination={false}
               apiRef={unapprovedApiRef}
-              columns={unapprovedChangeHistoriesColumns}
-              rows={unapprovedChangeHistories}
-              hrefs={unapprovedChangeHistoriesHrefs}
-              tooltips={unapprovedChangeHistoriesTooltips}
+              columns={unapprovedChangeHistoryColumns}
+              rows={unapprovedChangeHistoryRows}
+              hrefs={unapprovedChangeHistoryHrefs}
+              tooltips={unapprovedChangeHistoryTooltips}
               onLinkClick={handleLinkClick}
             />
           </Section>
