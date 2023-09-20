@@ -125,7 +125,24 @@ const initialValues: CorporationBasicModel = {
 const popupInitialValues: ScrCom0032PopupModel = {
   errorList: [],
   warningList: [],
-  registrationChangeList: [],
+  registrationChangeList: [
+    {
+      screenId: '',
+      screenName: '',
+      tabId: 0,
+      tabName: '',
+      sectionList: [
+        {
+          sectionName: '',
+          columnList: [
+            {
+              columnName: '',
+            },
+          ],
+        },
+      ],
+    },
+  ],
   changeExpectDate: '',
 };
 
