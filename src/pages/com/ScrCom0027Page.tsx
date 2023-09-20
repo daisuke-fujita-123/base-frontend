@@ -309,10 +309,6 @@ const ScrCom0027Page = () => {
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
   const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 680;
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -722,7 +718,7 @@ const ScrCom0027Page = () => {
                   </AddButton>
                 </MarginBox>
               }
-              width={maxSectionWidth}
+              fitInside
             >
               <RowStack>
                 <ColStack>
