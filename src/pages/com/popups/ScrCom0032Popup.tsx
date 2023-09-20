@@ -180,8 +180,6 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>([]);
   // 判定用 ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
   const [isWarningChecked, setIsWarningChecked] = useState<boolean>();
-  // 判定用 セクション名が存在する => true
-  const [isSectionName, setIsSectionName] = useState(false);
   // 判定用 カラム名が存在する => true
   const [isColumnName, setIsColumnName] = useState(false);
   // 判定用 セクション名・項目名の内いずれかが存在する => true
@@ -257,13 +255,6 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
           }
         }
       }
-    }
-
-    // 判定用のリストに格納
-    if (rowSectionNameList.length === 0) {
-      setIsSectionName(false);
-    } else {
-      setIsSectionName(true);
     }
 
     if (rowColumnNameList.length === 0) {
@@ -347,10 +338,9 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
 
   // DataGridのrow設定後にセクション名と項目名で判定用フラグを設定
   useEffect(() => {
-    // 画面IDが【出金一覧】でない、かつ セクション名なし かつ 項目名なし の場合は、変更項目なし(出金一覧はチェック選択０でエラーにしているので問題なし)
+    // 画面IDが【出金一覧】でない、かつ 項目名なしの場合は、変更項目なし(出金一覧はチェック選択０でエラーにしているので問題なし)
     if (
       data.registrationChangeList[0].screenId !== SCR_TRA_0023 &&
-      isSectionName === false &&
       isColumnName === false
     ) {
       setisExistColumns(false);
@@ -470,7 +460,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                 )}
                 {data.registrationChangeList.length > 0 ? (
                   <Section name='登録・変更内容' fitInside>
-                    {/* 画面IDが【出金一覧】でない、かつ セクション名・項目名のいずれも設定されていない場合は非表示 */}
+                    {/* 画面IDが【出金一覧】でない、かつ 項目名のいずれも設定されていない場合は非表示 */}
                     {isExistColumns ? (
                       <>
                         <DataGrid columns={columns} rows={rowValuesList} />
@@ -484,7 +474,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                         <br />
                       </>
                     )}
-                    {/* 画面IDが【出金一覧】でない、かつ セクション名・項目名のいずれも設定されていない かつ 変更予約有の場合は表示*/}
+                    {/* 画面IDが【出金一覧】でない、かつ 項目名のいずれも設定されていない かつ 変更予約有の場合は表示*/}
                     {isExistColumns && data.changeExpectDate !== '' ? (
                       <Box>
                         <Typography variant='h6'>変更予定日</Typography>
@@ -496,7 +486,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     ) : (
                       <br />
                     )}
-                    {/* 画面IDが【出金一覧】でない、かつ セクション名・項目名のいずれも設定されていない場合は非表示 */}
+                    {/* 画面IDが【出金一覧】でない、かつ 項目名のいずれも設定されていない場合は非表示 */}
                     {isExistColumns ? (
                       <Box>
                         <Typography variant='h5'>登録変更メモ</Typography>
