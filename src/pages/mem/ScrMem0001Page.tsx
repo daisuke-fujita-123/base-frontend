@@ -58,6 +58,7 @@ import { MessageContext } from 'providers/MessageProvider';
 import { Format } from 'utils/FormatUtil';
 
 import { GridRowSelectionModel, useGridApiRef } from '@mui/x-data-grid-pro';
+import { format } from 'date-fns';
 
 /**
  * 検索条件データモデル
@@ -498,19 +499,29 @@ const convertFromSearchConditionModel = (
     basicsCorporationCreditAmountFrom:
       searchCondition.basicsCorporationCreditAmountFrom === ''
         ? undefined
-        : searchCondition.basicsCorporationCreditAmountFrom,
+        : Number(
+            searchCondition.basicsCorporationCreditAmountFrom.replace(/,/g, '')
+          ),
     basicsCorporationCreditAmountTo:
       searchCondition.basicsCorporationCreditAmountTo === ''
         ? undefined
-        : searchCondition.basicsCorporationCreditAmountTo,
+        : Number(
+            searchCondition.basicsCorporationCreditAmountTo.replace(/,/g, '')
+          ),
     temporaryCreditSettingDateFrom:
       searchCondition.temporaryCreditSettingDateFrom === ''
         ? undefined
-        : searchCondition.temporaryCreditSettingDateFrom,
+        : format(
+            new Date(searchCondition.temporaryCreditSettingDateFrom),
+            'yyyy-MM-dd'
+          ),
     temporaryCreditSettingDateTo:
       searchCondition.temporaryCreditSettingDateTo === ''
         ? undefined
-        : searchCondition.temporaryCreditSettingDateTo,
+        : format(
+            new Date(searchCondition.temporaryCreditSettingDateTo),
+            'yyyy-MM-dd'
+          ),
     contractId:
       searchCondition.contractId === ''
         ? undefined
@@ -542,59 +553,68 @@ const convertFromSearchConditionModel = (
     useStartDateFrom:
       searchCondition.useStartDateFrom === ''
         ? undefined
-        : searchCondition.useStartDateFrom,
+        : format(new Date(searchCondition.useStartDateFrom), 'yyyy-MM-dd'),
     useStartDateTo:
       searchCondition.useStartDateTo === ''
         ? undefined
-        : searchCondition.useStartDateTo,
+        : format(new Date(searchCondition.useStartDateTo), 'yyyy-MM-dd'),
     idIssuanceDateFrom:
       searchCondition.idIssuanceDateFrom === ''
         ? undefined
-        : searchCondition.idIssuanceDateFrom,
+        : format(new Date(searchCondition.idIssuanceDateFrom), 'yyyy-MM-dd'),
     idIssuanceDateTo:
       searchCondition.idIssuanceDateTo === ''
         ? undefined
-        : searchCondition.idIssuanceDateTo,
+        : format(new Date(searchCondition.idIssuanceDateTo), 'yyyy-MM-dd'),
     courseChangeDateFrom:
       searchCondition.courseChangeDateFrom === ''
         ? undefined
-        : searchCondition.courseChangeDateFrom,
+        : format(new Date(searchCondition.courseChangeDateFrom), 'yyyy-MM-dd'),
     courseChangeDateTo:
       searchCondition.courseChangeDateTo === ''
         ? undefined
-        : searchCondition.courseChangeDateTo,
+        : format(new Date(searchCondition.courseChangeDateTo), 'yyyy-MM-dd'),
     recessPeriodStartDateFrom:
       searchCondition.recessPeriodStartDateFrom === ''
         ? undefined
-        : searchCondition.recessPeriodStartDateFrom,
+        : format(
+            new Date(searchCondition.recessPeriodStartDateFrom),
+            'yyyy-MM-dd'
+          ),
     recessPeriodStartDateTo:
       searchCondition.recessPeriodStartDateTo === ''
         ? undefined
-        : searchCondition.recessPeriodStartDateTo,
+        : format(
+            new Date(searchCondition.recessPeriodStartDateTo),
+            'yyyy-MM-dd'
+          ),
     recessPeriodEndDateFrom:
       searchCondition.recessPeriodEndDateFrom === ''
         ? undefined
-        : searchCondition.recessPeriodEndDateFrom,
+        : format(
+            new Date(searchCondition.recessPeriodEndDateFrom),
+            'yyyy-MM-dd'
+          ),
     recessPeriodEndDateTo:
       searchCondition.recessPeriodEndDateTo === ''
         ? undefined
-        : searchCondition.recessPeriodEndDateTo,
+        : format(new Date(searchCondition.recessPeriodEndDateTo), 'yyyy-MM-dd'),
     leavingDateFrom:
       searchCondition.leavingDateFrom === ''
         ? undefined
-        : searchCondition.leavingDateFrom,
+        : format(new Date(searchCondition.leavingDateFrom), 'yyyy-MM-dd'),
     leavingDateTo:
       searchCondition.leavingDateTo === ''
         ? undefined
-        : searchCondition.leavingDateTo,
+        : format(new Date(searchCondition.leavingDateTo), 'yyyy-MM-dd'),
     changeExpectDateFrom:
       searchCondition.changeExpectDateFrom === ''
         ? undefined
-        : searchCondition.changeExpectDateFrom,
+        : format(new Date(searchCondition.changeExpectDateFrom), 'yyyy-MM-dd'),
     changeExpectDateTo:
       searchCondition.changeExpectDateTo === ''
         ? undefined
-        : searchCondition.changeExpectDateTo,
+        : format(new Date(searchCondition.changeExpectDateTo), 'yyyy-MM-dd'),
     limitCount: 15000,
   };
 };
@@ -639,26 +659,27 @@ const convertFromCreateReportParameterInfo = (
       // 会員リスト（基本情報）
       // 与信情報リスト
       return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
+        corporationIds: rowSelectionModel.map((x) => x.toString()),
       };
     case 'REP-MEM-0002':
+    case 'REP-MEM-0009':
     case 'REP-MEM-0012':
     case 'REP-MEM-0014':
       // 会員リスト（契約情報）
+      // 会員登録変更連絡
       // POS情報
       // 延滞履歴一覧
       return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
+        corporationIds: rowSelectionModel.map((x) => x.toString()),
+        courseEntryKinds: searchCondition.courseEntryKinds,
         contractId: searchCondition.contractId,
-        courseEntryKindList: searchCondition.courseEntryKinds,
+        contractKind: searchCondition.staffDepartmentKinds,
         billingId: searchCondition.billingId,
-        staffDepartmentKind: searchCondition.staffDepartmentKinds,
-        liveOptionEntryKindList: searchCondition.liveOptionEntryKinds,
-        posPutTogetherPlaceCode: searchCondition.posPutTogetherPlaceCode,
+        liveOptionEntryKinds: searchCondition.liveOptionEntryKinds,
+        placeCode: searchCondition.posPutTogetherPlaceCode,
         posNumber: searchCondition.posNumber,
         iaucManagementNumber: searchCondition.iaucManagementNumber,
-        autobankSystemTerminalContractId:
-          searchCondition.autobankSystemTerminalContractId,
+        terminalContractId: searchCondition.autobankSystemTerminalContractId,
         useStartDateFrom: searchCondition.useStartDateFrom,
         useStartDateTo: searchCondition.useStartDateTo,
         idIssuanceDateFrom: searchCondition.idIssuanceDateFrom,
@@ -673,23 +694,26 @@ const convertFromCreateReportParameterInfo = (
         leavingDateTo: searchCondition.leavingDateTo,
       };
     case 'REP-MEM-0003':
+    case 'REP-MEM-0006':
+    case 'REP-MEM-0007':
+    case 'REP-MEM-0008':
+    case 'REP-MEM-0011':
+      // コース変更会員リスト
       // 利用サービス一覧
+      // 休脱会リスト
+      // 再開リスト
+      // 参加制限リスト
       return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
+        corporationIds: rowSelectionModel.map((x) => x.toString()),
+        courseEntryKinds: searchCondition.courseEntryKinds,
         contractId: searchCondition.contractId,
-        logisticsBaseAddressAfterMunicipalities:
-          searchCondition.logisticsBaseAddressAfterMunicipalities,
-        logisticsBaseDistrictCode: searchCondition.logisticsBaseDistrictCode,
-        logisticsBasePhoneNumber: searchCondition.logisticsBasePhoneNumber,
-        courseEntryKindList: searchCondition.courseEntryKinds,
+        contractKind: searchCondition.staffDepartmentKinds,
         billingId: searchCondition.billingId,
-        staffDepartmentKind: searchCondition.staffDepartmentKinds,
-        liveOptionEntryKindList: searchCondition.liveOptionEntryKinds,
-        posPutTogetherPlaceCode: searchCondition.posPutTogetherPlaceCode,
+        liveOptionEntryKinds: searchCondition.liveOptionEntryKinds,
+        placeCode: searchCondition.posPutTogetherPlaceCode,
         posNumber: searchCondition.posNumber,
         iaucManagementNumber: searchCondition.iaucManagementNumber,
-        autobankSystemTerminalContractId:
-          searchCondition.autobankSystemTerminalContractId,
+        terminalContractId: searchCondition.autobankSystemTerminalContractId,
         useStartDateFrom: searchCondition.useStartDateFrom,
         useStartDateTo: searchCondition.useStartDateTo,
         idIssuanceDateFrom: searchCondition.idIssuanceDateFrom,
@@ -702,115 +726,26 @@ const convertFromCreateReportParameterInfo = (
         recessPeriodEndDateTo: searchCondition.recessPeriodEndDateTo,
         leavingDateFrom: searchCondition.leavingDateFrom,
         leavingDateTo: searchCondition.leavingDateTo,
+        logisticsBaseAddress:
+          searchCondition.logisticsBaseAddressAfterMunicipalities,
+        logisticsBasePhoneNumber: searchCondition.logisticsBasePhoneNumber,
+        districtCode: searchCondition.logisticsBaseDistrictCode,
       };
     case 'REP-MEM-0004':
     case 'REP-MEM-0005':
       // POS番号データ（おまとめ）
       // POS番号データ（新規）
       return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
+        corporationIds: rowSelectionModel.map((x) => x.toString()),
+        courseEntryKinds: searchCondition.courseEntryKinds,
         contractId: searchCondition.contractId,
+        contractKind: searchCondition.staffDepartmentKinds,
         billingId: searchCondition.billingId,
-        staffDepartmentKind: searchCondition.staffDepartmentKinds,
-        liveOptionEntryKindList: searchCondition.liveOptionEntryKinds,
-        posPutTogetherPlaceCode: searchCondition.posPutTogetherPlaceCode,
+        liveOptionEntryKinds: searchCondition.liveOptionEntryKinds,
+        placeCode: searchCondition.posPutTogetherPlaceCode,
         posNumber: searchCondition.posNumber,
         iaucManagementNumber: searchCondition.iaucManagementNumber,
-        autobankSystemTerminalContractId:
-          searchCondition.autobankSystemTerminalContractId,
-        useStartDateFrom: searchCondition.useStartDateFrom,
-        useStartDateTo: searchCondition.useStartDateTo,
-        idIssuanceDateFrom: searchCondition.idIssuanceDateFrom,
-        idIssuanceDateTo: searchCondition.idIssuanceDateTo,
-        courseChangeDateFrom: searchCondition.courseChangeDateFrom,
-        courseChangeDateTo: searchCondition.courseChangeDateTo,
-        recessPeriodStartDateFrom: searchCondition.recessPeriodStartDateFrom,
-        recessPeriodStartDateTo: searchCondition.recessPeriodStartDateTo,
-        recessPeriodEndDateFrom: searchCondition.recessPeriodEndDateFrom,
-        recessPeriodEndDateTo: searchCondition.recessPeriodEndDateTo,
-        leavingDateFrom: searchCondition.leavingDateFrom,
-        leavingDateTo: searchCondition.leavingDateTo,
-      };
-    case 'REP-MEM-0006':
-    case 'REP-MEM-0007':
-    case 'REP-MEM-0008':
-      // コース変更会員リスト
-      // 休脱会リスト
-      // 再開リスト
-      return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
-        contractId: searchCondition.contractId,
-        logisticsBaseAddressAfterMunicipalities:
-          searchCondition.logisticsBaseAddressAfterMunicipalities,
-        logisticsBaseDistrictCode: searchCondition.logisticsBaseDistrictCode,
-        logisticsBasePhoneNumber: searchCondition.logisticsBasePhoneNumber,
-        courseEntryKindList: searchCondition.courseEntryKinds,
-        billingId: searchCondition.billingId,
-        staffDepartmentKind: searchCondition.staffDepartmentKinds,
-        liveOptionEntryKindList: searchCondition.liveOptionEntryKinds,
-        posPutTogetherPlaceCode: searchCondition.posPutTogetherPlaceCode,
-        posNumber: searchCondition.posNumber,
-        iaucManagementNumber: searchCondition.iaucManagementNumber,
-        autobankSystemTerminalContractId:
-          searchCondition.autobankSystemTerminalContractId,
-        useStartDateFrom: searchCondition.useStartDateFrom,
-        useStartDateTo: searchCondition.useStartDateTo,
-        idIssuanceDateFrom: searchCondition.idIssuanceDateFrom,
-        idIssuanceDateTo: searchCondition.idIssuanceDateTo,
-        courseChangeDateFrom: searchCondition.courseChangeDateFrom,
-        courseChangeDateTo: searchCondition.courseChangeDateTo,
-        recessPeriodStartDateFrom: searchCondition.recessPeriodStartDateFrom,
-        recessPeriodStartDateTo: searchCondition.recessPeriodStartDateTo,
-        recessPeriodEndDateFrom: searchCondition.recessPeriodEndDateFrom,
-        recessPeriodEndDateTo: searchCondition.recessPeriodEndDateTo,
-        leavingDateFrom: searchCondition.leavingDateFrom,
-        leavingDateTo: searchCondition.leavingDateTo,
-      };
-    case 'REP-MEM-0009':
-      // 会員登録変更連絡
-      return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
-        contractId: searchCondition.contractId,
-        courseEntryKindList: searchCondition.courseEntryKinds,
-        billingId: searchCondition.billingId,
-        staffDepartmentKind: searchCondition.staffDepartmentKinds,
-        liveOptionEntryKindList: searchCondition.liveOptionEntryKinds,
-        posPutTogetherPlaceCode: searchCondition.posPutTogetherPlaceCode,
-        posNumber: searchCondition.posNumber,
-        iaucManagementNumber: searchCondition.iaucManagementNumber,
-        autobankSystemTerminalContractId:
-          searchCondition.autobankSystemTerminalContractId,
-        useStartDateFrom: searchCondition.useStartDateFrom,
-        useStartDateTo: searchCondition.useStartDateTo,
-        idIssuanceDateFrom: searchCondition.idIssuanceDateFrom,
-        idIssuanceDateTo: searchCondition.idIssuanceDateTo,
-        courseChangeDateFrom: searchCondition.courseChangeDateFrom,
-        courseChangeDateTo: searchCondition.courseChangeDateTo,
-        recessPeriodStartDateFrom: searchCondition.recessPeriodStartDateFrom,
-        recessPeriodStartDateTo: searchCondition.recessPeriodStartDateTo,
-        recessPeriodEndDateFrom: searchCondition.recessPeriodEndDateFrom,
-        recessPeriodEndDateTo: searchCondition.recessPeriodEndDateTo,
-        leavingDateFrom: searchCondition.leavingDateFrom,
-        leavingDateTo: searchCondition.leavingDateTo,
-      };
-    case 'REP-MEM-0011':
-      // 参加制限リスト
-      return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
-        contractId: searchCondition.contractId,
-        logisticsBaseAddressAfterMunicipalities:
-          searchCondition.logisticsBaseAddressAfterMunicipalities,
-        logisticsBaseDistrictCode: searchCondition.logisticsBaseDistrictCode,
-        logisticsBasePhoneNumber: searchCondition.logisticsBasePhoneNumber,
-        courseEntryKindList: searchCondition.courseEntryKinds,
-        billingId: searchCondition.billingId,
-        staffDepartmentKind: searchCondition.staffDepartmentKinds,
-        liveOptionEntryKindList: searchCondition.liveOptionEntryKinds,
-        posPutTogetherPlaceCode: searchCondition.posPutTogetherPlaceCode,
-        posNumber: searchCondition.posNumber,
-        iaucManagementNumber: searchCondition.iaucManagementNumber,
-        autobankSystemTerminalContractId:
-          searchCondition.autobankSystemTerminalContractId,
+        terminalContractId: searchCondition.autobankSystemTerminalContractId,
         useStartDateFrom: searchCondition.useStartDateFrom,
         useStartDateTo: searchCondition.useStartDateTo,
         idIssuanceDateFrom: searchCondition.idIssuanceDateFrom,
@@ -827,10 +762,10 @@ const convertFromCreateReportParameterInfo = (
     case 'REP-MEM-0013':
       // 物流拠点情報
       return {
-        corporationIdList: rowSelectionModel.map((x) => x.toString()),
-        logisticsBaseAddressAfterMunicipalities:
+        corporationIds: rowSelectionModel.map((x) => x.toString()),
+        logisticsBaseAddress:
           searchCondition.logisticsBaseAddressAfterMunicipalities,
-        logisticsBaseDistrictCode: searchCondition.logisticsBaseDistrictCode,
+        districtCode: searchCondition.logisticsBaseDistrictCode,
         logisticsBasePhoneNumber: searchCondition.logisticsBasePhoneNumber,
       };
   }
@@ -931,7 +866,16 @@ const ScrMem0001Page = () => {
   // 初期表示
   useEffect(() => {
     const initialize = async () => {
-      const selectValues: SelectValuesModel = selectValuesInitialValues;
+      const selectValues: SelectValuesModel = {
+        corporationGroupNameSelectValues: [],
+        corporationEntryKindsSelectValues: [],
+        logisticsBaseDistrictCodeSelectValues: [],
+        limitStatusKindsSelectValues: [],
+        courseEntryKindsSelectValues: [],
+        staffDepartmentKindsSelectValues: [],
+        liveOptionEntryKindsSelectValues: [],
+        posPutTogetherPlaceCodeSelectValues: [],
+      };
 
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
@@ -1173,6 +1117,7 @@ const ScrMem0001Page = () => {
     };
     // 帳票出力API 呼び出し
     await ScrMem9999OutputReport(outputReportRequest);
+    setScrCom0011PopupIsOpen(false);
   };
 
   /**
