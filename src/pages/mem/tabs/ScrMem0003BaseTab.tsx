@@ -698,8 +698,6 @@ const ScrMem0003BaseTab = () => {
 
       const getBillRequest = {
         corporationId: corporationId,
-        sortKey: '',
-        sortDirection: '',
       };
       const getBillResponse = await ScrMem9999GetBill(getBillRequest);
       const contractIdSelectValues = getBillResponse.list.map((x) => {

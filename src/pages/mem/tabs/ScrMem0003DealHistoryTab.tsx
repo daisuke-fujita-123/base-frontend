@@ -816,8 +816,6 @@ const ScrMem0003DealHistoryTab = () => {
     const initialize = async (corporationId: string) => {
       const getBillRequest = {
         corporationId: corporationId,
-        sortKey: '',
-        sortDirection: '',
       };
       const getBillResponse = await ScrMem9999GetBill(getBillRequest);
       const useBillingIdSelectValues = getBillResponse.list.map((x) => {

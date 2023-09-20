@@ -20,7 +20,6 @@ import { MainLayout } from 'layouts/MainLayout/MainLayout';
 import { Section } from 'layouts/Section/Section';
 import {
   ColStack,
-  InputRowStack,
   RightElementStack,
   RowStack,
   Stack,
@@ -661,17 +660,9 @@ const ScrMem0003CreditTab = (props: {
                     name='temporaryCorporationCreditAmount'
                     readonly
                   />
-                  <FromTo label='有効期間'>
-                    <InputRowStack>
-                      <ColStack>
-                        <TextField name={'temporaryCreditStartDate'} readonly />
-                      </ColStack>
-                    </InputRowStack>
-                    <InputRowStack>
-                      <ColStack>
-                        <TextField name={'temporaryCreditEndDate'} readonly />
-                      </ColStack>
-                    </InputRowStack>
+                  <FromTo label='有効期間' size='m'>
+                    <TextField name={'temporaryCreditStartDate'} readonly />
+                    <TextField name={'temporaryCreditEndDate'} readonly />
                   </FromTo>
                   <TextField
                     label='設定日'

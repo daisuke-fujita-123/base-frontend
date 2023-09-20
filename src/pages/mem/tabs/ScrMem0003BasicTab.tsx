@@ -54,6 +54,7 @@ import { AuthContext } from 'providers/AuthProvider';
 
 import { ChangeHistoryDateCheckUtil } from 'utils/ChangeHistoryDateCheckUtil';
 
+import { format } from 'date-fns';
 import { TabDisabledsModel } from '../ScrMem0003Page';
 
 /*
@@ -548,18 +549,15 @@ const convertToCorporationBasicModel = (
 ): CorporationBasicModel => {
   const guarantorMasters = response.guarantor;
   guarantorMasters.sort((a, b) => (a.guarantorNo > b.guarantorNo ? 1 : -1));
-  const taxBusinessKind =
-    codeValueList.length === 0
-      ? []
-      : codeValueList.map((x) => {
-          if (x.value === response.taxBusinessKind) return x.displayValue;
-        });
+  const taxBusinessKind = codeValueList.find((x) => {
+    if (x.value === response.taxBusinessKind) return x.displayValue;
+  });
 
   return {
     corporationId: response.corporationId,
     corporationName: response.corporationName,
     corporationNameKana: response.corporationNameKana,
-    corporationGroupName: response.CorporationGroup.map(
+    corporationGroupName: response.corporationGroup.map(
       (x) => x.corporationGroupId
     ),
     goldSilverMemberKind: response.goldSilverMemberKind,
@@ -571,16 +569,20 @@ const convertToCorporationBasicModel = (
     corporationFaxNumber: response.corporationFaxNumber,
     corporationMailAddress: response.corporationMailAddress,
     eligibleBusinessNumber: response.eligibleBusinessNumber,
-    taxBusinessKind: taxBusinessKind[0] === undefined ? '' : taxBusinessKind[0],
+    taxBusinessKind:
+      taxBusinessKind === undefined ? '' : taxBusinessKind.displayValue,
     publicSafetyCommittee: response.publicSafetyCommittee,
     antiqueBusinessLicenseNumber: response.antiqueBusinessLicenseNumber,
-    issuanceDate: response.issuanceDate,
+    issuanceDate: format(new Date(response.issuanceDate), 'yyyy/MM/dd'),
     antiqueName: response.antiqueName,
     memberMemo: response.memberMemo,
     representativeName: response.representativeName,
     representativeNameKana: response.representativeNameKana,
     representativeGender: response.representativeGenderKind,
-    representativeBirth: response.representativeBirthDate,
+    representativeBirth: format(
+      new Date(response.representativeBirthDate),
+      'yyyy/MM/dd'
+    ),
     representativeAsset: response.possessionAssetsKind,
     representativeZipCode: response.representativeZipCode,
     representativePrefectureCode: response.representativePrefectureCode,
@@ -594,7 +596,10 @@ const convertToCorporationBasicModel = (
     guarantorName1: guarantorMasters[0].guarantorName,
     guarantorNameKana1: guarantorMasters[0].guarantorNameKana,
     guarantorGender1: guarantorMasters[0].guarantorGenderKind,
-    guarantorBirth1: guarantorMasters[0].guarantorBirthDate,
+    guarantorBirth1: format(
+      new Date(guarantorMasters[0].guarantorBirthDate),
+      'yyyy/MM/dd'
+    ),
     guarantorAsset1: guarantorMasters[0].guarantorPossessionAssetsKind,
     guarantorRelationship1: guarantorMasters[0].guarantorRelationship,
     guarantorZipCode1: guarantorMasters[0].guarantorZipCode,
@@ -607,7 +612,10 @@ const convertToCorporationBasicModel = (
     guarantorMobilePhoneNumber1: guarantorMasters[0].guarantorMobilePhoneNumber,
     guarantorNo2: guarantorMasters[1].guarantorNo,
     guarantorGender2: guarantorMasters[1].guarantorGenderKind,
-    guarantorBirth2: guarantorMasters[1].guarantorBirthDate,
+    guarantorBirth2: format(
+      new Date(guarantorMasters[1].guarantorBirthDate),
+      'yyyy/MM/dd'
+    ),
     guarantorAsset2: guarantorMasters[1].guarantorPossessionAssetsKind,
     guarantorRelationship2: guarantorMasters[1].guarantorRelationship,
     guarantorZipCode2: guarantorMasters[1].guarantorZipCode,
@@ -738,7 +746,7 @@ const convertToCreditInfoModel = (
     corporationId: response.corporationId,
     corporationName: response.corporationName,
     corporationNameKana: response.corporationNameKana,
-    corporationGroupName: response.CorporationGroup.map(
+    corporationGroupName: response.corporationGroup.map(
       (x) => x.corporationGroupId
     ),
     goldSilverMemberKind: response.goldSilverMemberKind,
