@@ -27,7 +27,7 @@ export interface ScrMem0003GetCorporationInfoResponse {
   // 法人名カナ
   corporationNameKana: string;
   // 法人グループ
-  CorporationGroup: CorporationGroup[];
+  corporationGroup: CorporationGroup[];
   // Gold/Silver会員区分
   goldSilverMemberKind: string;
   // 法人郵便番号

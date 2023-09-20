@@ -1073,9 +1073,7 @@ const ScrCom0013CommissionDiscountPacksTab = (props: {
       // リストボックスに設定
       setSelectValues({
         // 金額(種類)
-        priceSelectValues: convertToCodeSelectValueModel(
-          response0010.searchGetCodeManagementMasterListbox
-        ),
+        priceSelectValues: convertToCodeSelectValueModel(response0010.list),
         // セット対象コース
         setTargetCourseSelectValues: convertToCourceSelectValueModel(
           response0021.courceList

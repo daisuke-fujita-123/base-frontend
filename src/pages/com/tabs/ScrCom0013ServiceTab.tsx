@@ -421,11 +421,11 @@ const ScrCom0013ServiceTab = (props: {
       setSelectValues({
         // 担当部門
         responsibleCategoryValues: convertToCodeSelectValueModel(
-          responsibleCategoryResponse.searchGetCodeManagementMasterListbox
+          responsibleCategoryResponse.list
         ),
         // 対象サービス
         targetServiceDivisionValues: convertToCodeSelectValueModel(
-          targetServiceDivisionResponse.searchGetCodeManagementMasterListbox
+          targetServiceDivisionResponse.list
         ),
         // 変更予約
         changeReservationInfoSelectValues:

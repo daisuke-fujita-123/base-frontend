@@ -3,6 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import { CenterBox, MarginBox } from 'layouts/Box';
 import { FromTo } from 'layouts/FromTo';
@@ -46,7 +47,6 @@ import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
-import yup from 'utils/validation/ValidationDefinition';
 
 import { GridColumnGroupingModel, useGridApiRef } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
@@ -816,8 +816,6 @@ const ScrMem0003DealHistoryTab = () => {
     const initialize = async (corporationId: string) => {
       const getBillRequest = {
         corporationId: corporationId,
-        sortKey: '',
-        sortDirection: '',
       };
       const getBillResponse = await ScrMem9999GetBill(getBillRequest);
       const useBillingIdSelectValues = getBillResponse.list.map((x) => {
@@ -873,21 +871,22 @@ const ScrMem0003DealHistoryTab = () => {
       setSelectValues({
         useBillingIdSelectValues: useBillingIdSelectValues,
         useContractIdSelectValues: useContractIdSelectValues,
-        useAuctionKindSelectValues:
-          codeManagementMasterResponse.searchGetCodeManagementMasterListbox.map(
-            (x) => {
-              return {
-                value: x.codeValue,
-                displayValue: x.codeName,
-              };
-            }
-          ),
+        useAuctionKindSelectValues: codeManagementMasterResponse.list.map(
+          (x) => {
+            return {
+              value: x.codeValue,
+              displayValue: x.codeName,
+            };
+          }
+        ),
         useYearSelectValues: years,
         useMonthSelectValues: months,
       });
 
       setValue('corporationId', corporationId);
     };
+    if (corporationId === 'new') return;
+
     if (corporationId !== undefined) {
       initialize(corporationId);
     }

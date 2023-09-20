@@ -3,6 +3,7 @@ import { FormProvider } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import ScrCom0038Popup, {
   ScrCom0038PopupModel,
@@ -59,7 +60,6 @@ import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
 import { Format } from 'utils/FormatUtil';
-import yup from 'utils/validation/ValidationDefinition';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
@@ -167,17 +167,9 @@ const selectValuesInitialValues: SelectValuesModel = {
  * バリデーションスキーマ
  */
 const validationSchama = {
-  logisticsBaseId: yup.string().label('物流拠点ID').max(4).halfWidthOnly(),
-  logisticsBaseName: yup
-    .string()
-    .label('物流拠点名')
-    .max(40)
-    .fullAndHalfWidth(),
-  logisticsBaseNameKana: yup
-    .string()
-    .label('物流拠点名カナ')
-    .max(10)
-    .halfWidthOnly(),
+  logisticsBaseId: yup.string().label('物流拠点ID').max(4).half(),
+  logisticsBaseName: yup.string().label('物流拠点名').max(40),
+  logisticsBaseNameKana: yup.string().label('物流拠点名カナ').max(10).half(),
   usePurpose: yup.array().label('利用目的'),
   logisticsBaseTvaaSalesStaffId: yup.string().label('四輪営業担当'),
   logisticsBaseBikeSalesStaffId: yup.string().label('二輪営業担当'),
@@ -185,28 +177,22 @@ const validationSchama = {
   logisticsBaseMunicipalities: yup
     .string()
     .label('住所（市区町村以降）')
-    .max(80)
-    .fullAndHalfWidth(),
+    .max(80),
   regionCode: yup.string().label('地区コード/地区名'),
   logisticsBaseRepresentativeContractId: yup
     .string()
     .label('物流拠点代表契約ID'),
 
-  businessBaseId: yup.string().label('物流拠点ID').max(4).halfWidthOnly(),
-  businessBaseName: yup.string().label('物流拠点名').max(40).fullAndHalfWidth(),
-  businessBaseNameKana: yup
-    .string()
-    .label('物流拠点名カナ')
-    .max(40)
-    .halfWidthOnly(),
+  businessBaseId: yup.string().label('物流拠点ID').max(4).half(),
+  businessBaseName: yup.string().label('物流拠点名').max(40),
+  businessBaseNameKana: yup.string().label('物流拠点名カナ').max(40).half(),
   businessBaseTvaaSalesStaffId: yup.string().label('四輪営業担当'),
   businessBaseBikeSalesStaffId: yup.string().label('二輪営業担当'),
   businessBasePrefectureCode: yup.string().label('住所（都道府県）'),
   businessBaseMunicipalities: yup
     .string()
     .label('住所（市区町村以降）')
-    .max(80)
-    .fullAndHalfWidth(),
+    .max(80),
   contractId: yup.string().label('契約ID'),
 };
 
@@ -632,15 +618,14 @@ const ScrMem0003BaseTab = () => {
       const getCodeManagementMasterRequest = { codeId: 'CDE-MEM-1026' };
       const getCodeManagementMasterResponse =
         await ScrCom9999GetCodeManagementMaster(getCodeManagementMasterRequest);
-      const usePurposeSelectValues =
-        getCodeManagementMasterResponse.searchGetCodeManagementMasterListbox.map(
-          (x) => {
-            return {
-              value: x.codeValue,
-              displayValue: x.codeName,
-            };
-          }
-        );
+      const usePurposeSelectValues = getCodeManagementMasterResponse.list.map(
+        (x) => {
+          return {
+            value: x.codeValue,
+            displayValue: x.codeName,
+          };
+        }
+      );
 
       const getEmployeeFromDistrictRequest = { corporationId: corporationId };
       const getEmployeeFromDistrictResponse =
@@ -713,8 +698,6 @@ const ScrMem0003BaseTab = () => {
 
       const getBillRequest = {
         corporationId: corporationId,
-        sortKey: '',
-        sortDirection: '',
       };
       const getBillResponse = await ScrMem9999GetBill(getBillRequest);
       const contractIdSelectValues = getBillResponse.list.map((x) => {
@@ -735,6 +718,9 @@ const ScrMem0003BaseTab = () => {
         contractIdSelectValues: contractIdSelectValues,
       });
     };
+
+    if (corporationId === 'new') return;
+
     if (corporationId !== undefined) {
       initialize(corporationId);
     }

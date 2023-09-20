@@ -119,7 +119,7 @@ const convertToServiceModel = (
 const CodeManagementSelectValuesModel = (
   response: ScrCom9999GetCodeManagementMasterResponse
 ): SelectValue[] => {
-  return response.searchGetCodeManagementMasterListbox.map((x) => {
+  return response.list.map((x) => {
     return {
       value: x.codeValue,
       displayValue: x.codeName,

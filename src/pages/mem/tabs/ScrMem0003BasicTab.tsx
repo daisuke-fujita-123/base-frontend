@@ -1,8 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import ScrCom0032Popup, {
   columnList,
@@ -14,7 +15,7 @@ import ScrCom0032Popup, {
 import { MarginBox } from 'layouts/Box';
 import { Grid } from 'layouts/Grid';
 import { MainLayout } from 'layouts/MainLayout/MainLayout';
-import { Section } from 'layouts/Section';
+import { Section, SectionClose } from 'layouts/Section';
 import { ColStack, RightElementStack, RowStack, Stack } from 'layouts/Stack';
 
 import { CancelButton, ConfirmButton, PrimaryButton } from 'controls/Button';
@@ -27,6 +28,7 @@ import { PostalTextField, TextField } from 'controls/TextField/TextField';
 import { Typography } from 'controls/Typography';
 
 import {
+  ScrCom9999GetAddressInfo,
   ScrCom9999GetChangeDate,
   ScrCom9999getCodeManagementMasterMultiple,
   ScrCom9999GetCodeValue,
@@ -47,12 +49,12 @@ import { ScrMem9999GetCorporationGroup } from 'apis/mem/ScrMem9999Api';
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
-import { comApiClient, memApiClient } from 'providers/ApiClient';
+import { memApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import { ChangeHistoryDateCheckUtil } from 'utils/ChangeHistoryDateCheckUtil';
-import yup from 'utils/validation/ValidationDefinition';
 
+import { format } from 'date-fns';
 import { TabDisabledsModel } from '../ScrMem0003Page';
 
 /*
@@ -199,6 +201,14 @@ interface SelectValuesModel {
 }
 
 /**
+ * ラジオボタンデータモデル
+ */
+interface RadioValue {
+  value: string | number | boolean;
+  displayValue: string;
+}
+
+/**
  * 法人基本情報初期データ
  */
 const initialValues: CorporationBasicModel = {
@@ -271,162 +281,92 @@ const initialValues: CorporationBasicModel = {
  * バリデーションスキーマ
  */
 const validationSchama = {
-  corporationName: yup
-    .string()
-    .label('法人名')
-    .max(30)
-    .fullAndHalfWidth()
-    .required(),
+  corporationName: yup.string().label('法人名').max(30).required(),
   corporationNameKana: yup
     .string()
     .label('法人名カナ')
     .max(40)
-    .halfWidthOnly()
+    .half()
     .required(),
   corporationGroupName: yup.string().label('法人グループ名'),
   goldSilverMemberKind: yup.string().label('Gold/Silver会員'),
-  corporationZipCode: yup
-    .string()
-    .label('郵便番号')
-    .max(8)
-    .halfWidthOnly()
-    .required(),
+  corporationZipCode: yup.string().label('郵便番号').max(8).half().required(),
   corporationPrefectureCode: yup.string().label('都道府県').required(),
-  corporationMunicipalities: yup
-    .string()
-    .label('市区町村')
-    .max(40)
-    .fullAndHalfWidth()
-    .required(),
+  corporationMunicipalities: yup.string().label('市区町村').max(40).required(),
   corporationAddressBuildingName: yup
     .string()
     .label('番地・号・建物名など')
     .max(40)
-    .fullAndHalfWidth()
     .required(),
-  corporationPhoneNumber: yup
-    .string()
-    .label('TEL')
-    .max(13)
-    .formatTel()
-    .required(),
-  corporationFaxNumber: yup.string().label('FAX').max(13).formatTel(),
+  corporationPhoneNumber: yup.string().label('TEL').max(13).phone().required(),
+  corporationFaxNumber: yup.string().label('FAX').max(13).phone(),
   corporationMailAddress: yup.string().label('メールアドレス').max(254).email(),
-  publicSafetyCommittee: yup
-    .string()
-    .label('公安委員会')
-    .max(20)
-    .fullAndHalfWidth()
-    .required(),
+  publicSafetyCommittee: yup.string().label('公安委員会').max(20).required(),
   antiqueBusinessLicenseNumber: yup
     .string()
     .label('古物商許可番号')
     .max(30)
-    .fullAndHalfWidth()
     .required(),
-  issuanceDate: yup.string().label('交付年月日').formatYmd(),
-  antiqueName: yup.string().label('古物名義').max(100).fullAndHalfWidth(),
-  memberMemo: yup.string().label('会員メモ').max(1050).fullAndHalfWidth(),
-  representativeName: yup
-    .string()
-    .label('代表者名')
-    .max(30)
-    .fullAndHalfWidth()
-    .required(),
+  issuanceDate: yup.string().label('交付年月日').date(),
+  antiqueName: yup.string().label('古物名義').max(100),
+  memberMemo: yup.string().label('会員メモ').max(1050),
+  representativeName: yup.string().label('代表者名').max(30).required(),
   representativeNameKana: yup
     .string()
     .label('代表者名カナ')
     .max(30)
-    .halfWidthOnly()
+    .half()
     .required(),
   representativeGender: yup.string().label('性別'),
-  representativeBirth: yup.string().label('生年月日').formatYmd(),
+  representativeBirth: yup.string().label('生年月日').date(),
   representativeAsset: yup.string().label('所有資産'),
-  representativeZipCode: yup.string().label('郵便番号').max(8).halfWidthOnly(),
+  representativeZipCode: yup.string().label('郵便番号').max(8).half(),
   representativePrefectureCode: yup.string().label('都道府県'),
-  representativeMunicipalities: yup
-    .string()
-    .label('市区町村')
-    .max(40)
-    .fullAndHalfWidth(),
+  representativeMunicipalities: yup.string().label('市区町村').max(40),
   representativeAddressBuildingName: yup
     .string()
     .label('番地・号・建物名など')
     .max(10)
     .required(),
-  representativePhoneNumber: yup.string().label('TEL').max(13).formatTel(),
-  representativeFaxNumber: yup.string().label('FAX').max(13).formatTel(),
+  representativePhoneNumber: yup.string().label('TEL').max(13).phone(),
+  representativeFaxNumber: yup.string().label('FAX').max(13).phone(),
   representativeMobilePhoneNumber: yup
     .string()
     .label('携帯番号')
     .max(13)
-    .formatTel(),
-  guarantorName1: yup.string().label('連帯保証人名').max(30).fullAndHalfWidth(),
-  guarantorNameKana1: yup
-    .string()
-    .label('連帯保証人名カナ')
-    .max(30)
-    .halfWidthOnly(),
+    .phone(),
+  guarantorName1: yup.string().label('連帯保証人名').max(30),
+  guarantorNameKana1: yup.string().label('連帯保証人名カナ').max(30).half(),
   guarantorGender1: yup.string().label('性別'),
-  guarantorBirth1: yup.string().label('生年月日').formatYmd(),
+  guarantorBirth1: yup.string().label('生年月日').date(),
   guarantorAsset1: yup.string().label('所有資産'),
-  guarantorRelationship1: yup
-    .string()
-    .label('代表者との続柄')
-    .max(10)
-    .fullAndHalfWidth(),
-  guarantorZipCode1: yup.string().label('郵便番号').max(8).halfWidthOnly(),
+  guarantorRelationship1: yup.string().label('代表者との続柄').max(10),
+  guarantorZipCode1: yup.string().label('郵便番号').max(8).half(),
   guarantorPrefecture1: yup.string().label('都道府県'),
-  guarantorMunicipalities1: yup
-    .string()
-    .label('市区町村')
-    .max(30)
-    .fullAndHalfWidth(),
+  guarantorMunicipalities1: yup.string().label('市区町村').max(30),
   guarantorAddressBuildingName1: yup
     .string()
     .label('番地・号・建物名など')
-    .max(30)
-    .fullAndHalfWidth(),
-  guarantorPhoneNumber1: yup.string().label('TEL').max(13).formatTel(),
-  guarantorFaxNumber1: yup.string().label('FAX').max(13).formatTel(),
-  guarantorMobilePhoneNumber1: yup
-    .string()
-    .label('携帯番号')
-    .max(13)
-    .formatTel(),
-  guarantorName2: yup.string().label('連帯保証人名').max(30).fullAndHalfWidth(),
-  guarantorNameKana2: yup
-    .string()
-    .label('連帯保証人名カナ')
-    .max(30)
-    .halfWidthOnly(),
+    .max(30),
+  guarantorPhoneNumber1: yup.string().label('TEL').max(13).phone(),
+  guarantorFaxNumber1: yup.string().label('FAX').max(13).phone(),
+  guarantorMobilePhoneNumber1: yup.string().label('携帯番号').max(13).phone(),
+  guarantorName2: yup.string().label('連帯保証人名').max(30),
+  guarantorNameKana2: yup.string().label('連帯保証人名カナ').max(30).half(),
   guarantorGender2: yup.string().label('性別'),
-  guarantorBirth2: yup.string().label('生年月日').formatYmd(),
+  guarantorBirth2: yup.string().label('生年月日').date(),
   guarantorAsset2: yup.string().label('所有資産'),
-  guarantorRelationship2: yup
-    .string()
-    .label('代表者との続柄')
-    .max(10)
-    .fullAndHalfWidth(),
-  guarantorZipCode2: yup.string().label('郵便番号').max(8).halfWidthOnly(),
+  guarantorRelationship2: yup.string().label('代表者との続柄').max(10),
+  guarantorZipCode2: yup.string().label('郵便番号').max(8).half(),
   guarantorPrefecture2: yup.string().label('都道府県'),
-  guarantorMunicipalities2: yup
-    .string()
-    .label('市区町村')
-    .max(30)
-    .fullAndHalfWidth(),
+  guarantorMunicipalities2: yup.string().label('市区町村').max(30),
   guarantorAddressBuildingName2: yup
     .string()
     .label('番地・号・建物名など')
-    .max(30)
-    .fullAndHalfWidth(),
-  guarantorPhoneNumber2: yup.string().label('TEL').max(13).formatTel(),
-  guarantorFaxNumber2: yup.string().label('FAX').max(13).formatTel(),
-  guarantorMobilePhoneNumber2: yup
-    .string()
-    .label('携帯番号')
-    .max(13)
-    .formatTel(),
+    .max(30),
+  guarantorPhoneNumber2: yup.string().label('TEL').max(13).phone(),
+  guarantorFaxNumber2: yup.string().label('FAX').max(13).phone(),
+  guarantorMobilePhoneNumber2: yup.string().label('携帯番号').max(13).phone(),
 };
 
 /**
@@ -604,16 +544,20 @@ const sectionDef = [
  * 法人基本情報取得APIリクエストから法人基本情報データモデルへの変換
  */
 const convertToCorporationBasicModel = (
-  response: ScrMem0003GetCorporationInfoResponse
+  response: ScrMem0003GetCorporationInfoResponse,
+  codeValueList: SelectValue[]
 ): CorporationBasicModel => {
   const guarantorMasters = response.guarantor;
   guarantorMasters.sort((a, b) => (a.guarantorNo > b.guarantorNo ? 1 : -1));
+  const taxBusinessKind = codeValueList.find((x) => {
+    if (x.value === response.taxBusinessKind) return x.displayValue;
+  });
 
   return {
     corporationId: response.corporationId,
     corporationName: response.corporationName,
     corporationNameKana: response.corporationNameKana,
-    corporationGroupName: response.CorporationGroup.map(
+    corporationGroupName: response.corporationGroup.map(
       (x) => x.corporationGroupId
     ),
     goldSilverMemberKind: response.goldSilverMemberKind,
@@ -625,16 +569,20 @@ const convertToCorporationBasicModel = (
     corporationFaxNumber: response.corporationFaxNumber,
     corporationMailAddress: response.corporationMailAddress,
     eligibleBusinessNumber: response.eligibleBusinessNumber,
-    taxBusinessKind: response.taxBusinessKind,
+    taxBusinessKind:
+      taxBusinessKind === undefined ? '' : taxBusinessKind.displayValue,
     publicSafetyCommittee: response.publicSafetyCommittee,
     antiqueBusinessLicenseNumber: response.antiqueBusinessLicenseNumber,
-    issuanceDate: response.issuanceDate,
+    issuanceDate: format(new Date(response.issuanceDate), 'yyyy/MM/dd'),
     antiqueName: response.antiqueName,
     memberMemo: response.memberMemo,
     representativeName: response.representativeName,
     representativeNameKana: response.representativeNameKana,
     representativeGender: response.representativeGenderKind,
-    representativeBirth: response.representativeBirthDate,
+    representativeBirth: format(
+      new Date(response.representativeBirthDate),
+      'yyyy/MM/dd'
+    ),
     representativeAsset: response.possessionAssetsKind,
     representativeZipCode: response.representativeZipCode,
     representativePrefectureCode: response.representativePrefectureCode,
@@ -648,7 +596,10 @@ const convertToCorporationBasicModel = (
     guarantorName1: guarantorMasters[0].guarantorName,
     guarantorNameKana1: guarantorMasters[0].guarantorNameKana,
     guarantorGender1: guarantorMasters[0].guarantorGenderKind,
-    guarantorBirth1: guarantorMasters[0].guarantorBirthDate,
+    guarantorBirth1: format(
+      new Date(guarantorMasters[0].guarantorBirthDate),
+      'yyyy/MM/dd'
+    ),
     guarantorAsset1: guarantorMasters[0].guarantorPossessionAssetsKind,
     guarantorRelationship1: guarantorMasters[0].guarantorRelationship,
     guarantorZipCode1: guarantorMasters[0].guarantorZipCode,
@@ -661,7 +612,10 @@ const convertToCorporationBasicModel = (
     guarantorMobilePhoneNumber1: guarantorMasters[0].guarantorMobilePhoneNumber,
     guarantorNo2: guarantorMasters[1].guarantorNo,
     guarantorGender2: guarantorMasters[1].guarantorGenderKind,
-    guarantorBirth2: guarantorMasters[1].guarantorBirthDate,
+    guarantorBirth2: format(
+      new Date(guarantorMasters[1].guarantorBirthDate),
+      'yyyy/MM/dd'
+    ),
     guarantorAsset2: guarantorMasters[1].guarantorPossessionAssetsKind,
     guarantorRelationship2: guarantorMasters[1].guarantorRelationship,
     guarantorZipCode2: guarantorMasters[1].guarantorZipCode,
@@ -776,16 +730,23 @@ const convertToScrMem0003DataModel = (
 
 const convertToCreditInfoModel = (
   response: ScrMem0003GetCorporationInfoResponse,
-  changeHistoryNumber: string
+  changeHistoryNumber: string,
+  codeValueList: SelectValue[]
 ): CorporationBasicModel => {
   const guarantorMasters = response.guarantor;
   guarantorMasters.sort((a, b) => (a.guarantorNo > b.guarantorNo ? 1 : -1));
+  const taxBusinessKind =
+    codeValueList.length === 0
+      ? []
+      : codeValueList.map((x) => {
+          if (x.value === response.taxBusinessKind) return x.displayValue;
+        });
 
   return {
     corporationId: response.corporationId,
     corporationName: response.corporationName,
     corporationNameKana: response.corporationNameKana,
-    corporationGroupName: response.CorporationGroup.map(
+    corporationGroupName: response.corporationGroup.map(
       (x) => x.corporationGroupId
     ),
     goldSilverMemberKind: response.goldSilverMemberKind,
@@ -797,7 +758,7 @@ const convertToCreditInfoModel = (
     corporationFaxNumber: response.corporationFaxNumber,
     corporationMailAddress: response.corporationMailAddress,
     eligibleBusinessNumber: response.eligibleBusinessNumber,
-    taxBusinessKind: response.taxBusinessKind,
+    taxBusinessKind: taxBusinessKind[0] === undefined ? '' : taxBusinessKind[0],
     publicSafetyCommittee: response.publicSafetyCommittee,
     antiqueBusinessLicenseNumber: response.antiqueBusinessLicenseNumber,
     issuanceDate: response.issuanceDate,
@@ -1003,6 +964,8 @@ const ScrMem0003BasicTab = (props: {
   const applicationId = searchParams.get('applicationId');
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const guarantorSection1Ref = useRef<SectionClose>();
+  const guarantorSection2Ref = useRef<SectionClose>();
 
   // state
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
@@ -1012,13 +975,11 @@ const ScrMem0003BasicTab = (props: {
   const [isOpenPopup, setIsOpenPopup] = useState<boolean>(false);
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
-  const [openGuarantorSection1, setOpenGuarantorSection1] =
-    useState<boolean>(true);
-  const [openGuarantorSection2, setOpenGuarantorSection2] =
-    useState<boolean>(true);
   const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
   const [changeHistoryDateCheckisOpen, setChangeHistoryDateCheckisOpen] =
     useState<boolean>(false);
+  const [taxBusinessKinds, setTaxBusinessKinds] = useState<SelectValue[]>([]);
+  const [genderRadioValues, setGenderRadioValues] = useState<RadioValue[]>([]);
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(
@@ -1046,7 +1007,12 @@ const ScrMem0003BasicTab = (props: {
       // リスト取得
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeId: ['CDE-COM-0017', 'CDE-COM-0021'],
+        codeId: [
+          'CDE-COM-0017',
+          'CDE-COM-0019',
+          'CDE-COM-0021',
+          'CDE-COM-0020',
+        ],
       };
       const codeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
@@ -1054,6 +1020,8 @@ const ScrMem0003BasicTab = (props: {
         );
       const goldSilverMemberKindSelectValues: SelectValue[] = [];
       const representativeAssetSelectValues: SelectValue[] = [];
+      const newTaxBusinessKinds: SelectValue[] = [];
+      const newGenderRadioValues: RadioValue[] = [];
       codeManagementMasterMultipleResponse.resultList.map((x) => {
         // Gold/Silver会員
         if (x.codeId === 'CDE-COM-0017') {
@@ -1072,6 +1040,28 @@ const ScrMem0003BasicTab = (props: {
               displayValue: c.codeName,
             });
           });
+        }
+        // 税事業者区分
+        if (x.codeId === 'CDE-COM-0019') {
+          x.codeValueList.map((c) => {
+            newTaxBusinessKinds.push({
+              value: c.codeValue,
+              displayValue: c.codeName,
+            });
+          });
+          setTaxBusinessKinds(newTaxBusinessKinds);
+        }
+        // 性別区分
+        if (x.codeId === 'CDE-COM-0020') {
+          x.codeValueList.map((c) => {
+            if (c.codeName === '男' || c.codeName === '女') {
+              newGenderRadioValues.push({
+                value: c.codeValue,
+                displayValue: c.codeName,
+              });
+            }
+          });
+          setGenderRadioValues(newGenderRadioValues);
         }
       });
 
@@ -1117,9 +1107,11 @@ const ScrMem0003BasicTab = (props: {
           request
         )
       ).data;
+
       const corporationBasic = convertToCreditInfoModel(
         response,
-        applicationId
+        applicationId,
+        newTaxBusinessKinds
       );
 
       // 画面にデータを設定
@@ -1149,7 +1141,12 @@ const ScrMem0003BasicTab = (props: {
       // リスト取得
       // コード管理マスタ情報取得API（複数取得）
       const getCodeManagementMasterMultipleRequest = {
-        codeId: ['CDE-COM-0017', 'CDE-COM-0021'],
+        codeId: [
+          'CDE-COM-0017',
+          'CDE-COM-0019',
+          'CDE-COM-0021',
+          'CDE-COM-0020',
+        ],
       };
       const codeManagementMasterMultipleResponse =
         await ScrCom9999getCodeManagementMasterMultiple(
@@ -1157,6 +1154,8 @@ const ScrMem0003BasicTab = (props: {
         );
       const goldSilverMemberKindSelectValues: SelectValue[] = [];
       const representativeAssetSelectValues: SelectValue[] = [];
+      const newTaxBusinessKinds: SelectValue[] = [];
+      const newGenderRadioValues: RadioValue[] = [];
       codeManagementMasterMultipleResponse.resultList.map((x) => {
         // Gold/Silver会員
         if (x.codeId === 'CDE-COM-0017') {
@@ -1175,6 +1174,28 @@ const ScrMem0003BasicTab = (props: {
               displayValue: c.codeName,
             });
           });
+        }
+        // 税事業者区分
+        if (x.codeId === 'CDE-COM-0019') {
+          x.codeValueList.map((c) => {
+            newTaxBusinessKinds.push({
+              value: c.codeValue,
+              displayValue: c.codeName,
+            });
+          });
+          setTaxBusinessKinds(newTaxBusinessKinds);
+        }
+        // 性別区分
+        if (x.codeId === 'CDE-COM-0020') {
+          x.codeValueList.map((c) => {
+            if (c.codeName === '男' || c.codeName === '女') {
+              newGenderRadioValues.push({
+                value: c.codeValue,
+                displayValue: c.codeName,
+              });
+            }
+          });
+          setGenderRadioValues(newGenderRadioValues);
         }
       });
 
@@ -1216,7 +1237,10 @@ const ScrMem0003BasicTab = (props: {
         limitCount: 15000,
       };
       const response = await ScrMem0003GetCorporationInfo(request);
-      const corporationBasic = convertToCorporationBasicModel(response);
+      const corporationBasic = convertToCorporationBasicModel(
+        response,
+        newTaxBusinessKinds
+      );
 
       // 画面にデータを設定
       reset(corporationBasic);
@@ -1257,7 +1281,11 @@ const ScrMem0003BasicTab = (props: {
         (corporationBasic.guarantorMobilePhoneNumber1 === null ||
           corporationBasic.guarantorMobilePhoneNumber1 === '')
       ) {
-        setOpenGuarantorSection1(false);
+        if (
+          guarantorSection1Ref.current &&
+          guarantorSection1Ref.current.closeSection
+        )
+          guarantorSection1Ref.current.closeSection();
       }
 
       // 連帯保証人⓶セクション内の全ての入力項目が未設定の場合、連帯保証人⓶セクションを折り畳み表示する
@@ -1289,7 +1317,11 @@ const ScrMem0003BasicTab = (props: {
         (corporationBasic.guarantorMobilePhoneNumber2 === null ||
           corporationBasic.guarantorMobilePhoneNumber2 === '')
       ) {
-        setOpenGuarantorSection2(false);
+        if (
+          guarantorSection2Ref.current &&
+          guarantorSection2Ref.current.closeSection
+        )
+          guarantorSection2Ref.current.closeSection();
       }
 
       // 変更予定日取得
@@ -1312,8 +1344,16 @@ const ScrMem0003BasicTab = (props: {
 
     const getNewCorporationId = async () => {
       // 連帯保証人セクションを折り畳み表示する
-      setOpenGuarantorSection1(false);
-      setOpenGuarantorSection2(false);
+      if (
+        guarantorSection1Ref.current &&
+        guarantorSection1Ref.current.closeSection
+      )
+        guarantorSection1Ref.current.closeSection();
+      if (
+        guarantorSection2Ref.current &&
+        guarantorSection2Ref.current.closeSection
+      )
+        guarantorSection2Ref.current.closeSection();
 
       // 基本情報タブ以外は非活性にする
       props.chengeTabDisableds({
@@ -1328,9 +1368,102 @@ const ScrMem0003BasicTab = (props: {
       });
       const newCorporationIdResponse = await ScrMem0003GetNewCorporationId();
       setValue('corporationId', newCorporationIdResponse.corporationId);
+
+      // リスト取得
+      // コード管理マスタ情報取得API（複数取得）
+      const getCodeManagementMasterMultipleRequest = {
+        codeId: [
+          'CDE-COM-0017',
+          'CDE-COM-0019',
+          'CDE-COM-0021',
+          'CDE-COM-0020',
+        ],
+      };
+      const codeManagementMasterMultipleResponse =
+        await ScrCom9999getCodeManagementMasterMultiple(
+          getCodeManagementMasterMultipleRequest
+        );
+      const goldSilverMemberKindSelectValues: SelectValue[] = [];
+      const representativeAssetSelectValues: SelectValue[] = [];
+      const newTaxBusinessKinds: SelectValue[] = [];
+      const newGenderRadioValues: RadioValue[] = [];
+      codeManagementMasterMultipleResponse.resultList.map((x) => {
+        // Gold/Silver会員
+        if (x.codeId === 'CDE-COM-0017') {
+          x.codeValueList.map((c) => {
+            goldSilverMemberKindSelectValues.push({
+              value: c.codeValue,
+              displayValue: c.codeName,
+            });
+          });
+        }
+        // 所有資産
+        if (x.codeId === 'CDE-COM-0021') {
+          x.codeValueList.map((c) => {
+            representativeAssetSelectValues.push({
+              value: c.codeValue,
+              displayValue: c.codeName,
+            });
+          });
+        }
+        // 税事業者区分
+        if (x.codeId === 'CDE-COM-0019') {
+          x.codeValueList.map((c) => {
+            newTaxBusinessKinds.push({
+              value: c.codeValue,
+              displayValue: c.codeName,
+            });
+          });
+          setTaxBusinessKinds(newTaxBusinessKinds);
+        }
+        // 性別区分
+        if (x.codeId === 'CDE-COM-0020') {
+          x.codeValueList.map((c) => {
+            if (c.codeName === '男' || c.codeName === '女') {
+              newGenderRadioValues.push({
+                value: c.codeValue,
+                displayValue: c.codeName,
+              });
+            }
+          });
+          setGenderRadioValues(newGenderRadioValues);
+        }
+      });
+
+      // 共通管理コード値取得API（コード管理マスタ以外）
+      const getCodeManagementMasterRequest = {
+        entityList: [{ entityName: 'prefecture_master' }],
+      };
+      const codeManagementMasterResponse = await ScrCom9999GetCodeValue(
+        getCodeManagementMasterRequest
+      );
+      const prefectureCodeSelectValues =
+        codeManagementMasterResponse.resultList[0].codeValueList.map((x) => {
+          return {
+            value: x.codeValue,
+            displayValue: x.codeValueName,
+          };
+        });
+
+      // 法人グループ取得API
+      const corporationGroupResponse = await ScrMem9999GetCorporationGroup();
+      const corporationGroupSelectValues =
+        corporationGroupResponse.corporationGroupList.map((x) => {
+          return {
+            value: x.corporationGroupId,
+            displayValue: x.corporationGroupId + '　' + x.corporationGroupName,
+          };
+        });
+
+      setSelectValues({
+        goldSilverMemberKindSelectValues: goldSilverMemberKindSelectValues,
+        representativeAssetSelectValues: representativeAssetSelectValues,
+        prefectureCodeSelectValues: prefectureCodeSelectValues,
+        corporationGroupSelectValues: corporationGroupSelectValues,
+      });
     };
 
-    if (corporationId === undefined || corporationId === 'new') {
+    if (applicationId === undefined || corporationId === 'new') {
       getNewCorporationId();
       return;
     }
@@ -1359,9 +1492,11 @@ const ScrMem0003BasicTab = (props: {
     };
     const response = (await memApiClient.post('/get-history-info', request))
       .data;
+
     const corporationBasic = convertToCreditInfoModel(
       response,
-      getValues('changeHistoryNumber')
+      getValues('changeHistoryNumber'),
+      taxBusinessKinds
     );
 
     setIsChangeHistoryBtn(true);
@@ -1492,10 +1627,9 @@ const ScrMem0003BasicTab = (props: {
    * 住所自動入力
    */
   const onBlur = async (name: string, item: string) => {
+    if (item.length !== 8) return;
     const request = { zipCode: item };
-    const codeValues = (
-      await comApiClient.post('/com/scr/get-address-info', request)
-    ).data;
+    const codeValues = await ScrCom9999GetAddressInfo(request);
 
     switch (name) {
       case 'corporationZipCode':
@@ -1656,10 +1790,7 @@ const ScrMem0003BasicTab = (props: {
                   <Radio
                     label='性別'
                     name='representativeGender'
-                    radioValues={[
-                      { value: '1', displayValue: '男' },
-                      { value: '2', displayValue: '女' },
-                    ]}
+                    radioValues={genderRadioValues}
                   />
                   <DatePicker
                     label='生年月日'
@@ -1711,7 +1842,7 @@ const ScrMem0003BasicTab = (props: {
               </RowStack>
             </Section>
             {/* 連帯保証人①セクション */}
-            <Section name='連帯保証人①' openable={openGuarantorSection1}>
+            <Section name='連帯保証人①' ref={guarantorSection1Ref}>
               <RowStack>
                 <ColStack>
                   <TextField label='連帯保証人名' name='guarantorName1' />
@@ -1781,7 +1912,7 @@ const ScrMem0003BasicTab = (props: {
             </Section>
 
             {/* 連帯保証人②セクション */}
-            <Section name='連帯保証人②' openable={openGuarantorSection2}>
+            <Section name='連帯保証人②' ref={guarantorSection2Ref}>
               <RowStack>
                 <ColStack>
                   <TextField label='連帯保証人名' name='guarantorName2' />
