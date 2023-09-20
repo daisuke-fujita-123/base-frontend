@@ -125,7 +125,24 @@ const initialValues: CorporationBasicModel = {
 const popupInitialValues: ScrCom0032PopupModel = {
   errorList: [],
   warningList: [],
-  registrationChangeList: [],
+  registrationChangeList: [
+    {
+      screenId: '',
+      screenName: '',
+      tabId: 0,
+      tabName: '',
+      sectionList: [
+        {
+          sectionName: '',
+          columnList: [
+            {
+              columnName: '',
+            },
+          ],
+        },
+      ],
+    },
+  ],
   changeExpectDate: '',
 };
 
@@ -176,6 +193,8 @@ const ScrCom0008Page = () => {
   const [getCommentRow, setGetCommentRow] = useState<number>(0);
   // 帳票コメント情報取得APIにて取得した コメント1行最大文字数
   const [getCommentLine, setGetCommentLine] = useState<number>(0);
+  // 帳票コメント情報取得APIにて取得した ポップアップコメント最大行数
+  const [getPopupCommentRow, setGetPopupCommentRow] = useState<number>(0);
   // 帳票コメント情報取得APIにて取得した 変更タイムスタンプ
   const [getChangeTimestamp, setGetChangeTimestamp] = useState<string>('');
   // 帳票コメント情報取得APIにて取得した システム種別
@@ -191,7 +210,6 @@ const ScrCom0008Page = () => {
 
   // セクション横幅調整用
   const apiRef = useGridApiRef();
-  const [maxSectionWidth, setMaxSectionWidth] = useState<number>(0);
 
   // user情報
   const { user } = useContext(AuthContext);
@@ -280,14 +298,6 @@ const ScrCom0008Page = () => {
     useState<ScrCom0032PopupModel>(popupInitialValues);
 
   useEffect(() => {
-    setMaxSectionWidth(
-      Number(
-        apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-      ) + 40
-    );
-  }, [apiRef, apiRef.current.rootElementRef]);
-
-  useEffect(() => {
     // 初期表示処理(現在情報)
     const initializeCurrent = async (reportId: string) => {
       // 履歴表示画面ではない為falseを設定
@@ -313,7 +323,7 @@ const ScrCom0008Page = () => {
       const comments: string[] =
         getCommissionDisplayResponse.reportComment.split(/\n/);
       comments.forEach((comment, i) => {
-        console.log(comment);
+        setGetPopupCommentRow(getCommissionDisplayResponse.popupCommentRow);
         if (i === 0) {
           setValue(`reportComment1`, comment);
         } else if (i === 1) {
@@ -353,7 +363,6 @@ const ScrCom0008Page = () => {
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: SCR_COM_0008,
-        tabId: 0,
         masterId: reportId,
         businessDate: user.taskDate,
       };
@@ -434,6 +443,7 @@ const ScrCom0008Page = () => {
    * 確定ボタンクリック時のイベントハンドラ
    */
   const onClickConfirm = () => {
+    console.log(user.taskDate);
     if (Object.keys(errors).length) return;
     // 反映予定日整合性チェック
     setChangeHistoryDateCheckisOpen(true);
@@ -795,7 +805,7 @@ const ScrCom0008Page = () => {
         {/* main */}
         <MainLayout main>
           <FormProvider {...methods}>
-            <Section name='帳票情報' width={maxSectionWidth}>
+            <Section name='帳票情報' fitInside>
               <RowStack>
                 <ColStack>
                   <Box>
@@ -812,12 +822,14 @@ const ScrCom0008Page = () => {
                 <ColStack>
                   <Box>
                     <Typography variant='body1'>最大桁数</Typography>
-                    <Typography variant='body1'>{getCommentRow}</Typography>
+                    <Typography variant='body1'>
+                      {getCommentRow}/{getCommentRow + getPopupCommentRow}
+                    </Typography>
                   </Box>
                 </ColStack>
                 <ColStack>
                   <Box>
-                    <Typography variant='body1'>最大文字数</Typography>
+                    <Typography variant='body1'>1行最大文字数</Typography>
                     <Typography variant='body1'>{getCommentLine}</Typography>
                   </Box>
                 </ColStack>
