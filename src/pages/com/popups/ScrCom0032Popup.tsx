@@ -234,16 +234,18 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
         j < data.registrationChangeList[i].sectionList.length;
         j++
       ) {
-        if (data.registrationChangeList[i].sectionList[j].sectionName !== '') {
-          rowSectionNameList.push(
-            data.registrationChangeList[i].sectionList[j].sectionName
-          );
-        }
         for (
           let k = 0;
           k < data.registrationChangeList[i].sectionList[j].columnList.length;
           k++
         ) {
+          if (
+            data.registrationChangeList[i].sectionList[j].sectionName !== ''
+          ) {
+            rowSectionNameList.push(
+              data.registrationChangeList[i].sectionList[j].sectionName
+            );
+          }
           if (
             data.registrationChangeList[i].sectionList[j].columnList[k]
               .columnName !== ''
