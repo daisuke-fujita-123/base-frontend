@@ -239,7 +239,7 @@ export interface ScrCom9999GetCodeManagementMasterRequest {
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API レスポンス */
 export interface ScrCom9999GetCodeManagementMasterResponse {
   // リスト
-  searchGetCodeManagementMasterListbox: SearchGetCodeManagementMasterListbox[];
+  list: SearchGetCodeManagementMasterListbox[];
 }
 
 /** API-COM-9999-0010: コード管理マスタリストボックス情報取得API レスポンス(リスト行) */

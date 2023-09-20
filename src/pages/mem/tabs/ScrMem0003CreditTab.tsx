@@ -3,6 +3,7 @@ import { FormProvider } from 'react-hook-form';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import ScrCom0032Popup, {
   columnList,
@@ -19,7 +20,6 @@ import { MainLayout } from 'layouts/MainLayout/MainLayout';
 import { Section } from 'layouts/Section/Section';
 import {
   ColStack,
-  InputRowStack,
   RightElementStack,
   RowStack,
   Stack,
@@ -48,7 +48,6 @@ import { memApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
 
 import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
-import yup from 'utils/validation/ValidationDefinition';
 
 import { TabDisabledsModel } from '../ScrMem0003Page';
 
@@ -96,17 +95,17 @@ const validationSchama = {
     .string()
     .label('基本法人与信額')
     .max(11)
-    .formatPrice(),
+    .numberWithComma(),
   corporationCreditRemainingAmount: yup
     .string()
     .label('法人与信残額')
     .max(11)
-    .formatPrice(),
+    .numberWithComma(),
   paymentExtensionCreditAmount: yup
     .string()
     .label('支払延長与信額')
     .max(11)
-    .formatPrice(),
+    .numberWithComma(),
 };
 
 /**
@@ -482,6 +481,8 @@ const ScrMem0003CreditTab = (props: {
       setChangeHistory(chabngeHistory);
     };
 
+    if (corporationId === 'new') return;
+
     if (corporationId !== undefined && applicationId !== null) {
       historyInitialize(corporationId, applicationId);
       return;
@@ -659,17 +660,9 @@ const ScrMem0003CreditTab = (props: {
                     name='temporaryCorporationCreditAmount'
                     readonly
                   />
-                  <FromTo label='有効期間'>
-                    <InputRowStack>
-                      <ColStack>
-                        <TextField name={'temporaryCreditStartDate'} readonly />
-                      </ColStack>
-                    </InputRowStack>
-                    <InputRowStack>
-                      <ColStack>
-                        <TextField name={'temporaryCreditEndDate'} readonly />
-                      </ColStack>
-                    </InputRowStack>
+                  <FromTo label='有効期間' size='m'>
+                    <TextField name={'temporaryCreditStartDate'} readonly />
+                    <TextField name={'temporaryCreditEndDate'} readonly />
                   </FromTo>
                   <TextField
                     label='設定日'

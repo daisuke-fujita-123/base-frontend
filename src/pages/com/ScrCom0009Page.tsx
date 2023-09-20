@@ -333,14 +333,12 @@ const ScrCom0009Page = () => {
       };
       const CodeManagementMasterResponse =
         await ScrCom9999GetCodeManagementMaster(CodeManagementMasterRequest);
-      CodeManagementMasterResponse.searchGetCodeManagementMasterListbox.map(
-        (x) => {
-          selectValues.systemKindSelectValues.push({
-            value: x.codeValue,
-            displayValue: x.codeName,
-          });
-        }
-      );
+      CodeManagementMasterResponse.list.map((x) => {
+        selectValues.systemKindSelectValues.push({
+          value: x.codeValue,
+          displayValue: x.codeName,
+        });
+      });
 
       setSelectValues({
         contractIdSelectValues: selectValues.contractIdSelectValues,

@@ -3,6 +3,7 @@ import { FormProvider } from 'react-hook-form';
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import ScrCom0032Popup, {
   columnList,
@@ -31,8 +32,6 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { memApiClient } from 'providers/ApiClient';
 import { AuthContext } from 'providers/AuthProvider';
-
-import yup from 'utils/validation/ValidationDefinition';
 
 interface CreditLimitInfoModel {
   // 法人ID
@@ -245,6 +244,8 @@ const ScrMem0003CreditLimitTab = (props: {
       );
       props.chengeScrMem0003Data(scrMem0003Data);
     };
+
+    if (corporationId === 'new') return;
 
     if (corporationId !== undefined && applicationId !== null) {
       historyInitialize(corporationId, applicationId);

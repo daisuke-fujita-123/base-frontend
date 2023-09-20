@@ -501,6 +501,8 @@ const ScrMem0003ChangeHistoryTab = () => {
       ]);
     };
 
+    if (corporationId === 'new') return;
+
     if (corporationId !== undefined) {
       initialize(corporationId);
       return;
