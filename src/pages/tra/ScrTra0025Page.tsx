@@ -170,7 +170,7 @@ interface debtListRowModel {
   // 出金メモ
   paymentMemo: string;
   // 出金FBデータ出力済フラグ
-  paymentFbDataOutputFlag: string;
+  paymentFbDataOutputFlag: boolean;
   // 出金元口座銀行名
   paymentSourcebankName: string;
   // 出金元口座支店名
@@ -196,7 +196,7 @@ const debtListRowInitialValues: debtListRowModel = {
   // 出金メモ
   paymentMemo: '',
   // 出金FBデータ出力済フラグ
-  paymentFbDataOutputFlag: '',
+  paymentFbDataOutputFlag: false,
   // 出金元口座銀行名
   paymentSourcebankName: '',
   // 出金元口座支店名
@@ -247,28 +247,6 @@ const totalAmountInitialValues: totalAmountModel = {
   ownTransactions: '',
   amortization: '',
 };
-
-// /** リスト */
-// const paymentDetailsListInitialValues: PaymentDetailsList[] = {
-//   // 出金明細番号
-//   paymentDetailsNumber: 0,
-//   // 会計処理日
-//   accountingDate: '',
-//   // 出金種別
-//   paymentKind: '',
-//   // 出金元口座
-//   paymentSourceAccountName: '',
-//   // 出金元口座ID
-//   paymentSourceAccountId: '',
-//   // 出金額
-//   paymentAmount: 0,
-//   // 出金メモ
-//   paymentMemo: '',
-// };
-
-//TODO:編集権限なしの場合
-//確定ボタン非活性
-//テーブル内非活性
 
 /**
  * 出金伝票情報表示モデル初期データ
@@ -326,7 +304,7 @@ const CodeManagementSelectValuesModel = (
 //グリッドの非活性制御用変数
 let initialDisplayFlg = 1;
 const accountingDateDisableFlg: number[] = [];
-const paymentKindDisableFlg: number[] = [];
+const paymentKindDisableFlg: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 const paymentAmountDisableFlg: number[] = [];
 const paymentMemoDisableFlg: number[] = [];
 
@@ -334,8 +312,8 @@ const paymentMemoDisableFlg: number[] = [];
  * SCR-TRA-0025 出金詳細画面
  */
 const ScrTra0025Page = () => {
-  //債務番号取得
-  //出金一覧からURIパラメータの債務番号を取得
+  // 債務番号取得
+  // 出金一覧からURIパラメータの債務番号を取得
   const { debtNum } = useParams<Params>();
   const debtNumber = String(debtNum);
   //const debtNumber = String(queryParams.get('debtNumber'));
@@ -343,10 +321,10 @@ const ScrTra0025Page = () => {
   //登録時メモ
   const [registrationChangeMemo, setRegistrationChangeMemo] =
     useState<string>('');
-  //登録内容確認ポップアップオープン用
+  // 登録内容確認ポップアップオープン用
   const [scrCom0032PopupIsOpen, setScrCom0032PopupIsOpen] =
     useState<boolean>(false);
-  //登録内容確認ポップアップオープン用
+  // 登録内容確認ポップアップオープン用
   const [scrCom0033PopupIsOpen, setScrCom0033PopupIsOpen] =
     useState<boolean>(false);
 
@@ -358,14 +336,16 @@ const ScrTra0025Page = () => {
   const [rowModel, setRowModel] = useState<debtListRowModel[]>([]);
   let editFlg = 0;
   let editCount = 0;
-  //ハンドルダイアログ用
+  // ハンドルダイアログ用
   const [handleDialog, setHandleDialog] = useState<boolean>(false);
   const [handleDialogError, setHandleDialogError] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
   const [titleError, setTitleError] = useState<string>('');
   const { getMessage } = useContext(MessageContext);
-  //ユーザー情報
+  // ユーザー情報
   const { user } = useContext(AuthContext);
+  // 業務日付取得
+  const taskDate = user.taskDate;
 
   // 債務一覧非活性設定
   const [debtListDisableFlg, setdebtlistDisableFlg] = useState<boolean>(true);
@@ -380,13 +360,13 @@ const ScrTra0025Page = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  //state
+  // state
   // 初期化、値設定（リストボックス）
   const [selectValues, setSelectValues] = useState<SelectValuesModel>(
     selectValuesInitialValues
   );
 
-  //テーブル定義
+  // テーブル定義
   const debtLists_columns: GridColDef[] = [
     {
       field: 'accountingDate',
@@ -424,9 +404,6 @@ const ScrTra0025Page = () => {
     return selectValues.claimClassificatioSelectValues;
   };
 
-  // state
-  //const { getValues, setValue, reset, trigger } = methods;
-
   // 初期化と値設定（出金伝票情報セクション）
   const [paymentDetailsDispValues, setPaymentDetailsDispValues] =
     useState<PaymentDetailsDispModel>(PaymentDetailsDispInitialValues);
@@ -442,7 +419,7 @@ const ScrTra0025Page = () => {
   );
 
   // 初期化と値設定（合計金額表示セクション）
-  //合計金額初期値
+  // 合計金額初期値
   let bankTransferTotal = 0;
   let offsetAmountTotal = 0;
   let withdrawPendingTotal = 0;
@@ -453,7 +430,7 @@ const ScrTra0025Page = () => {
   let amortizationTotal = 0;
 
   /**
-   * 出金一覧検索APIレスポンスから出金伝票表示モデルへの変換
+   * 出金伝票データ取得APIレスポンスから出金伝票表示モデルへの変換
    */
   const convertToPaymentDetailsDispModel = (
     model: ScrTra0025GetPaymentDetailsResponse
@@ -502,6 +479,7 @@ const ScrTra0025Page = () => {
     //context: { readonly: true },
   });
 
+  // TODO:アーキ対応後修正
   // const debtListRowMethods = useForm<debtListRowModel>({
   //   defaultValues: debtListRowInitialValues,
   //   //resolver: yupResolver(yup.object(debtListSchema)),
@@ -511,11 +489,12 @@ const ScrTra0025Page = () => {
   const { getValues, setValue, reset, trigger } = methods;
 
   // 初期表示時
-  // 出金詳細データ取得API / API-TRA-0025-0001
+  // 出金伝票データ取得APIリクエスト
   const param: ScrTra0025GetPaymentDetailsRequest = {
     // 債務番号
     debtNumber: debtNumber,
   };
+
   let userEditPermission = false;
   //ユーザーの画面編集権限確認
   if (-1 !== user.editPossibleScreenIdList.indexOf('SCR-TRA-0025')) {
@@ -528,29 +507,6 @@ const ScrTra0025Page = () => {
       const request = convertGetPaymentDetailsModel(param);
       // 出金伝票データ取得API呼び出し
       const response = await ScrTra0025GetPaymentDetails(request);
-
-      // 行データから"おまとめ"かつ出金種別が出金止相殺を削除
-      // if (response.claimClassification !== 'おまとめ') {
-      //   let i = 0;
-      //   response.paymentDetailsList.forEach((x) => {
-      //     //"6":出金止相殺
-      //     if (x.paymentKind === '6') {
-      //       response.paymentDetailsList.splice(i, 1);
-      //     }
-      //     i++;
-      //   });
-      //}
-      // 行データから自社IDフラグがfalseかつ出金種別が自社取引を削除
-      // if (response.ownCompanyFlag === false) {
-      //   let i = 0;
-      //   response.paymentDetailsList.forEach((x) => {
-      //     //"7":自社取引
-      //     if (x.paymentKind === '7') {
-      //       response.paymentDetailsList.splice(i, 1);
-      //     }
-      //     i++;
-      //   });
-      // }
 
       // 出金伝票情報表示セクション
       // 表示データ設定
@@ -633,7 +589,7 @@ const ScrTra0025Page = () => {
 
       // 債務一覧表示セクション
       /**
-       * 出金伝票検索APIレスポンスから出金明細一覧モデルへの変換
+       * 出金伝票データ取得APIレスポンスから出金明細一覧モデルへの変換
        */
 
       const convertToPaymentDetailsRowModel = (
@@ -686,7 +642,7 @@ const ScrTra0025Page = () => {
           paymentSourceAccountId: '',
           paymentAmount: '',
           paymentMemo: '',
-          paymentFbDataOutputFlag: '',
+          paymentFbDataOutputFlag: false,
           paymentSourcebankName: paymentDetailsDispValues.paymentSourcebankName,
           paymentSourcebranchName:
             paymentDetailsDispValues.paymentSourcebranchName,
@@ -805,8 +761,8 @@ const ScrTra0025Page = () => {
     initialDisplayFlg = 0;
     editFlg = 1;
 
-    //出金種別が銀行振込の場合、出金元口座銀行名 ＋出金元口座支店名を表示する。
-    //出金種別が銀行振込以外の場合、ブランクを表示する。
+    // 出金種別が銀行振込の場合、出金元口座銀行名 ＋出金元口座支店名を表示する。
+    // 出金種別が銀行振込以外の場合、ブランクを表示する。
     if (row.paymentKind == '1') {
       row.paymentSourceAccountName =
         row.paymentSourcebankName + row.paymentSourcebranchName;
@@ -900,7 +856,7 @@ const ScrTra0025Page = () => {
    * 確定ボタンクリック時のイベントハンドラ
    */
   const handleIconOutputConfirmClick = async () => {
-    //TODO:grid行のバリデーション最終確認処理は、アーキで未実装のためgrid部品に実装後に再度調整
+    // TODO:grid行のバリデーション最終確認処理は、アーキで未実装のためgrid部品に実装後に再度調整
     // await trigger();
     // if (false === methods.formState.isValid) {
     //   return;
@@ -926,7 +882,7 @@ const ScrTra0025Page = () => {
     // 2.会計処理日入力チェック
     // 会計処理日が入力されている場合、同一明細の出金種別・金額のいずれかが未入力の場合、エラー
     let errFlg = 0;
-    //行数分ループ
+    // 行数分ループ
     for (let index = 0; index < 10; index++) {
       if (
         debtList_rows[index].accountingDate !== '' &&
@@ -957,82 +913,31 @@ const ScrTra0025Page = () => {
 
     // 3.単項目チェック
     // 債務一覧セクションの項目に対して、単項目チェックを実施する。
-    //バリデーションチェックにて対応済み
+    // バリデーションチェックにて対応済み
 
-    errFlg = 0;
     // 4.債務金額差異チェック
     // 表示項目毎に合計金額を計算
-    // 合計金額初期値
-    let bankTransferTotal = 0;
-    let offsetAmountTotal = 0;
-    let withdrawPendingTotal = 0;
-    let billwithdrawTotal = 0;
-    let cashdeliveryTotal = 0;
-    let withdrawStopOffsetTotal = 0;
-    let ownTransactionsTotal = 0;
-    let amortizationTotal = 0;
+    let debtAmountTotal = 0;
+    debtAmountTotal += Number(removeComma(getValues('bankTransfer')));
+    debtAmountTotal += Number(removeComma(getValues('offsetAmount')));
+    debtAmountTotal += Number(removeComma(getValues('withdrawPending')));
+    debtAmountTotal += Number(removeComma(getValues('billwithdraw')));
+    debtAmountTotal += Number(removeComma(getValues('cashdelivery')));
+    debtAmountTotal += Number(removeComma(getValues('withdrawStopOffset')));
+    debtAmountTotal += Number(removeComma(getValues('ownTransactions')));
+    debtAmountTotal += Number(removeComma(getValues('amortization')));
 
+    //明細一覧の合計金額を計算
+    let listAmountTotal = 0;
     debtList_rows.forEach((x) => {
-      if (x.paymentKind === '1') {
-        bankTransferTotal += Number(removeComma(x.paymentAmount));
-      }
-      if (x.paymentKind === '2') {
-        offsetAmountTotal += Number(removeComma(x.paymentAmount));
-      }
-      if (x.paymentKind === '3') {
-        withdrawPendingTotal += Number(removeComma(x.paymentAmount));
-      }
-      if (x.paymentKind === '4') {
-        billwithdrawTotal += Number(removeComma(x.paymentAmount));
-      }
-      if (x.paymentKind === '5') {
-        cashdeliveryTotal += Number(removeComma(x.paymentAmount));
-      }
-      if (x.paymentKind === '6') {
-        withdrawStopOffsetTotal += Number(removeComma(x.paymentAmount));
-      }
-      if (x.paymentKind === '7') {
-        ownTransactionsTotal += Number(removeComma(x.paymentAmount));
-      }
-      if (x.paymentKind === '8') {
-        amortizationTotal += Number(removeComma(x.paymentAmount));
+      if (Number.isNaN(Number(removeComma(x.paymentAmount))) === false) {
+        listAmountTotal += Number(removeComma(x.paymentAmount));
       }
     });
 
-    if (bankTransferTotal !== Number(removeComma(getValues('bankTransfer')))) {
-      errFlg = 1;
-    }
-    if (offsetAmountTotal !== Number(removeComma(getValues('offsetAmount')))) {
-      errFlg = 1;
-    }
-    if (
-      withdrawPendingTotal !== Number(removeComma(getValues('withdrawPending')))
-    ) {
-      errFlg = 1;
-    }
-    if (billwithdrawTotal !== Number(removeComma(getValues('billwithdraw')))) {
-      errFlg = 1;
-    }
-    if (cashdeliveryTotal !== Number(removeComma(getValues('cashdelivery')))) {
-      errFlg = 1;
-    }
-    if (
-      withdrawStopOffsetTotal !==
-      Number(removeComma(getValues('withdrawStopOffset')))
-    ) {
-      errFlg = 1;
-    }
-    if (
-      ownTransactionsTotal !== Number(removeComma(getValues('ownTransactions')))
-    ) {
-      errFlg = 1;
-    }
-    if (amortizationTotal !== Number(removeComma(getValues('amortization')))) {
-      errFlg = 1;
-    }
-
-    // ダイアログを表示して、確認ボタン後、画面へ戻る
-    if (errFlg === 1) {
+    // 出金伝票セクションの債務金額と債務一覧の合計金額に差異があった場合エラー
+    if (debtAmountTotal !== listAmountTotal) {
+      // ダイアログを表示して、確認ボタン後、画面へ戻る
       const messege = Format(getMessage('MSG-FR-ERR-00042'), []);
       setTitleError(messege);
       setHandleDialogError(true);
@@ -1046,15 +951,19 @@ const ScrTra0025Page = () => {
     let zeroCount = 0;
     let inputCheckFlg = 0;
     const removeDuplicates = new Set();
-    //removeDuplicates.add('0');
+
     //行数分ループ
     for (let index = 0; index < 10; index++) {
-      if (debtList_rows[index].paymentKind !== '0') {
+      // 入力行が活性、かつ出金種別が選択済の出金種別の重複をチェック
+      if (
+        paymentKindDisableFlg[index + 1] === 0 &&
+        debtList_rows[index].paymentKind !== '0'
+      ) {
         removeDuplicates.add(debtList_rows[index].paymentKind);
       } else {
         zeroCount++;
       }
-      //6：出金止相殺、または、7：自社取引の明細がある場合、出金種別チェック対象とする。
+      // 6：出金止相殺、または、7：自社取引の明細がある場合、出金種別チェック対象とする。
       if (
         debtList_rows[index].paymentKind === '6' ||
         debtList_rows[index].paymentKind === '7'
@@ -1062,7 +971,7 @@ const ScrTra0025Page = () => {
         inputCheckFlg = 1;
       }
     }
-    //重複件数があった場合エラー
+    // 重複件数があった場合エラー
     if (10 > zeroCount + removeDuplicates.size) {
       errFlg = 1;
     }
@@ -1081,14 +990,14 @@ const ScrTra0025Page = () => {
 
     // 6.会計処理日チェック
     errFlg = 0;
-    //行数分ループ
+    // 行数分ループ
     for (let index = 0; index < 10; index++) {
-      //会計処理日が入力されている場合、
-      //出金種別が1：銀行振込、会計処理日が過去日の場合エラー
+      // 会計処理日が入力されている場合、
+      // 出金種別が1：銀行振込、会計処理日が過去日の場合エラー
       if (
         debtList_rows[index].accountingDate !== '' &&
         debtList_rows[index].paymentKind === '1' &&
-        debtList_rows[index].accountingDate < today
+        debtList_rows[index].accountingDate < taskDate
       ) {
         errFlg = 1;
       }
@@ -1102,17 +1011,7 @@ const ScrTra0025Page = () => {
     }
 
     // 出金伝票詳細入力チェックAPIリクエスト項目作成
-    // 現在時刻でtimestampの作成
-    const now = new Date();
-    const changeTimestamp = `${now.getFullYear()}/${String(
-      now.getMonth() + 1
-    ).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')} ${String(
-      now.getHours()
-    ).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(
-      now.getSeconds()
-    ).padStart(2, '0')}`;
-
-    //行データ整理
+    // 行データ整理
     const paymentDetailsListreq: PaymentDetailsListreq[] = debtList_rows.map(
       (x) => ({
         paymentDetailsNumber: x.paymentDetailsNumber,
@@ -1125,15 +1024,15 @@ const ScrTra0025Page = () => {
       })
     );
 
-    //行データから"日付が未入力の行を除外する
-    //行数分ループ
+    // 行データから"日付が未入力の行を除外する
+    // 行数分ループ
     for (let index = 9; index > 0; index--) {
       if (paymentDetailsListreq[index].accountingDate === '') {
         paymentDetailsListreq.splice(index, 1);
       }
     }
-    //const toIndex = Object.keys(paymentDetailsListreq).length;
-    //明細番号振り直し
+
+    // 明細番号振り直し
 
     for (
       let index = 0;
@@ -1143,29 +1042,28 @@ const ScrTra0025Page = () => {
       paymentDetailsListreq[index].paymentDetailsNumber = index + 1;
     }
 
-    //request項目セット
+    // request項目セット
     const request: ScrTra0025CheckPaymentRequest = {
       debtNumber: debtNumber,
       paymentNumber: paymentDetailsDispValues.paymentNumber,
       paymentDetailsList: paymentDetailsListreq,
-      changeTimestamp: changeTimestamp,
+      changeTimestamp: paymentDetailsDispValues.changeTimestamp,
     };
 
-    //登録処理用にセッションストレージにリクエスト情報保存
+    // 登録処理用にセッションストレージにリクエスト情報保存
     sessionStorage.setItem(
       'history_paymentDetailsListreq',
       JSON.stringify(paymentDetailsListreq)
     );
-    sessionStorage.setItem('history_changeTimestamp', changeTimestamp);
+    sessionStorage.setItem(
+      'history_changeTimestamp',
+      paymentDetailsDispValues.changeTimestamp
+    );
 
     // 出金伝票詳細入力チェックAPI呼び出し
     const response = await ScrTra0025CheckPayment(request);
 
-    // const messege = 'apiチェック';
-    // setTitleError(messege);
-    // setHandleDialogError(true);
-
-    //出金一覧検索APIレスポンスからワーニングリストモデルへの変換
+    // 出金伝票詳細入力チェックAPIレスポンスからワーニングリストモデルへの変換
     const convertToWarningResult = (response: WarnList[]): warningList[] => {
       return response.map((x) => {
         return {
@@ -1174,7 +1072,7 @@ const ScrTra0025Page = () => {
         };
       });
     };
-    //登録内容確認ポップアップ呼び出し前の準備
+    // 登録内容確認ポップアップ呼び出し前の準備
     const convertWarn = convertToWarningResult(response.warnList);
     setWarningResult(convertWarn);
     setErrorResult(response.errorList);
@@ -1216,24 +1114,23 @@ const ScrTra0025Page = () => {
   /**
    * 登録内容確認ポップアップ確定クリック時のイベントハンドラ
    */
-
   const scrCom0033handleConfirm = async () => {
     // request項目設定
-    //セッションストレージから出金番号、変更タイムスタンプリスト取得
-    //出金番号リストはJson型で保存していた値を配列に変換
+    // セッションストレージから出金番号、変更タイムスタンプリスト取得
+    // 出金番号リストはJson型で保存していた値を配列に変換
     const request: ScrTra0025registrationPaymentRequest = {
       debtNumber: debtNumber,
       paymentNumber: paymentDetailsDispValues.paymentNumber,
-      //出金明細一覧
+      // 出金明細一覧
       paymentDetailsList: JSON.parse(
         sessionStorage.getItem('history_paymentDetailsListreq') || ''
       ),
       changeTimestamp: sessionStorage.getItem('history_changeTimestamp'),
     };
 
-    //登録内容申請ポップアップクローズ
+    // 登録内容申請ポップアップクローズ
     setScrCom0033PopupIsOpen(false);
-    //出金申請登録API呼び出し
+    // 出金伝票明細登録API呼び出し
     await ScrTra0025registrationpayment(request);
   };
 
@@ -1255,27 +1152,27 @@ const ScrTra0025Page = () => {
     setScrCom0033PopupIsOpen(true);
   };
 
-  //カンマ除去関数
+  // カンマ除去関数
   const removeComma = (number: string) => {
     const removed = number.replace(/,/g, '');
     return parseInt(removed, 10);
   };
 
-  //確定ボタン後のダイアログ処理エラーメッセージ後
+  // 確定ボタン後のダイアログ処理エラーメッセージ後
   const handleDialogConfirmError = () => {
-    //ダイアログを閉じる
+    // ダイアログを閉じる
     setHandleDialogError(false);
   };
 
   //編集項目破棄確認OKの場合
   const handleDialogConfirm = () => {
-    //出金一覧画面へ戻る
+    // 出金一覧画面へ戻る
     navigate('/tra/payments');
   };
 
   //編集項目破棄確認キャンセルの場合
   const handleDialogCancel = () => {
-    //ダイアログを閉じる
+    // ダイアログを閉じる
     setHandleDialog(false);
   };
 
@@ -1322,8 +1219,8 @@ const ScrTra0025Page = () => {
 
     // 初期表示時の非活性状態保存
     if (initialDisplayFlg === 1) {
-      //会計処理日の活性、非活性設定
-      //出金種別が相殺金額または最初から自社取引で設定済の場合
+      // 会計処理日の活性、非活性設定
+      // 出金種別が相殺金額または最初から自社取引で設定済の場合
       if (params.field === 'accountingDate' && params.row.paymentKind === '2') {
         accountingDateDisableFlg[params.id] = 1;
         return true;
@@ -1373,8 +1270,8 @@ const ScrTra0025Page = () => {
         return true;
       }
 
-      //出金種別の活性、非活性設定
-      //出金種別が相殺金額、償却または最初から自社取引で設定済の場合
+      // 出金種別の活性、非活性設定
+      // 出金種別が相殺金額、償却または最初から自社取引で設定済の場合
       if (params.field === 'paymentKind' && params.row.paymentKind === '2') {
         paymentKindDisableFlg[params.id] = 1;
         return true;
@@ -1428,8 +1325,8 @@ const ScrTra0025Page = () => {
         return true;
       }
 
-      //金額の活性、非活性設定
-      //出金種別が相殺金額、償却または最初から自社取引で設定済の場合
+      // 金額の活性、非活性設定
+      // 出金種別が相殺金額、償却または最初から自社取引で設定済の場合
       if (params.field === 'paymentAmount' && params.row.paymentKind === '2') {
         paymentAmountDisableFlg[params.id] = 1;
         return true;
@@ -1479,8 +1376,8 @@ const ScrTra0025Page = () => {
         return true;
       }
 
-      //メモの活性、非活性設定
-      //メモが相殺金額、償却または最初から自社取引で設定済の場合
+      // メモの活性、非活性設定
+      // 出金種別が相殺金額、償却または最初から自社取引で設定済の場合
       if (params.field === 'paymentMemo' && params.row.paymentKind === '2') {
         paymentMemoDisableFlg[params.id] = 1;
         return true;

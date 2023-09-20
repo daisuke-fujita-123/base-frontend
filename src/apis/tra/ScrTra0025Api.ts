@@ -1,12 +1,12 @@
 import { traApiClient } from 'providers/ApiClient';
 
-/** 出金一覧検索APIリクエスト */
+/** 出金伝票データ取得APIリクエスト */
 export interface ScrTra0025GetPaymentDetailsRequest {
   // 債務番号
   debtNumber: string;
 }
 
-/** 出金一覧検索APIレスポンス */
+/** 出金伝票データ取得APIレスポンス */
 export interface ScrTra0025GetPaymentDetailsResponse {
   // 法人ID
   corporationId: string;
@@ -54,7 +54,7 @@ export interface ScrTra0025GetPaymentDetailsResponse {
   changeTimestamp: string;
 }
 
-/** リスト */
+/** 出金伝票データ取得用リスト */
 export interface PaymentDetailsList {
   // 出金明細番号
   paymentDetailsNumber: number;
@@ -71,10 +71,10 @@ export interface PaymentDetailsList {
   // 出金メモ
   paymentMemo: string;
   // 出金FBデータ出力済フラグ
-  paymentFbDataOutputFlag: string;
+  paymentFbDataOutputFlag: boolean;
 }
 
-/** 出金伝票検索API api/tra/scr-tra-0025/get-payment-details */
+/** 出金伝票データ取得API api/tra/scr-tra-0025/get-payment-details */
 export const ScrTra0025GetPaymentDetails = async (
   request: ScrTra0025GetPaymentDetailsRequest
 ): Promise<ScrTra0025GetPaymentDetailsResponse> => {
@@ -150,7 +150,7 @@ export const ScrTra0025CheckPayment = async (
   return response.data;
 };
 
-/** 出金伝票詳細登録APIリクエスト */
+/** 出金伝票明細登録APIリクエスト */
 export interface ScrTra0025registrationPaymentRequest {
   // 債務番号
   debtNumber: string;
@@ -162,7 +162,7 @@ export interface ScrTra0025registrationPaymentRequest {
   changeTimestamp: string | null;
 }
 
-/** 出金伝票詳細登録用リスト */
+/** 出金伝票明細登録用リスト */
 export interface registrationPymentDetailsListreq {
   // 出金明細番号
   paymentDetailsNumber: number;
@@ -180,7 +180,7 @@ export interface registrationPymentDetailsListreq {
   paymentMemo: string;
 }
 
-/** 出金伝票詳細登録API /api/tra/scr-tra-0025/registration-payment-details */
+/** 出金伝票明細登録API /api/tra/scr-tra-0025/registration-payment-details */
 export const ScrTra0025registrationpayment = async (
   request: ScrTra0025registrationPaymentRequest
 ) => {
