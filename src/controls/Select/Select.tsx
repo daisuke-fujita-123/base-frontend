@@ -20,6 +20,7 @@ import {
   Box,
   FormControl,
   FormHelperText,
+  ListSubheader,
   Select as SelectMui,
   styled,
 } from '@mui/material';
@@ -171,13 +172,13 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
             >
               {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
               {
-                <StyledMenuItem value=''>
+                <ListSubheader value=''>
                   <StyledTextFiled
                     onChange={(e) => handleChange(e.target.value)}
                     onCompositionStart={() => setIsType(true)}
                     onCompositionEnd={() => setIsType(false)}
                   ></StyledTextFiled>
-                </StyledMenuItem>
+                </ListSubheader>
               }
               {filteringVal.map((option, index) => (
                 <StyledMenuItem key={index} value={option.value}>
