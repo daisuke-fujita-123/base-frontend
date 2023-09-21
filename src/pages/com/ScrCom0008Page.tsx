@@ -22,14 +22,14 @@ import {
   ScrCom0008GetReportCommentCurrentRequest,
   ScrCom0008RegistUpdateReportComment,
   ScrCom0008RegistUpdateReportCommentRequest,
+  ScrCom9999GetHistoryInfo,
+  ScrCom9999GetHistoryInfoRequest,
+  ScrCom9999GetHistoryInfoResponse,
 } from 'apis/com/ScrCom0008Api';
 import {
   ChangeExpectDateInfo,
   ScrCom9999GetChangeDate,
   ScrCom9999GetChangeDateRequest,
-  ScrCom9999GetHistoryInfo,
-  ScrCom9999GetHistoryInfoRequest,
-  ScrCom9999GetHistoryInfoResponse,
 } from 'apis/com/ScrCom9999Api';
 import {
   ScrDoc9999CreateReportImageDoc,
@@ -45,18 +45,16 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
-import ChangeHistoryDateCheckUtil from 'utils/ChangeHistoryDateCheckUtil';
-
-import { useGridApiRef } from '@mui/x-data-grid-pro';
 import ScrCom0032Popup, {
-  registrationChangeList,
+  columnList,
   ScrCom0032PopupModel,
+  sectionList,
 } from './popups/ScrCom0032Popup';
 
 /*
  * useForm データモデル
  */
-interface CorporationBasicModel {
+interface reportBasicModel {
   // 帳票コメント1
   reportComment1: string;
   // 帳票コメント2
@@ -88,9 +86,7 @@ interface CorporationBasicModel {
   // 帳票コメント15
   reportComment15: string;
   // 変更履歴番号
-  changeHistoryNumber: string | null;
-  // 変更履歴番号+変更予定日
-  memberChangeHistories: any[];
+  changeHistoryNumber: string;
   // 変更予定日
   changeExpectedDate: string;
 }
@@ -98,7 +94,7 @@ interface CorporationBasicModel {
 /*
  * useForm データモデル 初期値
  */
-const initialValues: CorporationBasicModel = {
+const initialValues: reportBasicModel = {
   reportComment1: '',
   reportComment2: '',
   reportComment3: '',
@@ -116,7 +112,6 @@ const initialValues: CorporationBasicModel = {
   reportComment15: '',
   changeHistoryNumber: '',
   changeExpectedDate: '',
-  memberChangeHistories: [],
 };
 
 /**
@@ -125,24 +120,7 @@ const initialValues: CorporationBasicModel = {
 const popupInitialValues: ScrCom0032PopupModel = {
   errorList: [],
   warningList: [],
-  registrationChangeList: [
-    {
-      screenId: '',
-      screenName: '',
-      tabId: 0,
-      tabName: '',
-      sectionList: [
-        {
-          sectionName: '',
-          columnList: [
-            {
-              columnName: '',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+  registrationChangeList: [],
   changeExpectDate: '',
 };
 
@@ -191,28 +169,22 @@ const ScrCom0008Page = () => {
   const [getReportName, setGetReportName] = useState<string>('');
   // 帳票コメント情報取得APIにて取得した コメント最大行数
   const [getCommentRow, setGetCommentRow] = useState<number>(0);
-  // 帳票コメント情報取得APIにて取得した コメント1行最大文字数
-  const [getCommentLine, setGetCommentLine] = useState<number>(0);
   // 帳票コメント情報取得APIにて取得した ポップアップコメント最大行数
   const [getPopupCommentRow, setGetPopupCommentRow] = useState<number>(0);
-  // 帳票コメント情報取得APIにて取得した 変更タイムスタンプ
-  const [getChangeTimestamp, setGetChangeTimestamp] = useState<string>('');
+  // 帳票コメント情報取得APIにて取得した コメント1行最大文字数
+  const [getCommentLine, setGetCommentLine] = useState<number>(0);
   // 帳票コメント情報取得APIにて取得した システム種別
   const [getSystemKind, setGetSystemKind] = useState<string>('');
   // 複数行の帳票コメントをつなげて1つの状態として管理する
   const [reportComment, setReportComment] = useState<string>('');
-  const [isChangeHistoryBtn, setIsChangeHistoryBtn] = useState<boolean>(false);
-  const [changeHistoryDateCheckisOpen, setChangeHistoryDateCheckisOpen] =
-    useState<boolean>(false);
   // 可変バリデーション用の帳票コメント
   const [reportCommentLengthForVal, setReportCommentLengthForVal] =
     useState<number>(70);
 
-  // セクション横幅調整用
-  const apiRef = useGridApiRef();
-
   // user情報
   const { user } = useContext(AuthContext);
+  // 権限フラグ true => 編集権限
+  const readonly = user.editPossibleScreenIdList.includes(SCR_COM_0008);
 
   /**
    * バリデーションスキーマをAPIにて取得した"コメント1行最大文字数"に応じて動的に設定
@@ -220,15 +192,15 @@ const ScrCom0008Page = () => {
   const validationSchema = {
     reportComment1: yup
       .string()
-      .label('帳票コメント１行目')
+      .label('帳票コメント1行目')
       .max(reportCommentLengthForVal),
     reportComment2: yup
       .string()
-      .label('帳票コメント２行目')
+      .label('帳票コメント2行目')
       .max(reportCommentLengthForVal),
     reportComment3: yup
       .string()
-      .label('帳票コメント３行目')
+      .label('帳票コメント3行目')
       .max(reportCommentLengthForVal),
     reportComment4: yup
       .string()
@@ -236,57 +208,58 @@ const ScrCom0008Page = () => {
       .max(reportCommentLengthForVal),
     reportComment5: yup
       .string()
-      .label('帳票コメント５行目')
+      .label('帳票コメント5行目')
       .max(reportCommentLengthForVal),
     reportComment6: yup
       .string()
-      .label('帳票コメント６行目')
+      .label('帳票コメント6行目')
       .max(reportCommentLengthForVal),
     reportComment7: yup
       .string()
-      .label('帳票コメント７行目')
+      .label('帳票コメン7行目')
       .max(reportCommentLengthForVal),
     reportComment8: yup
       .string()
-      .label('帳票コメント８行目')
+      .label('帳票コメント8行目')
       .max(reportCommentLengthForVal),
     reportComment9: yup
       .string()
-      .label('帳票コメント９行目')
+      .label('帳票コメント9行目')
       .max(reportCommentLengthForVal),
     reportComment10: yup
       .string()
-      .label('帳票コメント１０行目')
+      .label('帳票コメント10行目')
       .max(reportCommentLengthForVal),
     reportComment111: yup
       .string()
-      .label('帳票コメント１１行目')
+      .label('帳票コメント11行目')
       .max(reportCommentLengthForVal),
     reportComment12: yup
       .string()
-      .label('帳票コメント１２行目')
+      .label('帳票コメント12行目')
       .max(reportCommentLengthForVal),
     reportComment13: yup
       .string()
-      .label('帳票コメント１３行目')
+      .label('帳票コメント13行目')
       .max(reportCommentLengthForVal),
     reportComment14: yup
       .string()
-      .label('帳票コメント１４行目')
+      .label('帳票コメント14行目')
       .max(reportCommentLengthForVal),
     reportComment15: yup
       .string()
-      .label('帳票コメント１５行目')
+      .label('帳票コメント15行目')
       .max(reportCommentLengthForVal),
+    changeExpectedDate: yup.date().label('変更予定日'),
   };
 
   // form
-  const methods = useForm<CorporationBasicModel>({
+  const methods = useForm<reportBasicModel>({
     defaultValues: initialValues,
     resolver: yupResolver(yup.object(validationSchema)),
   });
   const {
-    formState: { dirtyFields, errors },
+    formState: { dirtyFields },
     setValue,
     getValues,
     reset,
@@ -315,15 +288,14 @@ const ScrCom0008Page = () => {
       setGetReportId(getCommissionDisplayResponse.reportId);
       setGetReportName(getCommissionDisplayResponse.reportName);
       setGetCommentRow(getCommissionDisplayResponse.commentRow);
+      setGetPopupCommentRow(getCommissionDisplayResponse.popupCommentRow);
       setGetCommentLine(getCommissionDisplayResponse.commentLine);
-      setGetChangeTimestamp(getCommissionDisplayResponse.changeTimestamp);
       setGetSystemKind(getCommissionDisplayResponse.systemKind);
 
       // 改行コードでつながっている帳票コメントを改行コード毎に行単位に分割してコメント行に初期設定する
       const comments: string[] =
         getCommissionDisplayResponse.reportComment.split(/\n/);
       comments.forEach((comment, i) => {
-        setGetPopupCommentRow(getCommissionDisplayResponse.popupCommentRow);
         if (i === 0) {
           setValue(`reportComment1`, comment);
         } else if (i === 1) {
@@ -363,6 +335,7 @@ const ScrCom0008Page = () => {
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: SCR_COM_0008,
+        tabId: 0,
         masterId: reportId,
         businessDate: user.taskDate,
       };
@@ -386,30 +359,37 @@ const ScrCom0008Page = () => {
 
       // SCR-COM-9999-0025: 変更履歴情報取得API
       const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
-        changeHistoryNumber: changeHistoryNumber,
+        changeHistoryNumber: applicationId,
       };
       const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
         getHistoryInfoRequest
       );
 
+      // 帳票コメント以外のデータを設定
+      setGetReportId(getHistoryInfoResponse.reportId);
+      setGetReportName(getHistoryInfoResponse.reportName);
+      setGetCommentRow(getHistoryInfoResponse.commentRow);
+      setGetPopupCommentRow(getHistoryInfoResponse.popupCommentRow);
+      setGetCommentLine(getHistoryInfoResponse.commentLine);
+      setGetSystemKind(getHistoryInfoResponse.systemKind);
+
+      // 変更履歴から受け取った帳票コメントを変換
       const historyInfo = convertToHistoryInfo(
         getHistoryInfoResponse,
-        changeHistoryNumber
+        applicationId
       );
 
-      // 画面にデータを設定
+      // 帳票コメントに値を設定
       reset(historyInfo);
     };
-
-    // 現在情報表示の初期化処理
-    if (reportId !== null && reportId !== undefined) {
-      initializeCurrent(reportId);
-    }
 
     // 履歴表示の初期化処理
     const changeHistoryNumber = searchParams.get('change-history-number');
     if (changeHistoryNumber !== undefined && changeHistoryNumber !== null) {
       initializeHistory(changeHistoryNumber);
+    } else if (reportId !== null && reportId !== undefined) {
+      // 現在情報表示の初期化処理
+      initializeCurrent(reportId);
     }
   }, []);
 
@@ -419,87 +399,118 @@ const ScrCom0008Page = () => {
   const handleSwichDisplay = async () => {
     if (!reportId) return;
 
-    const changeHistoryNumber: any = searchParams.get('change-history-number');
-
-    // SCR-COM-9999-0025: 変更履歴情報取得API
-    const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
-      changeHistoryNumber: changeHistoryNumber,
+    // API-COM-0008-0025: 変更履歴情報取得API
+    const getHistoryInfoRequest = {
+      changeHistoryNumber: getValues('changeHistoryNumber'),
     };
     const getHistoryInfoResponse = await ScrCom9999GetHistoryInfo(
       getHistoryInfoRequest
     );
 
+    // 画面の帳票コメント以外のデータを設定
+    setGetReportId(getHistoryInfoResponse.reportId);
+    setGetReportName(getHistoryInfoResponse.reportName);
+    setGetCommentRow(getHistoryInfoResponse.commentRow);
+    setGetPopupCommentRow(getHistoryInfoResponse.popupCommentRow);
+    setGetCommentLine(getHistoryInfoResponse.commentLine);
+    setGetSystemKind(getHistoryInfoResponse.systemKind);
+
+    // 変更履歴から受け取った帳票コメントを変換
     const historyInfo = convertToHistoryInfo(
       getHistoryInfoResponse,
-      changeHistoryNumber
+      getValues('changeHistoryNumber')
     );
 
-    // 画面にデータを設定
+    // 画面の帳票コメントに値を設定
     reset(historyInfo);
-    setIsChangeHistoryBtn(true);
   };
 
   /**
-   * 確定ボタンクリック時のイベントハンドラ
-   */
-  const onClickConfirm = () => {
-    console.log(user.taskDate);
-    if (Object.keys(errors).length) return;
-    // 反映予定日整合性チェック
-    setChangeHistoryDateCheckisOpen(true);
-  };
-
-  /**
-   *  確定ボタンクリック時（反映予定日整合性チェック後）のイベントハンドラ
+   *  確定ボタンクリック時のイベントハンドラ
    */
   const handleConfirm = () => {
-    setChangeHistoryDateCheckisOpen(false);
-
     // 登録更新の結果を登録確認ポップアップへ渡す
     setIsOpenPopup(true);
     setScrCom0032PopupData({
       errorList: [],
       warningList: [],
-      // 階層が違うため変換のメソッドにて形式を変換して設定
-      registrationChangeList: convertToRegistrationChangeList(dirtyFields),
-      changeExpectDate: getValues('changeHistoryNumber'),
+      registrationChangeList: [
+        {
+          screenId: SCR_COM_0008,
+          screenName: '帳票コメント',
+          tabId: 0,
+          tabName: '',
+          sectionList: convertToSectionList(dirtyFields),
+        },
+      ],
+      changeExpectDate: user.taskDate,
     });
   };
 
   /**
+   * セクション構造定義
+   */
+  const sectionDef = [
+    {
+      section: '帳票情報',
+      fields: [
+        'reportComment1',
+        'reportComment2',
+        'reportComment3',
+        'reportComment4',
+        'reportComment5',
+        'reportComment6',
+        'reportComment7',
+        'reportComment8',
+        'reportComment9',
+        'reportComment10',
+        'reportComment11',
+        'reportComment12',
+        'reportComment13',
+        'reportComment14',
+        'reportComment15',
+      ],
+      name: [
+        '帳票コメント1行目',
+        '帳票コメント2行目',
+        '帳票コメント3行目',
+        '帳票コメント4行目',
+        '帳票コメント5行目',
+        '帳票コメント6行目',
+        '帳票コメント7行目',
+        '帳票コメント8行目',
+        '帳票コメント9行目',
+        '帳票コメント10行目',
+        '帳票コメント11行目',
+        '帳票コメント12行目',
+        '帳票コメント13行目',
+        '帳票コメント14行目',
+        '帳票コメント15行目',
+      ],
+    },
+  ];
+
+  /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToRegistrationChangeList = (
-    dirtyFields: object
-  ): registrationChangeList[] => {
-    // 変更を検知するフィールドのキー名リスト
+  const convertToSectionList = (dirtyFields: object): sectionList[] => {
     const fields = Object.keys(dirtyFields);
-    // 返却する変更リスト
-    const registrationChangeList: registrationChangeList[] = [];
-    // 一時カラムリスト
-    const tempColumnList: { columnName: string }[] = [];
-
-    // 変更したキー名をカラムリストに設定
-    fields.forEach((f) => {
-      tempColumnList.push({
-        columnName: f,
+    const sectionList: sectionList[] = [];
+    sectionDef.forEach((d, i) => {
+      const columnList: columnList[] = [];
+      fields.forEach((f) => {
+        if (d.fields.includes(f)) {
+          columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
+        }
       });
+      if (columnList.length > 0) {
+        sectionList.push({
+          sectionName: d.section,
+          columnList: columnList,
+        });
+      }
     });
-
-    // 変更リストとして値を設定して返却
-    registrationChangeList.push({
-      screenId: SCR_COM_0008,
-      screenName: '帳票コメント',
-      tabId: 0,
-      tabName: '',
-      sectionList: [
-        {
-          sectionName: '',
-          columnList: tempColumnList,
-        },
-      ],
-    });
-    return registrationChangeList;
+    return sectionList;
   };
 
   /**
@@ -521,26 +532,29 @@ const ScrCom0008Page = () => {
    */
   const convertToHistoryInfo = (
     getHistoryInfoResponse: ScrCom9999GetHistoryInfoResponse,
-    changeHistoryNumber: string | null
-  ): CorporationBasicModel => {
+    changeHistoryNumber: string
+  ): reportBasicModel => {
+    // 改行コードでつながっている帳票コメントを改行コード毎に行単位に分割してコメント行に初期設定する
+    const comments: string[] = getHistoryInfoResponse.reportComment.split(/\n/);
+
+    // 帳票コメントに値を設定
     return {
-      reportComment1: '',
-      reportComment2: '',
-      reportComment3: '',
-      reportComment4: '',
-      reportComment5: '',
-      reportComment6: '',
-      reportComment7: '',
-      reportComment8: '',
-      reportComment9: '',
-      reportComment10: '',
-      reportComment11: '',
-      reportComment12: '',
-      reportComment13: '',
-      reportComment14: '',
-      reportComment15: '',
+      reportComment1: comments[0] !== null ? comments[0] : '',
+      reportComment2: comments[1] !== null ? comments[1] : '',
+      reportComment3: comments[2] !== null ? comments[2] : '',
+      reportComment4: comments[3] !== null ? comments[3] : '',
+      reportComment5: comments[4] !== null ? comments[4] : '',
+      reportComment6: comments[5] !== null ? comments[5] : '',
+      reportComment7: comments[6] !== null ? comments[6] : '',
+      reportComment8: comments[7] !== null ? comments[7] : '',
+      reportComment9: comments[8] !== null ? comments[8] : '',
+      reportComment10: comments[9] !== null ? comments[9] : '',
+      reportComment11: comments[10] !== null ? comments[10] : '',
+      reportComment12: comments[11] !== null ? comments[11] : '',
+      reportComment13: comments[12] !== null ? comments[12] : '',
+      reportComment14: comments[13] !== null ? comments[13] : '',
+      reportComment15: comments[14] !== null ? comments[14] : '',
       changeHistoryNumber: changeHistoryNumber,
-      memberChangeHistories: [],
       changeExpectedDate: '',
     };
   };
@@ -606,7 +620,6 @@ const ScrCom0008Page = () => {
    */
   const handleRegistConfirm = (registrationChangeMemo: string) => {
     setIsOpenPopup(false);
-    setIsChangeHistoryBtn(false);
 
     // 動的に取得したコメント行数文のコメントを取得
     const commentRowList: string[] = [];
@@ -755,6 +768,16 @@ const ScrCom0008Page = () => {
       {
         /** 帳票ID */
         reportId: reportId !== undefined ? reportId : '',
+        /** システム種別 */
+        systemKind: getSystemKind,
+        /** 帳票名 */
+        reportName: getReportName,
+        /** コメント最大行数 */
+        commentRow: getCommentRow,
+        /** ポップアップコメント最大行数 */
+        popupCommentRow: getPopupCommentRow,
+        /** コメント１行最大文字数 */
+        commentLine: getCommentLine,
         /** 帳票コメント */
         // 改行コードでつなげた一つの文字列として帳票コメントを送る
         reportComment: reportComment,
@@ -788,7 +811,7 @@ const ScrCom0008Page = () => {
           name={`reportComment${i}`}
           key={`reportComment${i}`}
           size='l'
-          disabled={historyFlag ? true : false}
+          disabled={historyFlag || !readonly ? true : false}
         />
       );
       // 最大15個のコメント列にするように制御
@@ -866,9 +889,11 @@ const ScrCom0008Page = () => {
                   name='changeHistoryNumber'
                   selectValues={selectValues.changeReservationInfoSelectValues}
                   disabled={
-                    selectValues.changeReservationInfoSelectValues.length >= 1
-                      ? false
-                      : true
+                    selectValues.changeReservationInfoSelectValues.length < 1 ||
+                    historyFlag ||
+                    !readonly
+                      ? true
+                      : false
                   }
                   blankOption
                 />
@@ -876,16 +901,22 @@ const ScrCom0008Page = () => {
                 <PrimaryButton
                   onClick={handleSwichDisplay}
                   disable={
-                    selectValues.changeReservationInfoSelectValues.length >= 1
-                      ? false
-                      : true
+                    selectValues.changeReservationInfoSelectValues.length < 1 ||
+                    historyFlag ||
+                    !readonly
+                      ? true
+                      : false
                   }
                 >
                   表示切替
                 </PrimaryButton>
               </Stack>
               <MarginBox mb={6}>
-                <DatePicker label='変更予定日' name='changeHistoryDate' />
+                <DatePicker
+                  label='変更予定日'
+                  name='changeExpectedDate'
+                  disabled={!readonly}
+                />
               </MarginBox>
             </RightElementStack>
           </FormProvider>
@@ -895,30 +926,28 @@ const ScrCom0008Page = () => {
         <MainLayout bottom>
           <Stack direction='row' alignItems='center'>
             <CancelButton onClick={handleCancel}>キャンセル</CancelButton>
-            <ConfirmButton onClick={onClickConfirm}>確定</ConfirmButton>
+            {/* 参照権限か履歴表示の場合非活性 */}
+            <ConfirmButton
+              onClick={handleConfirm}
+              disable={historyFlag || !readonly}
+            >
+              確定
+            </ConfirmButton>
           </Stack>
         </MainLayout>
       </MainLayout>
 
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        // 本機能ではこちらを使用
-        handleRegistConfirm={handleRegistConfirm}
-        handleApprovalConfirm={handleApprovalConfirm}
-        handleCancel={handlePopupCancel}
-      />
-
-      {/* 反映予定日整合性チェック */}
-      <ChangeHistoryDateCheckUtil
-        changeExpectedDate={getValues('changeExpectedDate')}
-        changeHistoryNumber={getValues('changeHistoryNumber')}
-        isChangeHistoryBtn={isChangeHistoryBtn}
-        changeHistory={selectValues.changeReservationInfoSelectValues}
-        isOpen={changeHistoryDateCheckisOpen}
-        handleConfirm={handleConfirm}
-      />
+      {isOpenPopup && (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          // 本機能ではこちらを使用
+          handleRegistConfirm={handleRegistConfirm}
+          handleApprovalConfirm={handleApprovalConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      )}
     </>
   );
 };
