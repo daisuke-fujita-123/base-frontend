@@ -898,7 +898,8 @@ const ScrTra0025Page = () => {
         (debtList_rows[index].paymentKind !== '0' ||
           Number.isNaN(
             Number(removeComma(debtList_rows[index].paymentAmount))
-          ) === false)
+          ) === false ||
+          debtList_rows[index].paymentMemo !== '')
       ) {
         errFlg = 1;
       }
@@ -916,17 +917,6 @@ const ScrTra0025Page = () => {
     // バリデーションチェックにて対応済み
 
     // 4.債務金額差異チェック
-    // 表示項目毎に合計金額を計算
-    let debtAmountTotal = 0;
-    debtAmountTotal += Number(removeComma(getValues('bankTransfer')));
-    debtAmountTotal += Number(removeComma(getValues('offsetAmount')));
-    debtAmountTotal += Number(removeComma(getValues('withdrawPending')));
-    debtAmountTotal += Number(removeComma(getValues('billwithdraw')));
-    debtAmountTotal += Number(removeComma(getValues('cashdelivery')));
-    debtAmountTotal += Number(removeComma(getValues('withdrawStopOffset')));
-    debtAmountTotal += Number(removeComma(getValues('ownTransactions')));
-    debtAmountTotal += Number(removeComma(getValues('amortization')));
-
     //明細一覧の合計金額を計算
     let listAmountTotal = 0;
     debtList_rows.forEach((x) => {
@@ -936,7 +926,10 @@ const ScrTra0025Page = () => {
     });
 
     // 出金伝票セクションの債務金額と債務一覧の合計金額に差異があった場合エラー
-    if (debtAmountTotal !== listAmountTotal) {
+    if (
+      Number(removeComma(paymentDetailsDispValues.debtAmount)) !==
+      listAmountTotal
+    ) {
       // ダイアログを表示して、確認ボタン後、画面へ戻る
       const messege = Format(getMessage('MSG-FR-ERR-00042'), []);
       setTitleError(messege);
