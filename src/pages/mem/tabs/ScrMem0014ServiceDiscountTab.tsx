@@ -831,6 +831,7 @@ interface SelectValuesModel {
   dmSendKindSelectValues: SelectValue[];
   aucCsKindSelectValues: SelectValue[];
   dealKindSelectValues: SelectValue[];
+  carsensorKindSelectValues: SelectValue[];
 }
 
 /**
@@ -881,6 +882,7 @@ const selectValuesInitialValues: SelectValuesModel = {
   dmSendKindSelectValues: [],
   aucCsKindSelectValues: [],
   dealKindSelectValues: [],
+  carsensorKindSelectValues: [],
 };
 
 /**
@@ -2794,6 +2796,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
           'CDE-COM-0212',
           'CDE-COM-0049',
           'CDE-COM-0047',
+          'CDE-COM-0048',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
@@ -2885,6 +2888,14 @@ const ScrMem0014ServiceDiscountTab = (props: {
             });
           });
         }
+        if (x.codeId === 'CDE-COM-0048') {
+          x.codeValueList.map((f) => {
+            newSelectValues.carsensorKindSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeName,
+            });
+          });
+        }
       });
 
       // コース名情報取得
@@ -2957,6 +2968,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
         dmSendKindSelectValues: newSelectValues.dmSendKindSelectValues,
         aucCsKindSelectValues: newSelectValues.aucCsKindSelectValues,
         dealKindSelectValues: newSelectValues.dealKindSelectValues,
+        carsensorKindSelectValues: newSelectValues.carsensorKindSelectValues,
       });
 
       // サービス・値引値増情報取得
@@ -3137,6 +3149,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
           'CDE-COM-0212',
           'CDE-COM-0049',
           'CDE-COM-0047',
+          'CDE-COM-0048',
         ],
       };
       const getCodeManagementMasterMultipleResponse =
@@ -3228,6 +3241,14 @@ const ScrMem0014ServiceDiscountTab = (props: {
             });
           });
         }
+        if (x.codeId === 'CDE-COM-0048') {
+          x.codeValueList.map((f) => {
+            newSelectValues.carsensorKindSelectValues.push({
+              value: f.codeValue,
+              displayValue: f.codeName,
+            });
+          });
+        }
       });
 
       // コース名情報取得
@@ -3300,6 +3321,7 @@ const ScrMem0014ServiceDiscountTab = (props: {
         dmSendKindSelectValues: newSelectValues.dmSendKindSelectValues,
         aucCsKindSelectValues: newSelectValues.aucCsKindSelectValues,
         dealKindSelectValues: newSelectValues.dealKindSelectValues,
+        carsensorKindSelectValues: newSelectValues.carsensorKindSelectValues,
       });
 
       // 変更履歴情報取得API
@@ -5017,15 +5039,12 @@ const ScrMem0014ServiceDiscountTab = (props: {
                     </MarginBox>
                     <RowStack>
                       <ColStack>
-                        <Radio
+                        <Select
                           label='カーセンサー営業区分'
                           name='carsensorSalesKind'
-                          radioValues={[
-                            { value: '1', displayValue: '未登録' },
-                            { value: '0', displayValue: '対象外' },
-                            { value: '2', displayValue: 'カーセンサー営業' },
-                          ]}
-                          size='m'
+                          selectValues={selectValues.carsensorKindSelectValues}
+                          size='s'
+                          blankOption
                         />
                       </ColStack>
                       <ColStack>
