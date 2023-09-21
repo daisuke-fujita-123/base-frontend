@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { MarginBox } from 'layouts/Box';
 import { MainLayout } from 'layouts/MainLayout';
@@ -19,6 +19,8 @@ import {
 } from 'apis/com/ScrCom0007Api';
 
 import { useNavigate } from 'hooks/useNavigate';
+
+import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
 import { format } from 'date-fns';
@@ -129,6 +131,8 @@ const ScrCom0007ChangeHistoryTab = () => {
   const [changeHistoryTooltips, setChangeHistoryTooltips] = useState<
     GridTooltipsModel[]
   >([]);
+  // user情報
+  const { user } = useContext(AuthContext);
 
   const apiRef = useGridApiRef();
 
@@ -189,7 +193,26 @@ const ScrCom0007ChangeHistoryTab = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv('ScrCom0007ChangeHistoryTab.csv', apiRef);
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hours = d.getHours();
+    const min = d.getMinutes();
+    exportCsv(
+      '帳票管理_' +
+        user.employeeId +
+        '_' +
+        year.toString() +
+        (month < 10 ? '0' : '') +
+        month.toString() +
+        (day < 10 ? '0' : '') +
+        day.toString() +
+        hours.toString() +
+        min.toString() +
+        '.csv',
+      apiRef
+    );
   };
 
   return (
