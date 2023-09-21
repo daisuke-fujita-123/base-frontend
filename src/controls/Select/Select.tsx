@@ -44,6 +44,7 @@ export interface SelectProps<T extends FieldValues> {
   isAddble?: boolean;
   size?: 's' | 'm' | 'l' | 'xl';
   multi?: { name: Path<T>; selectValues: SelectValue[] }[];
+  limit?: number;
 }
 
 export const StyledFormControl = styled(FormControl)(({ error }) => ({
@@ -207,12 +208,14 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
     required = false,
     minWidth = 100,
     size = 's',
+    limit,
   } = props;
 
   const { register, formState, control, setValue } = useFormContext();
   const watchValue = useWatch({ name, control });
   const selectList = [...watchValue];
   const handleClick = () => {
+    if (limit !== undefined && selectList.length >= limit) return;
     setValue(name, [...selectList, ''] as FieldPathValue<
       FieldValues,
       FieldPath<FieldValues>
