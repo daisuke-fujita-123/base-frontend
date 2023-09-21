@@ -45,6 +45,7 @@ import { useNavigate } from 'hooks/useNavigate';
 
 import { AuthContext } from 'providers/AuthProvider';
 
+import { format } from 'date-fns';
 import ScrCom0032Popup, {
   columnList,
   ScrCom0032PopupModel,
@@ -157,6 +158,11 @@ const ScrCom0008Page = () => {
   const navigate = useNavigate();
 
   // state
+  // 初期表示時の値の配列
+  const [initReportResult, setInitReportResult] = useState<reportBasicModel[]>(
+    []
+  );
+
   // 履歴表示かどうかの判定
   const [historyFlag, setHistoryFlag] = useState(false);
   // 変更予定日リスト
@@ -250,7 +256,7 @@ const ScrCom0008Page = () => {
       .string()
       .label('帳票コメント15行目')
       .max(reportCommentLengthForVal),
-    changeExpectedDate: yup.date().label('変更予定日'),
+    changeExpectedDate: yup.string().label('変更予定日').date(),
   };
 
   // form
@@ -335,7 +341,6 @@ const ScrCom0008Page = () => {
       // API-COM-9999-0026: 変更予定日取得API
       const getChangeDateRequest: ScrCom9999GetChangeDateRequest = {
         screenId: SCR_COM_0008,
-        tabId: 0,
         masterId: reportId,
         businessDate: user.taskDate,
       };
@@ -366,12 +371,14 @@ const ScrCom0008Page = () => {
       );
 
       // 帳票コメント以外のデータを設定
-      setGetReportId(getHistoryInfoResponse.reportId);
-      setGetReportName(getHistoryInfoResponse.reportName);
-      setGetCommentRow(getHistoryInfoResponse.commentRow);
-      setGetPopupCommentRow(getHistoryInfoResponse.popupCommentRow);
-      setGetCommentLine(getHistoryInfoResponse.commentLine);
-      setGetSystemKind(getHistoryInfoResponse.systemKind);
+      setGetReportId(getHistoryInfoResponse.changeHistoryInfo.reportId);
+      setGetReportName(getHistoryInfoResponse.changeHistoryInfo.reportName);
+      setGetCommentRow(getHistoryInfoResponse.changeHistoryInfo.commentRow);
+      setGetPopupCommentRow(
+        getHistoryInfoResponse.changeHistoryInfo.popupCommentRow
+      );
+      setGetCommentLine(getHistoryInfoResponse.changeHistoryInfo.commentLine);
+      setGetSystemKind(getHistoryInfoResponse.changeHistoryInfo.systemKind);
 
       // 変更履歴から受け取った帳票コメントを変換
       const historyInfo = convertToHistoryInfo(
@@ -408,12 +415,14 @@ const ScrCom0008Page = () => {
     );
 
     // 画面の帳票コメント以外のデータを設定
-    setGetReportId(getHistoryInfoResponse.reportId);
-    setGetReportName(getHistoryInfoResponse.reportName);
-    setGetCommentRow(getHistoryInfoResponse.commentRow);
-    setGetPopupCommentRow(getHistoryInfoResponse.popupCommentRow);
-    setGetCommentLine(getHistoryInfoResponse.commentLine);
-    setGetSystemKind(getHistoryInfoResponse.systemKind);
+    setGetReportId(getHistoryInfoResponse.changeHistoryInfo.reportId);
+    setGetReportName(getHistoryInfoResponse.changeHistoryInfo.reportName);
+    setGetCommentRow(getHistoryInfoResponse.changeHistoryInfo.commentRow);
+    setGetPopupCommentRow(
+      getHistoryInfoResponse.changeHistoryInfo.popupCommentRow
+    );
+    setGetCommentLine(getHistoryInfoResponse.changeHistoryInfo.commentLine);
+    setGetSystemKind(getHistoryInfoResponse.changeHistoryInfo.systemKind);
 
     // 変更履歴から受け取った帳票コメントを変換
     const historyInfo = convertToHistoryInfo(
@@ -443,7 +452,7 @@ const ScrCom0008Page = () => {
           sectionList: convertToSectionList(dirtyFields),
         },
       ],
-      changeExpectDate: user.taskDate,
+      changeExpectDate: getValues('changeExpectedDate'),
     });
   };
 
@@ -503,12 +512,10 @@ const ScrCom0008Page = () => {
           columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
         }
       });
-      if (columnList.length > 0) {
-        sectionList.push({
-          sectionName: d.section,
-          columnList: columnList,
-        });
-      }
+      sectionList.push({
+        sectionName: d.section,
+        columnList: columnList,
+      });
     });
     return sectionList;
   };
@@ -522,7 +529,7 @@ const ScrCom0008Page = () => {
     return changeExpectDateInfo.map((x) => {
       return {
         value: String(x.changeHistoryNumber),
-        displayValue: x.changeExpectDate,
+        displayValue: format(new Date(x.changeExpectDate), 'yyyy/MM/dd'),
       };
     });
   };
@@ -535,7 +542,8 @@ const ScrCom0008Page = () => {
     changeHistoryNumber: string
   ): reportBasicModel => {
     // 改行コードでつながっている帳票コメントを改行コード毎に行単位に分割してコメント行に初期設定する
-    const comments: string[] = getHistoryInfoResponse.reportComment.split(/\n/);
+    const comments: string[] =
+      getHistoryInfoResponse.changeHistoryInfo.reportComment.split(/\n/);
 
     // 帳票コメントに値を設定
     return {
@@ -879,43 +887,35 @@ const ScrCom0008Page = () => {
               <Stack>
                 <Typography bold>変更予約情報</Typography>
                 {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「非表示」 */}
-                {selectValues.changeReservationInfoSelectValues.length >= 1 ? (
+                {selectValues.changeReservationInfoSelectValues.length >= 1 && (
                   <WarningLabel text='変更予約あり' />
-                ) : (
-                  ''
                 )}
-                {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「表示・非活性 */}
-                <Select
-                  name='changeHistoryNumber'
-                  selectValues={selectValues.changeReservationInfoSelectValues}
-                  disabled={
-                    selectValues.changeReservationInfoSelectValues.length < 1 ||
-                    historyFlag ||
-                    !readonly
-                      ? true
-                      : false
-                  }
-                  blankOption
-                />
-                {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「表示・非活性」 */}
-                <PrimaryButton
-                  onClick={handleSwichDisplay}
-                  disable={
-                    selectValues.changeReservationInfoSelectValues.length < 1 ||
-                    historyFlag ||
-                    !readonly
-                      ? true
-                      : false
-                  }
-                >
-                  表示切替
-                </PrimaryButton>
+                {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「非表示」 */}
+                {selectValues.changeReservationInfoSelectValues.length >= 1 && (
+                  <Select
+                    name='changeHistoryNumber'
+                    selectValues={
+                      selectValues.changeReservationInfoSelectValues
+                    }
+                    disabled={!readonly}
+                    blankOption
+                  />
+                )}
+                {/* 変更予定日リストの件数が１件以上の場合「表示・活性」・0件の場合「非表示」 */}
+                {selectValues.changeReservationInfoSelectValues.length >= 1 && (
+                  <PrimaryButton
+                    onClick={handleSwichDisplay}
+                    disable={!readonly}
+                  >
+                    表示切替
+                  </PrimaryButton>
+                )}
               </Stack>
               <MarginBox mb={6}>
                 <DatePicker
                   label='変更予定日'
                   name='changeExpectedDate'
-                  disabled={!readonly}
+                  disabled={historyFlag || !readonly ? true : false}
                 />
               </MarginBox>
             </RightElementStack>
