@@ -194,7 +194,7 @@ const convertScreenListModel = (
       id: x.screenId,
       screenId: x.screenId,
       screenName: x.screenName,
-      editPermission: x.editPermission === true ? 1 : 2,
+      editPermission: x.editPermission === true ? 2 : 1,
     };
   });
 };
@@ -230,7 +230,7 @@ const convertScreenList = (
       id: x.screenId,
       screenId: x.screenId,
       screenName: x.screenName,
-      editPermission: x.editPermission === true ? 1 : 2,
+      editPermission: x.editPermission === true ? 2 : 1,
     };
   });
 };
@@ -309,10 +309,6 @@ const ScrCom0027Page = () => {
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
   const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 680;
 
   // コンポーネントを読み取り専用に変更するフラグ
   const isReadOnly = useState<boolean>(false);
@@ -361,12 +357,12 @@ const ScrCom0027Page = () => {
     {
       field: 'screenName',
       headerName: '画面名',
-      width: 400,
+      width: 500,
     },
     {
       field: 'editPermission',
       headerName: '編集権限',
-      size: 'l',
+      size: 'm',
       cellType: 'radio',
       radioValues: editRadioValues,
     },
@@ -722,7 +718,7 @@ const ScrCom0027Page = () => {
                   </AddButton>
                 </MarginBox>
               }
-              width={maxSectionWidth}
+              fitInside
             >
               <RowStack>
                 <ColStack>

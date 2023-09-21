@@ -138,6 +138,11 @@ const validationSchema = {
 };
 
 /**
+ * 画面ID 定数定義
+ */
+const SCR_TRA_0023 = 'SCR-TRA-0023';
+
+/**
  * 登録内容確認ポップアップ
  */
 const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
@@ -175,11 +180,9 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
   const [rowValuesList, setRowValuesList] = useState<TableRowModel[]>([]);
   // 判定用 ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
   const [isWarningChecked, setIsWarningChecked] = useState<boolean>();
-  // 判定用 セクション名が存在する => true
-  const [isSectionName, setIsSectionName] = useState(false);
   // 判定用 カラム名が存在する => true
   const [isColumnName, setIsColumnName] = useState(false);
-  // 判定用 画面名・タブ名・セクション名・項目名の内いずれかが存在する => true
+  // 判定用 セクション名・項目名の内いずれかが存在する => true
   const [isExistColumns, setisExistColumns] = useState<boolean>();
 
   // メッセージポップアップ(ダイアログ)
@@ -236,22 +239,24 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
           k < data.registrationChangeList[i].sectionList[j].columnList.length;
           k++
         ) {
-          rowSectionNameList.push(
-            data.registrationChangeList[i].sectionList[j].sectionName
-          );
-          rowColumnNameList.push(
+          if (
+            data.registrationChangeList[i].sectionList[j].sectionName !== ''
+          ) {
+            rowSectionNameList.push(
+              data.registrationChangeList[i].sectionList[j].sectionName
+            );
+          }
+          if (
             data.registrationChangeList[i].sectionList[j].columnList[k]
-              .columnName
-          );
+              .columnName !== ''
+          ) {
+            rowColumnNameList.push(
+              data.registrationChangeList[i].sectionList[j].columnList[k]
+                .columnName
+            );
+          }
         }
       }
-    }
-
-    // 判定用のリストに格納
-    if (rowSectionNameList.length === 0) {
-      setIsSectionName(false);
-    } else {
-      setIsSectionName(true);
     }
 
     if (rowColumnNameList.length === 0) {
@@ -260,16 +265,25 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
       setIsColumnName(true);
     }
 
+    // 出金一覧の場合 => 1回だけループさせるように1を設定する
+    // 出金一覧以外の場合 => セクション名・項目名が片方のみ記載されている場合にもループ数をそろえるカウントを設定
+    const rowLength =
+      initialValues.registrationChangeList[0].screenId === SCR_TRA_0023
+        ? 1
+        : Math.max(rowSectionNameList.length, rowColumnNameList.length);
+
     // 変換後のRowを格納する一時リスト
-    const tempList: TableRowModel[] = rowColumnNameList.map((x, i) => {
-      return {
+    const tempList: TableRowModel[] = [];
+
+    for (let i = 0; i < rowLength; i++) {
+      tempList.push({
         id: i,
         screenName: initialValues.registrationChangeList[0].screenName,
         tabName: initialValues.registrationChangeList[0].tabName,
         sectionName: rowSectionNameList[i],
         columnName: rowColumnNameList[i],
-      };
-    });
+      });
+    }
 
     return tempList;
   };
@@ -310,19 +324,8 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
 
       // 登録・変更内容テーブル表示用のモデルに変換し、セクション名カラム名が存在するか判定
       const convertList = convertToSearchResultRowModel(initialValues);
+      // DataGridのrowに設定する
       setRowValuesList(convertList);
-
-      // 画面名、タブ名、セクション名、項目名のいずれも設定されていないかどうかを判定する処理
-      if (
-        data.registrationChangeList[0].screenName === '' &&
-        data.registrationChangeList[0].tabName === '' &&
-        isSectionName === false &&
-        isColumnName === false
-      ) {
-        setisExistColumns(false);
-      } else {
-        setisExistColumns(true);
-      }
 
       // ワーニングのチェックボックスの初期化
       if (data.warningList.length === 0) {
@@ -334,6 +337,19 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
 
     initialize();
   }, []);
+
+  // DataGridのrow設定後にセクション名と項目名で判定用フラグを設定
+  useEffect(() => {
+    // 画面IDが【出金一覧】でない、かつ 項目名なしの場合は、変更項目なし(出金一覧はチェック選択０でエラーにしているので問題なし)
+    if (
+      data.registrationChangeList[0].screenId !== SCR_TRA_0023 &&
+      isColumnName === false
+    ) {
+      setisExistColumns(false);
+    } else {
+      setisExistColumns(true);
+    }
+  }, [rowValuesList]);
 
   // ワーニングチェックボックス処理
   useEffect(() => {
@@ -446,7 +462,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                 )}
                 {data.registrationChangeList.length > 0 ? (
                   <Section name='登録・変更内容' fitInside>
-                    {/* 画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
+                    {/* 画面IDが【出金一覧】でない、かつ 項目名のいずれも設定されていない場合は非表示 */}
                     {isExistColumns ? (
                       <>
                         <DataGrid columns={columns} rows={rowValuesList} />
@@ -460,7 +476,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                         <br />
                       </>
                     )}
-                    {/* 項目名がなく変更予約有の場合は表示・無の場合は非表示 */}
+                    {/* 画面IDが【出金一覧】でない、かつ 項目名のいずれも設定されていない かつ 変更予約有の場合は表示*/}
                     {isExistColumns && data.changeExpectDate !== '' ? (
                       <Box>
                         <Typography variant='h6'>変更予定日</Typography>
@@ -472,7 +488,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     ) : (
                       <br />
                     )}
-                    {/* "画面名、タブ名、セクション名、項目名のいずれも設定されていない場合は非表示 */}
+                    {/* 画面IDが【出金一覧】でない、かつ 項目名のいずれも設定されていない場合は非表示 */}
                     {isExistColumns ? (
                       <Box>
                         <Typography variant='h5'>登録変更メモ</Typography>

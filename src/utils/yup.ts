@@ -72,9 +72,14 @@ yup.addMethod(yup.StringSchema, 'half', function () {
 });
 
 yup.addMethod(yup.StringSchema, 'date', function () {
-  return this.matches(/^\d{4}\/\d{2}\/\d{2}$/, {
-    message: ({ label }) => `${label}は日付形式です`,
-  });
+  return this.test(
+    'date',
+    ({ label }) => `${label}は日付形式です`,
+    (value) => {
+      if (!value) return true;
+      if (value.match(/^\d{4}\/\d{2}\/\d{2}$/)) return true;
+    }
+  );
 });
 
 yup.addMethod(yup.StringSchema, 'time', function () {
@@ -124,8 +129,9 @@ yup.addMethod(yup.StringSchema, 'notZero', function () {
 });
 
 yup.addMethod(yup.StringSchema, 'phone', function () {
-  return this.matches(/^\d{2,5}-\d{1,4}-\d{4}$/, {
-    message: '電話番号形式です',
+  return this.test('phone', '電話番号形式です', (value) => {
+    if (!value) return true;
+    if (value.match(/^\d{2,5}-\d{1,4}-\d{4}$/)) return true;
   });
 });
 

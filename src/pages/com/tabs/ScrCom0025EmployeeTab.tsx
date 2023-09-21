@@ -29,6 +29,7 @@ import {
 } from 'apis/com/ScrCom0025Api';
 import {
   ScrCom9999GetBelongOrganizationId,
+  ScrCom9999GetBelongOrganizationIdRequest,
   ScrCom9999GetBelongOrganizationIdResponse,
   ScrCom9999GetPostIdListbox,
   ScrCom9999GetPostIdResponse,
@@ -271,7 +272,7 @@ const convertToSearchResultRowModel = (
 const belongOrganizationIdSelectValuesModel = (
   response: ScrCom9999GetBelongOrganizationIdResponse
 ): SelectValue[] => {
-  return response.searchGetBelongOrganizationIdListbox.map((x) => {
+  return response.organizationList.map((x) => {
     return {
       value: x.organizationId,
       displayValue: x.organizationName,
@@ -285,7 +286,7 @@ const belongOrganizationIdSelectValuesModel = (
 const postIdSelectValuesModel = (
   response: ScrCom9999GetPostIdResponse
 ): SelectValue[] => {
-  return response.searchGetPostIdListbox.map((x) => {
+  return response.postList.map((x) => {
     return {
       value: x.postId,
       displayValue: x.postName,
@@ -419,8 +420,12 @@ const ScrCom0025EmployeeTab = () => {
       setHrefs(hrefs);
 
       // API-COM-9999-0007: 所属組織IDリストボックス情報取得API
+      const belongOrganizationIdRequest: ScrCom9999GetBelongOrganizationIdRequest =
+      {
+        businessDate: user.taskDate,
+      };
       const belongOrganizationIdResponse =
-        await ScrCom9999GetBelongOrganizationId(null);
+        await ScrCom9999GetBelongOrganizationId(belongOrganizationIdRequest);
 
       // API-COM-9999-0008: 所属役職IDリストボックス情報取得API
       const postIdResponse = await ScrCom9999GetPostIdListbox(null);

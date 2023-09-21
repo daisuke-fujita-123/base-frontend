@@ -183,7 +183,7 @@ const convertToSearchResultRowModel = (
 const organizationidSelectValuesModel = (
   response: ScrCom9999GetOrganizationidListboxResponse
 ): SelectValue[] => {
-  return response.searchGetOrganizationidListbox.map((x) => {
+  return response.organizationidList.map((x) => {
     return {
       value: x.organizationId,
       displayValue: x.organizationName,
@@ -197,7 +197,7 @@ const organizationidSelectValuesModel = (
 const screenpermissionidSelectValuesModel = (
   response: ScrCom9999GetScreenpermissionidListboxResponse
 ): SelectValue[] => {
-  return response.searchGetScreenpermissionidListbox.map((x) => {
+  return response.screenpermissionidList.map((x) => {
     return {
       value: x.screenPermissionId,
       displayValue: x.screenPermissionName,
@@ -211,7 +211,7 @@ const screenpermissionidSelectValuesModel = (
 const masterpermissionidSelectValuesModel = (
   response: ScrCom9999GetMasterpermissionidResponse
 ): SelectValue[] => {
-  return response.searchGetMasterpermissionidListbox.map((x) => {
+  return response.masterpermissionidList.map((x) => {
     return {
       value: x.masterPermissionId,
       displayValue: x.masterPermissionName,
@@ -225,7 +225,7 @@ const masterpermissionidSelectValuesModel = (
 const approvalPermissionIdSelectValuesModel = (
   response: ScrCom9999GetApprovalPermissionIdResponse
 ): SelectValue[] => {
-  return response.searchGetApprovalPermissionIdListbox.map((x) => {
+  return response.approvalPermissionList.map((x) => {
     return {
       value: x.approvalPermissionId,
       displayValue: x.approvalPermissionName,

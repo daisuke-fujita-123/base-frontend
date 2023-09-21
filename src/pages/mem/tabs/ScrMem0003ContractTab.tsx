@@ -852,6 +852,8 @@ const ScrMem0003ContractTab = (props: {
       ]);
     };
 
+    if (corporationId === 'new') return;
+
     if (corporationId !== undefined && applicationId !== null) {
       historyInitialize(corporationId, applicationId);
     }

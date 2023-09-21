@@ -171,7 +171,7 @@ export const ScrMem9999GetEmployeeFromDistrict = async (
   request: ScrMem9999GetEmployeeFromDistrictRequest
 ): Promise<ScrMem9999GetEmployeeFromDistrictResponse> => {
   const response = await memApiClient.post(
-    '/api/mem/scr-mem-9999/get-employee-from-district',
+    '/api/mem/scr-mem-9999/get-employee-from-logistics-base',
     request
   );
   return response.data;
@@ -254,7 +254,7 @@ export const ScrMem9999OutputReport = async (
   request: ScrMem9999OutputReportRequest
 ): Promise<ScrMem9999OutputReportResponse> => {
   const response = await memApiClient.post(
-    '/api/mem/scr-mem-9999/get-history-info',
+    '/api/mem/scr-mem-9999/output-report',
     request
   );
   return response.data;
@@ -388,4 +388,3 @@ export const ScrMem9999GetCorporationGroup =
     );
     return response.data;
   };
-
