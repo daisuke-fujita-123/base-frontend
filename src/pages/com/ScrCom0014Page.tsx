@@ -45,12 +45,12 @@ import {
   ScrCom0014RegistrationWorkCommissionInfo,
   ScrCom0014RegistrationWorkCommissionInfoRequest,
 } from 'apis/com/ScrCom0014Api';
-import {
-  ScrCom0034DeleteAllRegistrationWork,
-  ScrCom0034DeleteAllRegistrationWorkRequest,
-  ScrCom0034GetAllRegistrationWork,
-  ScrCom0034GetAllRegistrationWorkRequest,
-} from 'apis/com/ScrCom0034Api';
+// import {
+//   ScrCom0034DeleteAllRegistrationWork,
+//   ScrCom0034DeleteAllRegistrationWorkRequest,
+//   ScrCom0034GetAllRegistrationWork,
+//   ScrCom0034GetAllRegistrationWorkRequest,
+// } from 'apis/com/ScrCom0034Api';
 import {
   ChangeExpectDateInfo,
   comCommissionConditionList,
@@ -1459,32 +1459,32 @@ const ScrCom0014Page = () => {
     // 一括登録からの再表示イベント
 
     // API-COM-0034-0004: 一括登録参照API
-    const getCommissionKindRequest: ScrCom0034GetAllRegistrationWorkRequest = {
-      screenId: SCR_COM_0014,
-      allRegistrationId: String(allRegistrationId),
-      changeHistoryNumber: Number(getValues('changeHistoryNumber')),
-    };
-    const getAllRegistrationWorkResponse =
-      await ScrCom0034GetAllRegistrationWork(getCommissionKindRequest);
+    // const getCommissionKindRequest: ScrCom0034GetAllRegistrationWorkRequest = {
+    //   screenId: SCR_COM_0014,
+    //   allRegistrationId: String(allRegistrationId),
+    //   changeHistoryNumber: Number(getValues('changeHistoryNumber')),
+    // };
+    // const getAllRegistrationWorkResponse =
+    //   await ScrCom0034GetAllRegistrationWork(getCommissionKindRequest);
 
-    // 価格設定セクションの手数料欄に一括登録参照した値を設定する
-    pricingRows.forEach((pricingRow, i) => {
-      // 条件行10 + 条件内条件行10 + 手数料1 = 21
-      pricingRow['commission'] = String(
-        getAllRegistrationWorkResponse.allRegistrationWorkTrans[i]
-          .allImportColumnValue21
-      );
-    });
+    // // 価格設定セクションの手数料欄に一括登録参照した値を設定する
+    // pricingRows.forEach((pricingRow, i) => {
+    //   // 条件行10 + 条件内条件行10 + 手数料1 = 21
+    //   pricingRow['commission'] = String(
+    //     getAllRegistrationWorkResponse.allRegistrationWorkTrans[i]
+    //       .allImportColumnValue21
+    //   );
+    // });
 
-    // API-COM-0034-0002：一括登録ワークトランクリアAPI
-    const deleteAllRegistrationWorkRequest: ScrCom0034DeleteAllRegistrationWorkRequest =
-      {
-        allRegistrationId: String(allRegistrationId),
-      };
-    const deleteAllRegistrationWorkResponse =
-      await ScrCom0034DeleteAllRegistrationWork(
-        deleteAllRegistrationWorkRequest
-      );
+    // // API-COM-0034-0002：一括登録ワークトランクリアAPI
+    // const deleteAllRegistrationWorkRequest: ScrCom0034DeleteAllRegistrationWorkRequest =
+    //   {
+    //     allRegistrationId: String(allRegistrationId),
+    //   };
+    // const deleteAllRegistrationWorkResponse =
+    //   await ScrCom0034DeleteAllRegistrationWork(
+    //     deleteAllRegistrationWorkRequest
+    //   );
   };
 
   /**
