@@ -572,16 +572,19 @@ const convertToCorporationBasicModel = (
       taxBusinessKind === undefined ? '' : taxBusinessKind.displayValue,
     publicSafetyCommittee: response.publicSafetyCommittee,
     antiqueBusinessLicenseNumber: response.antiqueBusinessLicenseNumber,
-    issuanceDate: format(new Date(response.issuanceDate), 'yyyy/MM/dd'),
+    issuanceDate:
+      response.issuanceDate === null
+        ? ''
+        : format(new Date(response.issuanceDate), 'yyyy/MM/dd'),
     antiqueName: response.antiqueName,
     memberMemo: response.memberMemo,
     representativeName: response.representativeName,
     representativeNameKana: response.representativeNameKana,
     representativeGender: response.representativeGenderKind,
-    representativeBirth: format(
-      new Date(response.representativeBirthDate),
-      'yyyy/MM/dd'
-    ),
+    representativeBirth:
+      response.representativeBirthDate === null
+        ? ''
+        : format(new Date(response.representativeBirthDate), 'yyyy/MM/dd'),
     representativeAsset: response.possessionAssetsKind,
     representativeZipCode: response.representativeZipCode,
     representativePrefectureCode: response.representativePrefectureCode,
@@ -595,10 +598,13 @@ const convertToCorporationBasicModel = (
     guarantorName1: guarantorMasters[0].guarantorName,
     guarantorNameKana1: guarantorMasters[0].guarantorNameKana,
     guarantorGender1: guarantorMasters[0].guarantorGenderKind,
-    guarantorBirth1: format(
-      new Date(guarantorMasters[0].guarantorBirthDate),
-      'yyyy/MM/dd'
-    ),
+    guarantorBirth1:
+      guarantorMasters[0].guarantorBirthDate === null
+        ? ''
+        : format(
+            new Date(guarantorMasters[0].guarantorBirthDate),
+            'yyyy/MM/dd'
+          ),
     guarantorAsset1: guarantorMasters[0].guarantorPossessionAssetsKind,
     guarantorRelationship1: guarantorMasters[0].guarantorRelationship,
     guarantorZipCode1: guarantorMasters[0].guarantorZipCode,
@@ -611,10 +617,13 @@ const convertToCorporationBasicModel = (
     guarantorMobilePhoneNumber1: guarantorMasters[0].guarantorMobilePhoneNumber,
     guarantorNo2: guarantorMasters[1].guarantorNo,
     guarantorGender2: guarantorMasters[1].guarantorGenderKind,
-    guarantorBirth2: format(
-      new Date(guarantorMasters[1].guarantorBirthDate),
-      'yyyy/MM/dd'
-    ),
+    guarantorBirth2:
+      guarantorMasters[1].guarantorBirthDate === null
+        ? ''
+        : format(
+            new Date(guarantorMasters[1].guarantorBirthDate),
+            'yyyy/MM/dd'
+          ),
     guarantorAsset2: guarantorMasters[1].guarantorPossessionAssetsKind,
     guarantorRelationship2: guarantorMasters[1].guarantorRelationship,
     guarantorZipCode2: guarantorMasters[1].guarantorZipCode,
