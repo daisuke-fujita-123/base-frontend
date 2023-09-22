@@ -1556,8 +1556,8 @@ const ScrMem0003BasicTab = (props: {
       });
     });
     if (
-      getValues('corporationFaxNumber') !== '' &&
-      getValues('corporationMailAddress') !== ''
+      getValues('corporationFaxNumber') === '' &&
+      getValues('corporationMailAddress') === ''
     ) {
       errorList.push({
         errorCode: 'MSG-FR-ERR-00058',
