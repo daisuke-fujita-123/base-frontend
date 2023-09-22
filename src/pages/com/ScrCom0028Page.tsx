@@ -182,7 +182,7 @@ const searchResultColumns: GridColDef[] = [
   {
     field: 'masterEditFlag',
     headerName: '編集有無',
-    size: 'l',
+    size: 'm',
     cellType: 'radio',
     radioValues: [
       { value: 'true', displayValue: '可' },
@@ -344,10 +344,7 @@ const ScrCom0028Page = () => {
   const [scrCom0032PopupData, setScrCom0032PopupData] =
     useState<ScrCom0032PopupModel>(scrCom0032PopupInitialValues);
   const apiRef = useGridApiRef();
-  const maxSectionWidth =
-    Number(
-      apiRef.current.rootElementRef?.current?.getBoundingClientRect().width
-    ) + 680;
+
   // キャンセルボタンの活性化・非活性化を判定するフラグ
   const [canelFlag, setCanelFlag] = useState(false);
 
@@ -554,7 +551,6 @@ const ScrCom0028Page = () => {
     user.taskDate,
     setValue,
     reset,
-    maxSectionWidth,
     setCanelFlag,
     initMasterResult.length,
   ]);
@@ -730,7 +726,7 @@ const ScrCom0028Page = () => {
                   </AddButton>
                 </MarginBox>
               }
-              width={maxSectionWidth}
+              fitInside
             >
               <RowStack>
                 <ColStack>
