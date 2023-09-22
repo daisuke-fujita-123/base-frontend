@@ -8,7 +8,7 @@ import { MainLayout } from 'layouts/MainLayout';
 import { PrintButton } from 'controls/Button';
 
 /**
- * SCR-COM-0038 エラー確認（ポップアップ）
+ * SCR-DOC-0003 配送伝票一括印刷（ポップアップ）
  */
 const ScrDoc0003PopupTester = () => {
   const [isOpenScrDoc0003Popup, setIsOpenScrDoc0003Popup] =
@@ -30,7 +30,7 @@ const ScrDoc0003PopupTester = () => {
           </RightBox>
         </MainLayout>
       </MainLayout>
-      {/* エラー確認ポップアップ */}
+      {/* 配送伝票一括印刷ポップアップ */}
       {isOpenScrDoc0003Popup && (
         <ScrDoc0003Popup isOpen={isOpenScrDoc0003Popup} />
       )}
