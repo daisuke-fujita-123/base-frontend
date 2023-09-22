@@ -929,7 +929,7 @@ const convertFromCorporationInfoModel = (
       : new Date().toLocaleDateString();
   newScrMem0003Data.registrationChangeMemo = registrationChangeMemo;
   newScrMem0003Data.screenId = 'SCR-MEM-0003';
-  newScrMem0003Data.tabId = 'B-3';
+  newScrMem0003Data.tabId = '1';
 
   return newScrMem0003Data;
 };
@@ -1335,7 +1335,7 @@ const ScrMem0003BasicTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
-        tabId: 3,
+        tabId: 1,
         masterId: corporationId,
         businessDate: user.taskDate,
       };
@@ -1586,7 +1586,7 @@ const ScrMem0003BasicTab = (props: {
         {
           screenId: 'SCR-MEM-0003',
           screenName: '法人情報詳細',
-          tabId: 3,
+          tabId: 1,
           tabName: '基本情報',
           sectionList: convertToSectionList(dirtyFields),
         },

@@ -140,7 +140,7 @@ const convertFromRegistrationCreditLimitInfo = (
   newScrMem0003Data.changeExpectDate = '';
   newScrMem0003Data.registrationChangeMemo = changeMemo;
   newScrMem0003Data.screenId = 'SCR-MEM-0003';
-  newScrMem0003Data.tabId = 'B-4';
+  newScrMem0003Data.tabId = '3';
 
   return scrMem0003Data;
 };
@@ -269,7 +269,7 @@ const ScrMem0003CreditLimitTab = (props: {
         {
           screenId: 'SCR-MEM-0003',
           screenName: '法人情報詳細',
-          tabId: 4,
+          tabId: 3,
           tabName: '与信制限',
           sectionList: convertToSectionList(dirtyFields),
         },
