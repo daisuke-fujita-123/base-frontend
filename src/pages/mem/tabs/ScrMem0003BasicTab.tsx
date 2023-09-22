@@ -326,8 +326,7 @@ const validationSchama = {
   representativeAddressBuildingName: yup
     .string()
     .label('番地・号・建物名など')
-    .max(10)
-    .required(),
+    .max(10),
   representativePhoneNumber: yup.string().label('TEL').max(13).phone(),
   representativeFaxNumber: yup.string().label('FAX').max(13).phone(),
   representativeMobilePhoneNumber: yup
