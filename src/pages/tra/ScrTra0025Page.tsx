@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FormProvider } from 'react-hook-form';
-import { Params, useLocation, useParams } from 'react-router-dom';
+import { Params, useParams } from 'react-router-dom';
 
 import yup from 'utils/yup';
-import { ObjectSchema } from 'yup';
+import { AnyObject, ObjectSchema } from 'yup';
 
 import ScrCom0032Popup, {
   ScrCom0032PopupModel,
@@ -59,7 +59,7 @@ const ScrCom0032PopupModelInitialValues: ScrCom0032PopupModel = {
 };
 
 /** 入力項目のバリデーション */
-const debtListSchema: ObjectSchema<any> = yup.object({
+const debtListSchema: ObjectSchema<AnyObject> = yup.object({
   // 会計処理日
   accountingDate: yup.string().date().max(10).label('会計処理日'),
   // 金額
@@ -283,11 +283,6 @@ const PaymentDetailsDispInitialValues: PaymentDetailsDispModel = {
   ownTransactions: '',
   amortization: '',
 };
-const testValues = [
-  { value: '1', displayValue: '銀行振込' },
-  { value: '2', displayValue: '相殺金額' },
-  { value: '3', displayValue: '出金保留' },
-];
 
 // 出金種別
 const CodeManagementSelectValuesModel = (
@@ -316,7 +311,6 @@ const ScrTra0025Page = () => {
   // 出金一覧からURIパラメータの債務番号を取得
   const { debtNum } = useParams<Params>();
   const debtNumber = String(debtNum);
-  //const debtNumber = String(queryParams.get('debtNumber'));
 
   //登録時メモ
   const [registrationChangeMemo, setRegistrationChangeMemo] =
@@ -358,7 +352,6 @@ const ScrTra0025Page = () => {
 
   // router
   const navigate = useNavigate();
-  const location = useLocation();
 
   // state
   // 初期化、値設定（リストボックス）
@@ -400,7 +393,7 @@ const ScrTra0025Page = () => {
     },
   ];
 
-  const handleGetSelectValues = (params: any) => {
+  const handleGetSelectValues = () => {
     return selectValues.claimClassificatioSelectValues;
   };
 
@@ -409,9 +402,7 @@ const ScrTra0025Page = () => {
     useState<PaymentDetailsDispModel>(PaymentDetailsDispInitialValues);
 
   // 初期化と値設定（合計金額セクション）
-  const [totalValues, setTotalValues] = useState<totalAmountModel>(
-    totalAmountInitialValues
-  );
+  const [totalValues] = useState<totalAmountModel>(totalAmountInitialValues);
 
   // 初期化と値設定（債務一覧セクション）
   const [debtList_rows, setdebtListRowValues] = useState<debtListRowModel[]>(
@@ -751,19 +742,18 @@ const ScrTra0025Page = () => {
   }, [userEditPermission]);
 
   // 行表示更新用
-  const [count, setCount] = useState<number>(0);
+  const [setCount] = useState<number>(0);
 
   /**
    * 行が編集された時のイベントハンドラ
    */
-  //  const HandlePaymentKindchange = async (row: any) => {
   const HandlePaymentKindchange = (row: any) => {
     initialDisplayFlg = 0;
     editFlg = 1;
 
     // 出金種別が銀行振込の場合、出金元口座銀行名 ＋出金元口座支店名を表示する。
     // 出金種別が銀行振込以外の場合、ブランクを表示する。
-    if (row.paymentKind == '1') {
+    if (row.paymentKind === '1') {
       row.paymentSourceAccountName =
         row.paymentSourcebankName + row.paymentSourcebranchName;
     } else {
@@ -833,7 +823,6 @@ const ScrTra0025Page = () => {
     if (Number.isNaN(amortizationTotal) === false) {
       setValue('amortization', numberFormat(amortizationTotal));
     }
-
     editCount++;
     setCount(editCount);
   };
