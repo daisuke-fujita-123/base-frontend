@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   FieldPath,
   FieldPathValue,
@@ -94,6 +94,62 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
 
   const { register, formState, control } = useFormContext();
   const watchValue = useWatch({ name, control });
+  const sectionRef = useRef<HTMLSelectElement>();
+
+  // バイト数取得
+  const strLength = (str: string) => {
+    let count = 0,
+      c = 0;
+    for (let i = 0, len = str.length; i < len; i++) {
+      c = str.charCodeAt(i);
+      if (
+        (c >= 0x0 && c < 0x81) ||
+        c == 0xf8f0 ||
+        (c >= 0xff61 && c < 0xffa0) ||
+        (c >= 0xf8f1 && c < 0xf8f4)
+      ) {
+        count += 1;
+      } else {
+        count += 2;
+      }
+    }
+    return count;
+  };
+
+  // 選択項目表示
+  const renderValue = (val: string[] | string) => {
+    // 単一選択
+    if (!Array.isArray(val)) {
+      const selectValue = selectValues.find((f) => val === f.value);
+      return selectValue?.displayValue;
+    }
+    // 複数選択
+    const valDesplay: string[] = [];
+    let count = 0;
+    val.forEach((x) => {
+      const selectValue = selectValues.find((f) => x === f.value);
+      if (selectValue !== undefined) {
+        const valDesplayByte = strLength(
+          valDesplay.length === 0
+            ? selectValue.displayValue
+            : valDesplay.join(', ') + ', ' + selectValue.displayValue
+        );
+        if (
+          (size === 's' && valDesplayByte > 23) ||
+          (size === 'm' && valDesplayByte > 65) ||
+          (size === 'l' && valDesplayByte > 107) ||
+          (size === 'xl' && valDesplayByte > 227)
+        ) {
+          count++;
+        } else {
+          valDesplay.push(selectValue.displayValue);
+        }
+      }
+    });
+    return count === 0
+      ? valDesplay.join(', ')
+      : valDesplay.join(', ') + '　' + count.toString();
+  };
 
   // 複数選択された場合、先頭行の空白は削除する
   const omitBlankValue = (val: string[]) => {
@@ -143,6 +199,8 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
                 readOnly: control?._options?.context?.readonly,
               }}
               IconComponent={PulldownIcon}
+              renderValue={renderValue}
+              ref={sectionRef}
             >
               {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
               {selectValues.map((option, index) => (
@@ -169,6 +227,8 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
                 readOnly: control?._options?.context?.readonly,
               }}
               IconComponent={PulldownIcon}
+              renderValue={renderValue}
+              ref={sectionRef}
             >
               {blankOption && <StyledMenuItem value=''>{'　'}</StyledMenuItem>}
               {
