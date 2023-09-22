@@ -159,9 +159,7 @@ const ScrCom0008Page = () => {
 
   // state
   // 初期表示時の値の配列
-  const [initReportResult, setInitReportResult] = useState<reportBasicModel[]>(
-    []
-  );
+  const [initReportResult, setInitReportResult] = useState<string[]>([]);
 
   // 履歴表示かどうかの判定
   const [historyFlag, setHistoryFlag] = useState(false);
@@ -264,12 +262,7 @@ const ScrCom0008Page = () => {
     defaultValues: initialValues,
     resolver: yupResolver(yup.object(validationSchema)),
   });
-  const {
-    formState: { dirtyFields },
-    setValue,
-    getValues,
-    reset,
-  } = methods;
+  const { setValue, getValues, reset } = methods;
 
   // popup
   const [isOpenPopup, setIsOpenPopup] = useState(false);
@@ -297,6 +290,9 @@ const ScrCom0008Page = () => {
       setGetPopupCommentRow(getCommissionDisplayResponse.popupCommentRow);
       setGetCommentLine(getCommissionDisplayResponse.commentLine);
       setGetSystemKind(getCommissionDisplayResponse.systemKind);
+
+      // 変更項目を検知する為の一時配列を用意
+      const tempColumnNameList: string[] = [];
 
       // 改行コードでつながっている帳票コメントを改行コード毎に行単位に分割してコメント行に初期設定する
       const comments: string[] =
@@ -333,7 +329,11 @@ const ScrCom0008Page = () => {
         } else if (i === 14) {
           setValue(`reportComment15`, comment);
         }
+        tempColumnNameList.push(comment);
       });
+
+      // 初期表示時の値として変更項目比較用に保持
+      setInitReportResult(tempColumnNameList);
 
       // バリデーションの文字数を設定
       setReportCommentLengthForVal(getCommissionDisplayResponse.commentLine);
@@ -438,6 +438,162 @@ const ScrCom0008Page = () => {
    *  確定ボタンクリック時のイベントハンドラ
    */
   const handleConfirm = () => {
+    // 変更された値を格納する一時配列を用意
+    const fields: string[] = [];
+
+    for (let i = 0; i < getCommentRow; i++) {
+      if (i == 0) {
+        if (
+          (initReportResult[0] === undefined &&
+            getValues('reportComment1') !== '') ||
+          (initReportResult[0] !== undefined &&
+            initReportResult[0] !== getValues('reportComment1'))
+        ) {
+          fields.push('reportComment1');
+        }
+      }
+      if (i == 1) {
+        if (
+          (initReportResult[1] === undefined &&
+            getValues('reportComment2') !== '') ||
+          (initReportResult[1] !== undefined &&
+            initReportResult[1] !== getValues('reportComment2'))
+        ) {
+          fields.push('reportComment2');
+        }
+      }
+      if (i == 2) {
+        if (
+          (initReportResult[2] === undefined &&
+            getValues('reportComment3') !== '') ||
+          (initReportResult[2] !== undefined &&
+            initReportResult[2] !== getValues('reportComment3'))
+        ) {
+          fields.push('reportComment3');
+        }
+      }
+      if (i == 3) {
+        if (
+          (initReportResult[3] === undefined &&
+            getValues('reportComment4') !== '') ||
+          (initReportResult[3] !== undefined &&
+            initReportResult[3] !== getValues('reportComment4'))
+        ) {
+          fields.push('reportComment4');
+        }
+      }
+      if (i == 4) {
+        if (
+          (initReportResult[4] === undefined &&
+            getValues('reportComment5') !== '') ||
+          (initReportResult[4] !== undefined &&
+            initReportResult[4] !== getValues('reportComment5'))
+        ) {
+          fields.push('reportComment5');
+        }
+      }
+      if (i == 5) {
+        if (
+          (initReportResult[5] === undefined &&
+            getValues('reportComment6') !== '') ||
+          (initReportResult[5] !== undefined &&
+            initReportResult[5] !== getValues('reportComment6'))
+        ) {
+          fields.push('reportComment6');
+        }
+      }
+      if (i == 6) {
+        if (
+          (initReportResult[6] === undefined &&
+            getValues('reportComment7') !== '') ||
+          (initReportResult[6] !== undefined &&
+            initReportResult[6] !== getValues('reportComment7'))
+        ) {
+          fields.push('reportComment7');
+        }
+      }
+      if (i == 7) {
+        if (
+          (initReportResult[7] === undefined &&
+            getValues('reportComment8') !== '') ||
+          (initReportResult[7] !== undefined &&
+            initReportResult[7] !== getValues('reportComment8'))
+        ) {
+          fields.push('reportComment8');
+        }
+      }
+      if (i == 8) {
+        if (
+          (initReportResult[8] === undefined &&
+            getValues('reportComment9') !== '') ||
+          (initReportResult[8] !== undefined &&
+            initReportResult[8] !== getValues('reportComment9'))
+        ) {
+          fields.push('reportComment9');
+        }
+      }
+      if (i == 9) {
+        if (
+          (initReportResult[9] === undefined &&
+            getValues('reportComment10') !== '') ||
+          (initReportResult[9] !== undefined &&
+            initReportResult[9] !== getValues('reportComment10'))
+        ) {
+          fields.push('reportComment10');
+        }
+      }
+      if (i == 10) {
+        if (
+          (initReportResult[10] === undefined &&
+            getValues('reportComment11') !== '') ||
+          (initReportResult[10] !== undefined &&
+            initReportResult[10] !== getValues('reportComment11'))
+        ) {
+          fields.push('reportComment11');
+        }
+      }
+      if (i == 11) {
+        if (
+          (initReportResult[11] === undefined &&
+            getValues('reportComment12') !== '') ||
+          (initReportResult[11] !== undefined &&
+            initReportResult[11] !== getValues('reportComment12'))
+        ) {
+          fields.push('reportComment12');
+        }
+      }
+      if (i == 12) {
+        if (
+          (initReportResult[12] === undefined &&
+            getValues('reportComment13') !== '') ||
+          (initReportResult[12] !== undefined &&
+            initReportResult[12] !== getValues('reportComment13'))
+        ) {
+          fields.push('reportComment13');
+        }
+      }
+      if (i == 13) {
+        if (
+          (initReportResult[13] === undefined &&
+            getValues('reportComment14') !== '') ||
+          (initReportResult[13] !== undefined &&
+            initReportResult[13] !== getValues('reportComment14'))
+        ) {
+          fields.push('reportComment14');
+        }
+      }
+      if (i == 14) {
+        if (
+          (initReportResult[14] === undefined &&
+            getValues('reportComment15') !== '') ||
+          (initReportResult[14] !== undefined &&
+            initReportResult[14] !== getValues('reportComment15'))
+        ) {
+          fields.push('reportComment15');
+        }
+      }
+    }
+
     // 登録更新の結果を登録確認ポップアップへ渡す
     setIsOpenPopup(true);
     setScrCom0032PopupData({
@@ -449,7 +605,7 @@ const ScrCom0008Page = () => {
           screenName: '帳票コメント',
           tabId: 0,
           tabName: '',
-          sectionList: convertToSectionList(dirtyFields),
+          sectionList: convertToSectionList(fields),
         },
       ],
       changeExpectDate: getValues('changeExpectedDate'),
@@ -502,10 +658,9 @@ const ScrCom0008Page = () => {
   /**
    * 変更した項目から登録・変更内容データへの変換
    */
-  const convertToSectionList = (dirtyFields: object): sectionList[] => {
-    const fields = Object.keys(dirtyFields);
+  const convertToSectionList = (fields: string[]): sectionList[] => {
     const sectionList: sectionList[] = [];
-    sectionDef.forEach((d, i) => {
+    sectionDef.forEach((d) => {
       const columnList: columnList[] = [];
       fields.forEach((f) => {
         if (d.fields.includes(f)) {
