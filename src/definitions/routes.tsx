@@ -7,6 +7,7 @@ import ScrCom0033PopupTester from 'pages/_dev/ScrCom0033PopupTester';
 import ScrCom0035PopupTester from 'pages/_dev/ScrCom0035PopupTester';
 import ScrCom0036PopupTester from 'pages/_dev/ScrCom0036PopupTester';
 import ScrCom0038PopupTester from 'pages/_dev/ScrCom0038PopupTester';
+import ScrDoc0003PopupTester from 'pages/_dev/ScrDoc0003PopupTester';
 import DatagridCellJoin from 'pages/_exp/DatagridCellJoin';
 import DataGridCellType from 'pages/_exp/DatagridCellType';
 import DatagridColumnGroups from 'pages/_exp/DatagridColumnGroups';
@@ -510,6 +511,13 @@ const _ROUTES = [
     name: 'エラー確認（ポップアップ）テスター',
     path: '/_dev/tester/scr-com-0038',
     element: <ScrCom0038PopupTester />,
+  },
+  {
+    // SCR-DOC-0003 配送伝票一括印刷
+    id: 'SCR-DOC-0003',
+    name: '配送伝票一括印刷',
+    path: '/_dev/tester/scr-doc-0003',
+    element: <ScrDoc0003PopupTester />,
   },
   {
     // exp Experiments
