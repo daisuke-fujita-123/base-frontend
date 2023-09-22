@@ -326,8 +326,7 @@ const validationSchama = {
   representativeAddressBuildingName: yup
     .string()
     .label('番地・号・建物名など')
-    .max(10)
-    .required(),
+    .max(10),
   representativePhoneNumber: yup.string().label('TEL').max(13).phone(),
   representativeFaxNumber: yup.string().label('FAX').max(13).phone(),
   representativeMobilePhoneNumber: yup
@@ -553,7 +552,7 @@ const convertToCorporationBasicModel = (
     if (x.value === response.taxBusinessKind) return x.displayValue;
   });
 
-  return {
+  const corporationBasic: CorporationBasicModel = {
     corporationId: response.corporationId,
     corporationName: response.corporationName,
     corporationNameKana: response.corporationNameKana,
@@ -573,16 +572,19 @@ const convertToCorporationBasicModel = (
       taxBusinessKind === undefined ? '' : taxBusinessKind.displayValue,
     publicSafetyCommittee: response.publicSafetyCommittee,
     antiqueBusinessLicenseNumber: response.antiqueBusinessLicenseNumber,
-    issuanceDate: format(new Date(response.issuanceDate), 'yyyy/MM/dd'),
+    issuanceDate:
+      response.issuanceDate === null
+        ? ''
+        : format(new Date(response.issuanceDate), 'yyyy/MM/dd'),
     antiqueName: response.antiqueName,
     memberMemo: response.memberMemo,
     representativeName: response.representativeName,
     representativeNameKana: response.representativeNameKana,
     representativeGender: response.representativeGenderKind,
-    representativeBirth: format(
-      new Date(response.representativeBirthDate),
-      'yyyy/MM/dd'
-    ),
+    representativeBirth:
+      response.representativeBirthDate === null
+        ? ''
+        : format(new Date(response.representativeBirthDate), 'yyyy/MM/dd'),
     representativeAsset: response.possessionAssetsKind,
     representativeZipCode: response.representativeZipCode,
     representativePrefectureCode: response.representativePrefectureCode,
@@ -592,46 +594,104 @@ const convertToCorporationBasicModel = (
     representativePhoneNumber: response.representativePhoneNumber,
     representativeFaxNumber: response.representativeFaxNumber,
     representativeMobilePhoneNumber: response.representativeMobilePhoneNumber,
-    guarantorNo1: guarantorMasters[0].guarantorNo,
-    guarantorName1: guarantorMasters[0].guarantorName,
-    guarantorNameKana1: guarantorMasters[0].guarantorNameKana,
-    guarantorGender1: guarantorMasters[0].guarantorGenderKind,
-    guarantorBirth1: format(
-      new Date(guarantorMasters[0].guarantorBirthDate),
-      'yyyy/MM/dd'
-    ),
-    guarantorAsset1: guarantorMasters[0].guarantorPossessionAssetsKind,
-    guarantorRelationship1: guarantorMasters[0].guarantorRelationship,
-    guarantorZipCode1: guarantorMasters[0].guarantorZipCode,
-    guarantorPrefecture1: guarantorMasters[0].guarantorPrefectureCode,
-    guarantorMunicipalities1: guarantorMasters[0].guarantorMunicipalities,
-    guarantorAddressBuildingName1:
-      guarantorMasters[0].guarantorAddressBuildingName,
-    guarantorPhoneNumber1: guarantorMasters[0].guarantorPhoneNumber,
-    guarantorFaxNumber1: guarantorMasters[0].guarantorFaxNumber,
-    guarantorMobilePhoneNumber1: guarantorMasters[0].guarantorMobilePhoneNumber,
-    guarantorNo2: guarantorMasters[1].guarantorNo,
-    guarantorGender2: guarantorMasters[1].guarantorGenderKind,
-    guarantorBirth2: format(
-      new Date(guarantorMasters[1].guarantorBirthDate),
-      'yyyy/MM/dd'
-    ),
-    guarantorAsset2: guarantorMasters[1].guarantorPossessionAssetsKind,
-    guarantorRelationship2: guarantorMasters[1].guarantorRelationship,
-    guarantorZipCode2: guarantorMasters[1].guarantorZipCode,
-    guarantorPrefecture2: guarantorMasters[1].guarantorPrefectureCode,
-    guarantorMunicipalities2: guarantorMasters[1].guarantorMunicipalities,
-    guarantorAddressBuildingName2:
-      guarantorMasters[1].guarantorAddressBuildingName,
-    guarantorPhoneNumber2: guarantorMasters[1].guarantorPhoneNumber,
-    guarantorFaxNumber2: guarantorMasters[1].guarantorFaxNumber,
-    guarantorMobilePhoneNumber2: guarantorMasters[1].guarantorMobilePhoneNumber,
-    guarantorName2: guarantorMasters[1].guarantorName,
-    guarantorNameKana2: guarantorMasters[1].guarantorNameKana,
-
+    guarantorNo1: 0,
+    guarantorName1: '',
+    guarantorNameKana1: '',
+    guarantorGender1: '',
+    guarantorBirth1: '',
+    guarantorAsset1: '',
+    guarantorRelationship1: '',
+    guarantorZipCode1: '',
+    guarantorPrefecture1: '',
+    guarantorMunicipalities1: '',
+    guarantorAddressBuildingName1: '',
+    guarantorPhoneNumber1: '',
+    guarantorFaxNumber1: '',
+    guarantorMobilePhoneNumber1: '',
+    guarantorNo2: 0,
+    guarantorGender2: '',
+    guarantorBirth2: '',
+    guarantorAsset2: '',
+    guarantorRelationship2: '',
+    guarantorZipCode2: '',
+    guarantorPrefecture2: '',
+    guarantorMunicipalities2: '',
+    guarantorAddressBuildingName2: '',
+    guarantorPhoneNumber2: '',
+    guarantorFaxNumber2: '',
+    guarantorMobilePhoneNumber2: '',
+    guarantorName2: '',
+    guarantorNameKana2: '',
     changeHistoryNumber: '',
     changeExpectedDate: '',
   };
+
+  if (
+    guarantorMasters[0] !== undefined &&
+    guarantorMasters[0].guarantorNo === 1
+  ) {
+    corporationBasic.guarantorNo1 = guarantorMasters[0].guarantorNo;
+    corporationBasic.guarantorName1 = guarantorMasters[0].guarantorName;
+    corporationBasic.guarantorNameKana1 = guarantorMasters[0].guarantorNameKana;
+    corporationBasic.guarantorGender1 = guarantorMasters[0].guarantorGenderKind;
+    corporationBasic.guarantorBirth1 =
+      guarantorMasters[0].guarantorBirthDate === null
+        ? ''
+        : format(
+            new Date(guarantorMasters[0].guarantorBirthDate),
+            'yyyy/MM/dd'
+          );
+    corporationBasic.guarantorAsset1 =
+      guarantorMasters[0].guarantorPossessionAssetsKind;
+    corporationBasic.guarantorRelationship1 =
+      guarantorMasters[0].guarantorRelationship;
+    corporationBasic.guarantorZipCode1 = guarantorMasters[0].guarantorZipCode;
+    corporationBasic.guarantorPrefecture1 =
+      guarantorMasters[0].guarantorPrefectureCode;
+    corporationBasic.guarantorMunicipalities1 =
+      guarantorMasters[0].guarantorMunicipalities;
+    corporationBasic.guarantorAddressBuildingName1 =
+      guarantorMasters[0].guarantorAddressBuildingName;
+    corporationBasic.guarantorPhoneNumber1 =
+      guarantorMasters[0].guarantorPhoneNumber;
+    corporationBasic.guarantorFaxNumber1 =
+      guarantorMasters[0].guarantorFaxNumber;
+    corporationBasic.guarantorMobilePhoneNumber1 =
+      guarantorMasters[0].guarantorMobilePhoneNumber;
+  }
+
+  const guarantorMasters2 =
+    guarantorMasters[0] !== undefined && guarantorMasters[0].guarantorNo === 2
+      ? guarantorMasters[0]
+      : guarantorMasters[1];
+  if (guarantorMasters2 !== undefined) {
+    corporationBasic.guarantorNo2 = guarantorMasters2.guarantorNo;
+    corporationBasic.guarantorGender2 = guarantorMasters2.guarantorGenderKind;
+    corporationBasic.guarantorBirth2 =
+      guarantorMasters2.guarantorBirthDate === null
+        ? ''
+        : format(new Date(guarantorMasters2.guarantorBirthDate), 'yyyy/MM/dd');
+    corporationBasic.guarantorAsset2 =
+      guarantorMasters2.guarantorPossessionAssetsKind;
+    corporationBasic.guarantorRelationship2 =
+      guarantorMasters2.guarantorRelationship;
+    corporationBasic.guarantorZipCode2 = guarantorMasters2.guarantorZipCode;
+    corporationBasic.guarantorPrefecture2 =
+      guarantorMasters2.guarantorPrefectureCode;
+    corporationBasic.guarantorMunicipalities2 =
+      guarantorMasters2.guarantorMunicipalities;
+    corporationBasic.guarantorAddressBuildingName2 =
+      guarantorMasters2.guarantorAddressBuildingName;
+    corporationBasic.guarantorPhoneNumber2 =
+      guarantorMasters2.guarantorPhoneNumber;
+    corporationBasic.guarantorFaxNumber2 = guarantorMasters2.guarantorFaxNumber;
+    corporationBasic.guarantorMobilePhoneNumber2 =
+      guarantorMasters2.guarantorMobilePhoneNumber;
+    corporationBasic.guarantorName2 = guarantorMasters2.guarantorName;
+    corporationBasic.guarantorNameKana2 = guarantorMasters2.guarantorNameKana;
+  }
+
+  return corporationBasic;
 };
 
 /**
@@ -642,7 +702,7 @@ const convertToScrMem0003DataModel = (
   response: CorporationBasicModel
 ): ScrMem0003RegistrationCorporationInfoRequest => {
   const guarantorMasters: RegistGuarantor[] = [];
-  if (response.guarantorNo1 !== null) {
+  if (response.guarantorNo1 !== null || response.guarantorNo1 !== 0) {
     guarantorMasters.push({
       guarantorNo: 1,
       guarantorName: response.guarantorName1,
@@ -660,7 +720,7 @@ const convertToScrMem0003DataModel = (
       guarantorMobilePhoneNumber: response.guarantorMobilePhoneNumber1,
     });
   }
-  if (response.guarantorNo2 !== null) {
+  if (response.guarantorNo2 !== null || response.guarantorNo2 !== 0) {
     guarantorMasters.push({
       guarantorNo: 2,
       guarantorName: response.guarantorName2,
@@ -742,7 +802,7 @@ const convertToCreditInfoModel = (
           if (x.value === response.taxBusinessKind) return x.displayValue;
         });
 
-  return {
+  const corporationBasic: CorporationBasicModel = {
     corporationId: response.corporationId,
     corporationName: response.corporationName,
     corporationNameKana: response.corporationNameKana,
@@ -761,13 +821,19 @@ const convertToCreditInfoModel = (
     taxBusinessKind: taxBusinessKind[0] === undefined ? '' : taxBusinessKind[0],
     publicSafetyCommittee: response.publicSafetyCommittee,
     antiqueBusinessLicenseNumber: response.antiqueBusinessLicenseNumber,
-    issuanceDate: response.issuanceDate,
+    issuanceDate:
+      response.issuanceDate === null
+        ? ''
+        : format(new Date(response.issuanceDate), 'yyyy/MM/dd'),
     antiqueName: response.antiqueName,
     memberMemo: response.memberMemo,
     representativeName: response.representativeName,
     representativeNameKana: response.representativeNameKana,
     representativeGender: response.representativeGenderKind,
-    representativeBirth: response.representativeBirthDate,
+    representativeBirth:
+      response.representativeBirthDate === null
+        ? ''
+        : format(new Date(response.representativeBirthDate), 'yyyy/MM/dd'),
     representativeAsset: response.possessionAssetsKind,
     representativeZipCode: response.representativeZipCode,
     representativePrefectureCode: response.representativePrefectureCode,
@@ -777,40 +843,104 @@ const convertToCreditInfoModel = (
     representativePhoneNumber: response.representativePhoneNumber,
     representativeFaxNumber: response.representativeFaxNumber,
     representativeMobilePhoneNumber: response.representativeMobilePhoneNumber,
-    guarantorNo1: guarantorMasters[0].guarantorNo,
-    guarantorName1: guarantorMasters[0].guarantorName,
-    guarantorNameKana1: guarantorMasters[0].guarantorNameKana,
-    guarantorGender1: guarantorMasters[0].guarantorGenderKind,
-    guarantorBirth1: guarantorMasters[0].guarantorBirthDate,
-    guarantorAsset1: guarantorMasters[0].guarantorPossessionAssetsKind,
-    guarantorRelationship1: guarantorMasters[0].guarantorRelationship,
-    guarantorZipCode1: guarantorMasters[0].guarantorZipCode,
-    guarantorPrefecture1: guarantorMasters[0].guarantorPrefectureCode,
-    guarantorMunicipalities1: guarantorMasters[0].guarantorMunicipalities,
-    guarantorAddressBuildingName1:
-      guarantorMasters[0].guarantorAddressBuildingName,
-    guarantorPhoneNumber1: guarantorMasters[0].guarantorPhoneNumber,
-    guarantorFaxNumber1: guarantorMasters[0].guarantorFaxNumber,
-    guarantorMobilePhoneNumber1: guarantorMasters[0].guarantorMobilePhoneNumber,
-    guarantorNo2: guarantorMasters[1].guarantorNo,
-    guarantorGender2: guarantorMasters[1].guarantorGenderKind,
-    guarantorBirth2: guarantorMasters[1].guarantorBirthDate,
-    guarantorAsset2: guarantorMasters[1].guarantorPossessionAssetsKind,
-    guarantorRelationship2: guarantorMasters[1].guarantorRelationship,
-    guarantorZipCode2: guarantorMasters[1].guarantorZipCode,
-    guarantorPrefecture2: guarantorMasters[1].guarantorPrefectureCode,
-    guarantorMunicipalities2: guarantorMasters[1].guarantorMunicipalities,
-    guarantorAddressBuildingName2:
-      guarantorMasters[1].guarantorAddressBuildingName,
-    guarantorPhoneNumber2: guarantorMasters[1].guarantorPhoneNumber,
-    guarantorFaxNumber2: guarantorMasters[1].guarantorFaxNumber,
-    guarantorMobilePhoneNumber2: guarantorMasters[1].guarantorMobilePhoneNumber,
-    guarantorName2: guarantorMasters[1].guarantorName,
-    guarantorNameKana2: guarantorMasters[1].guarantorNameKana,
-
-    changeHistoryNumber: changeHistoryNumber,
+    guarantorNo1: 0,
+    guarantorName1: '',
+    guarantorNameKana1: '',
+    guarantorGender1: '',
+    guarantorBirth1: '',
+    guarantorAsset1: '',
+    guarantorRelationship1: '',
+    guarantorZipCode1: '',
+    guarantorPrefecture1: '',
+    guarantorMunicipalities1: '',
+    guarantorAddressBuildingName1: '',
+    guarantorPhoneNumber1: '',
+    guarantorFaxNumber1: '',
+    guarantorMobilePhoneNumber1: '',
+    guarantorNo2: 0,
+    guarantorGender2: '',
+    guarantorBirth2: '',
+    guarantorAsset2: '',
+    guarantorRelationship2: '',
+    guarantorZipCode2: '',
+    guarantorPrefecture2: '',
+    guarantorMunicipalities2: '',
+    guarantorAddressBuildingName2: '',
+    guarantorPhoneNumber2: '',
+    guarantorFaxNumber2: '',
+    guarantorMobilePhoneNumber2: '',
+    guarantorName2: '',
+    guarantorNameKana2: '',
+    changeHistoryNumber: '',
     changeExpectedDate: '',
   };
+
+  if (
+    guarantorMasters[0] !== undefined &&
+    guarantorMasters[0].guarantorNo === 1
+  ) {
+    corporationBasic.guarantorNo1 = guarantorMasters[0].guarantorNo;
+    corporationBasic.guarantorName1 = guarantorMasters[0].guarantorName;
+    corporationBasic.guarantorNameKana1 = guarantorMasters[0].guarantorNameKana;
+    corporationBasic.guarantorGender1 = guarantorMasters[0].guarantorGenderKind;
+    corporationBasic.guarantorBirth1 =
+      guarantorMasters[0].guarantorBirthDate === null
+        ? ''
+        : format(
+            new Date(guarantorMasters[0].guarantorBirthDate),
+            'yyyy/MM/dd'
+          );
+    corporationBasic.guarantorAsset1 =
+      guarantorMasters[0].guarantorPossessionAssetsKind;
+    corporationBasic.guarantorRelationship1 =
+      guarantorMasters[0].guarantorRelationship;
+    corporationBasic.guarantorZipCode1 = guarantorMasters[0].guarantorZipCode;
+    corporationBasic.guarantorPrefecture1 =
+      guarantorMasters[0].guarantorPrefectureCode;
+    corporationBasic.guarantorMunicipalities1 =
+      guarantorMasters[0].guarantorMunicipalities;
+    corporationBasic.guarantorAddressBuildingName1 =
+      guarantorMasters[0].guarantorAddressBuildingName;
+    corporationBasic.guarantorPhoneNumber1 =
+      guarantorMasters[0].guarantorPhoneNumber;
+    corporationBasic.guarantorFaxNumber1 =
+      guarantorMasters[0].guarantorFaxNumber;
+    corporationBasic.guarantorMobilePhoneNumber1 =
+      guarantorMasters[0].guarantorMobilePhoneNumber;
+  }
+
+  const guarantorMasters2 =
+    guarantorMasters[0] !== undefined && guarantorMasters[0].guarantorNo === 2
+      ? guarantorMasters[0]
+      : guarantorMasters[1];
+  if (guarantorMasters2 !== undefined) {
+    corporationBasic.guarantorNo2 = guarantorMasters2.guarantorNo;
+    corporationBasic.guarantorGender2 = guarantorMasters2.guarantorGenderKind;
+    corporationBasic.guarantorBirth2 =
+      guarantorMasters2.guarantorBirthDate === null
+        ? ''
+        : format(new Date(guarantorMasters2.guarantorBirthDate), 'yyyy/MM/dd');
+    corporationBasic.guarantorAsset2 =
+      guarantorMasters2.guarantorPossessionAssetsKind;
+    corporationBasic.guarantorRelationship2 =
+      guarantorMasters2.guarantorRelationship;
+    corporationBasic.guarantorZipCode2 = guarantorMasters2.guarantorZipCode;
+    corporationBasic.guarantorPrefecture2 =
+      guarantorMasters2.guarantorPrefectureCode;
+    corporationBasic.guarantorMunicipalities2 =
+      guarantorMasters2.guarantorMunicipalities;
+    corporationBasic.guarantorAddressBuildingName2 =
+      guarantorMasters2.guarantorAddressBuildingName;
+    corporationBasic.guarantorPhoneNumber2 =
+      guarantorMasters2.guarantorPhoneNumber;
+    corporationBasic.guarantorFaxNumber2 = guarantorMasters2.guarantorFaxNumber;
+    corporationBasic.guarantorMobilePhoneNumber2 =
+      guarantorMasters2.guarantorMobilePhoneNumber;
+    corporationBasic.guarantorName2 = guarantorMasters2.guarantorName;
+    corporationBasic.guarantorNameKana2 = guarantorMasters2.guarantorNameKana;
+  }
+
+  return corporationBasic;
 };
 
 /**
@@ -921,7 +1051,7 @@ const convertFromCorporationInfoModel = (
       : new Date().toLocaleDateString();
   newScrMem0003Data.registrationChangeMemo = registrationChangeMemo;
   newScrMem0003Data.screenId = 'SCR-MEM-0003';
-  newScrMem0003Data.tabId = 'B-3';
+  newScrMem0003Data.tabId = '1';
 
   return newScrMem0003Data;
 };
@@ -932,8 +1062,8 @@ const convertFromCorporationInfoModel = (
 const convertToSectionList = (dirtyFields: object): sectionList[] => {
   const fields = Object.keys(dirtyFields);
   const sectionList: sectionList[] = [];
-  const columnList: columnList[] = [];
   sectionDef.forEach((d) => {
+    const columnList: columnList[] = [];
     fields.forEach((f) => {
       if (d.fields.includes(f)) {
         columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
@@ -1327,7 +1457,7 @@ const ScrMem0003BasicTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
-        tabId: 3,
+        tabId: 1,
         masterId: corporationId,
         businessDate: user.taskDate,
       };
@@ -1541,8 +1671,6 @@ const ScrMem0003BasicTab = (props: {
         municipalities: getValues('corporationMunicipalities'),
         addressBuildingName: getValues('corporationAddressBuildingName'),
         phoneNumber: getValues('corporationPhoneNumber'),
-        faxNumber: getValues('corporationFaxNumber'),
-        mailAddress: getValues('corporationMailAddress'),
         publicSafetyCommittee: getValues('publicSafetyCommittee'),
         antiqueBusinessLicenseNumber: getValues('antiqueBusinessLicenseNumber'),
       };
@@ -1552,15 +1680,15 @@ const ScrMem0003BasicTab = (props: {
       );
 
     const errorList: errorList[] = [];
-    scrMem0010GetMemberResponse.errorList.map((x) => {
+    scrMem0010GetMemberResponse.errorList.forEach((x) => {
       errorList.push({
         errorCode: x.errorCode,
         errorMessage: x.errorMessage,
       });
     });
     if (
-      getValues('corporationFaxNumber') !== '' &&
-      getValues('corporationMailAddress') !== ''
+      getValues('corporationFaxNumber') === '' &&
+      getValues('corporationMailAddress') === ''
     ) {
       errorList.push({
         errorCode: 'MSG-FR-ERR-00058',
@@ -1572,21 +1700,23 @@ const ScrMem0003BasicTab = (props: {
       errorList: errorList,
       warningList: scrMem0010GetMemberResponse.warnList.map((x) => {
         return {
-          warningCode: x.errorCode,
-          warningMessage: x.errorMessage,
+          warningCode: x.warnCode,
+          warningMessage: x.warnMessage,
         };
       }),
       registrationChangeList: [
         {
           screenId: 'SCR-MEM-0003',
           screenName: '法人情報詳細',
-          tabId: 3,
+          tabId: 1,
           tabName: '基本情報',
           sectionList: convertToSectionList(dirtyFields),
         },
       ],
       changeExpectDate: user.taskDate,
     });
+
+    setIsOpenPopup(true);
   };
 
   /**

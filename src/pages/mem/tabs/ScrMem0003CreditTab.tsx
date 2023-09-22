@@ -335,7 +335,7 @@ const convertFromRegistrationCreditInfoModel = (
       : new Date().toLocaleDateString();
   newScrMem0003Data.registrationChangeMemo = registrationChangeMemo;
   newScrMem0003Data.screenId = 'SCR-MEM-0003';
-  newScrMem0003Data.tabId = 'B-4';
+  newScrMem0003Data.tabId = '2';
 
   return newScrMem0003Data;
 };
@@ -417,7 +417,7 @@ const ScrMem0003CreditTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
-        tabId: 4,
+        tabId: 2,
         masterId: corporationId,
         businessDate: user.taskDate,
       };
@@ -466,7 +466,7 @@ const ScrMem0003CreditTab = (props: {
       // 変更予定日取得
       const getChangeDateRequest = {
         screenId: 'SCR-MEM-0003',
-        tabId: 4,
+        tabId: 2,
         masterId: corporationId,
         businessDate: user.taskDate,
       };
@@ -586,7 +586,7 @@ const ScrMem0003CreditTab = (props: {
         {
           screenId: 'SCR-MEM-0003',
           screenName: '法人情報詳細',
-          tabId: 4,
+          tabId: 2,
           tabName: '与信情報',
           sectionList: convertToSectionList(dirtyFields),
         },
