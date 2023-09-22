@@ -932,8 +932,8 @@ const convertFromCorporationInfoModel = (
 const convertToSectionList = (dirtyFields: object): sectionList[] => {
   const fields = Object.keys(dirtyFields);
   const sectionList: sectionList[] = [];
-  const columnList: columnList[] = [];
   sectionDef.forEach((d) => {
+    const columnList: columnList[] = [];
     fields.forEach((f) => {
       if (d.fields.includes(f)) {
         columnList.push({ columnName: d.name[d.fields.indexOf(f)] });
@@ -1541,8 +1541,6 @@ const ScrMem0003BasicTab = (props: {
         municipalities: getValues('corporationMunicipalities'),
         addressBuildingName: getValues('corporationAddressBuildingName'),
         phoneNumber: getValues('corporationPhoneNumber'),
-        faxNumber: getValues('corporationFaxNumber'),
-        mailAddress: getValues('corporationMailAddress'),
         publicSafetyCommittee: getValues('publicSafetyCommittee'),
         antiqueBusinessLicenseNumber: getValues('antiqueBusinessLicenseNumber'),
       };
@@ -1552,7 +1550,7 @@ const ScrMem0003BasicTab = (props: {
       );
 
     const errorList: errorList[] = [];
-    scrMem0010GetMemberResponse.errorList.map((x) => {
+    scrMem0010GetMemberResponse.errorList.forEach((x) => {
       errorList.push({
         errorCode: x.errorCode,
         errorMessage: x.errorMessage,
@@ -1572,8 +1570,8 @@ const ScrMem0003BasicTab = (props: {
       errorList: errorList,
       warningList: scrMem0010GetMemberResponse.warnList.map((x) => {
         return {
-          warningCode: x.errorCode,
-          warningMessage: x.errorMessage,
+          warningCode: x.warnCode,
+          warningMessage: x.warnMessage,
         };
       }),
       registrationChangeList: [
@@ -1587,6 +1585,8 @@ const ScrMem0003BasicTab = (props: {
       ],
       changeExpectDate: user.taskDate,
     });
+
+    setIsOpenPopup(true);
   };
 
   /**
