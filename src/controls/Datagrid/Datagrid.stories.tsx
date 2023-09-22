@@ -239,14 +239,30 @@ export const Example = () => {
     },
   ];
 
-  const validationSchema: ObjectSchema<any> = yup.object({
-    input1: yup.string().required().max(10).label('Input 1'),
-    input2: yup.string().required().max(10).label('Input 2'),
-    fromto: yup
-      .array()
-      .of(yup.string().required().label('FromTo'))
-      .label('Select'),
-  });
+  const validationSchema: ObjectSchema<any> = yup
+    .object({
+      input1: yup.string().required().max(10).label('Input 1'),
+      input2: yup.string().required().max(10).label('Input 2'),
+      fromto: yup
+        .array()
+        .of(yup.string().required().label('FromTo'))
+        .label('Select'),
+    })
+    .test(
+      'positive',
+      ({ label }) => {
+        return `の場合必須です`;
+      },
+      (value: any) => {
+        if (value.select === '1' && value.radio === '1')
+          if (value.input1 !== '') {
+            return true;
+          } else {
+            return false;
+          }
+        return true;
+      }
+    );
 
   const apiRef = useGridApiRef();
 
