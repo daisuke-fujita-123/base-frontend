@@ -33,6 +33,7 @@ import { Box, Stack, styled, Tooltip } from '@mui/material';
 import {
   DataGridPro as MuiDataGridPro,
   DataGridProProps,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
   GridColDef as MuiGridColDef,
   GridColumnHeaderParams,
   GridRenderCellParams,
@@ -583,7 +584,7 @@ export const DataGrid = (props: DataGridProps) => {
 
   const generateTooltipCell = (params: GridRenderCellParams<any>) => {
     const map = tooltips?.find((x) => x.field === params.field);
-    const tooltip = map?.tooltips.find((x: any) => x.id === String(params.id));
+    const tooltip = map?.tooltips.find((x: any) => x.id === params.id);
     const text = tooltip !== undefined ? tooltip.text : '';
     return (
       <Tooltip title={text} placement='right' arrow>
@@ -744,6 +745,7 @@ export const exportCsv = (
 ) => {
   const colDef = apiRef.current.getAllColumns();
   const rowIds = apiRef.current.getAllRowIds();
+  const crlf = '\r\n';
 
   // DataGridのid列の除外、囲み文字の追加
   const data = rowIds.map((x) => {
@@ -760,13 +762,12 @@ export const exportCsv = (
   // CSVの文字列を生成
   const header =
     colDef
-      .map((x) => {
-        return `"${x.headerName}"`;
-      })
-      .join(',') + '\r\n';
+      .filter((x) => x.field !== GRID_CHECKBOX_SELECTION_COL_DEF.field)
+      .map((x) => `"${x.headerName}"`)
+      .join(',') + crlf;
   const rows = Papa.unparse(data, {
     delimiter: ',',
-    newline: '\r\n',
+    newline: crlf,
     quoteChar: '',
     escapeChar: '',
     header: false,

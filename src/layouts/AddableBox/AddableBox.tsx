@@ -76,7 +76,9 @@ export const AddableBox = (props: AddableBoxProps) => {
         </ContentsBox>
       ))}
       <CenterBox>
-        <AddButton onClick={handleAddClick}>明細追加</AddButton>
+        <AddButton onClick={handleAddClick} disable={children.length >= 15}>
+          明細追加
+        </AddButton>
       </CenterBox>
     </>
   );

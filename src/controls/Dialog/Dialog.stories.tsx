@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
 import { ComponentMeta, ComponentStoryObj } from '@storybook/react';
-import { Button } from '@mui/material';
+import React, { useState } from 'react';
+
 import { Dialog } from 'controls/Dialog';
+
+import { Button } from '@mui/material';
 
 export default {
   component: Dialog,
@@ -14,7 +16,8 @@ export default {
       description: 'ダイアログのtitle文',
     },
     buttons: {
-      description: '右下に配置するボタンオブジェクト。nameはボタンの表示名、onClickはonClick時のイベント。',
+      description:
+        '右下に配置するボタンオブジェクト。nameはボタンの表示名、onClickはonClick時のイベント。',
     },
   },
 } as ComponentMeta<typeof Dialog>;
@@ -39,7 +42,7 @@ export const Index: ComponentStoryObj<typeof Dialog> = {
 export const Example = () => {
   const [handleDialog, setHandleDialog] = useState(false);
 
-  const title = 'ダイアログのタイトルです。';
+  const title = `ダイアログのタイトルです。\nメッセージ・・・・`;
 
   // openDialogHandleとcloseDialogHandleを1つの関数にリファクタリングしたい。
   const openDialogHandle = () => {
@@ -62,3 +65,4 @@ export const Example = () => {
     </>
   );
 };
+

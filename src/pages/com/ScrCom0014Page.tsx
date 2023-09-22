@@ -1891,6 +1891,7 @@ const ScrCom0014Page = () => {
             <Section name='条件設定'>
               <ThemeProvider theme={theme}>
                 <ConditionalTable
+                  name=''
                   reorderable
                   adjustableSubConditionCount
                   columns={columns}
@@ -1899,20 +1900,20 @@ const ScrCom0014Page = () => {
                   // 条件 選択肢
                   operators={operators}
                   // 条件種類,条件,値の初期値
-                  rows={conditions}
+                  // rows={conditions}
                   // 条件種類変更時の処理
-                  onConditionKindChange={handleOnConditionTypeChange}
+                  // onConditionKindChange={handleOnConditionTypeChange}
                   // 条件・値 変更時の処理
-                  onSubConditionChange={handleOnSubConditionChange}
+                  // onSubConditionChange={handleOnSubConditionChange}
                   // 順番
-                  onOrderChangeClick={handleOnDrderChangeClick}
+                  // onOrderChangeClick={handleOnDrderChangeClick}
                   // 上限の増減のカウント
-                  onConditionCountChangeClick={
-                    handleOnConditionCountChangeClick
-                  }
-                  onSubConditionCoountChangeClick={
-                    handleOnSubConditionCoountChangeClick
-                  }
+                  // onConditionCountChangeClick={
+                  //   handleOnConditionCountChangeClick
+                  // }
+                  // onSubConditionCoountChangeClick={
+                  //   handleOnSubConditionCoountChangeClick
+                  // }
                 />
               </ThemeProvider>
               <CenterBox>
