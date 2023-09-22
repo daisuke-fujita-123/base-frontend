@@ -1892,7 +1892,6 @@ const ScrMem0012Page = () => {
         };
         const getDistrictStaffNameResponse =
           await ScrMem0012GetDistrictStaffName(getDistrictStaffNameRequest);
-        setValue('districtCode', getDistrictStaffNameResponse.districtCode);
         setValue('tvaaNewSalesId', getDistrictStaffNameResponse.tvaaNewSalesId);
         setValue('bikeNewSalesId', getDistrictStaffNameResponse.bikeNewSalesId);
         setValue('tvaaSalesId1', getDistrictStaffNameResponse.tvaaSalesId1);
