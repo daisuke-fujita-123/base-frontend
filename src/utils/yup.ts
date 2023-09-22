@@ -44,6 +44,8 @@ declare module 'yup' {
     phone(this: StringSchema): StringSchema;
     // アドレス
     address(this: StringSchema): StringSchema;
+    // 日付FromTo
+    fromTo(this: StringSchema): StringSchema;
   }
   interface NumberSchema {
     // 千円単位表示
@@ -163,6 +165,38 @@ yup.addMethod(yup.StringSchema, 'address', function () {
     /^[A-Za-z0-9]{1}[A-Za-z0-9_.-]*@{1}[A-Za-z0-9_.-]+.[A-Za-z0-9]+$/,
     {
       message: 'メールアドレス形式で入力してください。',
+    }
+  );
+});
+
+yup.addMethod(yup.StringSchema, 'fromTo', function () {
+  return this.test(
+    'fromTo',
+    ({ label }) => {
+      if (label.match(/(FROM)/g)) {
+        return `${label}はToより以前の日付です`;
+      }
+      if (label.match(/(TO)/g)) {
+        return `${label}はFromより以降の日付です`;
+      }
+    },
+    function (this: any) {
+      const path: string = this.path;
+      const { parent } = this;
+      const id = path.replace(/(From|To)/g, '');
+      let from: any = '';
+      let to: any = '';
+      const list = Object.entries(parent);
+      list.forEach((x) => {
+        if (x[0] === id + 'To') {
+          to = x[1];
+        } else if (x[0] === id + 'From') {
+          from = x[1];
+        }
+      });
+      if (!from) return true;
+      if (!to) return true;
+      return new Date(from).getDate() <= new Date(to).getDate();
     }
   );
 });
