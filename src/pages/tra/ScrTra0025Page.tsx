@@ -742,7 +742,7 @@ const ScrTra0025Page = () => {
   }, [userEditPermission]);
 
   // 行表示更新用
-  const [setCount] = useState<number>(0);
+  const [count, setCount] = useState<number>(0);
 
   /**
    * 行が編集された時のイベントハンドラ
