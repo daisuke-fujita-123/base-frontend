@@ -49,7 +49,7 @@ export interface ScrCom0008RegistUpdateReportCommentRequest {
   /** 登録変更メモ */
   registrationChangeMemo: string;
   /** 変更予定日 */
-  changeExpectDate: string | null;
+  changeExpectDate: string;
   /** 画面ID */
   screenId: string;
 }
@@ -82,7 +82,7 @@ export interface ScrCom9999GetHistoryInfoResponse {
     /** 登録変更メモ */
     registrationChangeMemo: string;
     /** 変更予定日 */
-    changeExpectDate: string | null;
+    changeExpectDate: string;
     /** 画面ID */
     screenId: string;
   };
