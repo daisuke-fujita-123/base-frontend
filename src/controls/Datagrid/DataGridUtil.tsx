@@ -61,6 +61,23 @@ export const convertFromResolverToInvalids = (
       defaultInvalids.push(...invalid);
     }
   });
+  // 相関バリデーションを追加
+  resolver.tests.forEach((x) => {
+    if (
+      x.OPTIONS === undefined ||
+      x.OPTIONS.name === undefined ||
+      x.OPTIONS.message === undefined ||
+      typeof x.OPTIONS.message !== 'string'
+    )
+      return;
+    const invalid: InvalidModel = {
+      field: x.OPTIONS.name,
+      type: x.OPTIONS.name,
+      message: x.OPTIONS.message,
+      ids: [],
+    };
+    defaultInvalids.push(invalid);
+  });
   return defaultInvalids;
 };
 
@@ -76,10 +93,16 @@ export const appendErrorToInvalids = (
   id: string
 ) => {
   err.forEach((e) => {
-    const invalid = invalids.find(
-      // 配列に対するバリデーションエラーは、インデックス付のパスになるため前方一致で判断
-      (x) => e.path?.startsWith(x.field) && x.type === e.type
-    );
+    const invalid = invalids.find((x) => {
+      if (e.path === undefined) return false;
+      if (e.path === '') {
+        // 相関チェックエラーはe.pathが空文字になる
+        return x.type === e.type;
+      } else {
+        // 配列に対するバリデーションエラーは、インデックス付のパスになるため前方一致で判断
+        return e.path.startsWith(x.field) && x.type === e.type;
+      }
+    });
     if (invalid === undefined) return;
     if (!invalid.ids.includes(id)) invalid.ids.push(id);
     invalid.message = e.message;
