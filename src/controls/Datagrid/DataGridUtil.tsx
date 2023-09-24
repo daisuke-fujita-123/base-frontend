@@ -1,6 +1,7 @@
 import { ObjectSchema, ValidationError } from 'yup';
 
 import { GridColDef } from '@mui/x-data-grid-pro';
+import { InvalidModel } from './Datagrid';
 
 export const convertFromSizeToWidth = (size: string | undefined): number => {
   if (size === undefined) return 80;
@@ -21,16 +22,6 @@ export const resolveGridWidth = (
     checkboxWidth
   );
 };
-
-/**
- * バリデーションデータモデル
- */
-export interface InvalidModel {
-  field: string;
-  type: string;
-  message: string;
-  ids: any[];
-}
 
 export const convertFromResolverToInvalids = (
   resolver: ObjectSchema<any>
@@ -90,7 +81,7 @@ export const removeIdFromInvalids = (invalids: InvalidModel[], id: string) => {
 export const appendErrorToInvalids = (
   invalids: InvalidModel[],
   err: ValidationError[],
-  id: string
+  id: string | number
 ) => {
   err.forEach((e) => {
     const invalid = invalids.find((x) => {
