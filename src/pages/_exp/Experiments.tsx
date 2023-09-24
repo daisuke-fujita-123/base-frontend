@@ -11,7 +11,7 @@ import { MainLayout } from 'layouts/MainLayout';
 import { Section, SectionClose } from 'layouts/Section';
 import { ColStack } from 'layouts/Stack';
 
-import { Button, PrimaryButton, SearchButton } from 'controls/Button';
+import { PrimaryButton, SearchButton } from 'controls/Button';
 import { Checkbox } from 'controls/Checkbox';
 import { DataGrid, GridColDef, GridTooltipsModel } from 'controls/Datagrid';
 import { DatePicker } from 'controls/DatePicker';
@@ -30,7 +30,6 @@ import { AppContext } from 'providers/AppContextProvider';
 import { AuthContext } from 'providers/AuthProvider';
 
 import { useGridApiRef } from '@mui/x-data-grid-pro';
-
 import saveAs from 'file-saver';
 
 /**
@@ -130,23 +129,23 @@ const searchConditionSchema = {
 
   string1: yup.string().required().half().label('ストリング1'),
   string2: yup.string().max(5).label('ストリング2'),
-  string3: yup.string().number().label('ストリング3'),
-  string4: yup.string().numberWithComma().label('ストリング4'),
-  string5: yup.string().date().label('ストリング5'),
-  string6: yup.string().time().label('ストリング6'),
-  string7: yup.string().datetime().label('ストリング7'),
-  string8: yup.string().unitOf1000Yen().label('ストリング8'),
-  string9: yup.string().positive().label('ストリング9'),
-  string10: yup.string().notZero().label('ストリング10'),
-  string11: yup.string().phone().label('ストリング11'),
+  // string3: yup.string().number().label('ストリング3'),
+  // string4: yup.string().numberWithComma().label('ストリング4'),
+  // string5: yup.string().date().label('ストリング5'),
+  // string6: yup.string().time().label('ストリング6'),
+  // string7: yup.string().datetime().label('ストリング7'),
+  // string8: yup.string().unitOf1000Yen().label('ストリング8'),
+  // string9: yup.string().positive().label('ストリング9'),
+  // string10: yup.string().notZero().label('ストリング10'),
+  // string11: yup.string().phone().label('ストリング11'),
 
-  number1: yup.number().unitOf1000Yen().label('ナンバー1'),
-  number2: yup.number().positive().label('ナンバー2'),
-  number3: yup.number().notZero().label('ナンバー3'),
+  // number1: yup.number().unitOf1000Yen().label('ナンバー1'),
+  // number2: yup.number().positive().label('ナンバー2'),
+  // number3: yup.number().notZero().label('ナンバー3'),
 
-  select1: yup.string().required(),
-  select2: yup.number().required(),
-  file: yup.mixed().required().label('ファイル'),
+  // select1: yup.string().required(),
+  // select2: yup.number().required(),
+  // file: yup.mixed().required().label('ファイル'),
 };
 
 /**
@@ -177,6 +176,7 @@ const searchResultColDef: GridColDef[] = [
   {
     field: 'lastname',
     headerName: 'Last Name',
+    tooltip: true,
     size: 'l',
   },
   {
@@ -239,8 +239,8 @@ const tooltips: GridTooltipsModel[] = [
   {
     field: 'firstname',
     tooltips: [
-      { id: '0', text: 'firstname 0' },
-      { id: '1', text: 'firstname 1' },
+      { id: 0, text: 'firstname 0' },
+      { id: 1, text: 'firstname 1' },
     ],
   },
   {
@@ -298,6 +298,9 @@ const Experiments = () => {
   // ref
   const apiRef = useGridApiRef();
 
+  // Sectionの開閉処理
+  const sectionRef = useRef<SectionClose>();
+
   const fetch = async () => {
     try {
       const countries = await _expApiClient.get('/_exp/countries');
@@ -343,8 +346,15 @@ const Experiments = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Sectionの開閉処理
-  const sectionRef = useRef<SectionClose>();
+  const handleUpdateClick = async () => {
+    await trigger();
+    console.log(getValues());
+    if (!methods.formState.isValid) {
+      console.log('input is valied');
+      return;
+    }
+    reset(getValues());
+  };
 
   const handleSeachClick = async () => {
     try {
@@ -370,16 +380,25 @@ const Experiments = () => {
       sectionRef.current.closeSection();
   };
 
-  const handleUpdateClick = async () => {
-    // apiRef.current.updateRows([{ id: 1 }, { id: 9999 }]);
-    await trigger();
-    console.log(getValues());
-    console.log(datalist);
-    if (methods.formState.isValid) {
-      console.log('input is valied');
-    } else {
-      console.log('input is invalied');
-    }
+  const handleRowValueChange = (row: any) => {
+    console.log(row);
+  };
+
+  const handleLinkClick = (url: string) => {
+    navigate(url);
+  };
+
+  const handleOnBlur = (name: string) => {
+    console.log(`handleOnBlur: ${name}`);
+  };
+
+  const handleGetCellDisabled = (params: any) => {
+    if (params.field === 'input' && params.id === 0) return true;
+    if (params.field === 'select' && params.id === 1) return true;
+    if (params.field === 'radio' && params.id === 2) return true;
+    if (params.field === 'checkbox' && params.id === 3) return true;
+    if (params.field === 'datepicker' && params.id === 4) return true;
+    return false;
   };
 
   const handlePreviewPdfClick = async () => {
@@ -405,18 +424,6 @@ const Experiments = () => {
     });
     const blob = new Blob([response.data], { type: 'text/csv' });
     saveAs(blob, 'hello.csv');
-  };
-
-  const handleRowValueChange = (row: any) => {
-    console.log(row);
-  };
-
-  const handleLinkClick = (url: string) => {
-    navigate(url);
-  };
-
-  const handleOnBlur = (name: string) => {
-    console.log(`handleOnBlur: ${name}`);
   };
 
   return (
@@ -526,10 +533,12 @@ const Experiments = () => {
                 <FileSelect name='file' label='ファイル' />
               </Grid>
             </Grid>
+            <CenterBox>
+              <PrimaryButton onClick={handleUpdateClick}>更新</PrimaryButton>
+            </CenterBox>
             <ContentsDivider />
             <CenterBox>
               <SearchButton onClick={handleSeachClick}>検索</SearchButton>
-              <Button onClick={handleUpdateClick}>更新</Button>
             </CenterBox>
           </Section>
         </FormProvider>
@@ -562,14 +571,7 @@ const Experiments = () => {
             // getCellClassName={(params) => {
             //   return 'cold';
             // }}
-            getCellDisabled={(params) => {
-              if (params.field === 'input' && params.id === 0) return true;
-              if (params.field === 'select' && params.id === 1) return true;
-              if (params.field === 'radio' && params.id === 2) return true;
-              if (params.field === 'checkbox' && params.id === 3) return true;
-              if (params.field === 'datepicker' && params.id === 4) return true;
-              return false;
-            }}
+            getCellDisabled={handleGetCellDisabled}
             apiRef={apiRef}
           />
         </Section>

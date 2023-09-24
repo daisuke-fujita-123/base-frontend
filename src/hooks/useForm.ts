@@ -36,9 +36,7 @@ export const useForm = <
 
   // 初回値変更時処理
   useEffect(() => {
-    if (isDirty) {
-      setNeedsConfirmNavigate(true);
-    }
+    setNeedsConfirmNavigate(isDirty);
   }, [isDirty]);
 
   return methods;
