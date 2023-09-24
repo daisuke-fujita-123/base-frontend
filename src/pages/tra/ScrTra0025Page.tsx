@@ -288,7 +288,7 @@ const PaymentDetailsDispInitialValues: PaymentDetailsDispModel = {
 const CodeManagementSelectValuesModel = (
   paymentKindResponse: ScrCom9999GetCodeManagementMasterResponse
 ): SelectValue[] => {
-  return paymentKindResponse.searchGetCodeManagementMasterListbox.map((x) => {
+  return paymentKindResponse.list.map((x) => {
     return {
       value: x.codeValue,
       displayValue: x.codeName,
@@ -666,11 +666,11 @@ const ScrTra0025Page = () => {
       // プルダウンからおまとめ以外の場合、出金止相殺を削除
       if (response.claimClassification !== 'おまとめ') {
         let index = 0;
-        paymentKindResponse.searchGetCodeManagementMasterListbox.forEach(
+        paymentKindResponse.list.forEach(
           (x) => {
             // 出金止相殺
             if (x.codeName === '出金止相殺') {
-              paymentKindResponse.searchGetCodeManagementMasterListbox.splice(
+              paymentKindResponse.list.splice(
                 index,
                 1
               );
@@ -682,11 +682,11 @@ const ScrTra0025Page = () => {
       // プルダウンから自社IDフラグがfalseかつ出金種別が自社取引を削除
       if (response.ownCompanyFlag === false) {
         let index = 0;
-        paymentKindResponse.searchGetCodeManagementMasterListbox.forEach(
+        paymentKindResponse.list.forEach(
           (x) => {
             // 自社取引
             if (x.codeName === '自社取引') {
-              paymentKindResponse.searchGetCodeManagementMasterListbox.splice(
+              paymentKindResponse.list.splice(
                 index,
                 1
               );
@@ -703,7 +703,7 @@ const ScrTra0025Page = () => {
         codeName: '',
       };
 
-      paymentKindResponse.searchGetCodeManagementMasterListbox.unshift(listStr);
+      paymentKindResponse.list.unshift(listStr);
       // プルダウンにデータを設定
       setSelectValues({
         claimClassificatioSelectValues:
