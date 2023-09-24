@@ -26,7 +26,6 @@ import {
   TextField,
   Theme,
 } from '@mui/material';
-
 import { getWeeksInMonth } from 'date-fns';
 
 export interface CalenderMultiTypeModel {
@@ -60,6 +59,7 @@ export interface CalenderProps<T extends FieldValues> {
   name: Path<T>;
   yearmonth: Date;
   itemDef: CalenderItemDef[];
+  onBlur?: (name: any) => void;
   getCellBackground?: (
     date: Date,
     field: string,
@@ -76,8 +76,14 @@ export interface CalenderProps<T extends FieldValues> {
 const dayOfWeeks = ['日', '月', '火', '水', '木', '金', '土'];
 
 export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
-  const { name, yearmonth, itemDef, getCellBackground, getCellDisabled } =
-    props;
+  const {
+    name,
+    yearmonth,
+    itemDef,
+    onBlur,
+    getCellBackground,
+    getCellDisabled,
+  } = props;
 
   // state
   const [errors, setErrors] = useState<FieldErrors<FieldValues>>({});
@@ -221,11 +227,19 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                       {data.date && def.type === 'input' && (
                         <>
                           <TextField
-                            size='small'
-                            fullWidth
                             {...register(
                               `${name}.${data.date.getDate() - 1}.${def.field}`
                             )}
+                            onBlur={() =>
+                              onBlur &&
+                              onBlur(
+                                `${name}.${data.date.getDate() - 1}.${
+                                  def.field
+                                }`
+                              )
+                            }
+                            size='small'
+                            fullWidth
                             disabled={
                               data.date &&
                               getCellDisabled &&
@@ -251,6 +265,14 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                             <>
                               <Select
                                 {...field}
+                                onBlur={() =>
+                                  onBlur &&
+                                  onBlur(
+                                    `${name}.${data.date.getDate() - 1}.${
+                                      def.field
+                                    }`
+                                  )
+                                }
                                 size='small'
                                 fullWidth
                                 disabled={
@@ -289,6 +311,14 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                                 <>
                                   <Select
                                     {...field}
+                                    onBlur={() =>
+                                      onBlur &&
+                                      onBlur(
+                                        `${name}.${data.date.getDate() - 1}.${
+                                          def.field
+                                        }`
+                                      )
+                                    }
                                     size='small'
                                     fullWidth
                                     disabled={
