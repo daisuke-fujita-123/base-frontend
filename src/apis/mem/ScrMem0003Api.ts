@@ -240,10 +240,6 @@ export interface ScrMem0003InputCheckCorporationInfoRequest {
   addressBuildingName: string;
   // TEL
   phoneNumber: string;
-  // FAX
-  faxNumber: string;
-  // メールアドレス
-  mailAddress: string;
   // 公安委員会
   publicSafetyCommittee: string;
   // 古物商許可番号
@@ -252,14 +248,21 @@ export interface ScrMem0003InputCheckCorporationInfoRequest {
 
 /** 法人基本情報入力チェックAPIレスポンス */
 export interface ScrMem0003InputCheckCorporationInfoResponse {
-  errorList: errorResult[];
-  warnList: errorResult[];
+  errorList: ErrorResult[];
+  warnList: WarnResult[];
 }
 
 // リスト
-export interface errorResult {
+export interface ErrorResult {
   errorCode: string;
   errorMessage: string;
+  detail: string;
+}
+
+// リスト
+export interface WarnResult {
+  warnCode: string;
+  warnMessage: string;
   detail: string;
 }
 
