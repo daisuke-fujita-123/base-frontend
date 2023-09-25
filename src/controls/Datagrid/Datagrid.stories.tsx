@@ -325,8 +325,9 @@ export const Example = () => {
           rows={rows}
           invalids={invalids}
           resolver={validationSchema}
-          width={1200}
-          height={150}
+          // width={1200}
+          // height={150}
+          // columnHeaderHeight={50}
           checkboxSelection
           onInvalidModelChange={handleOnInvalidModelChange}
           getCellReadonly={handleGetCellReadonly}
