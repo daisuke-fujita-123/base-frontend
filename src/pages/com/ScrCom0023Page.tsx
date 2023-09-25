@@ -146,22 +146,7 @@ const ScrCom0023Page = () => {
         placeCd: x.placeCd,
         placeName: x.placeName,
         // 1：日、2：月、3：火、4：水、5：木、6：金、7：土"
-        sessionWeekKind:
-          x.sessionWeekKind === '1'
-            ? '日'
-            : x.sessionWeekKind === '2'
-            ? '月'
-            : x.sessionWeekKind === '3'
-            ? '火'
-            : x.sessionWeekKind === '4'
-            ? '水'
-            : x.sessionWeekKind === '5'
-            ? '木'
-            : x.sessionWeekKind === '6'
-            ? '金'
-            : x.sessionWeekKind === '7'
-            ? '土'
-            : '',
+        sessionWeekKind: x.sessionWeekKind,
         // true => "対象" false => "対象外"
         omatomePlaceFlag: x.omatomePlaceFlag ? '対象' : '対象外',
         corporationId: x.corporationId,
@@ -254,6 +239,7 @@ const ScrCom0023Page = () => {
               rows={searchResult}
               hrefs={hrefs}
               onLinkClick={handleLinkClick}
+              apiRef={apiRef}
               // 利用フラグがfalseの場合は該当レコードグレーアウト(利用不可を意味)
               getCellClassName={handleGetCellClassName}
               sx={{
