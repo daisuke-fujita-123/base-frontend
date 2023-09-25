@@ -30,9 +30,9 @@ export interface ScrDoc0001DocListAcquisitionRequest {
   /** 落札店契約ID */
   bidShopContractId: string;
   /** 先出し対象フラグ */
-  advanceTargetedFlag: string;
+  advanceTargetedFlag: boolean;
   /** 支払い延長サービスフラグ */
-  paymentExtensionServiceFlag: string;
+  paymentExtensionServiceFlag: boolean;
   /** オークション回数(FROM) */
   auctionCountFrom: string;
   /** オークション回数(TO) */

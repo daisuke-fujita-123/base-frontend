@@ -82,8 +82,8 @@ interface SearchConditionModel {
   auctionKind: string; // オークション種類
   exhibitShopContractId: string; // 出品店契約ID
   bidShopContractId: string; // 落札店契約ID
-  advanceTargetedFlag: string; // 先出し対象フラグ
-  paymentExtensionServiceFlag: string; // 支払い延長サービスフラグ
+  advanceTargetedFlag: boolean; // 先出し対象フラグ
+  paymentExtensionServiceFlag: boolean; // 支払い延長サービスフラグ
   auctionCountFrom: string; // オークション回数(From)
   auctionCountTo: string; // オークション回数(To)
   exhibitShopName: string; // 出品店名称
@@ -123,8 +123,8 @@ const initialValues: SearchConditionModel = {
   auctionKind: '', // オークション種類
   exhibitShopContractId: '', // 出品店契約ID
   bidShopContractId: '', // 落札店契約ID
-  advanceTargetedFlag: '', // 先出し対象フラグ
-  paymentExtensionServiceFlag: '', // 支払い延長サービスフラグ
+  advanceTargetedFlag: false, // 先出し対象フラグ
+  paymentExtensionServiceFlag: false, // 支払い延長サービスフラグ
   auctionCountFrom: '', // オークション回数(From)
   auctionCountTo: '', // オークション回数(To)
   exhibitShopName: '', // 出品店名称
@@ -429,18 +429,6 @@ interface DocumentListSearchResultRowModel {
 }
 
 /**
- * TODO:SCR-DOC-0004 一括通知送信プロパティ
- */
-interface ScrDoc0004PopupModel {
-  // 通知種類区分
-  noticeKindKbn: string;
-  // 通知種類名称
-  noticeKindName: string;
-  // 通知送信リスト
-  noticeSendList: NoticeSendList[];
-}
-
-/**
  * TODO:SCR-DOC-0004 一括通知送信プロパティ(リスト)
  */
 interface NoticeSendList {
@@ -496,7 +484,7 @@ const ScrTra0001Page = () => {
   const [changeTimestamp, setChangeTimestamp] = useState<string>();
 
   // 各種ボタンの活性/非活性フラグ
-  // 配送伝票一括印刷ボタン
+  // 配送伝票一括印刷ボタン TODO:設計書に権限の記載が存在しないため要確認
   const [
     shippingSlipAllPrintButtonDisableFlag,
     setShippingSlipAllPrintButtonDisableFlag,
@@ -522,6 +510,7 @@ const ScrTra0001Page = () => {
   >([]);
 
   // チェックボックス選択行
+  /* eslint @typescript-eslint/no-explicit-any: 0 */
   const [rowSelectionModel, setRowSelectionModel] = useState<any[]>([]);
 
   // 出品番号リンク
@@ -749,8 +738,10 @@ const ScrTra0001Page = () => {
       } else {
         setDayBatchProcessButtonDisableFlag(true); // 非活性
       }
+      setOpenSection(false);
     };
     initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -783,7 +774,13 @@ const ScrTra0001Page = () => {
   const searchLabels = serchData.map((val, index) => {
     const nameVal = getValues(val.name);
     return (
-      nameVal && <SerchLabelText key={index} label={val.label} name={nameVal} />
+      nameVal && (
+        <SerchLabelText
+          key={index}
+          label={val.label}
+          name={nameVal.toString()}
+        />
+      )
     );
   });
 
@@ -797,6 +794,7 @@ const ScrTra0001Page = () => {
    * 検索ボタンクリック時のイベントハンドラ
    */
   const handleSearchClick = async () => {
+    saveState(getValues());
     // 入力値の整合性チェック
     // オークション回数 FROM, TO 双方が入力されている場合
     if (
@@ -807,6 +805,7 @@ const ScrTra0001Page = () => {
         // オークション回数 : FROM > TO の場合
         setTitle(getMessage('MSG-FR-ERR-00128'));
         setHandleDialog(true);
+        return;
       }
     }
 
@@ -821,6 +820,7 @@ const ScrTra0001Page = () => {
         // オークション開催日 : FROM > TO の場合
         setTitle(getMessage('MSG-FR-ERR-00129'));
         setHandleDialog(true);
+        return;
       }
     }
 
@@ -836,6 +836,7 @@ const ScrTra0001Page = () => {
         // 書類有効期限 : FROM > TO の場合
         setTitle(getMessage('MSG-FR-ERR-00129'));
         setHandleDialog(true);
+        return;
       }
     }
 
@@ -851,6 +852,7 @@ const ScrTra0001Page = () => {
         // 書類有効期限 : FROM > TO の場合
         setTitle(getMessage('MSG-FR-ERR-00129'));
         setHandleDialog(true);
+        return;
       }
     }
 
@@ -864,6 +866,7 @@ const ScrTra0001Page = () => {
         // 名変期日 : FROM > TO の場合
         setTitle(getMessage('MSG-FR-ERR-00129'));
         setHandleDialog(true);
+        return;
       }
     }
 
@@ -961,6 +964,7 @@ const ScrTra0001Page = () => {
       // アラートを表示
       setTitle(messege);
       setHandleDialog(true);
+      return;
     }
 
     // 通知種類に値が設定されている場合は 一括通知送信 ボタンを活性, そうでない場合は非活性にする
@@ -978,9 +982,7 @@ const ScrTra0001Page = () => {
         return {
           id: row.id,
           href:
-            '/tra/SCR-DOC-0005/' +
-            '?documentBasicsNumber=' +
-            row.documentBasicsNumber, // 書類情報詳細画面 : パラメータ:書類基本番号
+            '/doc/documents/documentBasicsNumber=' + row.documentBasicsNumber, // 書類情報詳細画面 : パラメータ:書類基本番号
         };
       }),
     });
@@ -992,7 +994,7 @@ const ScrTra0001Page = () => {
    */
   const handleIconShippingSlipAllPrintClick = () => {
     // SCR-DOC-0003 配送伝票一括印刷（ポップアップ）
-    navigate('/tra/SCR-DOC-0003', true);
+    // TODO: 該当処理実装の際に再確認
   };
 
   /**
@@ -1007,13 +1009,13 @@ const ScrTra0001Page = () => {
     // 通知種類区分
     const noticeKind = getValues('noticeKind');
     // 通知種類名称
-    let noticeKindName = '';
+    // let noticeKindName = '';
     // 通知種類選択(リスト)のセレクトボックスを設定する
     codeMaster.forEach((cm) => {
       if (CDE_COM_0080 === cm.codeId) {
         cm.codeValueList.forEach((row) => {
           if (noticeKind === row.codeValue) {
-            noticeKindName = row.codeName;
+            // noticeKindName = row.codeName;
           }
         });
       }
@@ -1029,14 +1031,7 @@ const ScrTra0001Page = () => {
       };
       noticeSendList.push(noticeSend);
     });
-    // TODO:暫定設定
-    const scrDoc0004Popup: ScrDoc0004PopupModel = {
-      noticeKindKbn: noticeKind, // 通知種類区分
-      noticeKindName: noticeKindName, // 通知種類名称
-      noticeSendList: noticeSendList, // 通知送信リスト
-    };
-    // SCR-DOC-0004 一括通知送信（ポップアップ）
-    navigate('/tra/SCR-DOC-0004', true);
+    // TODO: 該当処理実装の際に再確認
   };
 
   /**
@@ -1242,6 +1237,7 @@ const ScrTra0001Page = () => {
     }
     setTitle(errMsg);
     setHandleDialog(true);
+    return;
   };
 
   /**
@@ -1269,7 +1265,8 @@ const ScrTra0001Page = () => {
                         label='オークション種類'
                         name='auctionKind'
                         selectValues={selectValues.auctionKindSelectValues}
-                        blankOption
+                        required={true}
+                        multiple={false}
                       />
                     </ColStack>
                     <ColStack>
@@ -1466,7 +1463,7 @@ const ScrTra0001Page = () => {
                         label='会場(おまとめ時のみ)'
                         name='placeCode'
                         selectValues={selectValues.placeCodeSelectValues}
-                        blankOption
+                        multiple={false}
                         size='l'
                       />
                     </ColStack>
@@ -1488,7 +1485,7 @@ const ScrTra0001Page = () => {
 
             {/* 書類情報一覧セクション */}
             <Section
-              name='書類情報一覧検索'
+              name='書類情報一覧'
               isSearch
               serchLabels={searchLabels}
               openable={openSection}
