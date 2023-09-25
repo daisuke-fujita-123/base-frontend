@@ -21,6 +21,13 @@ const ScrDoc0003PopupTester = () => {
     setIsOpenScrDoc0003Popup(true);
   };
 
+  /**
+   * 個別通知送信ポップアップのキャンセルボタンクリック時のイベントハンドラ
+   */
+  const handleCancel = () => {
+    setIsOpenScrDoc0003Popup(false);
+  };
+
   return (
     <>
       <MainLayout>
@@ -32,7 +39,10 @@ const ScrDoc0003PopupTester = () => {
       </MainLayout>
       {/* 配送伝票一括印刷ポップアップ */}
       {isOpenScrDoc0003Popup && (
-        <ScrDoc0003Popup isOpen={isOpenScrDoc0003Popup} />
+        <ScrDoc0003Popup
+          isOpen={isOpenScrDoc0003Popup}
+          handleCancel={handleCancel}
+        />
       )}
     </>
   );

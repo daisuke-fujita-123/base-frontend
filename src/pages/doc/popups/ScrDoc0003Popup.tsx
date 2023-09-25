@@ -34,7 +34,6 @@ import {
 } from 'apis/doc/ScrDoc0003Api';
 
 import { useForm } from 'hooks/useForm';
-import { useNavigate } from 'hooks/useNavigate';
 
 import { MessageContext } from 'providers/MessageProvider';
 
@@ -78,11 +77,14 @@ interface slipPrintedRowModel {
  */
 interface ScrDoc0003PopupModel {
   isOpen: boolean;
+  handleCancel: () => void;
 }
 /**
  * 配送伝票一括印刷ポップアップ
  */
 const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
+  // props
+  const { isOpen, handleCancel } = props;
   /**
    * バリデーションスキーマ
    */
@@ -187,8 +189,6 @@ const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
     slipTypeForceChange: yup.string().label('伝票種類強制変更'),
   };
 
-  // props
-  const { isOpen } = props;
   // form
   const methods = useForm<ScrDoc0003SlipPrintedRequest>({
     mode: 'onBlur',
@@ -208,15 +208,14 @@ const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
     getValues,
     trigger,
     watch,
-    formState: { errors },
+    formState: { errors, dirtyFields },
   } = methods;
 
-  // router
-  const navigate = useNavigate();
   // message
   const { getMessage } = useContext(MessageContext);
   // 変数
   const [selectValues, setSelectValues] = useState<SelectValue[]>([]);
+  const [radioValues, setRadioValues] = useState<SelectValue[]>([]);
   const [isCheckable, setIsCheckable] = useState<boolean>(false);
   const [printInstructed, setPrintInstructed] = useState<boolean>(false);
   const [slipPrintedRow, setSlipPrintedRow] = useState<slipPrintedRowModel[]>(
@@ -238,12 +237,19 @@ const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
 
   useEffect(() => {
     const initialize = async () => {
-      const response: ScrCom9999GetCodeManagementMasterResponse =
-        await ScrCom9999GetCodeManagementMaster({ codeId: 'CDE-COM-0024' });
-      const setVal = response.list.map((val) => {
+      const selectRes: ScrCom9999GetCodeManagementMasterResponse =
+        await ScrCom9999GetCodeManagementMaster({ codeId: 'CDE-DOC-2011' });
+      const setSelectVal = selectRes.list.map((val) => {
         return { value: val.codeValue, displayValue: val.codeName };
       });
-      setSelectValues(setVal);
+      setSelectValues(setSelectVal);
+
+      const radioRes: ScrCom9999GetCodeManagementMasterResponse =
+        await ScrCom9999GetCodeManagementMaster({ codeId: 'CDE-DOC-2012' });
+      const setRadioVal = radioRes.list.map((val) => {
+        return { value: val.codeValue, displayValue: val.codeName };
+      });
+      setRadioValues(setRadioVal);
     };
     initialize();
   }, []);
@@ -290,7 +296,7 @@ const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
   };
 
   const handleConfirm = () => {
-    navigate('/doc/documents');
+    handleCancel();
   };
 
   /**
@@ -326,13 +332,7 @@ const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
                     <Radio
                       name='placeKind'
                       label='会場種別'
-                      radioValues={[
-                        { value: '1', displayValue: 'オークネット' },
-                        {
-                          value: '2',
-                          displayValue: 'おまとめ',
-                        },
-                      ]}
+                      radioValues={radioValues}
                       required
                       disabled={printInstructed}
                     ></Radio>
@@ -485,7 +485,7 @@ const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
                   <>
                     <CancelButton
                       onClick={() => {
-                        navigate('/doc/documents');
+                        dirtyFields ? setHandleDialog(true) : handleCancel();
                       }}
                     >
                       キャンセル
@@ -500,6 +500,17 @@ const ScrDoc0003Popup = (props: ScrDoc0003PopupModel) => {
           </FormProvider>
         </MainLayout>
       </MainLayout>
+      {/* ダイアログ */}
+      {handleDialog && (
+        <Dialog
+          open={handleDialog}
+          title={getMessage('MSG-FR-WRN-00007')}
+          buttons={[
+            { name: 'NO', onClick: () => setHandleDialog(false) },
+            { name: 'YES', onClick: () => handleCancel() },
+          ]}
+        />
+      )}
     </>
   );
 };
