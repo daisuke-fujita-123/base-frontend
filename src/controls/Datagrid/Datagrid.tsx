@@ -343,7 +343,7 @@ export const DataGrid = (props: DataGridProps) => {
   // handler
   const handleRowValueChange = async (row: any) => {
     if (resolver !== undefined && invalids !== undefined) {
-      validate(row);
+      await validate(row);
     }
 
     onRowValueChange && onRowValueChange(row);
