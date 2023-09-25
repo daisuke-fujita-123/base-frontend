@@ -180,8 +180,6 @@ const ScrCom0008Page = () => {
   const [getCommentLine, setGetCommentLine] = useState<number>(0);
   // 帳票コメント情報取得APIにて取得した システム種別
   const [getSystemKind, setGetSystemKind] = useState<string>('');
-  // 複数行の帳票コメントをつなげて1つの状態として管理する
-  const [reportComment, setReportComment] = useState<string>('');
   // 可変バリデーション用の帳票コメント
   const [reportCommentLengthForVal, setReportCommentLengthForVal] =
     useState<number>(70);
@@ -379,6 +377,7 @@ const ScrCom0008Page = () => {
       setHistoryFlag(true);
       // 表示切替ではない為falseを設定
       setSwitchFlag(false);
+      const isSwitch = false;
 
       // SCR-COM-9999-0025: 変更履歴情報取得API
       const getHistoryInfoRequest: ScrCom9999GetHistoryInfoRequest = {
@@ -392,7 +391,8 @@ const ScrCom0008Page = () => {
       const historyInfo = convertToHistoryInfo(
         getHistoryInfoResponse,
         applicationId,
-        getHistoryInfoResponse.changeHistoryInfo.changeExpectDate
+        getHistoryInfoResponse.changeHistoryInfo.changeExpectDate,
+        isSwitch
       );
 
       // 帳票コメント、変更予定日に値を設定
@@ -428,6 +428,7 @@ const ScrCom0008Page = () => {
 
     // 表示切替の為trueを設定
     setSwitchFlag(true);
+    const isSwitch = true;
 
     // API-COM-0008-0025: 変更履歴情報取得API
     const getHistoryInfoRequest = {
@@ -441,7 +442,8 @@ const ScrCom0008Page = () => {
     const historyInfo = convertToHistoryInfo(
       getHistoryInfoResponse,
       getValues('changeHistoryNumber'),
-      getHistoryInfoResponse.changeHistoryInfo.changeExpectDate
+      getHistoryInfoResponse.changeHistoryInfo.changeExpectDate,
+      isSwitch
     );
 
     setIsChangeHistoryBtn(true);
@@ -736,7 +738,8 @@ const ScrCom0008Page = () => {
   const convertToHistoryInfo = (
     getHistoryInfoResponse: ScrCom9999GetHistoryInfoResponse,
     changeHistoryNumber: string,
-    changeExpectedDate: string
+    changeExpectedDate: string,
+    isSwitch: boolean
   ): reportBasicModel => {
     // 改行コードでつながっている帳票コメントを改行コード毎に行単位に分割してコメント行に初期設定する
     const comments: string[] =
@@ -761,7 +764,7 @@ const ScrCom0008Page = () => {
       reportComment15: comments[14] !== null ? comments[14] : '',
       changeHistoryNumber: changeHistoryNumber,
       changeExpectedDate:
-        changeExpectedDate === null
+        changeExpectedDate === null || isSwitch
           ? ''
           : format(new Date(changeExpectedDate), 'yyyy/MM/dd'),
     };
@@ -848,7 +851,7 @@ const ScrCom0008Page = () => {
         /** 変更予定日 */
         changeExpectDate:
           getValues('changeExpectedDate') !== ''
-            ? new Date(getValues('changeExpectedDate'))
+            ? format(new Date(getValues('changeExpectedDate')), 'yyyy-MM-dd')
             : undefined,
         /** 画面ID */
         screenId: SCR_COM_0008,
