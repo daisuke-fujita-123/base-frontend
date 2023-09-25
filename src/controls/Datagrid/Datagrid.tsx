@@ -122,7 +122,7 @@ export type GridColDef = MuiGridColDef & {
    */
   tooltip?: boolean;
   /**
-   * tooltip
+   * validator
    */
   validator?: any;
   /**
@@ -191,7 +191,7 @@ export interface DataGridProps extends DataGridProProps {
   /**
    * invalids
    */
-  invalids?: InvalidModel[]; // add, tooltip = 'true'
+  invalids?: InvalidModel[];
   /**
    * showHeaderRow
    */
@@ -215,7 +215,7 @@ export interface DataGridProps extends DataGridProProps {
   /**
    * onValidChange
    */
-  onIsValidChange?: (invalids: InvalidModel[]) => void;
+  onInvalidModelChange?: (invalids: InvalidModel[]) => void;
   /**
    * リンククリック時のハンドラ<br>
    * cellTypeがlinkの時のみ指定
@@ -305,7 +305,7 @@ export const DataGrid = (props: DataGridProps) => {
     /** misc */
     onRowValueChange,
     onCellBlur,
-    onIsValidChange,
+    onInvalidModelChange,
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
     getCellDisabled,
@@ -337,7 +337,7 @@ export const DataGrid = (props: DataGridProps) => {
         appendErrorToInvalids(invalids, err.inner, row.id);
       }
     }
-    onIsValidChange && onIsValidChange(invalids);
+    onInvalidModelChange && onInvalidModelChange(invalids);
   };
 
   // handler
@@ -360,7 +360,7 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   // heander
-  const handleProcessRowUpdate = (newRow: any, oldRow: any) => {
+  const handleProcessRowUpdate = (newRow: any) => {
     return newRow;
   };
 
