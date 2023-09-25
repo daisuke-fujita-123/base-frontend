@@ -73,16 +73,21 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     type = 'text',
   } = props;
 
-  const { register, formState, setValue, control } = useFormContext();
+  // form
+  const { register, formState, setValue, control, getFieldState } =
+    useFormContext();
   const watchValue = useWatch({ name, control });
   const registerRet = register(name);
-  const isNotNull =
-    watchValue !== null && watchValue !== undefined && watchValue !== '';
+
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
     }
   };
+
+  const fieldState = getFieldState(name);
+  const isNotNull =
+    watchValue !== null && watchValue !== undefined && watchValue !== '';
 
   return (
     <InputLayout
@@ -102,12 +107,8 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
                 ? 'standard'
                 : variant
             }
-            error={!!formState.errors[name]}
-            helperText={
-              formState.errors[name]?.message
-                ? String(formState.errors[name]?.message)
-                : null
-            }
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
             type={type}
             InputProps={{
               endAdornment: (
@@ -157,11 +158,12 @@ export const PriceTextField = <T extends FieldValues>(
     onBlur,
   } = props;
 
-  const { register, formState, setValue, trigger, control } = useFormContext();
+  // form
+  const { register, setValue, trigger, control, getFieldState } =
+    useFormContext();
   const watchValue = useWatch({ name, control });
   const registerRet = register(name);
-  const isNotNull =
-    watchValue !== null && watchValue !== undefined && watchValue !== '';
+
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
@@ -202,12 +204,11 @@ export const PriceTextField = <T extends FieldValues>(
       return String.fromCharCode(ch.charCodeAt(0) - 0xfee0);
     });
   };
-  console.log(
-    'watchValue && !readonly',
-    watchValue && !readonly,
-    watchValue,
-    !readonly
-  );
+
+  const fieldState = getFieldState(name);
+  const isNotNull =
+    watchValue !== null && watchValue !== undefined && watchValue !== '';
+
   return (
     <InputLayout
       label={label}
@@ -224,12 +225,8 @@ export const PriceTextField = <T extends FieldValues>(
             ? 'standard'
             : variant
         }
-        error={!!formState.errors[name]}
-        helperText={
-          formState.errors[name]?.message
-            ? String(formState.errors[name]?.message)
-            : null
-        }
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
@@ -272,12 +269,12 @@ export const PostalTextField = <T extends FieldValues>(
     onBlur,
   } = props;
 
-  const { register, formState, setValue, trigger, control } = useFormContext();
+  // form
+  const { register, setValue, trigger, control, getFieldState } =
+    useFormContext();
   const watchValue = useWatch({ name, control });
-  const isReadOnly = control?._options?.context?.readonly;
   const registerRet = register(name);
-  const isNotNull =
-    watchValue !== null && watchValue !== undefined && watchValue !== '';
+
   const onClickIconHandler = () => {
     if (!disabled) {
       return setValue(name, value);
@@ -302,6 +299,10 @@ export const PostalTextField = <T extends FieldValues>(
     trigger(name);
   };
 
+  const fieldState = getFieldState(name);
+  const isNotNull =
+    watchValue !== null && watchValue !== undefined && watchValue !== '';
+
   return (
     <InputLayout
       label={label}
@@ -313,13 +314,13 @@ export const PostalTextField = <T extends FieldValues>(
         id={name}
         disabled={disabled}
         fullWidth={fullWidth}
-        variant={isReadOnly || readonly ? 'standard' : variant}
-        error={!!formState.errors[name]}
-        helperText={
-          formState.errors[name]?.message
-            ? String(formState.errors[name]?.message)
-            : null
+        variant={
+          control?._options?.context?.readonly || readonly
+            ? 'standard'
+            : variant
         }
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
@@ -330,7 +331,7 @@ export const PostalTextField = <T extends FieldValues>(
               )}
             </InputAdornment>
           ),
-          readOnly: isReadOnly,
+          readOnly: control?._options?.context?.readonly,
         }}
         onChange={registerRet.onChange}
         onBlur={(event) => {
@@ -359,8 +360,10 @@ export const LinkTextField = <T extends FieldValues>(
     onClick,
   } = props;
 
-  const { formState, control } = useFormContext();
+  // form
+  const { formState, control, getFieldState } = useFormContext();
   const watchValue = useWatch({ name, control });
+
   const Link = () => {
     return (
       <TextLink href='#' onClick={onClick}>
@@ -368,6 +371,8 @@ export const LinkTextField = <T extends FieldValues>(
       </TextLink>
     );
   };
+
+  const fieldState = getFieldState(name);
 
   return (
     <InputLayout
@@ -381,12 +386,8 @@ export const LinkTextField = <T extends FieldValues>(
         disabled={disabled}
         fullWidth={fullWidth}
         variant='standard'
-        error={!!formState.errors[name]}
-        helperText={
-          formState.errors[name]?.message
-            ? String(formState.errors[name]?.message)
-            : null
-        }
+        error={!!fieldState.error}
+        helperText={fieldState.error?.message}
         InputProps={{
           startAdornment: <Link />,
           readOnly: true,
@@ -412,6 +413,7 @@ export const MultiTextField = <T extends FieldValues>(
     onBlur,
   } = props;
 
+  // form
   const { register, formState, control } = useFormContext();
 
   return (

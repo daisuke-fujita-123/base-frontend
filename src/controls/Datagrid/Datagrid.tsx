@@ -719,7 +719,9 @@ export const DataGrid = (props: DataGridProps) => {
             },
           }}
           /** size */
-          columnHeaderHeight={35}
+          columnHeaderHeight={
+            props.columnHeaderHeight ? props.columnHeaderHeight : 35
+          }
           rowHeight={30}
           autoHeight={height === undefined}
           /** sorting */
