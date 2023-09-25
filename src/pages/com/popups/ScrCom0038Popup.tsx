@@ -71,7 +71,7 @@ const ScrCom0038Popup = (props: ScrCom0038PopupProps) => {
     },
     // context: false,
   });
-  const { setValue, watch } = methods;
+  const { setValue, watch, reset } = methods;
 
   // state
   // ワーニングチェックボックスを全てチェックしたかどうかを管理するフラグ
@@ -105,6 +105,7 @@ const ScrCom0038Popup = (props: ScrCom0038PopupProps) => {
    * 確定ボタン押下時のイベントハンドラ
    */
   const handleConfirm = () => {
+    reset();
     // 遷移元画面が入金詳細 => 入金一覧画面へ遷移
     if (data.expirationScreenId === SCR_TRA_0018) {
       navigate('/tra/recepts');

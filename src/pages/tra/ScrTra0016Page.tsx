@@ -3469,19 +3469,23 @@ const ScrTra0016Page = () => {
         ''
       )}
       {/* エラー確認ポップアップ */}
-      <ScrCom0038Popup
-        isOpen={isOpen38Popup}
-        data={ScrCom0038PopupValues}
-        handleCancel={handlePopup38Cancel}
-      />
+      {isOpen38Popup && (
+        <ScrCom0038Popup
+          isOpen={isOpen38Popup}
+          data={ScrCom0038PopupValues}
+          handleCancel={handlePopup38Cancel}
+        />
+      )}
       {/* 登録内容確認ポップアップ */}
-      <ScrCom0032Popup
-        isOpen={isOpenPopup}
-        data={scrCom0032PopupData}
-        handleRegistConfirm={handleRegistConfirm}
-        handleApprovalConfirm={handleApprovalConfirm}
-        handleCancel={handlePopupCancel}
-      />
+      {isOpenPopup && (
+        <ScrCom0032Popup
+          isOpen={isOpenPopup}
+          data={scrCom0032PopupData}
+          handleRegistConfirm={handleRegistConfirm}
+          handleApprovalConfirm={handleApprovalConfirm}
+          handleCancel={handlePopupCancel}
+        />
+      )}
     </>
   );
 };
