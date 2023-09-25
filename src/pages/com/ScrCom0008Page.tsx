@@ -32,10 +32,6 @@ import {
   ScrCom9999GetChangeDateRequest,
 } from 'apis/com/ScrCom9999Api';
 import {
-  ScrDoc9999CreateReportImageDoc,
-  ScrDoc9999CreateReportImageDocRequest,
-} from 'apis/doc/ScrDoc9999Api';
-import {
   ScrTra9999CreateReportImageTra,
   ScrTra9999CreateReportImageTraRequest,
 } from 'apis/tra/ScrTra9999Api';
@@ -775,8 +771,10 @@ const ScrCom0008Page = () => {
    * プレビューボタンクリック時のイベントハンドラ
    */
   const handlePreviewConfirm = async () => {
-    // システム種別で呼び出すAPIのURIをTRAとDOCで分岐
     /* eslint @typescript-eslint/no-explicit-any: 0 */
+    // 動的に取得したコメント行数文のコメントを取得
+    let commentRowList: string[] = [];
+    commentRowList = commentDetail();
     let formStorageFile: any;
     if (getSystemKind === 'TRA') {
       // API-TRA-9999-0002: イメージ帳票作成API（取引会計管理）
@@ -787,24 +785,10 @@ const ScrCom0008Page = () => {
           reportTitle: '',
           operatorId: user.employeeId,
           operatorName: user.organizationName,
-          comment: reportComment,
+          comment: commentRowList.join('\n'),
         };
       formStorageFile = await ScrTra9999CreateReportImageTra(
         createReportImageTraRequest
-      );
-    } else if (getSystemKind === 'DOC') {
-      // API-TRA-9999-0001: イメージ帳票作成API（書類管理）
-      const createReportImageDocRequest: ScrDoc9999CreateReportImageDocRequest =
-        {
-          functionId: SCR_COM_0008,
-          reportId: reportId !== undefined ? reportId : '',
-          reportTitle: '',
-          operatorId: user.employeeId,
-          operatorName: user.organizationName,
-          comment: reportComment,
-        };
-      formStorageFile = await ScrDoc9999CreateReportImageDoc(
-        createReportImageDocRequest
       );
 
       // 取得した帳票格納ファイルを別タブで開くことで、イメージ帳票PDFを表示する。
@@ -836,6 +820,75 @@ const ScrCom0008Page = () => {
     setIsChangeHistoryBtn(false);
 
     // 動的に取得したコメント行数文のコメントを取得
+    let commentRowList: string[] = [];
+    commentRowList = commentDetail();
+
+    // SCR-COM-0008-0007: 帳票コメント情報登録更新API
+    const applyRegistrationCommissionInfoRequest: ScrCom0008RegistUpdateReportCommentRequest =
+      {
+        /** 帳票ID */
+        reportId: reportId !== undefined ? reportId : '',
+        /** システム種別 */
+        systemKind: getSystemKind,
+        /** 帳票名 */
+        reportName: getReportName,
+        /** コメント最大行数 */
+        commentRow: getCommentRow,
+        /** ポップアップコメント最大行数 */
+        popupCommentRow: getPopupCommentRow,
+        /** コメント１行最大文字数 */
+        commentLine: getCommentLine,
+        /** 帳票コメント */
+        // 改行コードでつなげた一つの文字列として帳票コメントを送る
+        reportComment: commentRowList.join('\n'),
+        /** 申請従業員ID */
+        applicationEmployeeId: user.employeeId,
+        /** 登録変更メモ */
+        registrationChangeMemo: registrationChangeMemo,
+        /** 変更予定日 */
+        changeExpectDate:
+          getValues('changeExpectedDate') !== ''
+            ? new Date(getValues('changeExpectedDate'))
+            : undefined,
+        /** 画面ID */
+        screenId: SCR_COM_0008,
+      };
+    ScrCom0008RegistUpdateReportComment(applyRegistrationCommissionInfoRequest);
+  };
+
+  /**
+   * 登録内容確認ポップアップの承認登録ボタンクリック時のイベントハンドラ
+   */
+  const handleApprovalConfirm = () => {
+    setIsOpenPopup(false);
+  };
+
+  /**
+   *  コメント動的可変の処理
+   */
+  const reportCommentLine = () => {
+    const commentBox = [];
+    for (let i = 1; i <= getCommentRow; i++) {
+      commentBox.push(
+        <TextField
+          name={`reportComment${i}`}
+          key={`reportComment${i}`}
+          size='l'
+          disabled={historyFlag || !readonly ? true : false}
+        />
+      );
+      // 最大15個のコメント列にするように制御
+      if (i === 15) {
+        break;
+      }
+    }
+    return commentBox;
+  };
+
+  /**
+   * 動的に取得したコメント行数文のコメントを取得
+   */
+  const commentDetail = () => {
     const commentRowList: string[] = [];
     if (getCommentRow >= 15) {
       commentRowList.push(getValues('reportComment1'));
@@ -973,69 +1026,7 @@ const ScrCom0008Page = () => {
     } else if (getCommentRow === 1) {
       commentRowList.push(getValues('reportComment1'));
     }
-    // 改行コードでつなげた帳票コメントをjoinして一つの文字列にする
-    setReportComment(commentRowList.join('\n'));
-
-    // SCR-COM-0008-0007: 帳票コメント情報登録更新API
-    const applyRegistrationCommissionInfoRequest: ScrCom0008RegistUpdateReportCommentRequest =
-      {
-        /** 帳票ID */
-        reportId: reportId !== undefined ? reportId : '',
-        /** システム種別 */
-        systemKind: getSystemKind,
-        /** 帳票名 */
-        reportName: getReportName,
-        /** コメント最大行数 */
-        commentRow: getCommentRow,
-        /** ポップアップコメント最大行数 */
-        popupCommentRow: getPopupCommentRow,
-        /** コメント１行最大文字数 */
-        commentLine: getCommentLine,
-        /** 帳票コメント */
-        // 改行コードでつなげた一つの文字列として帳票コメントを送る
-        reportComment: commentRowList.join('\n'),
-        /** 申請従業員ID */
-        applicationEmployeeId: user.employeeId,
-        /** 登録変更メモ */
-        registrationChangeMemo: registrationChangeMemo,
-        /** 変更予定日 */
-        changeExpectDate:
-          getValues('changeExpectedDate') !== ''
-            ? getValues('changeExpectedDate')
-            : new Date().toLocaleDateString(),
-        /** 画面ID */
-        screenId: SCR_COM_0008,
-      };
-    ScrCom0008RegistUpdateReportComment(applyRegistrationCommissionInfoRequest);
-  };
-
-  /**
-   * 登録内容確認ポップアップの承認登録ボタンクリック時のイベントハンドラ
-   */
-  const handleApprovalConfirm = () => {
-    setIsOpenPopup(false);
-  };
-
-  /**
-   *  コメント動的可変の処理
-   */
-  const reportCommentLine = () => {
-    const commentBox = [];
-    for (let i = 1; i <= getCommentRow; i++) {
-      commentBox.push(
-        <TextField
-          name={`reportComment${i}`}
-          key={`reportComment${i}`}
-          size='l'
-          disabled={historyFlag || !readonly ? true : false}
-        />
-      );
-      // 最大15個のコメント列にするように制御
-      if (i === 15) {
-        break;
-      }
-    }
-    return commentBox;
+    return commentRowList;
   };
 
   return (
