@@ -5,7 +5,12 @@ import yup from 'utils/yup';
 import { ObjectSchema } from 'yup';
 
 import { Button, PrimaryButton } from 'controls/Button';
-import { DataGrid, exportCsv, GridColDef } from 'controls/Datagrid';
+import {
+  DataGrid,
+  exportCsv,
+  GridColDef,
+  InvalidModel,
+} from 'controls/Datagrid';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material';
@@ -118,12 +123,12 @@ export const Example = () => {
       field: 'input1',
       cellType: 'input',
       headerName: 'Input 1',
-      required: true,
     },
     {
       field: 'input2',
       cellType: 'input',
       headerName: 'Input 2',
+      required: true,
     },
     {
       field: 'select',
@@ -241,7 +246,7 @@ export const Example = () => {
 
   const validationSchema: ObjectSchema<any> = yup
     .object({
-      input1: yup.string().required().max(10).label('Input 1'),
+      input1: yup.string().max(10).label('Input 1'),
       input2: yup.string().required().max(10).label('Input 2'),
       fromto: yup
         .array()
@@ -249,10 +254,8 @@ export const Example = () => {
         .label('Select'),
     })
     .test(
-      'positive',
-      ({ label }) => {
-        return `の場合必須です`;
-      },
+      'input2Reqired',
+      'SelectとRadioがそれぞれ1の場合Inpaut 1は必須です',
       (value: any) => {
         if (value.select === '1' && value.radio === '1')
           if (value.input1 !== '') {
@@ -264,7 +267,14 @@ export const Example = () => {
       }
     );
 
+  const [invalids, setInvalids] = useState<InvalidModel[]>([]);
+
   const apiRef = useGridApiRef();
+
+  const handleIsInvalidChange = (invalids: InvalidModel[]) => {
+    console.log(invalids);
+    setInvalids([...invalids]);
+  };
 
   const handleGetCellReadonly = (params: any) => {
     if (params.field === 'input2' && params.id % 2 === 0) return true;
@@ -294,7 +304,20 @@ export const Example = () => {
     return '';
   };
 
-  const handleOnClick = () => {
+  const handleLogClick = () => {
+    console.log(invalids);
+  };
+
+  const handleUpdateClick = () => {
+    const isValid = invalids.every((x) => x.ids.length === 0);
+    if (isValid) {
+      console.log('valid');
+    } else {
+      console.log('invalid');
+    }
+  };
+
+  const handleExportCsvClick = () => {
     exportCsv('datagrid.csv', apiRef);
   };
 
@@ -304,10 +327,12 @@ export const Example = () => {
         <DataGrid
           columns={columns}
           rows={rows}
+          invalids={invalids}
           resolver={validationSchema}
           width={1200}
           height={150}
           checkboxSelection
+          onIsValidChange={handleIsInvalidChange}
           getCellReadonly={handleGetCellReadonly}
           getSelectValues={handleGetSelectValues}
           getCellClassName={handleGetCellClassName}
@@ -318,7 +343,9 @@ export const Example = () => {
           }}
           apiRef={apiRef}
         />
-        <PrimaryButton onClick={handleOnClick}>CSV出力</PrimaryButton>
+        <PrimaryButton onClick={handleLogClick}>LOG</PrimaryButton>
+        <PrimaryButton onClick={handleUpdateClick}>更新</PrimaryButton>
+        <PrimaryButton onClick={handleExportCsvClick}>CSV出力</PrimaryButton>
       </ThemeProvider>
     </>
   );
