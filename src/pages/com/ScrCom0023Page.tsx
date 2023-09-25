@@ -203,7 +203,10 @@ const ScrCom0023Page = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
-    exportCsv(user.employeeId + '_' + user.taskDate, apiRef);
+    exportCsv(
+      'ライブ会場一覧' + user.employeeId + '_' + user.taskDate + '.csv',
+      apiRef
+    );
   };
 
   const handleGetCellClassName = (
