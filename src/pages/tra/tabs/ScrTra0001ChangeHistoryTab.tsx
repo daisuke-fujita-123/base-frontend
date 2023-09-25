@@ -377,7 +377,8 @@ const convertToUnapprovedChangeHistoryRows = (
       screenName: u.screenName,
       tabName: u.tabName,
       changeExpectDate: u.changeExpectDate,
-      changeApplicationEmployee: u.changeApplicationEmployeeName,
+      changeApplicationEmployee:
+        u.changeApplicationEmployeeId + ' ' + u.changeApplicationEmployeeName,
       changeApplicationTimestamp: u.changeApplicationTimestamp,
       registrationChangeMemo: u.registrationChangeMemo ? 'あり' : '',
       approvalEmployee1: approvalEmployee[0],
