@@ -284,7 +284,7 @@ const _ROUTES = [
     // SCR-DOC-0005 書類情報詳細
     id: 'SCR-DOC-0005',
     name: '書類情報詳細',
-    path: '-',
+    path: '/doc/documents/:documentBasicsNumber',
     element: <ScrDoc0005Page />,
   },
   {
