@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { ObjectSchema, ValidationError } from 'yup';
 
@@ -19,15 +19,11 @@ import {
   convertFromInvalidToMessage,
   convertFromResolverToInvalids,
   convertFromSizeToWidth,
-  InvalidModel,
   removeIdFromInvalids,
   resolveGridWidth,
 } from 'controls/Datagrid/DataGridUtil';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
-
-import SortAsc from 'icons/content_sort_ascend.png';
-import SortDesc from 'icons/content_sort_descend.png';
 
 import { Box, Stack, styled, Tooltip } from '@mui/material';
 import {
@@ -41,9 +37,10 @@ import {
   GridValidRowModel,
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
-
 import Encoding from 'encoding-japanese';
 import saveAs from 'file-saver';
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
 import Papa from 'papaparse';
 
 const StyledDataGrid = styled(MuiDataGridPro)({
@@ -192,6 +189,10 @@ export interface DataGridProps extends DataGridProProps {
    */
   tooltips?: GridTooltipsModel[]; // add, tooltip = 'true'
   /**
+   * invalids
+   */
+  invalids?: InvalidModel[]; // add, tooltip = 'true'
+  /**
    * showHeaderRow
    */
   showHeaderRow?: boolean;
@@ -211,6 +212,10 @@ export interface DataGridProps extends DataGridProProps {
    * onRowChange
    */
   onCellBlur?: (row: any) => void;
+  /**
+   * onValidChange
+   */
+  onIsValidChange?: (invalids: InvalidModel[]) => void;
   /**
    * リンククリック時のハンドラ<br>
    * cellTypeがlinkの時のみ指定
@@ -259,6 +264,16 @@ export interface GridTooltipsModel {
 }
 
 /**
+ * バリデーションデータモデル
+ */
+export interface InvalidModel {
+  field: string;
+  type: string;
+  message: string;
+  ids: (string | number)[];
+}
+
+/**
  * DataGridコンポーネント
  * @param props
  * @returns
@@ -272,6 +287,7 @@ export const DataGrid = (props: DataGridProps) => {
     disabled = false,
     tooltips,
     hrefs,
+    invalids,
     showHeaderRow = false,
     headerRow,
     headerApiRef,
@@ -289,6 +305,7 @@ export const DataGrid = (props: DataGridProps) => {
     /** misc */
     onRowValueChange,
     onCellBlur,
+    onIsValidChange,
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
     getCellDisabled,
@@ -298,26 +315,35 @@ export const DataGrid = (props: DataGridProps) => {
     apiRef,
   } = props;
 
-  const defaultInvalids: InvalidModel[] =
-    resolver === undefined ? [] : convertFromResolverToInvalids(resolver);
+  if (
+    resolver !== undefined &&
+    invalids !== undefined &&
+    invalids.length === 0
+  ) {
+    // 初回レンダリング時のみバリデーションモデルを初期化する
+    const defaultInvalids = convertFromResolverToInvalids(resolver);
+    invalids.push(...defaultInvalids);
+  }
 
-  // state
-  const [invalids, setInvalids] = useState<InvalidModel[]>(defaultInvalids);
+  const validate = async (row: any) => {
+    if (resolver === undefined || invalids === undefined) return;
+    // 一旦、変更行のバリデーションエラーを解除
+    removeIdFromInvalids(invalids, row.id);
+    try {
+      await resolver.validate(row, { abortEarly: false });
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        // ハリデーションエラーがない場合は列のIDを追加
+        appendErrorToInvalids(invalids, err.inner, row.id);
+      }
+    }
+    onIsValidChange && onIsValidChange(invalids);
+  };
 
   // handler
   const handleRowValueChange = async (row: any) => {
-    if (resolver !== undefined) {
-      // 一旦、変更行のバリデーションエラーを解除
-      removeIdFromInvalids(invalids, row.id);
-      try {
-        await resolver.validate(row, { abortEarly: false });
-      } catch (err) {
-        if (err instanceof ValidationError) {
-          // ハリデーションエラーがない場合は列のIDを追加
-          appendErrorToInvalids(invalids, err.inner, row.id);
-        }
-      }
-      setInvalids([...invalids]);
+    if (resolver !== undefined && invalids !== undefined) {
+      await validate(row);
     }
 
     onRowValueChange && onRowValueChange(row);
@@ -715,7 +741,10 @@ export const DataGrid = (props: DataGridProps) => {
           slotProps={{
             toolbar: {
               pagination: pagination,
-              validationMessages: convertFromInvalidToMessage(invalids),
+              validationMessages:
+                invalids !== undefined
+                  ? convertFromInvalidToMessage(invalids)
+                  : [],
               showHeaderRow: showHeaderRow,
               headerColumns: muiColumns,
               headerRow: headerRow,
