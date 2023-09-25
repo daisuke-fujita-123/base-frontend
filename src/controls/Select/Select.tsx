@@ -90,7 +90,8 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
     size = 's',
   } = props;
 
-  const { register, formState, control } = useFormContext();
+  // form
+  const { register, formState, control, getFieldState } = useFormContext();
   const watchValue = useWatch({ name, control });
 
   // 複数選択された場合、先頭行の空白は削除する
@@ -107,6 +108,8 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
   const handleChange = (val: string) => {
     setSearchVal(val);
   };
+
+  const fieldState = getFieldState(name);
 
   // 選択肢のフィルタリング
   useEffect(() => {
@@ -130,7 +133,7 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
       <Box sx={{ minWidth: minWidth }}>
         {/* 選択肢が10個未満の場合が上段、選択肢が10個以上の場合が下段。10個以上の場合は、選択肢を検索することができる。 */}
         {selectValues.length < 10 ? (
-          <StyledFormControl fullWidth error={!!formState.errors[name]}>
+          <StyledFormControl fullWidth error={!!fieldState.error}>
             <SelectMui
               disabled={disabled}
               value={multiple ? omitBlankValue(watchValue) : watchValue}
@@ -150,13 +153,11 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
               ))}
             </SelectMui>
             {formState.errors[name]?.message && (
-              <FormHelperText>
-                {String(formState.errors[name]?.message)}
-              </FormHelperText>
+              <FormHelperText>{fieldState.error?.message}</FormHelperText>
             )}
           </StyledFormControl>
         ) : (
-          <StyledFormControl fullWidth error={!!formState.errors[name]}>
+          <StyledFormControl fullWidth error={!!fieldState.error}>
             <SelectMui
               disabled={disabled}
               value={multiple ? omitBlankValue(watchValue) : watchValue}
@@ -184,10 +185,8 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
                 </StyledMenuItem>
               ))}
             </SelectMui>
-            {formState.errors[name]?.message && (
-              <FormHelperText>
-                {String(formState.errors[name]?.message)}
-              </FormHelperText>
+            {fieldState.error?.message && (
+              <FormHelperText>{fieldState.error?.message}</FormHelperText>
             )}
           </StyledFormControl>
         )}
@@ -209,16 +208,20 @@ export const AddbleSelect = <T extends FieldValues>(props: SelectProps<T>) => {
     size = 's',
   } = props;
 
+  // form
   const { register, formState, control, setValue } = useFormContext();
   const watchValue = useWatch({ name, control });
   const selectList = [...watchValue];
+
   const handleClick = () => {
     setValue(name, [...selectList, ''] as FieldPathValue<
       FieldValues,
       FieldPath<FieldValues>
     >);
   };
+
   if (!watchValue) return <></>;
+
   return (
     <InputLayout
       label={label}
