@@ -2,6 +2,9 @@ import { ComponentMeta } from '@storybook/react';
 import React from 'react';
 import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
 
+import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
+
 import { CenterBox } from 'layouts/Box';
 import { RowStack, Stack } from 'layouts/Stack';
 
@@ -18,7 +21,6 @@ import { PriceTextField } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
-
 import { AddableBox } from './AddableBox';
 
 export default {
@@ -33,7 +35,7 @@ interface AddableBoxExampleModel {
     conditions: ConditionModel[];
     priceChange: number;
     plusMinus: number;
-    price: number;
+    price: string;
   }[];
 }
 
@@ -155,17 +157,43 @@ export const Example = () => {
         ],
         priceChange: 0,
         plusMinus: 0,
-        price: 0,
+        price: '10,000',
+      },
+      {
+        commissionType: 1,
+        productCode: 1,
+        conditions: [
+          {
+            conditionKind: '',
+            subConditions: [
+              {
+                operator: 0,
+                value: '',
+              },
+            ],
+          },
+        ],
+        priceChange: 0,
+        plusMinus: 0,
+        price: '20,000',
       },
     ],
   };
+
+  const validationSchema = yup.object().shape({
+    details: yup.array().of(
+      yup.object().shape({
+        price: yup.string().required().label('値引値増金額'),
+      })
+    ),
+  });
 
   // form
   const methods = useForm<AddableBoxExampleModel>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: formInitialValues,
-    context: false,
+    resolver: yupResolver(validationSchema),
   });
   const { fields, append, remove } = useFieldArray({
     name: 'details',
@@ -190,7 +218,7 @@ export const Example = () => {
       productCode: 1,
       priceChange: 0,
       plusMinus: 0,
-      price: 0,
+      price: '',
     };
     append(newItem);
   };
@@ -200,7 +228,7 @@ export const Example = () => {
     remove(index);
   };
 
-  const handleOnClick = () => {
+  const handleLogClick = () => {
     console.log(methods.getValues());
   };
 
@@ -250,7 +278,7 @@ export const Example = () => {
           ))}
         </AddableBox>
         <CenterBox>
-          <PrimaryButton onClick={handleOnClick}>log</PrimaryButton>
+          <PrimaryButton onClick={handleLogClick}>log</PrimaryButton>
         </CenterBox>
       </ThemeProvider>
     </FormProvider>

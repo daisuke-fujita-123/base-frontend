@@ -19,10 +19,6 @@ import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import SortAsc from 'icons/content_sort_ascend.png';
-import SortDesc from 'icons/content_sort_descend.png';
-import Pulldown from 'icons/pulldown_arrow.png';
-
 import {
   Box,
   IconButton,
@@ -41,9 +37,11 @@ import {
 } from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import { default as TableRowMui } from '@mui/material/TableRow';
-
 import Encoding from 'encoding-japanese';
 import saveAs from 'file-saver';
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
+import Pulldown from 'icons/pulldown_arrow.png';
 import Papa from 'papaparse';
 
 const TableCell = styled(TableCellMui)({
@@ -210,7 +208,7 @@ export const ConditionalTable = <T extends FieldValues>(
     operators,
     reorderable = false,
     adjustableSubConditionCount = false,
-    readonly,
+    readonly = false,
   } = props;
 
   // state
@@ -441,7 +439,7 @@ export const ConditionalTable = <T extends FieldValues>(
                               size='small'
                               fullWidth
                               inputProps={{
-                                readOnly: { readonly },
+                                readOnly: readonly,
                               }}
                               helperText={
                                 (errors[name] as any)?.[indexRow]
