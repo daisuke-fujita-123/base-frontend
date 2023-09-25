@@ -254,15 +254,11 @@ export const Example = () => {
         .label('Select'),
     })
     .test(
-      'input2Reqired',
+      'input1Reqired',
       'SelectとRadioがそれぞれ1の場合Inpaut 1は必須です',
       (value: any) => {
-        if (value.select === '1' && value.radio === '1')
-          if (value.input1 !== '') {
-            return true;
-          } else {
-            return false;
-          }
+        if (value.select === '1' && value.radio === '1' && value.input1 === '')
+          return false;
         return true;
       }
     );
@@ -271,7 +267,7 @@ export const Example = () => {
 
   const apiRef = useGridApiRef();
 
-  const handleIsInvalidChange = (invalids: InvalidModel[]) => {
+  const handleOnInvalidModelChange = (invalids: InvalidModel[]) => {
     console.log(invalids);
     setInvalids([...invalids]);
   };
@@ -332,7 +328,7 @@ export const Example = () => {
           width={1200}
           height={150}
           checkboxSelection
-          onIsValidChange={handleIsInvalidChange}
+          onInvalidModelChange={handleOnInvalidModelChange}
           getCellReadonly={handleGetCellReadonly}
           getSelectValues={handleGetSelectValues}
           getCellClassName={handleGetCellClassName}
