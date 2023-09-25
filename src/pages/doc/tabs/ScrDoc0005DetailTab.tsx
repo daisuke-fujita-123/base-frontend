@@ -325,39 +325,40 @@ const ScrDoc0005DetailTab = (props: ScrDoc0005DetailTabProps) => {
       const eraNameRes = await ScrCom9999GetCodeManagementMaster({
         codeId: 'CDE-COM-0074',
       });
-      const eraNameSelectValues: SelectValue[] =
-        eraNameRes.searchGetCodeManagementMasterListbox.map((val) => {
-          return {
-            value: val.codeValue,
-            displayValue: val.codeName,
-          };
-        });
+      const eraNameSelectValues: SelectValue[] = eraNameRes.list.map((val) => {
+        return {
+          value: val.codeValue,
+          displayValue: val.codeName,
+        };
+      });
       setEraNameSelectValues(eraNameSelectValues);
 
       // 四輪車区分
       const fourWheelerRes = await ScrCom9999GetCodeManagementMaster({
         codeId: 'CDE-COM-0074',
       });
-      const fourWheelerSelectValues: SelectValue[] =
-        fourWheelerRes.searchGetCodeManagementMasterListbox.map((val) => {
+      const fourWheelerSelectValues: SelectValue[] = fourWheelerRes.list.map(
+        (val) => {
           return {
             value: val.codeValue,
             displayValue: val.codeName,
           };
-        });
+        }
+      );
       setFourWheelerSelectValues(fourWheelerSelectValues);
 
       // 伝票種類
       const slipTypeRes = await ScrCom9999GetCodeManagementMaster({
         codeId: 'CDE-COM-0024',
       });
-      const slipTypeSelectValues: SelectValue[] =
-        slipTypeRes.searchGetCodeManagementMasterListbox.map((val) => {
+      const slipTypeSelectValues: SelectValue[] = slipTypeRes.list.map(
+        (val) => {
           return {
             value: val.codeValue,
             displayValue: val.codeName,
           };
-        });
+        }
+      );
       setSlipTypeSelectValues(slipTypeSelectValues);
 
       // 陸事コード取得

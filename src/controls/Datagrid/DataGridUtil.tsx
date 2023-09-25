@@ -1,6 +1,7 @@
 import { ObjectSchema, ValidationError } from 'yup';
 
 import { GridColDef } from '@mui/x-data-grid-pro';
+import { InvalidModel } from './Datagrid';
 
 export const convertFromSizeToWidth = (size: string | undefined): number => {
   if (size === undefined) return 80;
@@ -21,16 +22,6 @@ export const resolveGridWidth = (
     checkboxWidth
   );
 };
-
-/**
- * バリデーションデータモデル
- */
-export interface InvalidModel {
-  field: string;
-  type: string;
-  message: string;
-  ids: any[];
-}
 
 export const convertFromResolverToInvalids = (
   resolver: ObjectSchema<any>
@@ -61,6 +52,23 @@ export const convertFromResolverToInvalids = (
       defaultInvalids.push(...invalid);
     }
   });
+  // 相関バリデーションを追加
+  resolver.tests.forEach((x) => {
+    if (
+      x.OPTIONS === undefined ||
+      x.OPTIONS.name === undefined ||
+      x.OPTIONS.message === undefined ||
+      typeof x.OPTIONS.message !== 'string'
+    )
+      return;
+    const invalid: InvalidModel = {
+      field: x.OPTIONS.name,
+      type: x.OPTIONS.name,
+      message: x.OPTIONS.message,
+      ids: [],
+    };
+    defaultInvalids.push(invalid);
+  });
   return defaultInvalids;
 };
 
@@ -73,13 +81,19 @@ export const removeIdFromInvalids = (invalids: InvalidModel[], id: string) => {
 export const appendErrorToInvalids = (
   invalids: InvalidModel[],
   err: ValidationError[],
-  id: string
+  id: string | number
 ) => {
   err.forEach((e) => {
-    const invalid = invalids.find(
-      // 配列に対するバリデーションエラーは、インデックス付のパスになるため前方一致で判断
-      (x) => e.path?.startsWith(x.field) && x.type === e.type
-    );
+    const invalid = invalids.find((x) => {
+      if (e.path === undefined) return false;
+      if (e.path === '') {
+        // 相関チェックエラーはe.pathが空文字になる
+        return x.type === e.type;
+      } else {
+        // 配列に対するバリデーションエラーは、インデックス付のパスになるため前方一致で判断
+        return e.path.startsWith(x.field) && x.type === e.type;
+      }
+    });
     if (invalid === undefined) return;
     if (!invalid.ids.includes(id)) invalid.ids.push(id);
     invalid.message = e.message;
