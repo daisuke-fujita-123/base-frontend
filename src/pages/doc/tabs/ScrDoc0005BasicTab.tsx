@@ -538,13 +538,12 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
       const omatomeRes = await ScrCom9999GetCodeManagementMaster({
         codeId: 'CDE-COM-0073',
       });
-      const omatomeSelectValues: SelectValue[] =
-        omatomeRes.searchGetCodeManagementMasterListbox.map((val) => {
-          return {
-            value: val.codeValue,
-            displayValue: val.codeName,
-          };
-        });
+      const omatomeSelectValues: SelectValue[] = omatomeRes.list.map((val) => {
+        return {
+          value: val.codeValue,
+          displayValue: val.codeName,
+        };
+      });
       setOmatomeSelectValues(omatomeSelectValues);
 
       // 不備対応ステータス
@@ -552,7 +551,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
         codeId: 'CDE-COM-0082',
       });
       const incompleteSupportSelectValues: SelectValue[] =
-        incompleteSupportRes.searchGetCodeManagementMasterListbox.map((val) => {
+        incompleteSupportRes.list.map((val) => {
           return {
             value: val.codeValue,
             displayValue: val.codeName,
@@ -567,7 +566,7 @@ const ScrDoc0005BasicTab = (props: ScrDoc0005BasicTabProps) => {
           ? 'CDE-COM-0084'
           : 'CDE-COM-0085';
       const selectRes = await ScrCom9999getCodeManagementMasterMultiple({
-        codeIdList: [{ codeId: selectCode }],
+        codeId: [selectCode],
       });
 
       const selectSelectValues: SelectValue[] = selectRes.resultList
