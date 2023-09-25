@@ -392,23 +392,17 @@ const ScrCom0008Page = () => {
         getHistoryInfoRequest
       );
 
-      // 変更履歴から受け取った帳票コメントを変換
+      // 変更履歴から受け取った帳票コメント、変更予定日を変換
       const historyInfo = convertToHistoryInfo(
         getHistoryInfoResponse,
-        applicationId
+        applicationId,
+        getHistoryInfoResponse.changeHistoryInfo.changeExpectDate
       );
 
-      // 帳票コメントに値を設定
+      // 帳票コメント、変更予定日に値を設定
       reset(historyInfo);
 
-      // 帳票コメント以外のデータを設定
-      setValue(
-        'changeExpectedDate',
-        format(
-          new Date(getHistoryInfoResponse.changeHistoryInfo.changeExpectDate),
-          'yyyy/MM/dd'
-        )
-      );
+      // 帳票コメント、変更予定日以外のデータを設定
       setGetReportId(getHistoryInfoResponse.changeHistoryInfo.reportId);
       setGetReportName(getHistoryInfoResponse.changeHistoryInfo.reportName);
       setGetCommentRow(getHistoryInfoResponse.changeHistoryInfo.commentRow);
@@ -439,8 +433,6 @@ const ScrCom0008Page = () => {
     // 表示切替の為trueを設定
     setSwitchFlag(true);
 
-    console.log(getValues('changeHistoryNumber'));
-
     // API-COM-0008-0025: 変更履歴情報取得API
     const getHistoryInfoRequest = {
       changeHistoryNumber: getValues('changeHistoryNumber'),
@@ -449,25 +441,20 @@ const ScrCom0008Page = () => {
       getHistoryInfoRequest
     );
 
-    // 変更履歴から受け取った帳票コメントを変換
+    // 変更履歴から受け取った帳票コメント、変更予定日を変換
     const historyInfo = convertToHistoryInfo(
       getHistoryInfoResponse,
-      getValues('changeHistoryNumber')
+      getValues('changeHistoryNumber'),
+      getHistoryInfoResponse.changeHistoryInfo.changeExpectDate
     );
 
     setIsChangeHistoryBtn(true);
 
-    // 画面の帳票コメントに値を設定
+    // 画面の帳票コメント、変更予定日に値を設定
     reset(historyInfo);
 
-    // 画面の帳票コメント以外のデータを設定
-    setValue(
-      'changeExpectedDate',
-      format(
-        new Date(getHistoryInfoResponse.changeHistoryInfo.changeExpectDate),
-        'yyyy/MM/dd'
-      )
-    );
+    // 画面の帳票コメント、変更予定日以外のデータを設定
+    // 帳票コメント以外のデータを設定
     setGetReportId(getHistoryInfoResponse.changeHistoryInfo.reportId);
     setGetReportName(getHistoryInfoResponse.changeHistoryInfo.reportName);
     setGetCommentRow(getHistoryInfoResponse.changeHistoryInfo.commentRow);
@@ -752,7 +739,8 @@ const ScrCom0008Page = () => {
    */
   const convertToHistoryInfo = (
     getHistoryInfoResponse: ScrCom9999GetHistoryInfoResponse,
-    changeHistoryNumber: string
+    changeHistoryNumber: string,
+    changeExpectedDate: string
   ): reportBasicModel => {
     // 改行コードでつながっている帳票コメントを改行コード毎に行単位に分割してコメント行に初期設定する
     const comments: string[] =
@@ -776,7 +764,10 @@ const ScrCom0008Page = () => {
       reportComment14: comments[13] !== null ? comments[13] : '',
       reportComment15: comments[14] !== null ? comments[14] : '',
       changeHistoryNumber: changeHistoryNumber,
-      changeExpectedDate: '',
+      changeExpectedDate:
+        changeExpectedDate === null
+          ? ''
+          : format(new Date(changeExpectedDate), 'yyyy/MM/dd'),
     };
   };
 
