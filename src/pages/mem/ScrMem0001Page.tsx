@@ -52,6 +52,7 @@ import {
 import { useForm } from 'hooks/useForm';
 import { useNavigate } from 'hooks/useNavigate';
 
+import { AppContext } from 'providers/AppContextProvider';
 import { AuthContext } from 'providers/AuthProvider';
 import { MessageContext } from 'providers/MessageProvider';
 
@@ -826,6 +827,10 @@ const serchData: { label: string; name: key }[] = [
  * SCR-MEM-0001 法人情報一覧画面
  */
 const ScrMem0001Page = () => {
+  // context
+  const { saveState, loadState } = useContext(AppContext);
+  const prevValues = loadState();
+
   // router
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -857,7 +862,7 @@ const ScrMem0001Page = () => {
   const isReadOnly = useState<boolean>(false);
   // form
   const methods = useForm<SearchConditionModel>({
-    defaultValues: initialValues,
+    defaultValues: prevValues === undefined ? initialValues : prevValues,
     resolver: yupResolver(yup.object(corporationBasicSchama)),
     context: isReadOnly,
   });
@@ -866,6 +871,9 @@ const ScrMem0001Page = () => {
   // 初期表示
   useEffect(() => {
     const initialize = async () => {
+      // 検索項目保持初期化
+      saveState(initialValues);
+
       const selectValues: SelectValuesModel = {
         corporationGroupNameSelectValues: [],
         corporationEntryKindsSelectValues: [],
@@ -994,6 +1002,10 @@ const ScrMem0001Page = () => {
   const handleSearchClick = async () => {
     if (sectionRef.current && sectionRef.current.closeSection)
       sectionRef.current.closeSection();
+
+    // 検索項目保持
+    saveState(getValues());
+
     // 法人情報検索API
     const request = convertFromSearchConditionModel(getValues());
     const response = await ScrMem0001SearchCorporations(request);
