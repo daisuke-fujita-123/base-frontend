@@ -1695,10 +1695,6 @@ const ScrMem0014BasicTab = (props: {
     if (corporationId === undefined) return;
     if (logisticsBaseId === undefined) return;
 
-    console.log(contractId);
-    console.log(corporationId);
-    console.log(logisticsBaseId);
-
     if (contractId === 'new' && logisticsBaseId === 'new') {
       newInitialize(corporationId);
       return;
