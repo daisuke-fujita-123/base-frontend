@@ -98,10 +98,12 @@ export const Select = <T extends FieldValues>(props: SelectProps<T>) => {
 
   // バイト数取得
   const strLength = (str: string) => {
-    let count = 0,
-      c = 0;
+    let count = 0;
     for (let i = 0, len = str.length; i < len; i++) {
+      let c = 0;
+      // 文字コード取得
       c = str.charCodeAt(i);
+      // 半角英数字ｶﾅ記号を1としてカウント
       if (
         (c >= 0x0 && c < 0x81) ||
         c == 0xf8f0 ||
