@@ -203,8 +203,24 @@ const ScrCom0023Page = () => {
    * CSV出力アイコンクリック時のイベントハンドラ
    */
   const handleExportCsvClick = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = d.getMonth() + 1;
+    const day = d.getDate();
+    const hours = d.getHours();
+    const min = d.getMinutes();
     exportCsv(
-      'ライブ会場一覧' + user.employeeId + '_' + user.taskDate + '.csv',
+      'ライブ会場一覧' +
+        user.employeeId +
+        '_' +
+        year.toString() +
+        (month < 10 ? '0' : '') +
+        month.toString() +
+        (day < 10 ? '0' : '') +
+        day.toString() +
+        hours.toString() +
+        min.toString() +
+        '.csv',
       apiRef
     );
   };
