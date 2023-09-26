@@ -3711,9 +3711,9 @@ const ScrMem0014ServiceDiscountTab = (props: {
       props.setContractBaseValue(response);
     };
 
-    if (contractId === undefined) return;
-    if (corporationId === undefined) return;
-    if (logisticsBaseId === undefined) return;
+    if (contractId === undefined || contractId === 'new') return;
+    if (corporationId === undefined || corporationId === 'new') return;
+    if (logisticsBaseId === undefined || logisticsBaseId === 'new') return;
 
     if (applicationId !== null) {
       historyInitialize(applicationId);

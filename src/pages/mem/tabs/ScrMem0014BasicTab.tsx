@@ -1308,6 +1308,13 @@ const ScrMem0014BasicTab = (props: {
     };
 
     const newInitialize = async (corporationId: string) => {
+      // 基本情報タブ以外は非活性
+      props.chengeTabDisableds({
+        ScrMem0014BasicTab: false,
+        ScrMem0014ServiceDiscountTab: true,
+        ScrMem0014BillingTab: true,
+        ScrMem0014LiveTab: true,
+      });
       // リスト取得
       const newSelectValues = selectValuesInitialValues;
       // コード管理マスタ情報取得
@@ -1687,6 +1694,10 @@ const ScrMem0014BasicTab = (props: {
     if (contractId === undefined) return;
     if (corporationId === undefined) return;
     if (logisticsBaseId === undefined) return;
+
+    console.log(contractId);
+    console.log(corporationId);
+    console.log(logisticsBaseId);
 
     if (contractId === 'new' && logisticsBaseId === 'new') {
       newInitialize(corporationId);
