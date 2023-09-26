@@ -130,6 +130,10 @@ export const Example = () => {
     return false;
   };
 
+  const handleOnBlur = (name: any) => {
+    console.log(getValues(name));
+  };
+
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       // inputフィールドの変更のみを処理するサンプル
@@ -153,6 +157,7 @@ export const Example = () => {
             name='calender'
             yearmonth={yearmonth}
             itemDef={itemDef}
+            onBlur={handleOnBlur}
             getCellBackground={handleGetCellBackground}
             getCellDisabled={handleGetCellDisabled}
           />

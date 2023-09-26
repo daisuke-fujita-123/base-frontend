@@ -1,25 +1,33 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+  Controller,
+  FieldErrors,
+  FieldValues,
+  Path,
+  useFieldArray,
+  useFormContext,
+  useWatch,
+} from 'react-hook-form';
 
-import { MarginBox, RightBox } from 'layouts/Box';
-import { Stack } from 'layouts/Stack';
+import { MarginBox } from 'layouts/Box';
 
 import { AddButton, AddIconButton, RemoveIconButton } from 'controls/Button';
 import { RequiredLabel } from 'controls/Label';
-import {
-  SelectValue,
-  StyledFormControl,
-  StyledMenuItem,
-} from 'controls/Select';
+import { SelectValue } from 'controls/Select';
 import { TableColDef } from 'controls/Table';
 import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import SortAsc from 'icons/content_sort_ascend.png';
-import SortDesc from 'icons/content_sort_descend.png';
-import Pulldown from 'icons/pulldown_arrow.png';
-
-import { IconButton, Select as SelectMui, styled } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  MenuItem,
+  Select as SelectMui,
+  Stack,
+  styled,
+  TextField,
+} from '@mui/material';
 import Icon from '@mui/material/Icon';
 import { default as TableMui } from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -29,9 +37,11 @@ import {
 } from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import { default as TableRowMui } from '@mui/material/TableRow';
-
 import Encoding from 'encoding-japanese';
 import saveAs from 'file-saver';
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
+import Pulldown from 'icons/pulldown_arrow.png';
 import Papa from 'papaparse';
 
 const TableCell = styled(TableCellMui)({
@@ -137,20 +147,26 @@ export interface ConditionKind {
 }
 
 /**
+ * サブ条件データモデル
+ */
+export interface SubConditionModel {
+  operator: string | number;
+  value: string | number;
+}
+
+/**
  * 条件データモデル
  */
 export interface ConditionModel {
   conditionKind: string | number;
-  subConditions: {
-    operator: string | number;
-    value: string | number;
-  }[];
+  subConditions: SubConditionModel[];
 }
 
 /**
  * ContitionalTableコンポーネントのProps
  */
-interface ContitionalTableProps {
+interface ContitionalTableProps<T extends FieldValues> {
+  name: Path<T>;
   /**
    * 列の定義情報
    */
@@ -163,39 +179,6 @@ interface ContitionalTableProps {
    * 演算子データ
    */
   operators: SelectValue[];
-  /**
-   * テーブル表示内容（行）
-   */
-  rows: ConditionModel[];
-  /**
-   * 条件種別変更イベント
-   */
-  onConditionKindChange: (kind: string | number, index: number) => void;
-  /**
-   * サブ条件変更イベント
-   */
-  onSubConditionChange: (
-    value: string | number,
-    index: number,
-    subIndex: number,
-    field: string
-  ) => void;
-  /**
-   * 条件数変更クリックイベント
-   */
-  onConditionCountChangeClick: (operation: string, index?: number) => void;
-  /**
-   * サブ条件数変更クリックイベント
-   */
-  onSubConditionCoountChangeClick: (
-    index: number,
-    operation: string,
-    subIndex?: number
-  ) => void;
-  /**
-   * 順序変更クリックイベント
-   */
-  onOrderChangeClick?: (index: number, direction: string) => void;
   /**
    * 順序変更を有効にする
    */
@@ -215,31 +198,87 @@ interface ContitionalTableProps {
  * @param props
  * @returns
  */
-export const ConditionalTable = (props: ContitionalTableProps) => {
+export const ConditionalTable = <T extends FieldValues>(
+  props: ContitionalTableProps<T>
+) => {
   const {
+    name,
     columns,
     conditionKinds,
     operators,
-    rows,
-    onConditionKindChange,
-    onSubConditionChange,
-    onOrderChangeClick,
-    onConditionCountChangeClick,
-    onSubConditionCoountChangeClick,
     reorderable = false,
     adjustableSubConditionCount = false,
-    readonly,
+    readonly = false,
   } = props;
 
-  // Menuの開閉制御
-  const [isOpen, setisOpen] = useState<string>('');
-  const handleMenuOpen = (val: string, row: number, col: number) => {
-    const cell = val + row + col;
-    const openMenu = cell === isOpen ? '' : cell;
-    setisOpen(openMenu);
+  // state
+  const [errors, setErrors] = useState<FieldErrors<FieldValues>>({});
+
+  // form
+  const { formState, control, register, getValues, setValue } =
+    useFormContext();
+  const { append, remove } = useFieldArray({ control, name });
+  useWatch(name);
+  const fields = getValues(name);
+
+  useEffect(() => {
+    console.log(formState.errors);
+    setErrors(formState.errors);
+  }, [formState]);
+
+  if (fields.length === 0) return <></>;
+
+  const handleAddConditionClick = () => {
+    const newItem: ConditionModel = {
+      conditionKind: '',
+      subConditions: [
+        {
+          operator: '',
+          value: '',
+        },
+      ],
+    };
+    append(newItem as any, { shouldFocus: false });
   };
 
-  if (rows.length === 0) return <></>;
+  const handleRemoveConditionClick = (index: number) => {
+    remove(index);
+  };
+
+  const handleAddSubConditionClick = (index: number) => {
+    const newItem: SubConditionModel[] = getValues(
+      `${name}.${index}.subConditions`
+    );
+    newItem.push({
+      operator: '',
+      value: '',
+    });
+    setValue(`${name}.${index}.subConditions`, newItem as any);
+  };
+
+  const handleRemoveSubConditionClick = (index: number, subIndex: number) => {
+    const newItem: SubConditionModel[] = getValues(
+      `${name}.${index}.subConditions`
+    );
+    newItem.splice(subIndex, 1);
+    setValue(`${name}.${index}.subConditions`, newItem as any);
+  };
+
+  const hadnleMoveUpConditionClick = (index: number) => {
+    const values: ConditionModel[] = getValues(name);
+    const top = values[index - 1];
+    const bottom = values[index];
+    setValue(`${name}.${index - 1}`, bottom as any);
+    setValue(`${name}.${index}`, top as any);
+  };
+
+  const hadnleMoveDownConditionClick = (index: number) => {
+    const values: ConditionModel[] = getValues(name);
+    const top = values[index];
+    const bottom = values[index + 1];
+    setValue(`${name}.${index}`, bottom as any);
+    setValue(`${name}.${index + 1}`, top as any);
+  };
 
   return (
     <TableMui>
@@ -263,9 +302,12 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
               </div>
             </TableCell>
           ))}
-          {rows.length + 1 <= 10 && (
+          {!readonly && (
             <MarginBox ml={2} justifyContent='start'>
-              <AddButton onClick={() => onConditionCountChangeClick('add')}>
+              <AddButton
+                onClick={handleAddConditionClick}
+                disable={fields.length >= 10}
+              >
                 条件追加
               </AddButton>
             </MarginBox>
@@ -273,12 +315,12 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
         </TableRow>
       </TableHead>
       <TableBody>
-        {rows.map((row, indexRow) => {
+        {fields.map((row: any, indexRow: number) => {
           return (
             <TableRow key={indexRow}>
               {/* 条件番号 */}
               <TableLeftHeader>
-                {reorderable ? (
+                {reorderable && !readonly ? (
                   <StyledColmun>
                     <div
                       style={{ textAlign: 'center', textOverflow: 'nowrap' }}
@@ -287,20 +329,14 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
                     <SetIconButton>
                       {indexRow !== 0 && (
                         <StyledButton
-                          onClick={() =>
-                            onOrderChangeClick &&
-                            onOrderChangeClick(indexRow, 'up')
-                          }
+                          onClick={() => hadnleMoveUpConditionClick(indexRow)}
                         >
                           <SortedAscIcon />
                         </StyledButton>
                       )}
-                      {indexRow !== rows.length - 1 && (
+                      {indexRow !== fields.length - 1 && (
                         <StyledButton
-                          onClick={() =>
-                            onOrderChangeClick &&
-                            onOrderChangeClick(indexRow, 'down')
-                          }
+                          onClick={() => hadnleMoveDownConditionClick(indexRow)}
                         >
                           <SortedDescIcon />
                         </StyledButton>
@@ -316,175 +352,170 @@ export const ConditionalTable = (props: ContitionalTableProps) => {
               </TableLeftHeader>
               {/* 条件種類 */}
               <TableCell>
-                <StyledFormControl>
-                  <StyledSelect
-                    open={isOpen === 'conditionKind' + indexRow + '0'}
-                    onClick={() => handleMenuOpen('conditionKind', indexRow, 0)}
-                    onChange={(e) => {
-                      onConditionKindChange(
-                        e.target.value as string | number,
-                        indexRow
-                      );
-                    }}
-                    value={row.conditionKind}
-                    IconComponent={PulldownIcon}
-                    inputProps={{
-                      readOnly: readonly,
-                    }}
-                  >
-                    <StyledMenuItem value=''>{'　'}</StyledMenuItem>
-                    {conditionKinds.map((conditionKind, index) => (
-                      <StyledMenuItem
-                        key={conditionKind.value + index}
-                        value={conditionKind.value}
+                <Controller
+                  name={`${name}.${indexRow}.conditionKind`}
+                  control={control}
+                  render={({ field }) => (
+                    <>
+                      <SelectMui
+                        {...field}
+                        size='small'
+                        fullWidth
+                        readOnly={readonly}
                       >
-                        {conditionKind.displayValue}
-                      </StyledMenuItem>
-                    ))}
-                  </StyledSelect>
-                </StyledFormControl>
+                        {conditionKinds.map((x, i) => (
+                          <MenuItem key={i} value={x.value}>
+                            {x.displayValue}
+                          </MenuItem>
+                        ))}
+                      </SelectMui>
+                      <Typography>
+                        {
+                          (errors[name] as any)?.[indexRow]?.conditionKind
+                            ?.message
+                        }
+                      </Typography>
+                    </>
+                  )}
+                />
               </TableCell>
               {/* 条件 */}
               <TableCell>
-                {row.subConditions.map((conditionRow, indexCol) => {
-                  const kind = conditionKinds.find(
-                    (x) => x.value === row.conditionKind
-                  );
-                  return (
-                    <StyledFormControl key={indexCol}>
-                      <StyledSelect
-                        open={isOpen === 'operator' + indexRow + indexCol}
-                        onClick={() =>
-                          handleMenuOpen('operator', indexRow, indexCol)
-                        }
-                        IconComponent={PulldownIcon}
-                        onChange={(e) =>
-                          onSubConditionChange(
-                            e.target.value as string | number,
-                            indexRow,
-                            indexCol,
-                            'operator'
-                          )
-                        }
-                        value={row.subConditions[indexCol]?.operator}
-                        inputProps={{ readOnly: readonly }}
-                      >
-                        <StyledMenuItem value=''>{'　'}</StyledMenuItem>
-                        {operators.map((rowVal, index) => (
-                          <StyledMenuItem key={index} value={rowVal.value}>
-                            {rowVal.displayValue}
-                          </StyledMenuItem>
-                        ))}
-                      </StyledSelect>
-                    </StyledFormControl>
-                  );
-                })}
+                <Box>
+                  {row.subConditions.map(
+                    (conditionRow: any, indexCol: number) => {
+                      return (
+                        <>
+                          <Controller
+                            name={`${name}.${indexRow}.subConditions.${indexCol}.operator`}
+                            control={control}
+                            render={({ field }) => (
+                              <>
+                                <SelectMui
+                                  {...field}
+                                  size='small'
+                                  fullWidth
+                                  readOnly={readonly}
+                                >
+                                  {operators?.map((x, i) => (
+                                    <MenuItem key={i} value={x.value}>
+                                      {x.displayValue}
+                                    </MenuItem>
+                                  ))}
+                                </SelectMui>
+                                <Typography>
+                                  {(errors[name] as any)?.[indexRow]
+                                    ?.subConditions &&
+                                    (errors[name] as any)?.[indexRow]
+                                      ?.subConditions[indexCol]?.operator &&
+                                    (errors[name] as any)?.[indexRow]
+                                      ?.subConditions[indexCol]?.operator
+                                      .message}
+                                </Typography>
+                              </>
+                            )}
+                          />
+                        </>
+                      );
+                    }
+                  )}
+                </Box>
               </TableCell>
               {/* 値 */}
               <TableCell>
-                <Stack
-                  spacing={5}
-                  direction='row'
-                  justifyContent='space-between'
-                >
-                  {row.subConditions.map((conditionRow, indexCol) => {
-                    const kind = conditionKinds.find(
-                      (x) => x.value === row.conditionKind
-                    );
-                    if (kind?.selectValues !== undefined) {
-                      return (
-                        <div key={indexCol} style={{ display: 'flex' }}>
-                          <StyledFormControl>
-                            <StyledSelect
-                              open={isOpen === 'value' + indexRow + indexCol}
-                              onClick={() =>
-                                handleMenuOpen('value', indexRow, indexCol)
-                              }
-                              IconComponent={PulldownIcon}
-                              onChange={(e) => {
-                                onSubConditionChange(
-                                  e.target.value as string | number,
-                                  indexRow,
-                                  indexCol,
-                                  'value'
-                                );
-                              }}
-                              value={row.subConditions[indexCol]?.value}
-                              inputProps={{ readOnly: readonly }}
-                            >
-                              <StyledMenuItem value=''>{'　'}</StyledMenuItem>
-                              {kind.selectValues.map(
-                                (rowVal: SelectValue, index: number) => (
-                                  <StyledMenuItem
-                                    key={index}
-                                    value={rowVal.value}
-                                  >
-                                    {rowVal.displayValue}
-                                  </StyledMenuItem>
-                                )
-                              )}
-                            </StyledSelect>
-                          </StyledFormControl>
-                          {adjustableSubConditionCount && indexCol > 0 && (
-                            <RemoveIconButton
-                              onClick={() => {
-                                onSubConditionCoountChangeClick(
-                                  indexRow,
-                                  'remove',
-                                  indexCol
-                                );
-                              }}
-                            />
-                          )}
-                        </div>
+                <Box>
+                  {row.subConditions.map(
+                    (conditionRow: any, indexCol: number) => {
+                      const kind = conditionKinds.find(
+                        (x) => x.value === row.conditionKind
                       );
-                    } else {
                       return (
-                        <div key={indexCol} style={{ display: 'flex' }}>
-                          <StyledInput
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                              onSubConditionChange(
-                                e.target.value as string | number,
-                                indexRow,
-                                indexCol,
-                                'value'
-                              );
-                            }}
-                            value={row.subConditions[indexCol]?.value}
-                            InputProps={{ readOnly: readonly }}
-                          />
-                          {adjustableSubConditionCount && indexCol > 0 && (
-                            <RemoveIconButton
-                              onClick={() => {
-                                onSubConditionCoountChangeClick(
-                                  indexRow,
-                                  'remove',
-                                  indexCol
-                                );
+                        <Stack key={indexCol} direction='row'>
+                          {kind?.selectValues === undefined ? (
+                            <TextField
+                              {...register(
+                                `${name}.${indexRow}.subConditions.${indexCol}.value`
+                              )}
+                              size='small'
+                              fullWidth
+                              inputProps={{
+                                readOnly: readonly,
                               }}
+                              helperText={
+                                (errors[name] as any)?.[indexRow]
+                                  ?.subConditions &&
+                                (errors[name] as any)?.[indexRow]
+                                  ?.subConditions[indexCol]?.value &&
+                                (errors[name] as any)?.[indexRow]
+                                  ?.subConditions[indexCol]?.value.message
+                              }
+                            />
+                          ) : (
+                            <Controller
+                              name={`${name}.${indexRow}.subConditions.${indexCol}.value`}
+                              control={control}
+                              render={({ field }) => (
+                                <>
+                                  <SelectMui
+                                    {...field}
+                                    size='small'
+                                    fullWidth
+                                    readOnly={readonly}
+                                  >
+                                    {kind.selectValues?.map((x, i) => (
+                                      <MenuItem key={i} value={x.value}>
+                                        {x.displayValue}
+                                      </MenuItem>
+                                    ))}
+                                  </SelectMui>
+                                  <Typography>
+                                    {(errors[name] as any)?.[indexRow]
+                                      ?.subConditions &&
+                                      (errors[name] as any)?.[indexRow]
+                                        ?.subConditions[indexCol]?.value &&
+                                      (errors[name] as any)?.[indexRow]
+                                        ?.subConditions[indexCol]?.value
+                                        .message}
+                                  </Typography>
+                                </>
+                              )}
                             />
                           )}
-                        </div>
+                          {adjustableSubConditionCount &&
+                            !readonly &&
+                            indexCol > 0 && (
+                              <RemoveIconButton
+                                onClick={() => {
+                                  handleRemoveSubConditionClick(
+                                    indexRow,
+                                    indexCol
+                                  );
+                                }}
+                              />
+                            )}
+                          {adjustableSubConditionCount &&
+                            !readonly &&
+                            indexCol === 0 && (
+                              <AddIconButton
+                                onClick={() => {
+                                  handleAddSubConditionClick(indexRow);
+                                }}
+                                disable={row.subConditions.length >= 10}
+                              />
+                            )}
+                        </Stack>
                       );
                     }
-                  })}
-                  <RightBox>
-                    {adjustableSubConditionCount &&
-                      row.subConditions.length <= 10 && (
-                        <AddIconButton
-                          onClick={() => {
-                            onSubConditionCoountChangeClick(indexRow, 'add');
-                          }}
-                        />
-                      )}
-                  </RightBox>
-                </Stack>
+                  )}
+                </Box>
               </TableCell>
-              <RemoveIconButton
-                onClick={() => {
-                  onConditionCountChangeClick('remove', indexRow);
-                }}
-              />
+              {!readonly && (
+                <RemoveIconButton
+                  onClick={() => {
+                    handleRemoveConditionClick(indexRow);
+                  }}
+                />
+              )}
             </TableRow>
           );
         })}

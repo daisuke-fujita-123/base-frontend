@@ -22,6 +22,12 @@ export interface ScrDoc9999CreateReportImageDocResponse {
   responseEntity: string;
 }
 
+/** API-DOC-9999-0002: 陸事コードプルダウンリスト取得API レスポンス */
+export interface ScrDoc9999GetLandCodeListboxResponse {
+  /** レスポンス */
+  landCodeList: { landCode: string; landCodeName: string }[];
+}
+
 /** API-DOC-9999-0002: イメージ帳票作成API（書類管理） */
 export const ScrDoc9999CreateReportImageDoc = async (
   request: ScrDoc9999CreateReportImageDocRequest
@@ -35,3 +41,15 @@ export const ScrDoc9999CreateReportImageDoc = async (
   );
   return response.data;
 };
+
+/** API-DOC-9999-0002: 陸事コードプルダウンリスト取得API */
+export const ScrDoc9999GetLandCodeListbox =
+  async (): Promise<ScrDoc9999GetLandCodeListboxResponse> => {
+    const response = await docApiClient.post(
+      '/api/doc/scr-doc-9999/get-land-code-listbox',
+      {
+        responseType: 'blob',
+      }
+    );
+    return response.data;
+  };

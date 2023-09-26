@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import {
   Controller,
   FieldErrors,
@@ -26,7 +26,6 @@ import {
   TextField,
   Theme,
 } from '@mui/material';
-
 import { getWeeksInMonth } from 'date-fns';
 
 export interface CalenderMultiTypeModel {
@@ -60,6 +59,7 @@ export interface CalenderProps<T extends FieldValues> {
   name: Path<T>;
   yearmonth: Date;
   itemDef: CalenderItemDef[];
+  onBlur?: (name: any) => void;
   getCellBackground?: (
     date: Date,
     field: string,
@@ -76,8 +76,14 @@ export interface CalenderProps<T extends FieldValues> {
 const dayOfWeeks = ['日', '月', '火', '水', '木', '金', '土'];
 
 export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
-  const { name, yearmonth, itemDef, getCellBackground, getCellDisabled } =
-    props;
+  const {
+    name,
+    yearmonth,
+    itemDef,
+    onBlur,
+    getCellBackground,
+    getCellDisabled,
+  } = props;
 
   // state
   const [errors, setErrors] = useState<FieldErrors<FieldValues>>({});
@@ -128,6 +134,12 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
   }, [ref]);
   console.log('tableWidth', tableWidth);
 
+  const tableCellStyle: CSSProperties = {
+    // display: 'inline-table',
+    // width: 50,
+    // minWidth: 50,
+    // padding: 0,
+  };
   const tableCellSx: SxProps<Theme> = {
     width: `${100 / 8}%`,
     minWidth: `${100 / 8}%`,
@@ -143,21 +155,34 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
             <TableHead>
               {/* 曜日 */}
               <TableRow>
-                <TableCell sx={tableCellSx}></TableCell>
+                <TableCell
+                  style={tableCellStyle}
+                  // sx={tableCellSx}
+                ></TableCell>
                 {dayOfWeeks.map((data, i) => (
-                  <TableCell key={i} sx={tableCellSx}>
+                  <TableCell
+                    key={i}
+                    style={tableCellStyle}
+                    //  sx={tableCellSx}
+                  >
                     {data}
                   </TableCell>
                 ))}
               </TableRow>
               {/* 日付 */}
               <TableRow>
-                <TableCell sx={tableCellSx}>day</TableCell>
+                <TableCell
+                  style={tableCellStyle}
+                  // sx={tableCellSx}
+                >
+                  {`第${i + 1}週`}
+                </TableCell>
                 {dataPerWeek.map((data, i) => (
                   <TableCell
                     key={i}
+                    style={tableCellStyle}
                     sx={{
-                      ...tableCellSx,
+                      // ...tableCellSx,
                       background:
                         data.date &&
                         getCellBackground &&
@@ -177,12 +202,18 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
               {/* データ */}
               {itemDef.map((def) => (
                 <TableRow key={def.name}>
-                  <TableCell sx={tableCellSx}>{def.name}</TableCell>
+                  <TableCell
+                    style={tableCellStyle}
+                    // sx={tableCellSx}
+                  >
+                    {def.name}
+                  </TableCell>
                   {dataPerWeek.map((data, i) => (
                     <TableCell
                       key={i}
+                      style={tableCellStyle}
                       sx={{
-                        ...tableCellSx,
+                        // ...tableCellSx,
                         background:
                           data.date &&
                           getCellBackground &&
@@ -194,23 +225,35 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                       }}
                     >
                       {data.date && def.type === 'input' && (
-                        <TextField
-                          size='small'
-                          fullWidth
-                          helperText={
-                            (errors[name] as any)?.[data.date.getDate() - 1]?.[
-                              def.field
-                            ]?.message
-                          }
-                          {...register(
-                            `${name}.${data.date.getDate() - 1}.${def.field}`
-                          )}
-                          disabled={
-                            data.date &&
-                            getCellDisabled &&
-                            getCellDisabled(data.date, def.field)
-                          }
-                        />
+                        <>
+                          <TextField
+                            {...register(
+                              `${name}.${data.date.getDate() - 1}.${def.field}`
+                            )}
+                            onBlur={() =>
+                              onBlur &&
+                              onBlur(
+                                `${name}.${data.date.getDate() - 1}.${
+                                  def.field
+                                }`
+                              )
+                            }
+                            size='small'
+                            fullWidth
+                            disabled={
+                              data.date &&
+                              getCellDisabled &&
+                              getCellDisabled(data.date, def.field)
+                            }
+                          />
+                          <Typography color='error'>
+                            {
+                              (errors[name] as any)?.[
+                                data.date.getDate() - 1
+                              ]?.[def.field]?.message
+                            }
+                          </Typography>
+                        </>
                       )}
                       {data.date && def.type === 'select' && (
                         <Controller
@@ -222,6 +265,14 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                             <>
                               <Select
                                 {...field}
+                                onBlur={() =>
+                                  onBlur &&
+                                  onBlur(
+                                    `${name}.${data.date.getDate() - 1}.${
+                                      def.field
+                                    }`
+                                  )
+                                }
                                 size='small'
                                 fullWidth
                                 disabled={
@@ -236,7 +287,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                                   </MenuItem>
                                 ))}
                               </Select>
-                              <Typography>
+                              <Typography color='error'>
                                 {
                                   (errors[name] as any)?.[
                                     data.date.getDate() - 1
@@ -260,6 +311,14 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                                 <>
                                   <Select
                                     {...field}
+                                    onBlur={() =>
+                                      onBlur &&
+                                      onBlur(
+                                        `${name}.${data.date.getDate() - 1}.${
+                                          def.field
+                                        }`
+                                      )
+                                    }
                                     size='small'
                                     fullWidth
                                     disabled={
@@ -274,7 +333,7 @@ export const Calender = <T extends FieldValues>(props: CalenderProps<T>) => {
                                       </MenuItem>
                                     ))}
                                   </Select>
-                                  <Typography>
+                                  <Typography color='error'>
                                     {
                                       (errors[name] as any)?.[
                                         data.date.getDate() - 1

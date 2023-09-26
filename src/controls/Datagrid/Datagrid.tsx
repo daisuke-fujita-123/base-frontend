@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { ObjectSchema, ValidationError } from 'yup';
 
@@ -19,20 +19,17 @@ import {
   convertFromInvalidToMessage,
   convertFromResolverToInvalids,
   convertFromSizeToWidth,
-  InvalidModel,
   removeIdFromInvalids,
   resolveGridWidth,
 } from 'controls/Datagrid/DataGridUtil';
 import { Link } from 'controls/Link';
 import { theme } from 'controls/theme';
 
-import SortAsc from 'icons/content_sort_ascend.png';
-import SortDesc from 'icons/content_sort_descend.png';
-
 import { Box, Stack, styled, Tooltip } from '@mui/material';
 import {
   DataGridPro as MuiDataGridPro,
   DataGridProProps,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
   GridColDef as MuiGridColDef,
   GridColumnHeaderParams,
   GridRenderCellParams,
@@ -40,9 +37,10 @@ import {
   GridValidRowModel,
 } from '@mui/x-data-grid-pro';
 import { GridApiPro } from '@mui/x-data-grid-pro/models/gridApiPro';
-
 import Encoding from 'encoding-japanese';
 import saveAs from 'file-saver';
+import SortAsc from 'icons/content_sort_ascend.png';
+import SortDesc from 'icons/content_sort_descend.png';
 import Papa from 'papaparse';
 
 const StyledDataGrid = styled(MuiDataGridPro)({
@@ -124,7 +122,7 @@ export type GridColDef = MuiGridColDef & {
    */
   tooltip?: boolean;
   /**
-   * tooltip
+   * validator
    */
   validator?: any;
   /**
@@ -191,6 +189,10 @@ export interface DataGridProps extends DataGridProProps {
    */
   tooltips?: GridTooltipsModel[]; // add, tooltip = 'true'
   /**
+   * invalids
+   */
+  invalids?: InvalidModel[];
+  /**
    * showHeaderRow
    */
   showHeaderRow?: boolean;
@@ -210,6 +212,10 @@ export interface DataGridProps extends DataGridProProps {
    * onRowChange
    */
   onCellBlur?: (row: any) => void;
+  /**
+   * onValidChange
+   */
+  onInvalidModelChange?: (invalids: InvalidModel[]) => void;
   /**
    * リンククリック時のハンドラ<br>
    * cellTypeがlinkの時のみ指定
@@ -258,6 +264,16 @@ export interface GridTooltipsModel {
 }
 
 /**
+ * バリデーションデータモデル
+ */
+export interface InvalidModel {
+  field: string;
+  type: string;
+  message: string;
+  ids: (string | number)[];
+}
+
+/**
  * DataGridコンポーネント
  * @param props
  * @returns
@@ -271,6 +287,7 @@ export const DataGrid = (props: DataGridProps) => {
     disabled = false,
     tooltips,
     hrefs,
+    invalids,
     showHeaderRow = false,
     headerRow,
     headerApiRef,
@@ -288,6 +305,7 @@ export const DataGrid = (props: DataGridProps) => {
     /** misc */
     onRowValueChange,
     onCellBlur,
+    onInvalidModelChange,
     onLinkClick, // cellType = 'link'
     onCellHelperButtonClick,
     getCellDisabled,
@@ -297,26 +315,35 @@ export const DataGrid = (props: DataGridProps) => {
     apiRef,
   } = props;
 
-  const defaultInvalids: InvalidModel[] =
-    resolver === undefined ? [] : convertFromResolverToInvalids(resolver);
+  if (
+    resolver !== undefined &&
+    invalids !== undefined &&
+    invalids.length === 0
+  ) {
+    // 初回レンダリング時のみバリデーションモデルを初期化する
+    const defaultInvalids = convertFromResolverToInvalids(resolver);
+    invalids.push(...defaultInvalids);
+  }
 
-  // state
-  const [invalids, setInvalids] = useState<InvalidModel[]>(defaultInvalids);
+  const validate = async (row: any) => {
+    if (resolver === undefined || invalids === undefined) return;
+    // 一旦、変更行のバリデーションエラーを解除
+    removeIdFromInvalids(invalids, row.id);
+    try {
+      await resolver.validate(row, { abortEarly: false });
+    } catch (err) {
+      if (err instanceof ValidationError) {
+        // ハリデーションエラーがない場合は列のIDを追加
+        appendErrorToInvalids(invalids, err.inner, row.id);
+      }
+    }
+    onInvalidModelChange && onInvalidModelChange(invalids);
+  };
 
   // handler
   const handleRowValueChange = async (row: any) => {
-    if (resolver !== undefined) {
-      // 一旦、変更行のバリデーションエラーを解除
-      removeIdFromInvalids(invalids, row.id);
-      try {
-        await resolver.validate(row, { abortEarly: false });
-      } catch (err) {
-        if (err instanceof ValidationError) {
-          // ハリデーションエラーがない場合は列のIDを追加
-          appendErrorToInvalids(invalids, err.inner, row.id);
-        }
-      }
-      setInvalids([...invalids]);
+    if (resolver !== undefined && invalids !== undefined) {
+      await validate(row);
     }
 
     onRowValueChange && onRowValueChange(row);
@@ -333,7 +360,7 @@ export const DataGrid = (props: DataGridProps) => {
   };
 
   // heander
-  const handleProcessRowUpdate = (newRow: any, oldRow: any) => {
+  const handleProcessRowUpdate = (newRow: any) => {
     return newRow;
   };
 
@@ -583,7 +610,7 @@ export const DataGrid = (props: DataGridProps) => {
 
   const generateTooltipCell = (params: GridRenderCellParams<any>) => {
     const map = tooltips?.find((x) => x.field === params.field);
-    const tooltip = map?.tooltips.find((x: any) => x.id === String(params.id));
+    const tooltip = map?.tooltips.find((x: any) => x.id === params.id);
     const text = tooltip !== undefined ? tooltip.text : '';
     return (
       <Tooltip title={text} placement='right' arrow>
@@ -692,7 +719,9 @@ export const DataGrid = (props: DataGridProps) => {
             },
           }}
           /** size */
-          columnHeaderHeight={35}
+          columnHeaderHeight={
+            props.columnHeaderHeight ? props.columnHeaderHeight : 35
+          }
           rowHeight={30}
           autoHeight={height === undefined}
           /** sorting */
@@ -714,7 +743,10 @@ export const DataGrid = (props: DataGridProps) => {
           slotProps={{
             toolbar: {
               pagination: pagination,
-              validationMessages: convertFromInvalidToMessage(invalids),
+              validationMessages:
+                invalids !== undefined
+                  ? convertFromInvalidToMessage(invalids)
+                  : [],
               showHeaderRow: showHeaderRow,
               headerColumns: muiColumns,
               headerRow: headerRow,
@@ -744,6 +776,7 @@ export const exportCsv = (
 ) => {
   const colDef = apiRef.current.getAllColumns();
   const rowIds = apiRef.current.getAllRowIds();
+  const crlf = '\r\n';
 
   // DataGridのid列の除外、囲み文字の追加
   const data = rowIds.map((x) => {
@@ -760,13 +793,12 @@ export const exportCsv = (
   // CSVの文字列を生成
   const header =
     colDef
-      .map((x) => {
-        return `"${x.headerName}"`;
-      })
-      .join(',') + '\r\n';
+      .filter((x) => x.field !== GRID_CHECKBOX_SELECTION_COL_DEF.field)
+      .map((x) => `"${x.headerName}"`)
+      .join(',') + crlf;
   const rows = Papa.unparse(data, {
     delimiter: ',',
-    newline: '\r\n',
+    newline: crlf,
     quoteChar: '',
     escapeChar: '',
     header: false,

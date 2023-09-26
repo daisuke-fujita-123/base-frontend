@@ -1,6 +1,9 @@
 import { ComponentMeta } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
 import { FormProvider, useFieldArray, useForm } from 'react-hook-form';
+
+import { yupResolver } from '@hookform/resolvers/yup';
+import yup from 'utils/yup';
 
 import { CenterBox } from 'layouts/Box';
 import { RowStack, Stack } from 'layouts/Stack';
@@ -18,7 +21,6 @@ import { PriceTextField } from 'controls/TextField';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
-
 import { AddableBox } from './AddableBox';
 
 export default {
@@ -26,17 +28,28 @@ export default {
   parameters: { controls: { expanded: true } },
 } as ComponentMeta<typeof AddableBox>;
 
-interface FormModel {
-  conditions: {
+interface AddableBoxExampleModel {
+  details: {
     commissionType: number;
     productCode: number;
+    conditions: ConditionModel[];
     priceChange: number;
     plusMinus: number;
-    price: number;
+    price: string;
   }[];
 }
 
 export const Example = () => {
+  const commissionType = [
+    { displayValue: '出品料', value: 1 },
+    { displayValue: '????', value: 2 },
+  ];
+
+  const productCode = [
+    { displayValue: 'XXXXXXXX', value: 1 },
+    { displayValue: '????', value: 2 },
+  ];
+
   const columns: TableColDef[] = [
     { field: 'conditionType', headerName: '条件種類', width: 150 },
     { field: 'conditions', headerName: '条件', width: 100 },
@@ -116,173 +129,107 @@ export const Example = () => {
     },
   ];
 
-  /**
-   * APIから取得した手数料データ
-   */
-  const commissionType = [
-    { displayValue: '出品料', value: 1 },
-    { displayValue: '????', value: 2 },
-  ];
-  const productCode = [
-    { displayValue: 'XXXXXXXX', value: 1 },
-    { displayValue: '????', value: 2 },
-  ];
   const price = [
     { value: 0, displayValue: '変動金額' },
     { value: 1, displayValue: '変動後の金額' },
   ];
+
   const plusMinus = [
     { value: 0, displayValue: '+' },
     { value: 1, displayValue: '-' },
   ];
 
-  const formInitialValues: FormModel = {
-    conditions: [
+  const formInitialValues: AddableBoxExampleModel = {
+    details: [
       {
         commissionType: 1,
         productCode: 1,
+        conditions: [
+          {
+            conditionKind: '',
+            subConditions: [
+              {
+                operator: 0,
+                value: '',
+              },
+            ],
+          },
+        ],
         priceChange: 0,
         plusMinus: 0,
-        price: 0,
+        price: '10,000',
+      },
+      {
+        commissionType: 1,
+        productCode: 1,
+        conditions: [
+          {
+            conditionKind: '',
+            subConditions: [
+              {
+                operator: 0,
+                value: '',
+              },
+            ],
+          },
+        ],
+        priceChange: 0,
+        plusMinus: 0,
+        price: '20,000',
       },
     ],
   };
-  const conditionInitialValues: ConditionModel[][] = [
-    [
-      {
-        conditionKind: '',
-        subConditions: [
-          {
-            operator: 0,
-            value: '',
-          },
-        ],
-      },
-    ],
-  ];
 
-  // state
-  const [datalist, setDatalist] = useState<FormModel>(formInitialValues);
-  const [rows, setRows] = useState<ConditionModel[][]>(conditionInitialValues);
+  const validationSchema = yup.object().shape({
+    details: yup.array().of(
+      yup.object().shape({
+        price: yup.string().required().label('値引値増金額'),
+      })
+    ),
+  });
 
   // form
-  const methods = useForm<FormModel>({
+  const methods = useForm<AddableBoxExampleModel>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: formInitialValues,
-    context: false,
+    resolver: yupResolver(validationSchema),
   });
-  const arrayMethods = useFieldArray({
-    name: 'conditions',
+  const { fields, append, remove } = useFieldArray({
+    name: 'details',
     control: methods.control,
   });
 
   // 明細追加
   const handleAddClick = () => {
-    rows.push([
-      {
-        conditionKind: '',
-        subConditions: [
-          {
-            operator: 0,
-            value: '',
-          },
-        ],
-      },
-    ]);
-    setRows([...rows]);
-    arrayMethods.append({
+    const newItem = {
+      conditions: [
+        {
+          conditionKind: '',
+          subConditions: [
+            {
+              operator: 0,
+              value: '',
+            },
+          ],
+        },
+      ],
       commissionType: 1,
       productCode: 1,
       priceChange: 0,
       plusMinus: 0,
-      price: 0,
-    });
+      price: '',
+    };
+    append(newItem);
   };
 
   // 明細削除
   const handleRemoveClick = (index: number) => {
-    arrayMethods.remove(index);
-    rows.splice(index, 1);
-    setRows([...rows]);
+    remove(index);
   };
 
-  const handleOnConditionTypeChange = (
-    boxIndex: number,
-    kind: string | number,
-    index: number
-  ) => {
-    rows[boxIndex][index] = {
-      conditionKind: kind,
-      subConditions: [
-        {
-          operator: '',
-          value: '',
-        },
-      ],
-    };
-    setRows([...rows]);
-  };
-
-  const handleOnSubConditionChange = (
-    boxIndex: number,
-    value: string | number,
-    index: number,
-    subIndex: number,
-    field: string
-  ) => {
-    if (field === 'operator') {
-      rows[boxIndex][index].subConditions[subIndex].operator = value;
-    }
-    if (field === 'value') {
-      rows[boxIndex][index].subConditions[subIndex].value = value;
-    }
-    setRows([...rows]);
-  };
-
-  const handleOnConditionCountChangeClick = (
-    boxIndex: number,
-    operation: string,
-    index?: number
-  ) => {
-    if (operation === 'add') {
-      rows[boxIndex].push({
-        conditionKind: '',
-        subConditions: [
-          {
-            operator: '',
-            value: '',
-          },
-        ],
-      });
-    }
-    if (operation === 'remove' && index !== undefined) {
-      rows[boxIndex].splice(index, 1);
-    }
-    setRows([...rows]);
-  };
-
-  const handleOnSubConditionCoountChangeClick = (
-    boxIndex: number,
-    index: number,
-    operation: string,
-    subIndex?: number
-  ) => {
-    if (operation === 'add') {
-      rows[boxIndex][index].subConditions.push({
-        operator: '',
-        value: '',
-      });
-    }
-    if (operation === 'remove' && subIndex !== undefined) {
-      rows[boxIndex][index].subConditions.splice(subIndex, 1);
-    }
-    setRows([...rows]);
-  };
-
-  const handleOnClick = () => {
+  const handleLogClick = () => {
     console.log(methods.getValues());
-    console.log(rows);
   };
 
   return (
@@ -292,63 +239,46 @@ export const Example = () => {
           handleAddClick={handleAddClick}
           handleRemoveClick={handleRemoveClick}
         >
-          {arrayMethods.fields.map((val, i) => (
+          {fields.map((val, i) => (
             <Stack spacing={6} key={i}>
               <RowStack>
                 <Select
                   required
-                  name={`conditions.${i}.commissionType`}
+                  name={`details.${i}.commissionType`}
                   label='手数料種類'
                   selectValues={commissionType}
                 />
                 <Select
                   required
-                  name={`conditions.${i}.productCode`}
+                  name={`details.${i}.productCode`}
                   label='商品コード'
                   selectValues={productCode}
                 />
               </RowStack>
               <ConditionalTable
+                name={`details.${i}.conditions`}
                 columns={columns}
                 conditionKinds={conditionKinds}
                 operators={operators}
-                rows={rows[i]}
-                onConditionKindChange={(kind, index) =>
-                  handleOnConditionTypeChange(i, kind, index)
-                }
-                onSubConditionChange={(value, index, subIndex, field) =>
-                  handleOnSubConditionChange(i, value, index, subIndex, field)
-                }
-                onConditionCountChangeClick={(operation, index) =>
-                  handleOnConditionCountChangeClick(i, operation, index)
-                }
-                onSubConditionCoountChangeClick={(index, operation, subIndex) =>
-                  handleOnSubConditionCoountChangeClick(
-                    i,
-                    index,
-                    operation,
-                    subIndex
-                  )
-                }
               />
               <RowStack spacing={2}>
                 <Radio
                   required
-                  name={`conditions.${i}.priceChange`}
+                  name={`details.${i}.priceChange`}
                   label='値引値増金額'
                   radioValues={price}
                 />
                 <Radio
-                  name={`conditions.${i}.plusMinus`}
+                  name={`details.${i}.plusMinus`}
                   radioValues={plusMinus}
                 />
-                <PriceTextField name={`conditions.${i}.price`} />円
+                <PriceTextField name={`details.${i}.price`} />円
               </RowStack>
             </Stack>
           ))}
         </AddableBox>
         <CenterBox>
-          <PrimaryButton onClick={handleOnClick}>log</PrimaryButton>
+          <PrimaryButton onClick={handleLogClick}>log</PrimaryButton>
         </CenterBox>
       </ThemeProvider>
     </FormProvider>

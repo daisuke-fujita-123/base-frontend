@@ -32,6 +32,16 @@ export interface ScrCom0008GetReportCommentCurrentResponse {
 export interface ScrCom0008RegistUpdateReportCommentRequest {
   /** 帳票ID */
   reportId: string;
+  /** システム種別 */
+  systemKind: string;
+  /** 帳票名 */
+  reportName: string;
+  /** コメント最大行数 */
+  commentRow: number;
+  /** ポップアップコメント最大行数 */
+  popupCommentRow: number;
+  /** コメント１行最大文字数 */
+  commentLine: number;
   /** 帳票コメント */
   reportComment: string;
   /** 申請従業員ID */
@@ -39,10 +49,55 @@ export interface ScrCom0008RegistUpdateReportCommentRequest {
   /** 登録変更メモ */
   registrationChangeMemo: string;
   /** 変更予定日 */
-  changeExpectDate: string | null;
+  changeExpectDate?: string;
   /** 画面ID */
   screenId: string;
 }
+
+/** API-COM-9999-0025: 変更履歴情報取得API リクエスト */
+export interface ScrCom9999GetHistoryInfoRequest {
+  // 申請ID/変更履歴番号
+  changeHistoryNumber: string;
+}
+
+/** API-COM-9999-0025: 変更履歴情報取得API レスポンス */
+export interface ScrCom9999GetHistoryInfoResponse {
+  changeHistoryInfo: {
+    /** 帳票ID */
+    reportId: string;
+    /** システム種別 */
+    systemKind: string;
+    /** 帳票名 */
+    reportName: string;
+    /** コメント最大行数 */
+    commentRow: number;
+    /** ポップアップコメント最大行数 */
+    popupCommentRow: number;
+    /** コメント１行最大文字数 */
+    commentLine: number;
+    /** 帳票コメント */
+    reportComment: string;
+    /** 申請従業員ID */
+    applicationEmployeeId: string;
+    /** 登録変更メモ */
+    registrationChangeMemo: string;
+    /** 変更予定日 */
+    changeExpectDate: string;
+    /** 画面ID */
+    screenId: string;
+  };
+}
+
+/** 変更履歴情報取得API */
+export const ScrCom9999GetHistoryInfo = async (
+  request: ScrCom9999GetHistoryInfoRequest
+): Promise<ScrCom9999GetHistoryInfoResponse> => {
+  const response = await comApiClient.post(
+    '/api/com/scr-com-9999/get-history-info',
+    request
+  );
+  return response.data;
+};
 
 /** SCR-COM-0008-0001: 帳票コメント情報取得API */
 export const ScrCom0008GetReportCommentCurrent = async (

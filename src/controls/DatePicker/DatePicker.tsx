@@ -14,8 +14,6 @@ import { StyledTextFiled } from 'controls/TextField';
 import { theme } from 'controls/theme';
 import { Typography } from 'controls/Typography';
 
-import Calendar from 'icons/button_calendar.png';
-
 import { Box, IconButton, styled } from '@mui/material';
 import {
   BaseSingleInputFieldProps,
@@ -26,8 +24,8 @@ import {
   UseDateFieldProps,
 } from '@mui/x-date-pickers-pro';
 import { AdapterDateFns } from '@mui/x-date-pickers-pro/AdapterDateFns';
-
 import { ja } from 'date-fns/locale';
+import Calendar from 'icons/button_calendar.png';
 import {
   convertFromDateToDisplay,
   isInvalidDate,
@@ -216,4 +214,3 @@ export const DatePicker = <T extends FieldValues>(
     </InputLayout>
   );
 };
-

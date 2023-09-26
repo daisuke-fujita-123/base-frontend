@@ -375,9 +375,10 @@ const convertToUnapprovedChangeHistoryRows = (
       id: index,
       changeHistoryNumber: u.changeHistoryNumber,
       screenName: u.screenName,
-      tabName: u.tabName,
+      tabName: u.tabName ? u.tabName : u.allRegistrationName,
       changeExpectDate: u.changeExpectDate,
-      changeApplicationEmployee: u.changeApplicationEmployeeName,
+      changeApplicationEmployee:
+        u.changeApplicationEmployeeId + ' ' + u.changeApplicationEmployeeName,
       changeApplicationTimestamp: u.changeApplicationTimestamp,
       registrationChangeMemo: u.registrationChangeMemo ? 'あり' : '',
       approvalEmployee1: approvalEmployee[0],
@@ -482,8 +483,7 @@ const ScrTra0001ChangeHistoryTab = () => {
     };
 
     initialize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  });
 
   /**
    * 変更履歴タブの値取得

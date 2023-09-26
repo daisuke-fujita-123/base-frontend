@@ -471,7 +471,7 @@ const ScrCom0032Popup = (props: ScrCom0032PopupProps) => {
                     ) : (
                       <>
                         <Typography key={'index'} variant='h6'>
-                          {'項目がありません。'}
+                          {Format(getMessage('MSG-FR-ERR-00080'), [])}
                         </Typography>
                         <br />
                       </>
