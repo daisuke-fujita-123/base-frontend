@@ -1,11 +1,14 @@
 import { ComponentMeta } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
+import { Stack } from 'layouts/Stack';
+
+import { PrimaryButton } from 'controls/Button';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
-import { Select, SelectValue } from './Select';
+import { AddbleSelect, Select, SelectValue } from './Select';
 
 export default {
   component: Select,
@@ -50,12 +53,6 @@ export default {
   },
 } as ComponentMeta<typeof Select>;
 
-// react-hook-formを使う場合は、template内で呼び出してから使う。
-interface SampleInput {
-  sampleName: string | number;
-  sampleName1: string[] | number[];
-  sampleName2: string[] | number[];
-}
 // TDOO クラッシュ原因の特定
 // const Template: Story<SelectProps<SampleInput>> = (args) => {
 //   const methods = useForm<SampleInput>({
@@ -83,26 +80,36 @@ interface SampleInput {
 //   multiple: false,
 // };
 
+interface SelectExampleModel {
+  listbox1: number;
+  listbox2: number[];
+  listbox3: string;
+  listbox4: string[];
+  listbox5: string[];
+  listbox6: number[];
+}
+
 export const Example = () => {
-  const isReadOnly = useState<boolean>(false);
-  const methods = useForm<SampleInput>({
+  const methods = useForm<SelectExampleModel>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: {
-      sampleName: 0,
-      sampleName1: [0],
-      sampleName2: ['2'],
+      listbox1: 1,
+      listbox2: [2],
+      listbox3: '3',
+      listbox4: ['4'],
+      listbox5: [],
+      listbox6: [0, 1],
     },
-    context: isReadOnly,
   });
 
-  const sampleSelect: SelectValue[] = [
-    { displayValue: '二輪', value: 0 },
-    { displayValue: '三輪', value: 1 },
-    { displayValue: '四輪', value: 2 },
+  const selectValues1: SelectValue[] = [
+    { value: 0, displayValue: '二輪' },
+    { value: 1, displayValue: '三輪' },
+    { value: 2, displayValue: '四輪' },
   ];
 
-  const sampleAutoComplete: SelectValue[] = [
+  const selectValues2: SelectValue[] = [
     { value: '2', displayValue: 'ｶｰｵｸ!＆ﾕｰｻﾞｰ代行出品' },
     { value: '3', displayValue: '福祉･ﾊﾞｽﾄﾗ' },
     { value: '4', displayValue: 'ヤナセ' },
@@ -130,33 +137,51 @@ export const Example = () => {
   ];
 
   return (
-    <FormProvider {...methods}>
-      <ThemeProvider theme={theme}>
-        <Select
-          label='サンプルセレクト'
-          selectValues={sampleSelect}
-          name='sampleName'
-          disabled={false}
-          blankOption={true}
-          required={false}
-        />
-        <Select
-          label='サンプルセレクト(Multiple)'
-          selectValues={sampleSelect}
-          name='sampleName1'
-          disabled={false}
-          blankOption={true}
-          required={false}
-          multiple={true}
-        />
-        <Select
-          label='Autocomplete'
-          selectValues={sampleAutoComplete}
-          name='sampleName2'
-          multiple={true}
-        />
-      </ThemeProvider>
-    </FormProvider>
+    <ThemeProvider theme={theme}>
+      <FormProvider {...methods}>
+        <Stack spacing={4}>
+          <Select
+            label='1, リストボックス（単一選択）'
+            name='listbox1'
+            selectValues={selectValues1}
+            blankOption
+          />
+          <Select
+            label='2. リストボックス（複数選択）'
+            name='listbox2'
+            selectValues={selectValues1}
+            blankOption
+            multiple
+          />
+          <Select
+            label='3. リストボックス（単一選択＋絞り込み）'
+            name='listbox3'
+            selectValues={selectValues2}
+          />
+          <Select
+            label='4. リストボックス（複数選択＋絞り込み）'
+            name='listbox4'
+            selectValues={selectValues2}
+            multiple
+          />
+          <Select
+            label='5. リストボックス（複数選択＋絞り込み）'
+            name='listbox5'
+            selectValues={selectValues2}
+            multiple
+          />
+          <AddbleSelect
+            label='6. リストボックス（追加可能）'
+            name='listbox6'
+            selectValues={selectValues1}
+            limit={5}
+          />
+          <PrimaryButton onClick={() => console.log(methods.getValues())}>
+            log
+          </PrimaryButton>
+        </Stack>
+      </FormProvider>
+    </ThemeProvider>
   );
 };
 
