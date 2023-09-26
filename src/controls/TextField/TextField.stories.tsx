@@ -1,17 +1,17 @@
 import { ComponentMeta } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
-import { RowStack } from 'layouts/Stack';
+import { Stack } from 'layouts/Stack';
 
+import { PrimaryButton } from 'controls/Button';
 import { theme } from 'controls/theme';
 
 import { ThemeProvider } from '@mui/material/styles';
-
-import { PostalTextField, PriceTextField, TextField } from './TextField';
+import { PriceTextField, TextField } from './TextField';
 
 export default {
   component: TextField,
@@ -46,18 +46,7 @@ export default {
     },
   },
 } as ComponentMeta<typeof TextField>;
-// react-hook-formを使う場合は、template内で呼び出してから使う。
-interface InputSample {
-  sampleName: string;
-  samplePrice: number;
-  samplePostal: string | number;
-}
 
-const schema = yup.object({
-  sampleName: yup.string().required('入力してください'),
-  samplePrice: yup.string().required('入力してください'),
-  samplePostal: yup.string().required('入力してください'),
-});
 // TDOO クラッシュ原因の特定
 // const Template: Story<TextFieldProps<InputSample>> = (args) => {
 //   const methods = useForm<InputSample>({
@@ -86,91 +75,72 @@ const schema = yup.object({
 //   postalCode: false,
 // };
 
+interface TextFieldExampleModel {
+  textbox1: string;
+  textbox2: string;
+  textbox3: string;
+  textbox4: string;
+  textbox5: number;
+  textbox6: string;
+}
+
 export const Example = () => {
-  const isReadOnly = useState<boolean>(false);
-  const methods = useForm<InputSample>({
+  const schema = yup.object({
+    textbox1: yup.string().label('テキストボックス'),
+    textbox2: yup.string().required().label('テキストボックス（必須）'),
+    textbox3: yup.string().label('テキストボックス（読み取り専用）'),
+    textbox4: yup.string().label('テキストボックス（非活性）'),
+    textbox5: yup.number().label('テキストボックス（単位付き）'),
+    textbox6: yup.string().label('テキストボックス（金額）'),
+  });
+
+  const methods = useForm<TextFieldExampleModel>({
     mode: 'onBlur',
     reValidateMode: 'onBlur',
     defaultValues: {
-      sampleName: 'デフォルト値',
-      samplePrice: 0,
-      samplePostal: '',
+      textbox1: 'テキストボックス1',
+      textbox2: 'テキストボックス2',
+      textbox3: 'テキストボックス3',
+      textbox4: 'テキストボックス4',
+      textbox5: 1234,
+      textbox6: '1,000',
     },
     resolver: yupResolver(schema),
-    context: isReadOnly,
   });
 
   return (
-    <FormProvider {...methods}>
-      <ThemeProvider theme={theme}>
-        <RowStack>
+    <ThemeProvider theme={theme}>
+      <FormProvider {...methods}>
+        <Stack spacing={4}>
+          <TextField label='1. テキストボックス' name='textbox1' fullWidth />
           <TextField
-            label='サンプルラベル'
-            required={true}
-            name='sampleName'
-            disabled={false}
-            fullWidth={true}
+            label='2. テキストボックス（必須）'
+            name='textbox2'
+            required
           />
           <TextField
-            label='サンプルラベル'
-            name='sampleName'
-            disabled={false}
-            fullWidth={true}
+            label='3. テキストボックス（読み取り専用）'
+            name='textbox3'
+            readonly
           />
-        </RowStack>
-        <TextField
-          label='サンプルラベル'
-          required={true}
-          name='sampleName'
-          disabled={false}
-          fullWidth={true}
-          variant='outlined'
-        />
-        <TextField
-          label='サンプルラベル'
-          required={true}
-          name='sampleName'
-          disabled={false}
-          fullWidth={true}
-          variant='standard'
-        />
-        <TextField
-          label='サンプルラベル'
-          required={true}
-          name='sampleName'
-          disabled={true}
-          fullWidth={true}
-          variant='outlined'
-        />
-        <PriceTextField
-          label='サンプルラベル。'
-          required={true}
-          name='samplePrice'
-          disabled={false}
-          fullWidth={true}
-          variant='outlined'
-        />
-        <PostalTextField
-          label='サンプルラベル。'
-          required={true}
-          name='samplePostal'
-          disabled={false}
-          fullWidth={true}
-          variant='outlined'
-          onBlur={() => {
-            console.log('onBlur');
-          }}
-        />
-        <TextField
-          label='サンプルラベル'
-          required={true}
-          name='sampleName'
-          fullWidth={true}
-          variant='outlined'
-          unit='単位'
-        />
-      </ThemeProvider>
-    </FormProvider>
+          <TextField
+            label='4. テキストボックス（非活性）'
+            name='textbox4'
+            disabled
+          />
+          <TextField
+            label='5. テキストボックス（単位付き）'
+            required
+            name='textbox5'
+            unit='単位'
+          />
+          <PriceTextField label='6. テキストボックス（金額）' name='textbox6' />
+          <PrimaryButton onClick={() => console.log(methods.getValues())}>
+            log
+          </PrimaryButton>
+        </Stack>
+      </FormProvider>
+    </ThemeProvider>
   );
 };
 

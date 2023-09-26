@@ -10,6 +10,16 @@
       "sourceMapPathOverrides": {
         "webpack:///src/*": "${webRoot}/*"
       }
+    },
+    {
+      "name": "Run Storybook",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:6006",
+      "webRoot": "${workspaceFolder}/src",
+      "sourceMapPathOverrides": {
+        "webpack://aucnet-poc-front/./src/*": "${workspaceRoot}/src/*"
+      }
     }
   ]
 }

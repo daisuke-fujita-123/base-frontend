@@ -73,14 +73,14 @@ export const TextField = <T extends FieldValues>(props: TextFieldProps<T>) => {
     type = 'text',
   } = props;
 
-  // form
-  const { register, formState, setValue, control, getFieldState } =
+  const { register, formState, setValue, control, trigger, getFieldState } =
     useFormContext();
   const watchValue = useWatch({ name, control });
   const registerRet = register(name);
 
   const onClickIconHandler = () => {
     if (!disabled) {
+      trigger(name);
       return setValue(name, value);
     }
   };
@@ -166,6 +166,7 @@ export const PriceTextField = <T extends FieldValues>(
 
   const onClickIconHandler = () => {
     if (!disabled) {
+      trigger(name);
       return setValue(name, value);
     }
   };
@@ -277,6 +278,7 @@ export const PostalTextField = <T extends FieldValues>(
 
   const onClickIconHandler = () => {
     if (!disabled) {
+      trigger(name);
       return setValue(name, value);
     }
   };
